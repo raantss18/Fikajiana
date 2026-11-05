@@ -10,7 +10,7 @@ Aucune pour l'instant.
 ## Étape 0 — Cadrage ✅
 
 - ✅ Dépôt vidé du projet Unity ; `CLAUDE.md`, `docs/vision.md`, `LICENSE` (GPL-3.0-or-later)
-- ❓ **Antsa** : renommer le dépôt `Andrana` → `Fikajiana` (GitHub → Settings → General → Repository name)
+- ✅ Dépôt renommé `raantss18/Fikajiana` par Antsa (2026-11-05)
 - ❓ **Antsa** : langues de l'interface (proposé : français, puis malgache et anglais)
 - ❓ **Antsa** : appareils de test réels (tablette avec stylet ? modèle ?)
 
