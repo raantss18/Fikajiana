@@ -59,8 +59,8 @@
 
 - ⏳ Spike latence au stylet, caméra rapide sur Pad 7 : `Listener`, paquet `stylet`, `LowLatencyCanvasView` en vue native. Aucun objectif chiffré avant
 - ⏳ Mesurer la perte de points (Flutter ne lit pas l'historique des `MotionEvent`)
-- ⏳ Rendu du trait : filtre 1€ et `perfect_freehand`, pression ; les points bruts restent pour la reconnaissance
-- ⏳ Formes au maintien du stylet : ligne, cercle, rectangle, triangle ($1 et moindres carrés), annulable
+- 🔄 Rendu du trait : filtre 1€, `perfect_freehand`, pression, points bruts gardés (ADR 0013). Reste : réglage au vrai stylet, débit d'images sur une longue page
+- 🔄 Formes au maintien : ligne, cercle, triangle, rectangle, annulables (ADR 0013). Reste : seuils au vrai stylet
 - ⏳ Gestes : rature et barré pour effacer ; ajustement des courbes au levé (Schneider, licence à vérifier ou réécriture)
 - ❌ Écarté : correction automatique de l'écriture en continu (aucun des produits étudiés ne la documente, et elle gênerait la reconnaissance)
 

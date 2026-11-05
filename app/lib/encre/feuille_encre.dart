@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:fikajiana/encre/encre.dart';
 import 'package:fikajiana/reglages/support.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-const double _epaisseur = 3;
+const Duration _dureeMaintien = Duration(milliseconds: 450);
+const double _bougeMaintien = 6;
 const double _rayonGomme = 18;
 
 /// Zone d'écriture au stylet ou au doigt.
@@ -36,6 +40,26 @@ class _FeuilleEncreState extends State<FeuilleEncre> {
   var _styletVu = false;
   var _gomme = false;
   int? _pointeur;
+  Timer? _maintien;
+  Offset _ancre = Offset.zero;
+
+  void _armerMaintien(Offset position) {
+    _ancre = position;
+    _maintien?.cancel();
+    _maintien = Timer(_dureeMaintien, () {
+      if (!mounted || _pointeur == null || _gomme) return;
+      if (widget.encre.formerDernierTrait()) {
+        unawaited(HapticFeedback.selectionClick());
+        _changer(() {});
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _maintien?.cancel();
+    super.dispose();
+  }
 
   bool _estStylet(PointerEvent e) =>
       e.kind == PointerDeviceKind.stylus ||
@@ -46,8 +70,12 @@ class _FeuilleEncreState extends State<FeuilleEncre> {
       e.kind == PointerDeviceKind.invertedStylus ||
       e.buttons & kSecondaryStylusButton != 0;
 
-  PointEncre _point(PointerEvent e) =>
-      PointEncre(e.localPosition.dx, e.localPosition.dy, e.pressure);
+  PointEncre _point(PointerEvent e) => PointEncre(
+    e.localPosition.dx,
+    e.localPosition.dy,
+    e.pressure,
+    tempsMs: e.timeStamp.inMicroseconds / 1000,
+  );
 
   void _changer(VoidCallback action) {
     setState(action);
@@ -63,7 +91,12 @@ class _FeuilleEncreState extends State<FeuilleEncre> {
       if (_gomme) {
         widget.encre.gommer(e.localPosition, _rayonGomme);
       } else {
-        widget.encre.commencer(_point(e), stylo: widget.stylo);
+        widget.encre.commencer(
+          _point(e),
+          stylo: widget.stylo,
+          auStylet: _estStylet(e),
+        );
+        _armerMaintien(e.localPosition);
       }
     });
   }
@@ -75,12 +108,18 @@ class _FeuilleEncreState extends State<FeuilleEncre> {
         widget.encre.gommer(e.localPosition, _rayonGomme);
       } else {
         widget.encre.prolonger(_point(e));
+        if ((e.localPosition - _ancre).distance > _bougeMaintien) {
+          _armerMaintien(e.localPosition);
+        }
       }
     });
   }
 
   void _lever(PointerEvent e) {
-    if (e.pointer == _pointeur) _pointeur = null;
+    if (e.pointer != _pointeur) return;
+    _pointeur = null;
+    _maintien?.cancel();
+    if (!_gomme) _changer(widget.encre.terminer);
   }
 
   @override
@@ -122,14 +161,10 @@ class _PeintreEncre extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final encre = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = _epaisseur
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
+    final encre = Paint()..style = PaintingStyle.fill;
     for (final trait in traits) {
       encre.color = support.stylos[trait.stylo];
-      canvas.drawPath(cheminDuTrait(trait.points), encre);
+      canvas.drawPath(trait.contour, encre);
     }
   }
 
