@@ -29,5 +29,45 @@
     "zoomMoins": "Dézoomer",
     "recentrer": "Revenir au début de la page",
     "ecrireIci": "Écris ici. Deux doigts pour déplacer la page et zoomer.",
-    "zoneEcriture": "Zone d'écriture"
+    "zoneEcriture": "Zone d'écriture",
+    "saisirClavier": "Saisir au clavier",
+    "saisieTitre": "Expression à calculer",
+    "saisieAide": "En LaTeX, par exemple 2+3= ou x^2=2",
+    "valider": "Calculer",
+    "annulerDialogue": "Annuler",
+    "retirer": "Retirer",
+    "corriger": "Corriger",
+    "blocLecture": "Lecture…",
+    "blocCalcul": "Calcul…",
+    "blocArreter": "Arrêter",
+    "blocNonCompris": "Pas compris : touche pour corriger",
+    "blocSansResultat": "Pas de résultat : touche pour corriger",
+    "blocArrete": "Calcul arrêté : trop long",
+    "blocErreur": "Erreur : touche pour corriger",
+    "blocFonction": "Fonction définie",
+    "modeleManquant": "Pour lire l'écriture, télécharge le modèle dans les réglages.",
+    "modeleTitre": "Lecture de l'écriture",
+    "modeleExplication": "Le modèle n'est pas dans l'application. Il se télécharge une seule fois depuis la page de son auteur (Hugging Face, licence MIT). Ton écriture reste sur l'appareil.",
+    "modeleTaille": "{mo} Mo à télécharger",
+    "@modeleTaille": {
+        "placeholders": {
+            "mo": {
+                "type": "int"
+            }
+        }
+    },
+    "modeleTelecharger": "Télécharger le modèle",
+    "modeleEnCours": "Téléchargement… {pourcent} %",
+    "@modeleEnCours": {
+        "placeholders": {
+            "pourcent": {
+                "type": "int"
+            }
+        }
+    },
+    "modelePresent": "Modèle installé",
+    "modeleEchec": "Le téléchargement a échoué. Réessaie.",
+    "modeleSupprimer": "Supprimer le modèle",
+    "blocVrai": "Vrai",
+    "blocFaux": "Faux"
 }

@@ -13,6 +13,7 @@ class PointEncre {
     (json[0] as num).toDouble(),
     (json[1] as num).toDouble(),
     (json[2] as num).toDouble(),
+    tempsMs: json.length > 3 ? (json[3] as num).toDouble() : null,
   );
 
   final double x;
@@ -22,23 +23,46 @@ class PointEncre {
 
   Offset get position => Offset(x, y);
 
-  List<double> versJson() => [x, y, pression];
+  List<double> versJson() => [x, y, pression, ?tempsMs];
 }
 
 /// Un trait : les points **bruts**, qui servent à la reconnaissance, et ce qui
 /// est dessiné, lissé ou remplacé par une forme nette.
 class Trait {
-  new(PointEncre premier, {this.stylo = 0, this.auStylet = false})
-    : points = [premier],
+  new(PointEncre premier, {this.stylo = 0, this.auStylet = false, int? id})
+    : id = id ?? _idSuivant++,
+      points = [premier],
       _lisses = [] {
+    if (this.id >= _idSuivant) _idSuivant = this.id + 1;
     _ajouterLisse(premier);
   }
 
+  factory depuisDocument(Map<String, dynamic> json) {
+    final bruts = (json['points'] as List<dynamic>).cast<List<dynamic>>();
+    final trait = Trait(
+      PointEncre.depuisJson(bruts.first),
+      stylo: json['stylo'] as int? ?? 0,
+      auStylet: json['auStylet'] as bool? ?? false,
+      id: json['id'] as int?,
+    );
+    bruts.skip(1).map(PointEncre.depuisJson).forEach(trait._ajouter);
+    final forme = json['forme'] as Map<String, dynamic>?;
+    trait
+      ..forme = forme == null ? null : formeDepuisJson(forme)
+      .._terminer();
+    return trait;
+  }
+
   new _avecForme(Trait source, Forme this.forme)
-    : points = source.points,
+    : id = source.id,
+      points = source.points,
       _lisses = source._lisses,
       stylo = source.stylo,
       auStylet = source.auStylet;
+
+  /// Identifiant stable : désigne ce trait dans un bloc et dans la sauvegarde.
+  final int id;
+  static int _idSuivant = 0;
 
   final List<PointEncre> points;
   final List<PointVector> _lisses;
@@ -67,6 +91,14 @@ class Trait {
     _termine = true;
     _contour = null;
   }
+
+  Map<String, dynamic> versDocument() => {
+    'id': id,
+    'stylo': stylo,
+    'auStylet': auStylet,
+    'points': [for (final p in points) p.versJson()],
+    if (forme != null) 'forme': formeVersJson(forme!),
+  };
 
   /// Ce que touche la gomme : la forme si le trait en est devenu une.
   List<Offset> get pointsVisibles =>
@@ -209,6 +241,19 @@ class Encre {
       if (p.y > bas) bas = p.y;
     }
     return Rect.fromLTRB(gauche, haut, droite, bas);
+  }
+
+  /// Le contenu, pour la sauvegarde, sans l'historique d'annulation.
+  List<Map<String, dynamic>> versDocument() => [
+    for (final trait in _traits) trait.versDocument(),
+  ];
+
+  void chargerDocument(List<dynamic> document) {
+    _annulations.clear();
+    _retablissements.clear();
+    _traits
+      ..clear()
+      ..addAll(document.cast<Map<String, dynamic>>().map(Trait.depuisDocument));
   }
 
   List<List<List<double>>> versJson() => [

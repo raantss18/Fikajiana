@@ -53,6 +53,41 @@ List<Offset> _segment(Offset a, Offset b) {
   return [for (var i = 0; i <= n; i++) Offset.lerp(a, b, i / n)!];
 }
 
+List<double> _vers(Offset p) => [p.dx, p.dy];
+Offset _depuis(dynamic p) {
+  final l = (p as List<dynamic>).cast<num>();
+  return Offset(l[0].toDouble(), l[1].toDouble());
+}
+
+Map<String, dynamic> formeVersJson(Forme forme) => switch (forme) {
+  FormeLigne(:final a, :final b) => {
+    'type': 'ligne',
+    'a': _vers(a),
+    'b': _vers(b),
+  },
+  FormeCercle(:final centre, :final rayon) => {
+    'type': 'cercle',
+    'centre': _vers(centre),
+    'rayon': rayon,
+  },
+  FormePolygone(:final sommets) => {
+    'type': 'polygone',
+    'sommets': sommets.map(_vers).toList(),
+  },
+};
+
+Forme formeDepuisJson(Map<String, dynamic> json) => switch (json['type']) {
+  'ligne' => FormeLigne(_depuis(json['a']), _depuis(json['b'])),
+  'cercle' => FormeCercle(
+    _depuis(json['centre']),
+    (json['rayon'] as num).toDouble(),
+  ),
+  'polygone' => FormePolygone(
+    (json['sommets'] as List<dynamic>).map(_depuis).toList(),
+  ),
+  _ => throw FormatException('forme inconnue : ${json['type']}'),
+};
+
 const double _longueurMinimale = 24;
 const double _ecartLigne = 0.05;
 const double _ouvertureFermee = 0.2;

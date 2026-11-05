@@ -71,12 +71,16 @@ class Lecture {
 class Pix2Text {
   new _(this._encodeur, this._decodeur, this._decodeurTexte);
 
-  /// [dossier] contient les deux modèles int8 et `tokenizer.json`.
+  /// [dossier] contient les deux modèles et `tokenizer.json`. Les versions int8
+  /// servent aux essais par `adb` ; l'app télécharge celles de l'auteur.
   static Future<Pix2Text> ouvrir(String dossier) async {
     final ort = OnnxRuntime();
+    final suffixe = File('$dossier/encoder_model_int8.onnx').existsSync()
+        ? '_int8'
+        : '';
     return Pix2Text._(
-      await ort.createSession('$dossier/encoder_model_int8.onnx'),
-      await ort.createSession('$dossier/decoder_model_int8.onnx'),
+      await ort.createSession('$dossier/encoder_model$suffixe.onnx'),
+      await ort.createSession('$dossier/decoder_model$suffixe.onnx'),
       Decodeur.depuisTokenizerJson(
         await File('$dossier/tokenizer.json').readAsString(),
       ),
