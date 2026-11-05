@@ -66,7 +66,7 @@ class _EcranMesureState extends State<_EcranMesure> {
       _rapport = [
         'Android : $evenements événements, $points points',
         'Flutter : $_pointsFlutter points reçus au stylet ($part %)',
-        'Écart médian entre points : ${mediane / 1000} ms ; le pire : ${pire / 1000} ms',
+        'Écart médian : ${mediane / 1000} ms ; le pire : ${pire / 1000} ms',
         if (mediane > 0)
           'Soit ${(1000000 / mediane).round()} points par seconde',
       ].join('\n');
