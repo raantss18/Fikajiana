@@ -26,7 +26,8 @@
 ## Étape 2 — Spikes de risque (avant toute interface)
 
 - ⏳ T1 OCR : Pix2Text-MFR ONNX int8 sur 50 expressions manuscrites maison (taux exact, latence, mémoire, Mo)
-- ⏳ T2 Giac : compilation NDK arm64 + x86_64, appel FFI `diff(sin(x)^2,x)` → LaTeX ; taille de la .so
+- 🔄 T2 Giac (`docs/recherche/spike-giac.md`) : compilé pour arm64 + x86_64 (19,1 et 21,1 Mo), appel FFI réussi sur émulateur.
+  Reste : essai sur appareil arm64 réel, annulation d'un calcul long, signaler le dépassement de tampon à Giac
 - ⏳ T3 Segmentation : système à accolade et matrice 2×2 découpés correctement sur 20 essais
 - 🔄 Squelette `app/` + `packages/fikajiana_math/` : fr/en, thème M3 clair/sombre, navigation ← ≠ Accueil (ADR 0009) ;
   analyse et tests verts, essai sur émulateur (`docs/captures/squelette.png`), fusionné.
