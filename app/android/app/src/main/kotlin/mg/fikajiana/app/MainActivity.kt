@@ -2,11 +2,16 @@ package mg.fikajiana.app
 
 import android.app.ActivityManager
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
+import android.provider.Settings
 import android.view.MotionEvent
+import androidx.core.content.FileProvider
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import java.io.File
 
 class MainActivity : FlutterActivity() {
     private var evenementsStylet = 0
@@ -23,6 +28,35 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        // Version installée et installateur d'Android pour les mises à jour (ADR 0015).
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "fikajiana/systeme")
+            .setMethodCallHandler { appel, resultat ->
+                val info = packageManager.getPackageInfo(packageName, 0)
+                when (appel.method) {
+                    "build" -> resultat.success(
+                        if (Build.VERSION.SDK_INT >= 28) info.longVersionCode.toInt()
+                        else @Suppress("DEPRECATION") info.versionCode,
+                    )
+                    "version" -> resultat.success(info.versionName)
+                    "installer" -> {
+                        // Sans l'autorisation, on ouvre le réglage : l'utilisateur l'accorde puis recommence.
+                        if (!packageManager.canRequestPackageInstalls()) {
+                            startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName")))
+                            resultat.success(false)
+                        } else {
+                            val fichier = File(appel.argument<String>("chemin")!!)
+                            val uri = FileProvider.getUriForFile(this, "$packageName.updates", fichier)
+                            @Suppress("DEPRECATION")
+                            startActivity(Intent(Intent.ACTION_INSTALL_PACKAGE).apply {
+                                setDataAndType(uri, "application/vnd.android.package-archive")
+                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
+                            })
+                            resultat.success(true)
+                        }
+                    }
+                    else -> resultat.notImplemented()
+                }
+            }
         // Pour l'écran d'essai : raconte les derniers arrêts de l'app, rien ne quitte l'appareil.
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "fikajiana/essai")
             .setMethodCallHandler { appel, resultat ->

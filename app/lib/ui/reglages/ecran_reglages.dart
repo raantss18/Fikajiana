@@ -1,12 +1,14 @@
 import 'dart:async';
 
 import 'package:fikajiana/l10n/l10n.dart';
+import 'package:fikajiana/mises_a_jour/mise_a_jour.dart';
 import 'package:fikajiana/reconnaissance/modele.dart';
 import 'package:fikajiana/reglages/reglages.dart';
 import 'package:fikajiana/reglages/support.dart';
 import 'package:fikajiana/ui/services.dart';
 import 'package:fikajiana/ui/theme/espacement.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 
 class EcranReglages extends StatelessWidget {
   const new({super.key});
@@ -71,6 +73,10 @@ class EcranReglages extends StatelessWidget {
           ),
           const Divider(),
           const _SectionModele(),
+          const Divider(),
+          const _SectionMiseAJour(),
+          const Divider(),
+          const _SectionAPropos(),
         ],
       ),
     );
@@ -131,6 +137,118 @@ class _SectionModele extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _SectionMiseAJour extends StatefulWidget {
+  const new();
+
+  @override
+  State<_SectionMiseAJour> createState() => _SectionMiseAJourState();
+}
+
+class _SectionMiseAJourState extends State<_SectionMiseAJour> {
+  final _maj = MiseAJour();
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_maj.lireVersion());
+  }
+
+  @override
+  void dispose() {
+    _maj.dispose();
+    super.dispose();
+  }
+
+  Future<void> _installer() async {
+    final cache = await getTemporaryDirectory();
+    await _maj.installer(cache.path);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final langue = Localizations.localeOf(context).languageCode;
+    return ListenableBuilder(
+      listenable: _maj,
+      builder: (context, _) {
+        final publiee = _maj.publiee;
+        final occupe =
+            _maj.etat == EtatMiseAJour.recherche ||
+            _maj.etat == EtatMiseAJour.telechargement;
+        return Padding(
+          padding: const EdgeInsets.all(AppEspacement.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.majTitre,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: AppEspacement.sm),
+              if (_maj.versionInstallee != null)
+                Text(l10n.majInstallee(_maj.versionInstallee!)),
+              Text(l10n.majExplication),
+              const SizedBox(height: AppEspacement.sm),
+              if (_maj.etat == EtatMiseAJour.aJour) Text(l10n.majAJour),
+              if (_maj.etat == EtatMiseAJour.echec) Text(l10n.majEchec),
+              if (_maj.etat == EtatMiseAJour.installation)
+                Text(l10n.majInstallation),
+              if (_maj.etat == EtatMiseAJour.telechargement)
+                LinearProgressIndicator(value: _maj.progression),
+              if (publiee != null) ...[
+                Text(l10n.majDisponible(publiee.version)),
+                Text(publiee.notesPour(langue)),
+                const SizedBox(height: AppEspacement.sm),
+              ],
+              FilledButton(
+                onPressed: occupe
+                    ? null
+                    : publiee != null
+                    ? () => unawaited(_installer())
+                    : () => unawaited(_maj.rechercher()),
+                child: Text(
+                  publiee != null ? l10n.majInstaller : l10n.majRechercher,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _SectionAPropos extends StatelessWidget {
+  const new();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return Padding(
+      padding: const EdgeInsets.all(AppEspacement.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.aProposTitre,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: AppEspacement.sm),
+          SelectableText(l10n.aProposTexte),
+          TextButton(
+            onPressed: () => showLicensePage(
+              context: context,
+              applicationName: l10n.appTitle,
+              applicationLegalese: l10n.aProposTexte,
+            ),
+            child: Text(l10n.aProposLicences),
+          ),
+        ],
+      ),
     );
   }
 }

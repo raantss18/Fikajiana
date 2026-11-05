@@ -69,5 +69,31 @@
     "modeleEchec": "Le téléchargement a échoué. Réessaie.",
     "modeleSupprimer": "Supprimer le modèle",
     "blocVrai": "Vrai",
-    "blocFaux": "Faux"
+    "blocFaux": "Faux",
+    "majTitre": "Mises à jour",
+    "majInstallee": "Version installée : {version}",
+    "@majInstallee": {
+        "placeholders": {
+            "version": {
+                "type": "String"
+            }
+        }
+    },
+    "majExplication": "L'application ne cherche une nouvelle version que lorsque tu le demandes.",
+    "majRechercher": "Rechercher une mise à jour",
+    "majAJour": "L'application est à jour.",
+    "majEchec": "Recherche impossible. Vérifie le réseau et réessaie.",
+    "majDisponible": "Version {version} disponible",
+    "@majDisponible": {
+        "placeholders": {
+            "version": {
+                "type": "String"
+            }
+        }
+    },
+    "majInstaller": "Télécharger et installer",
+    "majInstallation": "Suis les étapes de l'installateur d'Android.",
+    "aProposTitre": "À propos",
+    "aProposTexte": "Logiciel libre sous licence GPL-3.0-or-later. Code source : github.com/raantss18/Fikajiana. Calcul formel : Giac (GPL-3), GMP et MPFR (LGPL). Le modèle de lecture, facultatif, est publié par son auteur sous licence MIT ; l'origine de ses données d'entraînement n'est pas publiée.",
+    "aProposLicences": "Voir les licences"
 }

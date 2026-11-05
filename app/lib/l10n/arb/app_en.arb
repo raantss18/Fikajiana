@@ -233,5 +233,63 @@
     },
     "@blocFaux": {
         "description": "An equality without unknown does not hold"
+    },
+    "majTitre": "Updates",
+    "@majTitre": {
+        "description": "Settings: updates and about"
+    },
+    "majInstallee": "Installed version: {version}",
+    "@majInstallee": {
+        "placeholders": {
+            "version": {
+                "type": "String"
+            }
+        },
+        "description": "Settings: version number"
+    },
+    "majExplication": "The app looks for a new version only when you ask.",
+    "@majExplication": {
+        "description": "Settings: updates and about"
+    },
+    "majRechercher": "Check for updates",
+    "@majRechercher": {
+        "description": "Settings: updates and about"
+    },
+    "majAJour": "The app is up to date.",
+    "@majAJour": {
+        "description": "Settings: updates and about"
+    },
+    "majEchec": "Could not check. Verify the network and try again.",
+    "@majEchec": {
+        "description": "Settings: updates and about"
+    },
+    "majDisponible": "Version {version} available",
+    "@majDisponible": {
+        "placeholders": {
+            "version": {
+                "type": "String"
+            }
+        },
+        "description": "Settings: version number"
+    },
+    "majInstaller": "Download and install",
+    "@majInstaller": {
+        "description": "Settings: updates and about"
+    },
+    "majInstallation": "Follow the steps of the Android installer.",
+    "@majInstallation": {
+        "description": "Settings: updates and about"
+    },
+    "aProposTitre": "About",
+    "@aProposTitre": {
+        "description": "Settings: updates and about"
+    },
+    "aProposTexte": "Free software under GPL-3.0-or-later. Source code: github.com/raantss18/Fikajiana. Computer algebra: Giac (GPL-3), GMP and MPFR (LGPL). The optional reading model is published by its author under the MIT licence; the origin of its training data is not published.",
+    "@aProposTexte": {
+        "description": "Settings: updates and about"
+    },
+    "aProposLicences": "View licences",
+    "@aProposLicences": {
+        "description": "Settings: updates and about"
     }
 }
