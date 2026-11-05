@@ -1,6 +1,6 @@
 # 0011 — Langages : pas de Rust pour l'instant
 
-- **Date** : 2026-11-05 · **Statut** : proposé à Antsa (`docs/recherche/ambition.md`)
+- **Date** : 2026-11-05 · **Statut** : accepté, décision confiée par Antsa (`docs/recherche/ambition.md`)
 - **Décision** : interface, graphe, géométrie et arbre mathématique en **Dart** ; calcul formel en **C++** (Giac, FFI) ; **Kotlin** seulement
   si la mesure de latence impose une vue d'encre native. Pas de Rust.
 - **Raison** : Giac reste en C++ dans tous les cas ; la latence tient au front buffer d'Android, pas au langage ; Dart suit Rust de près
