@@ -1,4 +1,5 @@
 import 'package:fikajiana/ui/navigation/page_destination.dart';
+import 'package:fikajiana/ui/theme/marque.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -77,6 +78,25 @@ void main() {
         ),
         findsNothing,
       );
+    });
+  });
+
+  group('marque', () {
+    testWidgets('le π est sur la Feuille, décoratif et sans libellé', (
+      t,
+    ) async {
+      await t.pumpFikajiana();
+      expect(find.byType(MarquePi), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(MarquePi),
+          matching: find.byType(ExcludeSemantics),
+        ),
+        findsOneWidget,
+      );
+      await t.tap(find.text('Graphe'));
+      await t.pumpAndSettle();
+      expect(find.byType(MarquePi), findsNothing);
     });
   });
 
