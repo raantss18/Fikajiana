@@ -43,10 +43,49 @@
 
 - ⏳ Feuille d'écriture → reconnaissance → LaTeX affiché → résultat exact Giac → valeur approchée
 
-## Étape 4 — Élargir ⏳
+## Feuille de route (étude : `docs/recherche/ambition.md`, ADR 0011)
 
-- ⏳ Équations et systèmes · fonctions + graphe · dérivées, limites, intégrales, suites · polynômes · matrices
+> Chaque ligne se fait sur le Pad 7, mesure à l'appui. Pas de promesse « comme Mathematica » ni « comme MyScript » : voir l'étude.
+
+### A. Moteur de calcul
+
+- ⏳ Essayer `timeout N` et `ctrl_c` sur un calcul long (Pad 7) ; sinon Giac dans un service `:calcul`, tué au délai
+- ⏳ Façade du moteur : `undef`, `infinity`, `list[...]`, guillemets de `latex()`, un seul appel à la fois, reprise de l'état
+- ⏳ Banc de tests croisé avec SymPy : dérivées, primitives, limites, séries, polynômes, matrices, équations, systèmes, EDO
+- ⏳ Liste publique et honnête de ce que l'app sait faire ou non ; combler les manques seulement par règles ciblées
+- ❌ Écarté : SageMath, Maxima (lourds), Symbolica (licence), calcul formel sur GPU (aucune preuve d'intérêt)
+
+### B. Encre et correction
+
+- ⏳ Spike latence au stylet, caméra rapide sur Pad 7 : `Listener`, paquet `stylet`, `LowLatencyCanvasView` en vue native. Aucun objectif chiffré avant
+- ⏳ Mesurer la perte de points (Flutter ne lit pas l'historique des `MotionEvent`)
+- ⏳ Rendu du trait : filtre 1€ et `perfect_freehand`, pression ; les points bruts restent pour la reconnaissance
+- ⏳ Formes au maintien du stylet : ligne, cercle, rectangle, triangle ($1 et moindres carrés), annulable
+- ⏳ Gestes : rature et barré pour effacer ; ajustement des courbes au levé (Schneider, licence à vérifier ou réécriture)
+- ❌ Écarté : correction automatique de l'écriture en continu (aucun des produits étudiés ne la documente, et elle gênerait la reconnaissance)
+
+### C. Reconnaissance
+
+- ⏳ Nouvel essai au trait fin sur d'autres expressions, pour un chiffre sans biais (37/50 est optimiste)
+- ⏳ Alternatives proposées à la correction ; corriger à la main un symbole mal lu
+- ⏳ Reconnaissance en continu à la pause ; rendu `flutter_math_fork` à la place ou à côté de l'écriture
+- ❓ Provenance des poids Pix2Text : réponse de l'auteur (ticket n° 209) ou modèle maison sur encre synthétique et collecte CC0
+
+### D. Visuel
+
+- ❓ Trois supports au choix dans les réglages : feuille blanche, tableau noir, cahier
+- ⏳ Choix de la couleur du stylo, gomme à portée de main
+- ❓ Police de texte libre
+- ⏳ Écran « Réglages » ; composants ; accessibilité (TalkBack) ; essais téléphone et tablette
+
+### E. Graphique et géométrie
+
+- ⏳ Traceur Dart : échantillonnage adaptatif, quadtree et marching squares, mesure du budget d'image sur le Pad 7
+- ⏳ Fiabilité des implicites : intervalles façon Tupper, à comparer à `graphest` (MIT)
+- ⏳ `FragmentProgram` en option pour aperçus et fonds denses, avec repli CPU ; pas de `flutter_gpu` tant qu'il est en préversion
 - ⏳ Géométrie dynamique (outils de construction + formes dessinées reconnues)
-- 🔄 Identité : couleurs, π, icône (ADR 0010, `docs/design.md`). Reste : police de texte, composants
-- ⏳ Accessibilité (TalkBack), clair/sombre, téléphone/tablette
-- ⏳ Publication : GitHub Releases signées, puis F-Droid (Giac, GMP, MPFR compilés depuis les sources)
+
+### F. Publication
+
+- ⏳ Clé de signature ; GitHub Releases signées, puis F-Droid (Giac, GMP, MPFR compilés depuis les sources)
+- ⏳ Essai sur le Poco F8 Pro (rapport `0.1.0-essai.2` attendu)
