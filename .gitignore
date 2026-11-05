@@ -14,6 +14,8 @@ models/**/*.bin
 .vscode/
 .claude/
 
+# Modèle : poids et configuration, téléchargés par models/preparer_pix2text.py
+models/pix2text-mfr/
 # Sources et produits de compilation de Giac
 native/giac/sources/
 native/giac/construit/

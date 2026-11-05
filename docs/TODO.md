@@ -30,7 +30,7 @@
 
 ## Étape 2 — Spikes de risque (avant toute interface)
 
-- ⏳ T1 OCR : Pix2Text-MFR ONNX int8 sur 50 expressions manuscrites maison (taux exact, latence, mémoire, Mo)
+- 🔄 T1 OCR (`docs/recherche/spike-ocr.md`) : 37/50 sur le Pad 7 après correction du trait (16/50 avant). Reste : nouvel essai sur d'autres expressions
 - 🔄 T2 Giac (`docs/recherche/spike-giac.md`) : compilé pour arm64 + x86_64 (19,9 et 22,0 Mo), FFI réussi sur le Xiaomi Pad 7.
   Reste : essai sur le Poco F8 Pro, annulation d'un calcul long, signaler le dépassement de tampon à Giac
 - ⏳ T3 Segmentation : système à accolade et matrice 2×2 découpés correctement sur 20 essais
