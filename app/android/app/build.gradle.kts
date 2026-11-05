@@ -57,7 +57,9 @@ android {
 
     buildTypes {
         getByName("release") {
-            signingConfig = signingConfigs.getByName("release")
+            // Sans clé (CI, essais locaux), l'APK est signé avec la clé de débogage : non diffusable.
+            val cleDisponible = System.getenv("ANDROID_KEYSTORE_PATH") != null || keystorePropertiesFile.exists()
+            signingConfig = signingConfigs.getByName(if (cleDisponible) "release" else "debug")
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android.txt"),

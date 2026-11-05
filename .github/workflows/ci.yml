@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: 3.47.9
+  VERY_GOOD_VERSION: 1.6.0
+
+jobs:
+  analyse:
+    name: Analyse et tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - name: Very Good CLI
+        run: |
+          dart pub global activate very_good_cli ${{ env.VERY_GOOD_VERSION }}
+          echo "$HOME/.pub-cache/bin" >> "$GITHUB_PATH"
+      - name: Application
+        working-directory: app
+        run: |
+          flutter pub get
+          dart format --set-exit-if-changed lib test
+          flutter analyze
+          very_good test
+      - name: Noyau
+        working-directory: packages/fikajiana_math
+        run: |
+          dart pub get
+          dart format --set-exit-if-changed lib test
+          dart analyze
+          very_good dart test
