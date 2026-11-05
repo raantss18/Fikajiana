@@ -7,4 +7,5 @@
   (https://en.wikipedia.org/wiki/Xcas) ; wrappers Android existants (https://github.com/geogebra/giac).
 - **Calcul instantané** : évaluateur numérique en Dart pour l'aperçu pendant l'écriture.
 - **Portage** : `native/giac/construire.sh`, NDK 28, sans Crystax, sans pthread (`pthread_cancel` absent de Bionic), sans `SMARTPTR64` (étiquettes de pointeurs arm64).
+- **Ambition** : pas d'équivalent de Mathematica ni de SageMath en léger et hors ligne (`docs/recherche/ambition.md`).
 - **Risque** : annulation d'un calcul long non prouvée. Si elle échoue, repli SymPy + Chaquopy (MIT).
