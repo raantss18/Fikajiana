@@ -29,8 +29,8 @@ Aucune pour l'instant.
 - 🔄 Squelette `app/` + `packages/fikajiana_math/` : fr/en, thème M3 clair/sombre, navigation ← ≠ Accueil (ADR 0009) ;
   analyse et tests verts, essai sur émulateur (`docs/captures/squelette.png`). PR ouverte, à valider par Antsa.
   Reste : essai sur appareils réels (non branchés), icône d'application propre (celle du gabarit est encore là).
-- ⏳ CI GitHub Actions : analyse, tests, APK **release** arm64 + x86_64 (signature et ProGuard à vérifier), émulateurs
-  téléphone et tablette, captures en artefact ; corriger la taille de tablette de l'ADR 0006
+- 🔄 CI GitHub Actions (`.github/workflows/ci.yml`, `tool/essai_emulateur.sh`) : analyse, tests, APK release arm64 +
+  x86_64, émulateurs téléphone et tablette, captures en artefact. Script essayé en local ; exécution verte sur GitHub à obtenir.
 
 ## Étape 3 — Tranche verticale « écrire un calcul » ⏳
 
