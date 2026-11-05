@@ -1,0 +1,15 @@
+# Clés de signature et secrets
+release-keys/
+*.jks
+*.keystore
+key.properties
+
+# Poids de modèles (fiche et SHA-256 dans models/)
+models/**/*.onnx
+models/**/*.bin
+
+# Ordinateur
+.DS_Store
+.idea/
+.vscode/
+.claude/
