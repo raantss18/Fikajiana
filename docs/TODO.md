@@ -25,7 +25,7 @@
 
 ## Étape 2 — Spikes de risque (avant toute interface)
 
-- ⏳ T1 OCR : Pix2Text-MFR ONNX int8 sur 50 expressions manuscrites maison (taux exact, latence, mémoire, Mo)
+- 🔄 T1 OCR (`docs/recherche/spike-ocr.md`) : chaîne complète sur le Pad 7, `1/2` lu en 284 ms. Reste : 50 expressions écrites par Antsa
 - ⏳ T2 Giac : compilation NDK arm64 + x86_64, appel FFI `diff(sin(x)^2,x)` → LaTeX ; taille de la .so
 - ⏳ T3 Segmentation : système à accolade et matrice 2×2 découpés correctement sur 20 essais
 - 🔄 Squelette `app/` + `packages/fikajiana_math/` : fr/en, thème M3 clair/sombre, navigation ← ≠ Accueil (ADR 0009) ;
