@@ -21,7 +21,8 @@
 - ✅ `docs/recherche/ocr-manuscrit.md`, `docs/recherche/moteurs.md`
 - ✅ ADR 0001 licence · 0002 Flutter · 0003 OCR (proposé) · 0004 Giac (proposé) · 0005 graphe/géométrie maison · 0006 CI + émulateur
 - ✅ `docs/architecture.md`, `docs/design.md` (orientation)
-- ⏳ Revérifier les points « extrait » quand huggingface.co / arxiv.org / gnu.org sont accessibles
+- ✅ Points « extrait » revérifiés (`docs/recherche/reverification.md`), sauf Maxima
+- ❓ Provenance des poids Pix2Text-MFR : pas de diffusion publique sans réponse de l'auteur ou modèle maison
 
 ## Étape 2 — Spikes de risque (avant toute interface)
 

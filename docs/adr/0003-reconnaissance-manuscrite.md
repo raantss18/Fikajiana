@@ -7,4 +7,6 @@
 - **Exclus** : ML Kit, MyScript (non libres) ; TAMER/ICAL/CoMER (sans licence) ; poids entraînés sur MathWriting
   ou CROHME (CC BY-NC-SA).
 - **Plus tard** : modèle d'encre maison sur données libres (synthétiques + collecte CC0).
+- **Risque** : provenance des poids Pix2Text-MFR non publiée (`docs/recherche/reverification.md`) : pas de diffusion
+  publique de ces poids tant qu'elle n'est pas établie ou qu'un modèle maison ne les remplace pas.
 - **Toujours** : ce qui est compris est affiché (LaTeX rendu) et corrigeable.
