@@ -38,7 +38,8 @@ inactif depuis ≈ 2 ans).
 
 - **Vérifié** (pages sources) : licences MathWriting, TexTeller (code), Pix2Text (dépôt), UniMERNet, PosFormer,
   BTTR, Texify, Surya, MixTeX, PaddleOCR ; ExpRate TAMER et ICAL ; plugins Flutter.
-- **Supposé** (extraits) : taille ONNX et licence MIT des poids Pix2Text-MFR, CER MathWriting, taille TexTeller.
+- **Vérifié** (API Hugging Face, 2026-11-05) : poids Pix2Text-MFR sous licence MIT, fichiers `encoder_model.onnx` + `decoder_model.onnx`.
+- **Supposé** (extraits) : taille ONNX Pix2Text-MFR, CER MathWriting, taille TexTeller.
 - **Reste à tester** : qualité de Pix2Text-MFR sur notre encre rastérisée, systèmes et matrices, latence et mémoire
   sur appareil réel, taille APK.
 

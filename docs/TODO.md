@@ -11,8 +11,8 @@ Aucune pour l'instant.
 
 - ✅ Dépôt vidé du projet Unity ; `CLAUDE.md`, `docs/vision.md`, `LICENSE` (GPL-3.0-or-later)
 - ✅ Dépôt renommé `raantss18/Fikajiana` par Antsa (2026-11-05)
-- ❓ **Antsa** : langues de l'interface (proposé : français, puis malgache et anglais)
-- ❓ **Antsa** : appareils de test réels (tablette avec stylet ? modèle ?)
+- ✅ Langues : français et anglais (ADR 0007)
+- ✅ Appareils : Xiaomi Pad 7 + stylet, Poco F8 Pro (ADR 0008)
 
 ## Étape 1 — Recherche et choix ✅ (à confirmer par mesure)
 
