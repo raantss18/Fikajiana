@@ -17,10 +17,11 @@ target_include_directories(fikajiana_giac BEFORE PRIVATE ${PREFIXE}/include ${GI
 
 # Définitions du build Android de Giac (build.gradle) et de son CMakeLists.txt, sans pthread :
 # Giac s'en sert pour annuler un calcul par pthread_cancel, absent de Bionic (docs/recherche/spike-giac.md).
+# Sans SMARTPTR64 : il efface les bits hauts des pointeurs, où Android 11+ met une étiquette sur arm64.
 target_compile_definitions(fikajiana_giac PRIVATE
   IN_GIAC GIAC_GGB GIAC_GENERIC_CONSTANTS HAVE_NO_HOME_DIRECTORY TIMEOUT NO_BSD PIC
   HAVE_UNISTD_H HAVE_SYSCONF HAVE_SYS_TIMES_H HAVE_SYS_TIME_H HAVE_LIBMPFR
-  SMARTPTR64 SIZEOF_LONG=8 SIZEOF_VOID_P=8 VERSION="1.2.3")
+  FIKAJIANA_SANS_SMARTPTR64 DOUBLEVAL SIZEOF_LONG=8 SIZEOF_VOID_P=8 VERSION="1.2.3")
 
 target_compile_options(fikajiana_giac PRIVATE -O2 -fexceptions -frtti -fno-strict-aliasing -fPIC -w
   $<$<COMPILE_LANGUAGE:CXX>:-std=gnu++11>)

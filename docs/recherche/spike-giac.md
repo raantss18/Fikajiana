@@ -1,7 +1,7 @@
 # Spike T2 — Giac sur Android (2026-11-05)
 
-> Résumé : Giac compile sans Crystax avec le NDK 28 pour arm64-v8a et x86_64, et l'appel FFI fonctionne sur émulateur.
-> L'exécution sur arm64 et l'annulation d'un calcul restent à prouver.
+> Résumé : Giac compile sans Crystax avec le NDK 28 pour arm64-v8a et x86_64, et l'appel FFI fonctionne sur le Xiaomi Pad 7.
+> L'annulation d'un calcul reste à prouver.
 
 ## Recette
 
@@ -15,22 +15,26 @@ Durée de la compilation de Giac sur cet ordinateur : 1 min 8 s.
    `HAVE_LIBPTHREAD`. Ces définitions sont retirées.
 2. **Correctif** `correctifs/0001-global-tampon-fread.patch` : `fread` de 32 octets dans un tampon de 24 (`global.cc`,
    `dfu_send_scriptstore`). Dépassement de tampon réel, refusé par le compilateur. À signaler en amont.
+3. **Sans `SMARTPTR64`** (`correctifs/0002-first-sans-smartptr64.patch`, avec `DOUBLEVAL`) : ce mode efface les bits hauts
+   des pointeurs. Sur arm64, Android 11+ y met une étiquette, vérifiée à la libération de la mémoire.
+   Mesuré sur le Pad 7 avec la première version : `Pointer tag for 0x7383b10c80 was truncated`, `SIGABRT`, dans `free`
+   appelé depuis `libfikajiana_giac.so`. L'émulateur ne le montre pas, même avec l'APK arm64 traduit :
+   **seul un appareil arm64 réel valide ce point**. L'option `allowNativeHeapPointerTagging` n'est pas utilisée :
+   Android annonce son retrait (https://source.android.com/docs/security/test/tagged-pointers).
 
 ## Mesures
 
 | Mesure | arm64-v8a | x86_64 |
 |---|---|---|
-| `libfikajiana_giac.so` | 19,06 Mo | 21,11 Mo |
+| `libfikajiana_giac.so` | 19,91 Mo | 22,02 Mo |
 | Alignement des segments | 16 Ko | 16 Ko |
-| APK release avec Giac | 34,8 Mo | 38,3 Mo |
+| APK release avec Giac et écran d'essai | 36,7 Mo | 40,3 Mo |
 | APK release sans Giac | 15,8 Mo | 17,2 Mo |
-| Exécution | **non essayée** | émulateur Android 16, rendu logiciel |
+| Exécution | **Xiaomi Pad 7** (Android 16) | émulateur Android 16, rendu logiciel |
 
-Premier appel (ouverture de la bibliothèque, isolat, calcul de `diff(sin(x)^2,x)`), 3 lancements : 2 416, 99 et 668 ms.
-Appels suivants : le plus souvent de 0 à 19 ms, avec un écart isolé à 946 ms. Ces chiffres d'émulateur ne valent pas
-pour un appareil réel.
-
-Mémoire (`dumpsys meminfo`, TOTAL PSS) : 73,9 Mo après les 13 calculs, 66,3 Mo sans aucun appel à Giac.
+**Xiaomi Pad 7** : premier appel (bibliothèque, isolat, `diff(sin(x)^2,x)`) 48 et 16 ms sur 2 lancements relevés ; appels
+suivants de 0 à 6 ms. Les 13 calculs aboutissent, sans erreur dans le journal. Mémoire : PSS de 244 à 257 Mo en plein écran
+après les calculs, RSS de 195 à 204 Mo vu par l'app. Sur l'émulateur, avant ce correctif : premier appel 99 à 2 416 ms.
 
 ## Résultats comparés à SymPy 1.14.0
 
@@ -54,15 +58,16 @@ de `latex()` est entre guillemets ; `solve` rend `list[…]` et le caractère `�
 ## Vérifié / Supposé / Reste à tester
 
 - **Vérifié** : compilation des deux ABI ; `.so` arm64 de type AArch64, deux symboles exportés, dépendances limitées à
-  `liblog`, `libm`, `libdl` et `libc` ; appel FFI et 13 calculs dans un isolat sur émulateur x86_64 ; sommes SHA-256 de GMP
+  `liblog`, `libm`, `libdl` et `libc` ; appel FFI et 13 calculs dans un isolat sur le Xiaomi Pad 7 et sur émulateur ; sommes SHA-256 de GMP
   et MPFR inscrites dans la recette ; mention GPL v3 ou ultérieure dans l'en-tête de `gen.cc`, et mention GPL dans 114 fichiers.
-- **Supposé** : le code arm64 se comporte comme le x86_64 ; retirer pthread n'enlève pas de fonction mathématique.
+- **Supposé** : retirer pthread et `SMARTPTR64` n'enlève pas de fonction mathématique et ne change pas les résultats
+  au-delà des 13 calculs essayés ; `DOUBLEVAL` double la taille de `gen` (16 octets, voir `gen.h`), effet non mesuré.
 - **Reste à tester** :
-  1. **Exécution sur le Xiaomi Pad 7 et le Poco F8 Pro** : latence, mémoire.
+  1. **Poco F8 Pro** : même essai, avec l'APK de la version `0.1.0-essai.2`.
   2. **Annulation** : sans pthread, rien ne prouve qu'on puisse arrêter un calcul très long. Pistes : `ctrl_c` de Giac
      (non essayé), processus séparé. À résoudre avant que l'interface propose des calculs lourds.
   3. Signatures GNU de GMP et MPFR (fichiers `.sig` non vérifiés) ; le dépôt `geogebra/giac` n'a pas de fichier `COPYING`
-     et l'API GitHub ne lui attribue aucune licence : licence globale à confirmer sur la page de Xcas.
+     et l'API GitHub ne lui attribue aucune licence ; la page de Xcas annonce GPL3 (https://xcas.univ-grenoble-alpes.fr/en.html).
   4. Plusieurs isolats en parallèle : le contexte Giac est unique et n'est pas protégé. Les appels doivent rester
      un par un (supposé non sûr).
 

@@ -11,6 +11,8 @@ import 'package:fikajiana/ui/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+const _version = '0.1.0-essai.2';
+
 const _essais = [
   'diff(sin(x)^2,x)',
   'latex(diff(sin(x)^2,x))',
@@ -63,41 +65,56 @@ class _EcranEssai extends StatefulWidget {
 
 class _EcranEssaiState extends State<_EcranEssai> {
   final _lignes = <String>[];
-  var _fini = false;
+  final _trace = File('${Directory.systemTemp.path}/fikajiana_essai.txt');
+  var _enCours = false;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _mesurer());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _decrire());
   }
 
-  Future<void> _mesurer() async {
-    _ajouter('Fikajiana 0.1.0-essai.1');
+  /// Rien ne touche Giac ici : si le calcul plante, ce rapport reste lisible.
+  Future<void> _decrire() async {
+    _ajouter('Fikajiana $_version');
     for (final propriete in _proprietes) {
       final resultat = await Process.run('getprop', [propriete]);
       _ajouter('$propriete = ${resultat.stdout.toString().trim()}');
     }
-    _ajouter('mémoire avant = ${ProcessInfo.currentRss ~/ 1000000} Mo');
-
-    for (final entree in _essais) {
-      final chrono = Stopwatch()..start();
-      try {
-        final sortie = await evaluerGiac(entree);
-        _ajouter('${chrono.elapsedMilliseconds} ms | $entree | $sortie');
-      } on Object catch (erreur) {
-        _ajouter('ÉCHEC | $entree | $erreur');
-      }
+    // En version release, la taille vaut zéro pendant les premières images.
+    final vue = WidgetsBinding.instance.platformDispatcher.views.first;
+    for (var i = 0; i < 40 && vue.physicalSize.isEmpty; i++) {
+      await Future<void>.delayed(const Duration(milliseconds: 50));
     }
+    final taille = vue.physicalSize / vue.devicePixelRatio;
+    _ajouter(
+      'écran = ${taille.width.round()}×${taille.height.round()} dp, '
+      'densité ${vue.devicePixelRatio}',
+    );
+    if (_trace.existsSync()) {
+      _ajouter('PLANTAGE PRÉCÉDENT pendant : ${_trace.readAsStringSync()}');
+    }
+    const canal = MethodChannel('fikajiana/essai');
+    final arrets = await canal.invokeListMethod<String>('derniersArrets');
+    for (final arret in arrets ?? const <String>[]) {
+      _ajouter('arrêt : $arret');
+    }
+  }
+
+  Future<void> _calculer() async {
+    setState(() => _enCours = true);
+    _ajouter('mémoire avant = ${ProcessInfo.currentRss ~/ 1000000} Mo');
+    for (final entree in _essais) {
+      _trace.writeAsStringSync(entree, flush: true);
+      final chrono = Stopwatch()..start();
+      final sortie = await evaluerGiac(entree);
+      _ajouter('${chrono.elapsedMilliseconds} ms | $entree | $sortie');
+    }
+    _trace.deleteSync();
     _ajouter('mémoire après = ${ProcessInfo.currentRss ~/ 1000000} Mo');
     _ajouter('mémoire maximale = ${ProcessInfo.maxRss ~/ 1000000} Mo');
-    if (!mounted) return;
-    // Lu après les calculs : au premier affichage, la taille vaut encore zéro.
-    final media = MediaQuery.of(context);
-    _ajouter(
-      'écran = ${media.size.width.round()}×${media.size.height.round()} dp, '
-      'densité ${media.devicePixelRatio}',
-    );
-    setState(() => _fini = true);
+    _ajouter('FIN : tous les calculs ont abouti');
+    if (mounted) setState(() => _enCours = false);
   }
 
   void _ajouter(String ligne) {
@@ -120,14 +137,18 @@ class _EcranEssaiState extends State<_EcranEssai> {
                 ),
               ),
               const SizedBox(height: AppEspacement.sm),
-              FilledButton.icon(
-                onPressed: _fini
-                    ? () => Clipboard.setData(
-                        ClipboardData(text: _lignes.join('\n')),
-                      )
-                    : null,
+              FilledButton(
+                onPressed: _enCours ? null : _calculer,
+                child: Text(
+                  _enCours ? 'Calcul en cours…' : 'Lancer les calculs',
+                ),
+              ),
+              const SizedBox(height: AppEspacement.sm),
+              OutlinedButton.icon(
+                onPressed: () =>
+                    Clipboard.setData(ClipboardData(text: _lignes.join('\n'))),
                 icon: const Icon(Icons.copy),
-                label: Text(_fini ? 'Copier le rapport' : 'Mesure en cours…'),
+                label: const Text('Copier le rapport'),
               ),
               const SizedBox(height: AppEspacement.sm),
               OutlinedButton(
