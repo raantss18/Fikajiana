@@ -7,9 +7,9 @@
 
 | Modèle | Licence code / poids | Taille | Précision publiée | Mobile |
 |---|---|---|---|---|
-| **Pix2Text-MFR** (TrOCR) | MIT / MIT (poids : extrait) | ONNX ≈ 118 Mo (extrait) | manuscrit : non vérifié | export ONNX existant |
+| **Pix2Text-MFR** (TrOCR) | MIT / MIT, **provenance des poids non publiée** | ONNX 117,6 Mo | manuscrit : non vérifié | export ONNX existant |
 | PP-FormulaNet_plus-S (PaddleOCR) | Apache-2.0 | 248 Mo | En-BLEU 88,71 (imprimé, pas manuscrit) | export ONNX documenté |
-| TexTeller 3 | Apache-2.0 | 298 M paramètres (extrait) | « SOTA CROHME » revendiqué, non vérifié | trop lourd |
+| TexTeller 3 | Apache-2.0 | 298 M paramètres, ONNX 1,25 Go | « SOTA CROHME » revendiqué, non vérifié | trop lourd |
 | UniMERNet | Apache-2.0 / poids ? | 441 Mo – 1,3 Go | non vérifié | trop lourd |
 | TAMER / ICAL / CoMER | **aucune licence** | ? | CROHME 14/16/19 ≈ 60–63 % ExpRate | inutilisables tant que non licenciés |
 | PosFormer | BSD-2 « académique uniquement » | ? | ? | exclu |
@@ -39,7 +39,7 @@ inactif depuis ≈ 2 ans).
 - **Vérifié** (pages sources) : licences MathWriting, TexTeller (code), Pix2Text (dépôt), UniMERNet, PosFormer,
   BTTR, Texify, Surya, MixTeX, PaddleOCR ; ExpRate TAMER et ICAL ; plugins Flutter.
 - **Vérifié** (API Hugging Face, 2026-11-05) : poids Pix2Text-MFR sous licence MIT, fichiers `encoder_model.onnx` + `decoder_model.onnx`.
-- **Supposé** (extraits) : taille ONNX Pix2Text-MFR, CER MathWriting, taille TexTeller.
+- **Revérifié** : tailles et CER, voir `reverification.md` ; risque de provenance des poids Pix2Text-MFR.
 - **Reste à tester** : qualité de Pix2Text-MFR sur notre encre rastérisée, systèmes et matrices, latence et mémoire
   sur appareil réel, taille APK.
 
