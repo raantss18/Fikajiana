@@ -1,7 +1,7 @@
 # Calcul formel, graphique, géométrie, rendu (étude du 2026-11-05)
 
 > Sites bloqués pendant l'étude : geogebra.org, xcas.univ-grenoble-alpes.fr, gnu.org, f-droid.org, docs.flutter.dev.
-> « Vérifié (extrait) » = lu dans un extrait de recherche, page non ouverte.
+> « Vérifié (extrait) » = lu dans un extrait de recherche, page non ouverte. Revérifié depuis : `reverification.md`.
 
 ## Moteurs de calcul formel
 
@@ -18,18 +18,18 @@
 
 - `fl_chart` (MIT) et `graphic` (MIT) : graphiques de données, pas de tracé de fonctions [15][16] → **CustomPainter maison**
   (échantillonnage adaptatif, marching squares pour l'implicite). 3D : `flutter_scene` exige le canal master [17] → différé.
-- Géométrie : GeoGebra code GPL-3+, installateurs/contenus non commerciaux, nom réservé [18][19] ; JSXGraph LGPL-3+/MIT [20] ;
+- Géométrie : GeoGebra code EUPL v1.2, installateurs/contenus non commerciaux, marques réservées [18] ; JSXGraph LGPL-3+/MIT [20] ;
   Kig, Dr. Geo, CaRMetal GPL [21] → **noyau Dart maison** (graphe de dépendances), architecture inspirée de JSXGraph.
 - Rendu : `flutter_math_fork` 0.7.4 (Apache-2.0, KaTeX en Dart pur, peu maintenu) [22] ; `flutter_tex` 5.3.0 (BSD-3, MathJax
   hors ligne) [23] ; `math_keyboard` 0.4.0 (BSD-3) [25].
-- Licences : Apache/MIT/BSD/LGPL-3 compatibles avec une distribution GPL-3 [26] ; F-Droid exige la compilation depuis les
-  sources (Giac, GMP, MPFR à compiler dans la recette) [27].
-- Outils : Penpot (MPL-2.0) [28] ; Material 3 Expressive non officiel dans Flutter [29][30] ; Widget Previewer expérimental [31] ;
+- Licences : Apache/MIT/BSD/LGPL-3 compatibles avec une distribution GPL-3 [26] ; F-Droid : bibliothèques compilées depuis les
+  sources ou prises à des dépôts de confiance (Giac, GMP, MPFR à compiler dans la recette) [27].
+- Outils : Penpot (MPL-2.0) [28] ; Material 3 Expressive non officiel dans Flutter [29][30] ; Widget Previewer stable depuis Flutter 3.47 [31] ;
   AVD « Resizable » (téléphone / pliable / tablette) [32][33].
 
 ## Risques
 
-1. Chaîne Android de Giac basée sur Crystax NDK 10.2.1, obsolète [3] → portage NDK actuel à faire (tranche T2).
+1. `ANDROID_README.md` de Giac décrit encore Crystax NDK 10.2.1 [3], mais le dépôt a aussi `android_prebuilts.sh`, en clang : portage NDK 28 réussi (`spike-giac.md`).
 2. Taille APK et démarrage non mesurés. 3. `flutter_math_fork` peu maintenu. 4. 3D dépendante du canal master.
 
 ## Sources
