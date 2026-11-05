@@ -6,7 +6,10 @@ import 'package:fikajiana/encre/encre.dart';
 /// Taille d'entrée du modèle (`preprocessor_config.json` de Pix2Text-MFR).
 const int tailleModele = 384;
 
-const double _hauteurTrait = 22;
+/// Part de la hauteur d'écriture occupée par le trait. Un trait épais fait lire
+/// `1` comme `Λ` : mesuré dans `docs/recherche/spike-ocr.md`.
+const double _traitParHauteur = 1 / 70;
+const double _coteImage = 1536;
 const double _hauteurMinimale = 48;
 const double _marge = 0.12;
 
@@ -24,7 +27,7 @@ Future<ui.Image?> rasteriser(Encre encre) async {
   final marge = hauteurEncre * _marge;
   final largeur = cadre.width + 2 * marge;
   final hauteur = hauteurEncre + 2 * marge;
-  const echelle = 512 / _hauteurTrait / 8;
+  final echelle = _coteImage / (largeur > hauteur ? largeur : hauteur);
   final (w, h) = ((largeur * echelle).ceil(), (hauteur * echelle).ceil());
 
   final enregistreur = ui.PictureRecorder();
@@ -38,7 +41,7 @@ Future<ui.Image?> rasteriser(Encre encre) async {
   final trait = ui.Paint()
     ..color = const ui.Color(0xFF000000)
     ..style = ui.PaintingStyle.stroke
-    ..strokeWidth = hauteur / _hauteurTrait
+    ..strokeWidth = hauteurEncre * _traitParHauteur
     ..strokeCap = ui.StrokeCap.round
     ..strokeJoin = ui.StrokeJoin.round;
   for (final points in encre.traits) {

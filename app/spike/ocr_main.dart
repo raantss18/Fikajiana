@@ -218,9 +218,57 @@ class _EcranOcrState extends State<_EcranOcr> {
     );
   }
 
-  Widget _ecranFin() => SingleChildScrollView(
-    padding: const EdgeInsets.all(AppEspacement.md),
-    child: SelectableText(_rapport()),
+  /// Relit les traits déjà écrits avec la rastérisation du moment.
+  Future<void> _relire() async {
+    final modele = _modele;
+    if (modele == null) return;
+    setState(() => _occupe = true);
+    final sortie = File('${_resultats.parent.path}/relecture.jsonl');
+    if (sortie.existsSync()) sortie.deleteSync();
+    final buffer = StringBuffer();
+    for (final r in _reponses) {
+      final encre = Encre();
+      for (final trait in r['traits'] as List<dynamic>) {
+        final points = (trait as List<dynamic>).cast<List<dynamic>>();
+        encre.commencer(PointEncre.depuisJson(points.first));
+        for (final point in points.skip(1)) {
+          encre.prolonger(PointEncre.depuisJson(point));
+        }
+      }
+      final image = await rasteriser(encre);
+      final lecture = await modele.lire(await versTenseur(image!));
+      image.dispose();
+      buffer.writeln(
+        jsonEncode({
+          'indice': r['indice'],
+          'cible': r['cible'],
+          'lu': lecture.latex,
+          'ms': lecture.msEncodeur + lecture.msDecodeur,
+          'rssMo': ProcessInfo.currentRss ~/ 1000000,
+        }),
+      );
+    }
+    sortie.writeAsStringSync(buffer.toString(), flush: true);
+    if (mounted) setState(() => _occupe = false);
+  }
+
+  Widget _ecranFin() => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Padding(
+        padding: const EdgeInsets.all(AppEspacement.md),
+        child: FilledButton(
+          onPressed: _occupe ? null : _relire,
+          child: Text(_occupe ? 'Relecture…' : 'Relire mes traits'),
+        ),
+      ),
+      Expanded(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppEspacement.md),
+          child: SelectableText(_rapport()),
+        ),
+      ),
+    ],
   );
 
   Widget _ecranEcriture() {
