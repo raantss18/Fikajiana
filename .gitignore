@@ -13,3 +13,6 @@ models/**/*.bin
 .idea/
 .vscode/
 .claude/
+
+# Modèle : poids et configuration, téléchargés par models/preparer_pix2text.py
+models/pix2text-mfr/
