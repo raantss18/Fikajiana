@@ -17,6 +17,7 @@ dependencies:
   flutter_onnxruntime: ^1.9.0
   intl: ^0.20.2
   path_provider: ^2.1.6
+  perfect_freehand: ^2.5.2+1
   shared_preferences: ^2.5.6
 
 dev_dependencies:

@@ -107,9 +107,15 @@ void main() {
 
     testWidgets('l’invitation disparaît au premier trait', (t) async {
       await _monter(t);
-      expect(find.text('Écris ici, au stylet ou au doigt.'), findsOneWidget);
+      expect(
+        find.text('Écris ici. Deux doigts pour déplacer la page et zoomer.'),
+        findsOneWidget,
+      );
       await _ecrireAuStylet(t);
-      expect(find.text('Écris ici, au stylet ou au doigt.'), findsNothing);
+      expect(
+        find.text('Écris ici. Deux doigts pour déplacer la page et zoomer.'),
+        findsNothing,
+      );
     });
 
     testWidgets('la gomme retire le trait, Annuler le rend', (t) async {

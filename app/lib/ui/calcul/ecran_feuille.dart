@@ -1,5 +1,6 @@
 import 'package:fikajiana/encre/encre.dart';
 import 'package:fikajiana/encre/feuille_encre.dart';
+import 'package:fikajiana/encre/vue_feuille.dart';
 import 'package:fikajiana/l10n/l10n.dart';
 import 'package:fikajiana/reglages/reglages.dart';
 import 'package:fikajiana/reglages/support.dart';
@@ -17,7 +18,14 @@ class EcranFeuille extends StatefulWidget {
 
 class _EcranFeuilleState extends State<EcranFeuille> {
   final _encre = Encre();
+  final _vue = VueFeuille();
   var _gomme = false;
+
+  @override
+  void dispose() {
+    _vue.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +37,7 @@ class _EcranFeuilleState extends State<EcranFeuille> {
       children: [
         FeuilleEncre(
           encre: _encre,
+          vue: _vue,
           libelle: l10n.zoneEcriture,
           support: reglages.support,
           stylo: reglages.indiceStylo,
@@ -40,6 +49,7 @@ class _EcranFeuilleState extends State<EcranFeuille> {
     );
     final outils = _BarreOutils(
       encre: _encre,
+      vue: _vue,
       reglages: reglages,
       gomme: _gomme,
       vertical: !compacte,
@@ -99,6 +109,7 @@ class _Invitation extends StatelessWidget {
 class _BarreOutils extends StatelessWidget {
   const new({
     required this.encre,
+    required this.vue,
     required this.reglages,
     required this.gomme,
     required this.vertical,
@@ -107,11 +118,17 @@ class _BarreOutils extends StatelessWidget {
   });
 
   final Encre encre;
+  final VueFeuille vue;
   final Reglages reglages;
   final bool gomme;
   final bool vertical;
   final ValueChanged<bool> surGomme;
   final VoidCallback surChangement;
+
+  Offset _centre(BuildContext context) {
+    final taille = MediaQuery.sizeOf(context);
+    return Offset(taille.width / 2, taille.height / 2);
+  }
 
   void _agir(VoidCallback action) {
     action();
@@ -155,6 +172,25 @@ class _BarreOutils extends StatelessWidget {
         icon: const Icon(Icons.delete_outline),
         tooltip: l10n.effacerTout,
         onPressed: encre.estVide ? null : () => _agir(encre.effacer),
+      ),
+      // Alternative aux gestes à deux doigts (WCAG 2.2, critère 2.5.7).
+      IconButton(
+        icon: const Icon(Icons.zoom_in),
+        tooltip: l10n.zoomPlus,
+        onPressed: () => vue.zoomerPlus(_centre(context)),
+      ),
+      IconButton(
+        icon: const Icon(Icons.zoom_out),
+        tooltip: l10n.zoomMoins,
+        onPressed: () => vue.zoomerMoins(_centre(context)),
+      ),
+      ListenableBuilder(
+        listenable: vue,
+        builder: (context, _) => IconButton(
+          icon: const Icon(Icons.fit_screen_outlined),
+          tooltip: l10n.recentrer,
+          onPressed: vue.estInitiale ? null : vue.recentrer,
+        ),
       ),
     ];
     return Material(

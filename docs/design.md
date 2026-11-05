@@ -12,6 +12,13 @@
 - **Mouvement** : retours ≤ 200 ms ; aucune animation si l'appareil le demande.
 - **Anti-défauts** : jamais de résultat sans montrer ce qui a été compris ; jamais d'action destructive sans annuler.
 
+## Barre de qualité (reprise de zanakiantsa, academik, COMIMa)
+
+- Chaque écran s'adapte : commandes en bas en portrait, à côté en paysage ; aucune orientation imposée (Android 16 l'ignore sur grand écran).
+- Tester chaque écran sur largeur téléphone et tablette, sur chaque support ; WCAG 2.2 AA, cibles ≥ 48 dp.
+- Pas de numéro de version dans l'interface, sauf dans Réglages → Mises à jour.
+- Jamais d'action destructive sans annuler ; jamais de résultat sans montrer ce qui a été compris.
+
 ## Identité (ADR 0010, 2026-11-05)
 
 - **Marque** : un π tracé à la main, à l'encre, sur une tache orange avec une tache et des gouttes bleu ciel et saumon.

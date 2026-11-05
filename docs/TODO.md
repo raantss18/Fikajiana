@@ -1,7 +1,9 @@
 # TODO — Fikajiana
 
 > Une seule liste, tenue à jour à chaque tâche. Statuts : ✅ fait · 🔄 en cours · ⏳ à faire · ❓ décision d'Antsa.
-> Une tâche n'est ✅ qu'après tests + essai sur émulateur téléphone **et** tablette (`CLAUDE.md`).
+> Une tâche n'est ✅ qu'après tests + essai réel sur appareil arm64 (`CLAUDE.md`, règle 4).
+> **Ordre de travail : toujours la première ligne non faite du niveau le plus haut.** P0 avant P1, et ainsi de suite ; dans un
+> niveau, de haut en bas. Détail des études : `docs/recherche/ambition.md`.
 
 ## 0. Erreurs signalées
 
@@ -12,78 +14,89 @@
 - ✅ 2026-11-05 : `tool/essai_local.sh` prenait le premier émulateur venu et a modifié `zanakiantsa_tab`. Cause corrigée :
   le script ne vise que l'AVD `fikajiana_resizable`, et `tool/essai_appareil.sh` laisse `adb` refuser s'il y a plusieurs appareils
   sans `ANDROID_SERIAL`.
+- ✅ 2026-11-06 : « la page est trop petite » (Antsa, Poco). Page sans bord, glisser et zoomer (ADR 0014).
 
-## Étape 0 — Cadrage ✅
+## P0 — Une app qui calcule ce qu'on écrit (prioritaire)
 
-- ✅ Dépôt vidé du projet Unity ; `CLAUDE.md`, `docs/vision.md`, `LICENSE` (GPL-3.0-or-later)
-- ✅ Dépôt renommé `raantss18/Fikajiana` (2026-11-05) ; PR #1 fusionnée dans `main`
-- ✅ Langues : français et anglais (ADR 0007)
-- ✅ Appareils : Xiaomi Pad 7 + stylet, Poco F8 Pro (ADR 0008)
+> Ce qu'Antsa attend en premier : écrire, voir ce qui est compris, obtenir le résultat, ne rien perdre.
 
-## Étape 1 — Recherche et choix ✅ (à confirmer par mesure)
+1. 🔄 Page sans bord : glisser, zoomer, recentrer (ADR 0014). Reste : essai au vrai stylet et au doigt
+2. ⏳ Sauvegarde automatique de la feuille sur l'appareil (format ouvert JSON) : aujourd'hui tout se perd à la fermeture
+3. ⏳ Modèle embarqué dans l'APK, absent de Git ; message clair s'il manque
+4. ⏳ `fikajiana_math` : parseur LaTeX → arbre → Giac, testé contre des valeurs de référence (règle 8)
+5. ⏳ Façade du moteur : un appel à la fois ; `undef`, `infinity`, `list[...]`, guillemets de `latex()`
+6. ⏳ Arrêt d'un calcul long : `timeout N` et `ctrl_c` sur le Pad 7, sinon Giac dans un service `:calcul` tué au délai
+7. ⏳ Blocs : regrouper les traits proches, lire le bloc à la pause
+8. ⏳ **Tranche verticale** : écrire `2+3=` → LaTeX affiché → résultat exact → valeur approchée, la formule à côté de l'écriture (ADR 0012)
+9. ⏳ Correction : toucher une formule pour la corriger ; toute lecture reste corrigeable (ADR 0003)
 
-- ✅ `docs/recherche/ocr-manuscrit.md`, `docs/recherche/moteurs.md`
-- ✅ ADR 0001 licence · 0002 Flutter · 0003 OCR (proposé) · 0004 Giac (proposé) · 0005 graphe/géométrie maison · 0006 CI + émulateur
-- ✅ `docs/architecture.md`, `docs/design.md` (orientation)
-- ✅ Points « extrait » revérifiés (`docs/recherche/reverification.md`), sauf Maxima
-- ❓ Provenance des poids Pix2Text-MFR : pas de diffusion publique sans réponse de l'auteur ou modèle maison
+## P1 — Mises à jour et versions
 
-## Étape 2 — Spikes de risque (avant toute interface)
+> Modèle commun à COMIMa, zanakiantsa et academik (`docs/RELEASING.md`). **Seul Antsa décide d'une publication.**
 
-- 🔄 T1 OCR (`docs/recherche/spike-ocr.md`) : 37/50 sur le Pad 7 après correction du trait (16/50 avant). Reste : nouvel essai sur d'autres expressions
-- 🔄 T2 Giac (`docs/recherche/spike-giac.md`) : compilé pour arm64 + x86_64 (19,9 et 22,0 Mo), FFI réussi sur le Xiaomi Pad 7.
-  Reste : essai sur le Poco F8 Pro, annulation d'un calcul long, signaler le dépassement de tampon à Giac
-- ⏳ T3 Segmentation : système à accolade et matrice 2×2 découpés correctement sur 20 essais
-- 🔄 Squelette `app/` + `packages/fikajiana_math/` : fr/en, thème M3 clair/sombre, navigation ← ≠ Accueil (ADR 0009) ;
-  analyse et tests verts, essai sur émulateur (`docs/captures/squelette.png`), fusionné.
-  Reste : essai sur appareils réels.
-- 🔄 Constructions en local (`tool/essai_local.sh`, `tool/essai_appareil.sh`) et CI réduite à l'analyse et aux tests (ADR 0006).
+1. ⏳ Clés hors de Git : signature Android et Ed25519, sauvegardées par Antsa. Passage de la clé de débogage : désinstaller une fois
+2. ⏳ `tool/release.sh` : APK arm64, `release.json` signé, message sur ce que la version permet de faire (`app/CHANGELOG.md`)
+3. ⏳ Réglages → Mises à jour : version installée, « Rechercher » ; signature, SHA-256, même clé Android (ADR 0015). Rien sans le réseau, aucune donnée envoyée
+4. ⏳ Essai réel : installer une version par-dessus la précédente, la feuille conservée
+5. ❓ Provenance des poids Pix2Text : réponse de l'auteur (ticket n° 209) ou modèle maison. Bloque toute diffusion publique avec ce modèle
+6. ❓ Première version publique, dès que P0 et P1 sont faits et le point 5 tranché
 
-## Étape 3 — Tranche verticale « écrire un calcul » ⏳
+## P2 — Écriture et reconnaissance de qualité
 
-- ⏳ Feuille d'écriture → reconnaissance → LaTeX affiché → résultat exact Giac → valeur approchée
+1. ⏳ Réglage au vrai stylet : épaisseur, pression, retard du lissage, seuils des formes ; pointe du trait irrégulière en fin de ligne
+2. ⏳ Rejet de la paume et bouton du stylet, au vrai stylet
+3. ⏳ Latence réelle, caméra rapide sur Pad 7 : `Listener`, puis `LowLatencyCanvasView` si besoin. Aucun objectif chiffré avant
+4. ⏳ Débit d'images sur une longue page d'encre
+5. ⏳ Nouvel essai OCR sur d'autres expressions : 37/50 est optimiste (`docs/recherche/spike-ocr.md`)
+6. ⏳ T3 Segmentation : système à accolade et matrice 2×2 découpés correctement sur 20 essais
+7. ⏳ Gestes : rature et barré pour effacer ; alternatives proposées à la correction
+8. ⏳ Sélection, déplacement et copie d'un bloc ; copie du LaTeX
+9. ⏳ Alternative au glissement sans geste, boutons de déplacement (WCAG 2.2, critère 2.5.7 ; le zoom a déjà ses boutons)
 
-## Feuille de route (étude : `docs/recherche/ambition.md`, ADR 0011)
+## P3 — Calcul formel complet
 
-> Chaque ligne se fait sur le Pad 7, mesure à l'appui. Pas de promesse « comme Mathematica » ni « comme MyScript » : voir l'étude.
+1. ⏳ Types devinés : calcul, équation, système, fonction, matrice, suite ; actions proposées (résoudre, dériver, intégrer, tracer)
+2. ⏳ Dérivées, primitives et intégrales, limites, suites et séries, polynômes, matrices, équations et systèmes
+3. ⏳ Banc de tests croisé avec SymPy pour chaque famille ; effet de `DOUBLEVAL` et du retrait de pthread
+4. ⏳ Liste publique et honnête de ce que l'app sait faire ou non ; manques comblés par règles ciblées
+5. ⏳ Signaler à Giac le dépassement de tampon (action publique : à valider par Antsa)
+6. ❌ Écarté : SageMath, Maxima (lourds), Symbolica (licence), calcul formel sur GPU (aucune preuve d'intérêt)
 
-### A. Moteur de calcul
+## P4 — Graphique et géométrie
 
-- ⏳ Essayer `timeout N` et `ctrl_c` sur un calcul long (Pad 7) ; sinon Giac dans un service `:calcul`, tué au délai
-- ⏳ Façade du moteur : `undef`, `infinity`, `list[...]`, guillemets de `latex()`, un seul appel à la fois, reprise de l'état
-- ⏳ Banc de tests croisé avec SymPy : dérivées, primitives, limites, séries, polynômes, matrices, équations, systèmes, EDO
-- ⏳ Liste publique et honnête de ce que l'app sait faire ou non ; combler les manques seulement par règles ciblées
-- ❌ Écarté : SageMath, Maxima (lourds), Symbolica (licence), calcul formel sur GPU (aucune preuve d'intérêt)
+1. ⏳ Traceur Dart : échantillonnage adaptatif, quadtree et marching squares ; budget d'une image mesuré sur le Pad 7
+2. ⏳ Courbes paramétrées, polaires, implicites ; tableau de valeurs ; écran partagé sur tablette
+3. ⏳ Fiabilité des implicites : intervalles façon Tupper, à comparer à `graphest` (MIT)
+4. ⏳ `FragmentProgram` en option pour aperçus et fonds denses, avec repli CPU ; pas de `flutter_gpu` en préversion
+5. ⏳ Géométrie dynamique : outils de construction, formes dessinées reconnues, transformations, lieux, mesures
 
-### B. Encre et correction
+## P5 — Design, confort et accessibilité
 
-- ⏳ Latence réelle au stylet, caméra rapide sur Pad 7 : `Listener`, puis `LowLatencyCanvasView` en vue native si besoin. Aucun objectif chiffré avant
-- ✅ Perte de points mesurée : au moins 97 % reçus, 250 points/s (`docs/recherche/spike-latence.md`)
-- ⏳ Rendu du trait : filtre 1€ et `perfect_freehand`, pression ; les points bruts restent pour la reconnaissance
-- ⏳ Formes au maintien du stylet : ligne, cercle, rectangle, triangle ($1 et moindres carrés), annulable
-- ⏳ Gestes : rature et barré pour effacer ; ajustement des courbes au levé (Schneider, licence à vérifier ou réécriture)
-- ❌ Écarté : correction automatique de l'écriture en continu (aucun des produits étudiés ne la documente, et elle gênerait la reconnaissance)
+> Méthode : `docs/design.md`. Le plus visible passe en P0 et P2 ; ici, la finition.
 
-### C. Reconnaissance
+1. ⏳ Passe de design sur chaque écran : barre d'outils, Réglages, états vides ; maquettes Penpot si utile
+2. ⏳ Choix de la langue dans les réglages, malgré la langue de l'appareil ; revue fr/en de tous les textes
+3. ⏳ Historique : feuilles enregistrées, renommer, supprimer avec annulation
+4. ⏳ TalkBack réel, grands textes, animations coupées (dont l'indicateur de la barre du bas)
+5. ⏳ Essais du script sur chaque support : `tool/essai_appareil.sh` bascule encore le mode de l'appareil (ADR 0012)
+6. ⏳ Budgets de `CLAUDE.md` mesurés à chaque version ; alléger l'APK
 
-- ⏳ Nouvel essai au trait fin sur d'autres expressions, pour un chiffre sans biais (37/50 est optimiste)
-- ⏳ Alternatives proposées à la correction ; corriger à la main un symbole mal lu
-- ⏳ Reconnaissance en continu à la pause ; rendu `flutter_math_fork` à la place ou à côté de l'écriture
-- ❓ Provenance des poids Pix2Text : réponse de l'auteur (ticket n° 209) ou modèle maison sur encre synthétique et collecte CC0
+## P6 — Plus tard
 
-### D. Visuel
+1. ⏳ F-Droid : Giac, GMP, MPFR compilés dans la recette ; builds reproductibles
+2. ⏳ Modèle d'encre maison sur données libres (synthétiques + collecte CC0)
+3. ⏳ Vérifier les signatures GNU de GMP et MPFR, licence des gabarits Very Good CLI, Maxima (`reverification.md`)
+4. ⏳ Poids du modèle réduit ; `pix2text-mfr-1.5` à réévaluer sur une nouvelle mesure
+5. ⏳ 3D : différée (ADR 0005)
 
-- 🔄 Supports au choix, stylos, gomme, Nunito (ADR 0012, `docs/design.md`) : essayés sur le Pad 7 au stylet simulé. Reste : vrai stylet, Poco
-- ⏳ Écran « Réglages » ; composants ; accessibilité (TalkBack) ; essais téléphone et tablette
+## Fait
 
-### E. Graphique et géométrie
-
-- ⏳ Traceur Dart : échantillonnage adaptatif, quadtree et marching squares, mesure du budget d'image sur le Pad 7
-- ⏳ Fiabilité des implicites : intervalles façon Tupper, à comparer à `graphest` (MIT)
-- ⏳ `FragmentProgram` en option pour aperçus et fonds denses, avec repli CPU ; pas de `flutter_gpu` tant qu'il est en préversion
-- ⏳ Géométrie dynamique (outils de construction + formes dessinées reconnues)
-
-### F. Publication
-
-- ⏳ Clé de signature ; GitHub Releases signées, puis F-Droid (Giac, GMP, MPFR compilés depuis les sources)
-- ⏳ Essai sur le Poco F8 Pro (rapport `0.1.0-essai.2` attendu)
+- ✅ Cadrage : dépôt `raantss18/Fikajiana`, GPL-3.0-or-later, français et anglais, appareils (ADR 0001, 0007, 0008)
+- ✅ Études : `ocr-manuscrit.md`, `moteurs.md`, `reverification.md`, `ambition.md` ; langages (ADR 0011)
+- ✅ Squelette, navigation ← ≠ Accueil, thème, CI GitHub Actions, constructions locales (ADR 0006, 0009)
+- ✅ T2 Giac : arm64 et x86_64, FFI sur le Pad 7 (`spike-giac.md`) ; essai sur le Poco en attente d'un rapport
+- ✅ T1 OCR : chaîne sur le Pad 7, 37/50 (`spike-ocr.md`) ; à confirmer en P2
+- ✅ Identité : π, palette, icône, Nunito (ADR 0010, `docs/design.md`)
+- ✅ Supports, stylos, gomme (ADR 0012) ; lancés sur le Poco par Antsa, sans latence ressentie
+- ✅ Points du stylet : au moins 97 % reçus, 250 points/s (`spike-latence.md`)
+- ✅ Trait à pression, formes au maintien (ADR 0013) ; à régler au vrai stylet en P2

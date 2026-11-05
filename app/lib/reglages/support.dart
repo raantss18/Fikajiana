@@ -65,13 +65,14 @@ const _stylosCraie = [
   Color(0xFFFFB3C1),
 ];
 
-/// Lignes de chaque support. Longueurs en millimètres, sur la base nominale de
-/// 160 dp par pouce : la taille réelle varie d'un appareil à l'autre.
+/// Lignes de chaque support, sur toute la page. Longueurs en millimètres, base
+/// nominale de 160 dp par pouce : la taille réelle varie selon l'appareil.
 class PeintreSupport extends CustomPainter {
-  const new(this.support, {this.echelle = 1});
+  const new(this.support, {this.zoom = 1, this.decalage = Offset.zero});
 
   final SupportEcriture support;
-  final double echelle;
+  final double zoom;
+  final Offset decalage;
 
   static const double _dpParMm = 160 / 25.4;
   static const _ligneForte = Color(0xFF8E8ECB);
@@ -82,7 +83,7 @@ class PeintreSupport extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     canvas.drawRect(Offset.zero & size, Paint()..color = support.fond);
-    final mm = _dpParMm * echelle;
+    final mm = _dpParMm * zoom;
     switch (support) {
       case SupportEcriture.feuilleBlanche || SupportEcriture.tableauNoir:
         break;
@@ -93,6 +94,12 @@ class PeintreSupport extends CustomPainter {
     }
   }
 
+  /// Rang de la première ligne visible, et sa position à l'écran.
+  (int, double) _premiere(double origine, double pas) {
+    final rang = (-origine / pas).ceil();
+    return (rang, origine + rang * pas);
+  }
+
   /// Réglure Seyès : carreaux de 8 mm, interlignes de 2 mm, marge rouge.
   void _seyes(Canvas canvas, Size size, double mm) {
     final fine = Paint()
@@ -101,18 +108,19 @@ class PeintreSupport extends CustomPainter {
     final forte = Paint()
       ..color = _ligneForte
       ..strokeWidth = 0.8;
-    var n = 1;
-    for (var y = 2 * mm; y < size.height; y += 2 * mm, n++) {
+    var (rang, y) = _premiere(decalage.dy, 2 * mm);
+    for (; y < size.height; y += 2 * mm, rang++) {
       canvas.drawLine(
         Offset(0, y),
         Offset(size.width, y),
-        n % 4 == 0 ? forte : fine,
+        rang % 4 == 0 ? forte : fine,
       );
     }
-    for (var x = 8 * mm; x < size.width; x += 8 * mm) {
+    var (_, x) = _premiere(decalage.dx, 8 * mm);
+    for (; x < size.width; x += 8 * mm) {
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), fine);
     }
-    final marge = 24 * mm;
+    final marge = decalage.dx + 24 * mm;
     canvas.drawLine(
       Offset(marge, 0),
       Offset(marge, size.height),
@@ -126,15 +134,19 @@ class PeintreSupport extends CustomPainter {
     final trait = Paint()
       ..color = _petitCarreau
       ..strokeWidth = 0.5;
-    for (var x = pas; x < size.width; x += pas) {
+    var (_, x) = _premiere(decalage.dx, pas);
+    for (; x < size.width; x += pas) {
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), trait);
     }
-    for (var y = pas; y < size.height; y += pas) {
+    var (_, y) = _premiere(decalage.dy, pas);
+    for (; y < size.height; y += pas) {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), trait);
     }
   }
 
   @override
   bool shouldRepaint(PeintreSupport ancien) =>
-      ancien.support != support || ancien.echelle != echelle;
+      ancien.support != support ||
+      ancien.zoom != zoom ||
+      ancien.decalage != decalage;
 }
