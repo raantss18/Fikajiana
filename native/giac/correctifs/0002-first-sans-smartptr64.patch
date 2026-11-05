@@ -1,0 +1,13 @@
+diff --git a/src/giac/headers/first.h b/src/giac/headers/first.h
+index 16d9e41..c2b58c9 100644
+--- a/src/giac/headers/first.h
++++ b/src/giac/headers/first.h
+@@ -433,7 +433,7 @@ typedef int ref_count_t;
+ #endif
+ 
+ #if __BYTE_ORDER__ ==__ORDER_LITTLE_ENDIAN__ && SIZEOF_VOID_P==8 //(defined(__LP64__) || defined(_WIN64) || (defined(x86_64) && !defined(__ILP32__)) || defined(_M_X64) || defined(__ia64) || defined (_M_IA64) || defined(__aarch64__) || defined(__powerpc64__))
+-#if !defined(BUILDING_NODE_EXTENSION) || !defined(_WIN64)
++#if (!defined(BUILDING_NODE_EXTENSION) || !defined(_WIN64)) && !defined(FIKAJIANA_SANS_SMARTPTR64)
+ #define SMARTPTR64
+ #endif
+ #else // x86_64

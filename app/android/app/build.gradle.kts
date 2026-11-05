@@ -55,6 +55,13 @@ android {
         }
     }
 
+    sourceSets {
+        getByName("main") {
+            // Produit par native/giac/construire.sh, hors Git.
+            jniLibs.srcDirs("../../../native/giac/construit/jniLibs")
+        }
+    }
+
     buildTypes {
         getByName("release") {
             // Sans clé (CI, essais locaux), l'APK est signé avec la clé de débogage : non diffusable.

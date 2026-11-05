@@ -29,7 +29,7 @@
 
 ## Risques
 
-1. Chaîne Android de Giac basée sur Crystax NDK 10.2.1, obsolète [3] → portage NDK actuel à faire (tranche T2).
+1. `ANDROID_README.md` de Giac décrit encore Crystax NDK 10.2.1 [3], mais le dépôt a aussi `android_prebuilts.sh`, en clang : portage NDK 28 réussi (`spike-giac.md`).
 2. Taille APK et démarrage non mesurés. 3. `flutter_math_fork` peu maintenu. 4. 3D dépendante du canal master.
 
 ## Sources

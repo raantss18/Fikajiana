@@ -13,3 +13,7 @@ models/**/*.bin
 .idea/
 .vscode/
 .claude/
+
+# Sources et produits de compilation de Giac
+native/giac/sources/
+native/giac/construit/

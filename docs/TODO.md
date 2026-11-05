@@ -5,6 +5,10 @@
 
 ## 0. Erreurs signalées
 
+- ✅ 2026-11-05 : « Fikajiana keeps stopping » sur téléphone (essai.1). Cause : `SMARTPTR64` de Giac tronque les étiquettes de
+  pointeurs arm64. Corrigé par `correctifs/0002`. Protection : essai obligatoire sur arm64 réel, l'émulateur ne le voit pas.
+- ✅ 2026-11-05 : écran d'essai `0×0 dp`, taille lue trop tôt en release, puis perdue à une réécriture. Corrigé en attendant une
+  taille non nulle ; à reprendre si l'écran d'essai sert encore.
 - ✅ 2026-11-05 : `tool/essai_local.sh` prenait le premier émulateur venu et a modifié `zanakiantsa_tab`. Cause corrigée :
   le script ne vise que l'AVD `fikajiana_resizable`, et `tool/essai_appareil.sh` laisse `adb` refuser s'il y a plusieurs appareils
   sans `ANDROID_SERIAL`.
@@ -27,7 +31,8 @@
 ## Étape 2 — Spikes de risque (avant toute interface)
 
 - ⏳ T1 OCR : Pix2Text-MFR ONNX int8 sur 50 expressions manuscrites maison (taux exact, latence, mémoire, Mo)
-- ⏳ T2 Giac : compilation NDK arm64 + x86_64, appel FFI `diff(sin(x)^2,x)` → LaTeX ; taille de la .so
+- 🔄 T2 Giac (`docs/recherche/spike-giac.md`) : compilé pour arm64 + x86_64 (19,9 et 22,0 Mo), FFI réussi sur le Xiaomi Pad 7.
+  Reste : essai sur le Poco F8 Pro, annulation d'un calcul long, signaler le dépassement de tampon à Giac
 - ⏳ T3 Segmentation : système à accolade et matrice 2×2 découpés correctement sur 20 essais
 - 🔄 Squelette `app/` + `packages/fikajiana_math/` : fr/en, thème M3 clair/sombre, navigation ← ≠ Accueil (ADR 0009) ;
   analyse et tests verts, essai sur émulateur (`docs/captures/squelette.png`), fusionné.
