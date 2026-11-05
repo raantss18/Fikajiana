@@ -7,6 +7,8 @@
 | ONNX Runtime 1.28 (Android) | MIT (non revérifié) | exécution ONNX | https://github.com/microsoft/onnxruntime |
 | `flutter_math_fork` | Apache-2.0 | rendu LaTeX | https://pub.dev/packages/flutter_math_fork/license |
 | `path_provider` | BSD-3-Clause | dossier de l'app | https://pub.dev/packages/path_provider/license |
+| `shared_preferences` | BSD-3-Clause | réglages sur l'appareil | https://pub.dev/packages/shared_preferences/license |
+| Nunito | SIL OFL 1.1 (`app/assets/polices/OFL-Nunito.txt`) | police de texte | https://github.com/googlefonts/nunito |
 | `intl` | BSD-3-Clause | formats et traductions | https://pub.dev/packages/intl/license |
 | `ffi` | BSD-3-Clause | appel de Giac | https://pub.dev/packages/ffi/license |
 | Giac (en-têtes GPL v3 ou ultérieure, licence globale à confirmer) | GPL-3.0-or-later | calcul formel, compilé depuis les sources | https://github.com/geogebra/giac |

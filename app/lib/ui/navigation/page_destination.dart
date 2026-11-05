@@ -1,7 +1,8 @@
 import 'package:fikajiana/l10n/l10n.dart';
+import 'package:fikajiana/ui/calcul/ecran_feuille.dart';
 import 'package:fikajiana/ui/navigation/destination.dart';
+import 'package:fikajiana/ui/reglages/ecran_reglages.dart';
 import 'package:fikajiana/ui/theme/espacement.dart';
-import 'package:fikajiana/ui/theme/marque.dart';
 import 'package:flutter/material.dart';
 
 /// Coquille commune à tous les écrans.
@@ -27,7 +28,9 @@ class PageDestination extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final compacte = MediaQuery.sizeOf(context).width < AppLargeurs.compacte;
-    final corps = _EcranABatir(destination: destination);
+    final corps = destination == Destination.feuille
+        ? const EcranFeuille()
+        : _EcranABatir(destination: destination);
 
     return Scaffold(
       appBar: AppBar(
@@ -39,6 +42,13 @@ class PageDestination extends StatelessWidget {
               tooltip: l10n.accueil,
               onPressed: () => _aller(context, Destination.feuille),
             ),
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: l10n.reglages,
+            onPressed: () =>
+                Navigator.of(context)
+                    .push(RouteEcran((_) => const EcranReglages())),
+          ),
         ],
       ),
       body: compacte
@@ -83,9 +93,13 @@ class PageDestination extends StatelessWidget {
 }
 
 /// Route sans transition quand l'appareil demande de couper les animations.
-class RouteDestination extends MaterialPageRoute<void> {
+class RouteDestination extends RouteEcran {
   new(Destination destination)
-    : super(builder: (_) => PageDestination(destination: destination));
+    : super((_) => PageDestination(destination: destination));
+}
+
+class RouteEcran extends MaterialPageRoute<void> {
+  new(WidgetBuilder constructeur) : super(builder: constructeur);
 
   @override
   Widget buildTransitions(
@@ -118,13 +132,7 @@ class _EcranABatir extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (destination == Destination.feuille)
-              const MarquePi()
-            else
-              Icon(
-                destination.icone,
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
+            Icon(destination.icone, color: theme.colorScheme.onSurfaceVariant),
             const SizedBox(height: AppEspacement.sm),
             Text(
               context.l10n.ecranBientot,

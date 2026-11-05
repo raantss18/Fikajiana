@@ -106,6 +106,8 @@ void main() {
       for (final s in ['Feuille', 'Graphe', 'Géométrie', 'Historique']) {
         expect(find.text(s), findsWidgets);
       }
+      await t.tap(find.text('Graphe'));
+      await t.pumpAndSettle();
       expect(
         find.text("Cet écran n'est pas encore disponible."),
         findsOneWidget,
@@ -117,6 +119,8 @@ void main() {
       for (final s in ['Sheet', 'Graph', 'Geometry', 'History']) {
         expect(find.text(s), findsWidgets);
       }
+      await t.tap(find.text('Graph'));
+      await t.pumpAndSettle();
       expect(find.text('This screen is not available yet.'), findsOneWidget);
     });
   });

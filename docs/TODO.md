@@ -73,9 +73,7 @@
 
 ### D. Visuel
 
-- ❓ Trois supports au choix dans les réglages : feuille blanche, tableau noir, cahier
-- ⏳ Choix de la couleur du stylo, gomme à portée de main
-- ❓ Police de texte libre
+- 🔄 Supports au choix, stylos, gomme, Nunito (ADR 0012, `docs/design.md`) : essayés sur le Pad 7 au stylet simulé. Reste : vrai stylet, Poco
 - ⏳ Écran « Réglages » ; composants ; accessibilité (TalkBack) ; essais téléphone et tablette
 
 ### E. Graphique et géométrie
