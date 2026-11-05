@@ -1,6 +1,7 @@
 import 'package:fikajiana/l10n/l10n.dart';
 import 'package:fikajiana/ui/navigation/destination.dart';
 import 'package:fikajiana/ui/theme/espacement.dart';
+import 'package:fikajiana/ui/theme/marque.dart';
 import 'package:flutter/material.dart';
 
 /// Coquille commune à tous les écrans.
@@ -117,7 +118,13 @@ class _EcranABatir extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(destination.icone, color: theme.colorScheme.onSurfaceVariant),
+            if (destination == Destination.feuille)
+              const MarquePi()
+            else
+              Icon(
+                destination.icone,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
             const SizedBox(height: AppEspacement.sm),
             Text(
               context.l10n.ecranBientot,

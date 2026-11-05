@@ -30,7 +30,7 @@
 - ⏳ T3 Segmentation : système à accolade et matrice 2×2 découpés correctement sur 20 essais
 - 🔄 Squelette `app/` + `packages/fikajiana_math/` : fr/en, thème M3 clair/sombre, navigation ← ≠ Accueil (ADR 0009) ;
   analyse et tests verts, essai sur émulateur (`docs/captures/squelette.png`), fusionné.
-  Reste : essai sur appareils réels (non branchés), icône d'application propre (celle du gabarit est encore là).
+  Reste : essai sur appareils réels.
 - 🔄 Constructions en local (`tool/essai_local.sh`, `tool/essai_appareil.sh`) et CI réduite à l'analyse et aux tests (ADR 0006).
 
 ## Étape 3 — Tranche verticale « écrire un calcul » ⏳
@@ -41,5 +41,6 @@
 
 - ⏳ Équations et systèmes · fonctions + graphe · dérivées, limites, intégrales, suites · polynômes · matrices
 - ⏳ Géométrie dynamique (outils de construction + formes dessinées reconnues)
-- ⏳ Design system complet, accessibilité (TalkBack), clair/sombre, téléphone/tablette
+- 🔄 Identité : couleurs, π, icône (ADR 0010, `docs/design.md`). Reste : police de texte, composants
+- ⏳ Accessibilité (TalkBack), clair/sombre, téléphone/tablette
 - ⏳ Publication : GitHub Releases signées, puis F-Droid (Giac, GMP, MPFR compilés depuis les sources)

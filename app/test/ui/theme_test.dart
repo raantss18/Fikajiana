@@ -33,6 +33,18 @@ void main() {
           c.secondaryContainer,
         ),
         ('onError / error', c.onError, c.error),
+        ('secondary / surface', c.secondary, c.surface),
+        ('onTertiary / tertiary', c.onTertiary, c.tertiary),
+        (
+          'onPrimaryContainer / primaryContainer',
+          c.onPrimaryContainer,
+          c.primaryContainer,
+        ),
+        (
+          'onTertiaryContainer / tertiaryContainer',
+          c.onTertiaryContainer,
+          c.tertiaryContainer,
+        ),
       ]) {
         test('texte ≥ 4,5:1 : $paire', () {
           final r = _contraste(avant, fond);
