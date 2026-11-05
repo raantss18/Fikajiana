@@ -21,7 +21,7 @@ et propose les actions utiles (calculer, résoudre, tracer, dériver…), sans r
 
 - Élèves de collège et lycée (programmes français), enseignants.
 - Étudiants de licence et master en mathématiques.
-- Langues de l'interface : français d'abord, puis malgache et anglais (à confirmer, `docs/TODO.md`).
+- Langues de l'interface : français et anglais, de qualité égale (ADR 0007).
 
 ## Principes
 

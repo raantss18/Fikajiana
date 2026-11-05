@@ -10,7 +10,7 @@ Aucune pour l'instant.
 ## Étape 0 — Cadrage ✅
 
 - ✅ Dépôt vidé du projet Unity ; `CLAUDE.md`, `docs/vision.md`, `LICENSE` (GPL-3.0-or-later)
-- ✅ Dépôt renommé `raantss18/Fikajiana` par Antsa (2026-11-05)
+- ✅ Dépôt renommé `raantss18/Fikajiana` (2026-11-05) ; PR #1 fusionnée dans `main`
 - ✅ Langues : français et anglais (ADR 0007)
 - ✅ Appareils : Xiaomi Pad 7 + stylet, Poco F8 Pro (ADR 0008)
 
@@ -26,9 +26,11 @@ Aucune pour l'instant.
 - ⏳ T1 OCR : Pix2Text-MFR ONNX int8 sur 50 expressions manuscrites maison (taux exact, latence, mémoire, Mo)
 - ⏳ T2 Giac : compilation NDK arm64 + x86_64, appel FFI `diff(sin(x)^2,x)` → LaTeX ; taille de la .so
 - ⏳ T3 Segmentation : système à accolade et matrice 2×2 découpés correctement sur 20 essais
-- ⏳ Squelette Flutter `app/` + `packages/fikajiana_math/` ; CI GitHub Actions (analyse, tests, APK, émulateur)
-  — bloqué ici : le serveur MCP Very Good CLI n'était pas connecté (hook qui interdit `flutter create`/`flutter test`) ;
-  `very_good_cli` 1.6.0 est maintenant installé → à refaire dans une nouvelle session
+- 🔄 Squelette `app/` + `packages/fikajiana_math/` : fr/en, thème M3 clair/sombre, navigation ← ≠ Accueil (ADR 0009) ;
+  analyse et tests verts, essai sur émulateur (`docs/captures/squelette.png`). PR ouverte, à valider par Antsa.
+  Reste : essai sur appareils réels (non branchés), icône d'application propre (celle du gabarit est encore là).
+- ⏳ CI GitHub Actions : analyse, tests, APK **release** arm64 + x86_64 (signature et ProGuard à vérifier), émulateurs
+  téléphone et tablette, captures en artefact ; corriger la taille de tablette de l'ADR 0006
 
 ## Étape 3 — Tranche verticale « écrire un calcul » ⏳
 

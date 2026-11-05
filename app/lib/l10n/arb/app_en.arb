@@ -1,0 +1,31 @@
+{
+    "@@locale": "en",
+    "appTitle": "Fikajiana",
+    "@appTitle": {
+        "description": "Application name"
+    },
+    "destinationFeuille": "Sheet",
+    "@destinationFeuille": {
+        "description": "Home screen: the page where the user writes by hand"
+    },
+    "destinationGraphe": "Graph",
+    "@destinationGraphe": {
+        "description": "Screen that plots curves"
+    },
+    "destinationGeometrie": "Geometry",
+    "@destinationGeometrie": {
+        "description": "Dynamic plane geometry screen"
+    },
+    "destinationHistorique": "History",
+    "@destinationHistorique": {
+        "description": "Screen listing saved sheets"
+    },
+    "accueil": "Home",
+    "@accueil": {
+        "description": "Tooltip of the button that returns directly to the home screen, distinct from back"
+    },
+    "ecranBientot": "This screen is not available yet.",
+    "@ecranBientot": {
+        "description": "Message shown on screens that are not built yet"
+    }
+}
