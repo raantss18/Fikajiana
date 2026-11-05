@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Installe l'APK, le lance en portrait et paysage, clair et sombre, et garde une capture de chaque essai.
-# Usage : tool/essai_emulateur.sh <apk> <dossier de sortie> <nom de la forme>
+# Sur un appareil réel, choisir l'APK arm64 et, si plusieurs appareils sont branchés, définir ANDROID_SERIAL.
+# Usage : tool/essai_appareil.sh <apk> <dossier de sortie> <nom de la forme>
 set -euo pipefail
 
 apk=$1

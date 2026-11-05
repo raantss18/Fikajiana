@@ -5,7 +5,9 @@
 
 ## 0. Erreurs signalées
 
-Aucune pour l'instant.
+- ✅ 2026-11-05 : `tool/essai_local.sh` prenait le premier émulateur venu et a modifié `zanakiantsa_tab`. Cause corrigée :
+  le script ne vise que l'AVD `fikajiana_resizable`, et `tool/essai_appareil.sh` laisse `adb` refuser s'il y a plusieurs appareils
+  sans `ANDROID_SERIAL`.
 
 ## Étape 0 — Cadrage ✅
 
@@ -27,10 +29,9 @@ Aucune pour l'instant.
 - ⏳ T2 Giac : compilation NDK arm64 + x86_64, appel FFI `diff(sin(x)^2,x)` → LaTeX ; taille de la .so
 - ⏳ T3 Segmentation : système à accolade et matrice 2×2 découpés correctement sur 20 essais
 - 🔄 Squelette `app/` + `packages/fikajiana_math/` : fr/en, thème M3 clair/sombre, navigation ← ≠ Accueil (ADR 0009) ;
-  analyse et tests verts, essai sur émulateur (`docs/captures/squelette.png`). PR ouverte, à valider par Antsa.
+  analyse et tests verts, essai sur émulateur (`docs/captures/squelette.png`), fusionné.
   Reste : essai sur appareils réels (non branchés), icône d'application propre (celle du gabarit est encore là).
-- 🔄 CI GitHub Actions (`.github/workflows/ci.yml`, `tool/essai_emulateur.sh`) : analyse, tests, APK release arm64 +
-  x86_64, émulateurs téléphone et tablette, captures en artefact. Script essayé en local ; exécution verte sur GitHub à obtenir.
+- 🔄 Constructions en local (`tool/essai_local.sh`, `tool/essai_appareil.sh`) et CI réduite à l'analyse et aux tests (ADR 0006).
 
 ## Étape 3 — Tranche verticale « écrire un calcul » ⏳
 
