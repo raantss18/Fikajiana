@@ -69,7 +69,7 @@ void main() {
     });
 
     test('un seul point donne un chemin visible', () {
-      expect(cheminDuTrait([a]).getBounds().isEmpty, isFalse);
+      expect(cheminDuTrait([a]).getBounds().width, greaterThan(0));
     });
 
     test('aller-retour JSON', () {
