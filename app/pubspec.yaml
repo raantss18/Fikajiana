@@ -13,7 +13,10 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
+  flutter_math_fork: ^0.7.4
+  flutter_onnxruntime: ^1.9.0
   intl: ^0.20.2
+  path_provider: ^2.1.6
 
 dev_dependencies:
   flutter_test:
