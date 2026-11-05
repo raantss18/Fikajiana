@@ -17,7 +17,15 @@ const double _marge = 0.12;
 ///
 /// Rend `null` sans encre. L'image garde les proportions de l'écriture : c'est
 /// [versTenseur] qui la déforme en carré, comme le processeur du modèle.
-Future<ui.Image?> rasteriser(Encre encre) async {
+Future<ui.Image?> rasteriser(Encre encre) => rasteriserTraits(encre.traits);
+
+/// Comme [rasteriser], pour un bloc de la feuille.
+Future<ui.Image?> rasteriserTraits(List<Trait> traits) async {
+  final encre = Encre();
+  for (final t in traits) {
+    encre.commencer(t.points.first);
+    t.points.skip(1).forEach(encre.prolonger);
+  }
   final cadre = encre.cadre;
   if (cadre == null) return null;
 

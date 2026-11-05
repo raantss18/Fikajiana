@@ -36,3 +36,89 @@ String evaluerGiacSurCeFil(String entree) {
 Future<String> evaluerGiac(String entree) {
   return Isolate.run(() => evaluerGiacSurCeFil(entree));
 }
+
+const String _separateur = '\x1f';
+
+/// Réponse de Giac à [calculerGiac].
+class ReponseGiac {
+  const new({
+    required this.exact,
+    required this.latex,
+    required this.approche,
+    this.arrete = false,
+    this.erreur,
+  });
+
+  factory analyser(String brut) {
+    if (brut == 'ARRET') {
+      return const ReponseGiac(
+        exact: '',
+        latex: '',
+        approche: '',
+        arrete: true,
+      );
+    }
+    if (brut.startsWith('ERREUR: ')) {
+      return ReponseGiac(
+        exact: '',
+        latex: '',
+        approche: '',
+        erreur: brut.substring(8),
+      );
+    }
+    final morceaux = brut.split(_separateur);
+    if (morceaux.length != 3) {
+      return ReponseGiac(
+        exact: '',
+        latex: '',
+        approche: '',
+        erreur: 'réponse illisible : $brut',
+      );
+    }
+    return ReponseGiac(
+      exact: morceaux[0],
+      latex: morceaux[1],
+      approche: morceaux[2],
+    );
+  }
+
+  final String exact;
+  final String latex;
+  final String approche;
+  final bool arrete;
+  final String? erreur;
+}
+
+String _calculerSurCeFil(String entree) {
+  final bibliotheque = DynamicLibrary.open('libfikajiana_giac.so');
+  final calculer = bibliotheque.lookupFunction<_EvalNatif, _EvalNatif>(
+    'fikajiana_giac_calculer',
+  );
+  final liberer = bibliotheque.lookupFunction<_LibererNatif, _Liberer>(
+    'fikajiana_giac_liberer',
+  );
+  final entreeNative = entree.toNativeUtf8();
+  try {
+    final sortie = calculer(entreeNative);
+    try {
+      return sortie.toDartString();
+    } finally {
+      liberer(sortie);
+    }
+  } finally {
+    malloc.free(entreeNative);
+  }
+}
+
+/// Calcule dans un isolat. Un appel à la fois : le contexte Giac est unique.
+Future<ReponseGiac> calculerGiac(String entree) async =>
+    ReponseGiac.analyser(await Isolate.run(() => _calculerSurCeFil(entree)));
+
+/// Demande l'arrêt du calcul en cours, depuis n'importe quel fil.
+void interrompreGiac() {
+  DynamicLibrary.open('libfikajiana_giac.so')
+      .lookupFunction<Void Function(), void Function()>(
+        'fikajiana_giac_interrompre',
+      )
+      .call();
+}

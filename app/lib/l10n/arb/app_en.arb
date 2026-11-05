@@ -29,49 +29,209 @@
         "description": "Message shown on screens that are not built yet"
     },
     "reglages": "Settings",
-    "@reglages": {"description": "Settings screen title and button"},
+    "@reglages": {
+        "description": "Settings screen title and button"
+    },
     "reglagesSupport": "Writing surface",
-    "@reglagesSupport": {"description": "Settings section: what the user writes on"},
+    "@reglagesSupport": {
+        "description": "Settings section: what the user writes on"
+    },
     "supportFeuilleBlanche": "Blank sheet",
-    "@supportFeuilleBlanche": {"description": "Writing surface: plain white paper"},
+    "@supportFeuilleBlanche": {
+        "description": "Writing surface: plain white paper"
+    },
     "supportGrandsCarreaux": "Wide-ruled notebook",
-    "@supportGrandsCarreaux": {"description": "Writing surface: French Seyes ruled notebook"},
+    "@supportGrandsCarreaux": {
+        "description": "Writing surface: French Seyes ruled notebook"
+    },
     "supportPetitsCarreaux": "Grid notebook",
-    "@supportPetitsCarreaux": {"description": "Writing surface: notebook with a 5 mm grid"},
+    "@supportPetitsCarreaux": {
+        "description": "Writing surface: notebook with a 5 mm grid"
+    },
     "supportTableauNoir": "Blackboard",
-    "@supportTableauNoir": {"description": "Writing surface: blackboard"},
+    "@supportTableauNoir": {
+        "description": "Writing surface: blackboard"
+    },
     "styloBleu": "Blue pen",
-    "@styloBleu": {"description": "Pen colour on paper"},
+    "@styloBleu": {
+        "description": "Pen colour on paper"
+    },
     "styloNoir": "Black pen",
-    "@styloNoir": {"description": "Pen colour on paper"},
+    "@styloNoir": {
+        "description": "Pen colour on paper"
+    },
     "styloRouge": "Red pen",
-    "@styloRouge": {"description": "Pen colour on paper"},
+    "@styloRouge": {
+        "description": "Pen colour on paper"
+    },
     "styloVert": "Green pen",
-    "@styloVert": {"description": "Pen colour on paper"},
+    "@styloVert": {
+        "description": "Pen colour on paper"
+    },
     "styloCraieBlanche": "White chalk",
-    "@styloCraieBlanche": {"description": "Chalk colour on the blackboard"},
+    "@styloCraieBlanche": {
+        "description": "Chalk colour on the blackboard"
+    },
     "styloCraieJaune": "Yellow chalk",
-    "@styloCraieJaune": {"description": "Chalk colour on the blackboard"},
+    "@styloCraieJaune": {
+        "description": "Chalk colour on the blackboard"
+    },
     "styloCraieBleue": "Blue chalk",
-    "@styloCraieBleue": {"description": "Chalk colour on the blackboard"},
+    "@styloCraieBleue": {
+        "description": "Chalk colour on the blackboard"
+    },
     "styloCraieRose": "Pink chalk",
-    "@styloCraieRose": {"description": "Chalk colour on the blackboard"},
+    "@styloCraieRose": {
+        "description": "Chalk colour on the blackboard"
+    },
     "gomme": "Eraser",
-    "@gomme": {"description": "Tool that erases the strokes it touches"},
+    "@gomme": {
+        "description": "Tool that erases the strokes it touches"
+    },
     "annuler": "Undo",
-    "@annuler": {"description": "Undo the last ink action"},
+    "@annuler": {
+        "description": "Undo the last ink action"
+    },
     "refaire": "Redo",
-    "@refaire": {"description": "Redo the last undone ink action"},
+    "@refaire": {
+        "description": "Redo the last undone ink action"
+    },
     "effacerTout": "Clear all",
-    "@effacerTout": {"description": "Erase every stroke of the sheet; can be undone"},
+    "@effacerTout": {
+        "description": "Erase every stroke of the sheet; can be undone"
+    },
     "zoomPlus": "Zoom in",
-    "@zoomPlus": {"description": "Button: zoom into the page"},
+    "@zoomPlus": {
+        "description": "Button: zoom into the page"
+    },
     "zoomMoins": "Zoom out",
-    "@zoomMoins": {"description": "Button: zoom out of the page"},
+    "@zoomMoins": {
+        "description": "Button: zoom out of the page"
+    },
     "recentrer": "Back to the start of the page",
-    "@recentrer": {"description": "Button: reset page position and zoom"},
+    "@recentrer": {
+        "description": "Button: reset page position and zoom"
+    },
     "ecrireIci": "Write here. Two fingers move the page and zoom.",
-    "@ecrireIci": {"description": "Hint on the empty sheet"},
+    "@ecrireIci": {
+        "description": "Hint on the empty sheet"
+    },
     "zoneEcriture": "Writing area",
-    "@zoneEcriture": {"description": "Screen reader label of the ink canvas"}
+    "@zoneEcriture": {
+        "description": "Screen reader label of the ink canvas"
+    },
+    "saisirClavier": "Type with the keyboard",
+    "@saisirClavier": {
+        "description": "Toolbar: type an expression instead of writing it"
+    },
+    "saisieTitre": "Expression to compute",
+    "@saisieTitre": {
+        "description": "Title of the typing dialog"
+    },
+    "saisieAide": "In LaTeX, for example 2+3= or x^2=2",
+    "@saisieAide": {
+        "description": "Hint of the typing field"
+    },
+    "valider": "Compute",
+    "@valider": {
+        "description": "Confirm the typed expression"
+    },
+    "annulerDialogue": "Cancel",
+    "@annulerDialogue": {
+        "description": "Close the dialog without change"
+    },
+    "retirer": "Remove",
+    "@retirer": {
+        "description": "Remove a typed expression"
+    },
+    "corriger": "Correct",
+    "@corriger": {
+        "description": "Open the correction of what was understood"
+    },
+    "blocLecture": "Reading…",
+    "@blocLecture": {
+        "description": "The handwriting is being read"
+    },
+    "blocCalcul": "Computing…",
+    "@blocCalcul": {
+        "description": "The result is being computed"
+    },
+    "blocArreter": "Stop",
+    "@blocArreter": {
+        "description": "Stop the running computation"
+    },
+    "blocNonCompris": "Not understood: tap to correct",
+    "@blocNonCompris": {
+        "description": "The expression could not be parsed"
+    },
+    "blocSansResultat": "No result: tap to correct",
+    "@blocSansResultat": {
+        "description": "The engine gave no usable result"
+    },
+    "blocArrete": "Computation stopped: too long",
+    "@blocArrete": {
+        "description": "The computation was stopped"
+    },
+    "blocErreur": "Error: tap to correct",
+    "@blocErreur": {
+        "description": "Something failed for this expression"
+    },
+    "blocFonction": "Function defined",
+    "@blocFonction": {
+        "description": "A function definition was stored"
+    },
+    "modeleManquant": "To read handwriting, download the model in the settings.",
+    "@modeleManquant": {
+        "description": "Banner when the recognition model is missing"
+    },
+    "modeleTitre": "Handwriting recognition",
+    "@modeleTitre": {
+        "description": "Settings section title"
+    },
+    "modeleExplication": "The model is not inside the app. It downloads once from its author's page (Hugging Face, MIT licence). Your writing stays on the device.",
+    "@modeleExplication": {
+        "description": "Explains the optional download"
+    },
+    "modeleTaille": "{mo} MB to download",
+    "@modeleTaille": {
+        "description": "Download size",
+        "placeholders": {
+            "mo": {
+                "type": "int"
+            }
+        }
+    },
+    "modeleTelecharger": "Download the model",
+    "@modeleTelecharger": {
+        "description": "Start the download"
+    },
+    "modeleEnCours": "Downloading… {pourcent}%",
+    "@modeleEnCours": {
+        "description": "Download progress",
+        "placeholders": {
+            "pourcent": {
+                "type": "int"
+            }
+        }
+    },
+    "modelePresent": "Model installed",
+    "@modelePresent": {
+        "description": "The model is ready"
+    },
+    "modeleEchec": "The download failed. Try again.",
+    "@modeleEchec": {
+        "description": "The download failed"
+    },
+    "modeleSupprimer": "Delete the model",
+    "@modeleSupprimer": {
+        "description": "Delete the downloaded model"
+    },
+    "blocVrai": "True",
+    "blocFaux": "False",
+    "@blocVrai": {
+        "description": "An equality without unknown holds"
+    },
+    "@blocFaux": {
+        "description": "An equality without unknown does not hold"
+    }
 }

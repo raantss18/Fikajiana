@@ -1,9 +1,18 @@
+import 'dart:async';
+
+import 'package:fikajiana/comprendre/calcul_feuille.dart';
+import 'package:fikajiana/comprendre/stockage_feuille.dart';
 import 'package:fikajiana/encre/encre.dart';
 import 'package:fikajiana/encre/feuille_encre.dart';
 import 'package:fikajiana/encre/vue_feuille.dart';
 import 'package:fikajiana/l10n/l10n.dart';
+import 'package:fikajiana/reconnaissance/modele.dart';
 import 'package:fikajiana/reglages/reglages.dart';
 import 'package:fikajiana/reglages/support.dart';
+import 'package:fikajiana/ui/calcul/carte_bloc.dart';
+import 'package:fikajiana/ui/navigation/page_destination.dart';
+import 'package:fikajiana/ui/reglages/ecran_reglages.dart';
+import 'package:fikajiana/ui/services.dart';
 import 'package:fikajiana/ui/theme/espacement.dart';
 import 'package:fikajiana/ui/theme/marque.dart';
 import 'package:flutter/material.dart';
@@ -20,11 +29,61 @@ class _EcranFeuilleState extends State<EcranFeuille> {
   final _encre = Encre();
   final _vue = VueFeuille();
   var _gomme = false;
+  late final CalculFeuille _calcul;
+  late final ModeleOcr _modele;
+  StockageFeuille? _stockage;
+
+  @override
+  void initState() {
+    super.initState();
+    final services = context
+        .getInheritedWidgetOfExactType<PorteeServices>()!
+        .services;
+    _stockage = services.stockage;
+    _modele = services.modele..addListener(_surModele);
+    _calcul = CalculFeuille(
+      encre: _encre,
+      lecteur: services.lecteur,
+      moteur: services.moteur,
+    )..addListener(_enregistrer);
+    final document = _stockage?.charger();
+    if (document != null) {
+      _encre.chargerDocument(document['traits'] as List<dynamic>? ?? const []);
+      _calcul.chargerDocument(document['blocs'] as List<dynamic>? ?? const []);
+    }
+  }
+
+  void _surModele() {
+    if (_modele.etat == EtatModele.present) _calcul.modeleDisponible();
+  }
+
+  void _enregistrer() {
+    _stockage?.programmer(
+      () => {'traits': _encre.versDocument(), 'blocs': _calcul.versDocument()},
+    );
+  }
+
+  void _surEncre() {
+    setState(() {});
+    _calcul.encreChangee();
+    _enregistrer();
+  }
 
   @override
   void dispose() {
+    _stockage?.enregistrer();
+    _modele.removeListener(_surModele);
+    _calcul.dispose();
     _vue.dispose();
     super.dispose();
+  }
+
+  Future<void> _saisirAuClavier() async {
+    final latex = await demanderLatex(context, '');
+    if (latex == null || latex.trim().isEmpty || !mounted) return;
+    final centre = MediaQuery.sizeOf(context).center(Offset.zero) / 2;
+    unawaited(_calcul.saisir(latex, _vue.versPage(centre)));
+    setState(() {});
   }
 
   @override
@@ -42,9 +101,54 @@ class _EcranFeuilleState extends State<EcranFeuille> {
           support: reglages.support,
           stylo: reglages.indiceStylo,
           gomme: _gomme,
-          surChangement: () => setState(() {}),
+          surChangement: _surEncre,
         ),
-        if (_encre.estVide) _Invitation(support: reglages.support),
+        if (_encre.estVide && _calcul.blocs.isEmpty)
+          _Invitation(support: reglages.support),
+        ListenableBuilder(
+          listenable: Listenable.merge([_calcul, _vue]),
+          builder: (context, _) => Stack(
+            children: [
+              IgnorePointer(
+                child: CustomPaint(
+                  size: Size.infinite,
+                  painter: PeintreResultats(
+                    blocs: _calcul.blocs,
+                    couleur: Theme.of(context).colorScheme.tertiary,
+                    zoom: _vue.zoom,
+                    decalage: _vue.decalage,
+                  ),
+                ),
+              ),
+              for (final bloc in _calcul.blocs)
+                CarteBloc(
+                  key: ValueKey(bloc.cle),
+                  bloc: bloc,
+                  calcul: _calcul,
+                  vue: _vue,
+                ),
+              if (_calcul.modeleManquant)
+                Positioned(
+                  left: AppEspacement.md,
+                  right: AppEspacement.md,
+                  bottom: AppEspacement.md,
+                  child: Card(
+                    child: ListTile(
+                      leading: const Icon(Icons.download_outlined),
+                      title: Text(l10n.modeleManquant),
+                      trailing: TextButton(
+                        onPressed: () {
+                          Navigator.of(context)
+                              .push(RouteEcran((_) => const EcranReglages()));
+                        },
+                        child: Text(l10n.reglages),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
       ],
     );
     final outils = _BarreOutils(
@@ -54,7 +158,8 @@ class _EcranFeuilleState extends State<EcranFeuille> {
       gomme: _gomme,
       vertical: !compacte,
       surGomme: (valeur) => setState(() => _gomme = valeur),
-      surChangement: () => setState(() {}),
+      surChangement: _surEncre,
+      surClavier: _saisirAuClavier,
     );
     return compacte
         ? Column(
@@ -115,8 +220,10 @@ class _BarreOutils extends StatelessWidget {
     required this.vertical,
     required this.surGomme,
     required this.surChangement,
+    required this.surClavier,
   });
 
+  final VoidCallback surClavier;
   final Encre encre;
   final VueFeuille vue;
   final Reglages reglages;
@@ -157,6 +264,11 @@ class _BarreOutils extends StatelessWidget {
         isSelected: gomme,
         tooltip: l10n.gomme,
         onPressed: () => surGomme(!gomme),
+      ),
+      IconButton(
+        icon: const Icon(Icons.keyboard_outlined),
+        tooltip: l10n.saisirClavier,
+        onPressed: surClavier,
       ),
       IconButton(
         icon: const Icon(Icons.undo),

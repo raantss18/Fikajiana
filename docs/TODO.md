@@ -21,14 +21,15 @@
 > Ce qu'Antsa attend en premier : écrire, voir ce qui est compris, obtenir le résultat, ne rien perdre.
 
 1. 🔄 Page sans bord : glisser, zoomer, recentrer (ADR 0014). Reste : essai au vrai stylet et au doigt
-2. ⏳ Sauvegarde automatique de la feuille sur l'appareil (format ouvert JSON) : aujourd'hui tout se perd à la fermeture
-3. ⏳ Modèle embarqué dans l'APK, absent de Git ; message clair s'il manque
-4. ⏳ `fikajiana_math` : parseur LaTeX → arbre → Giac, testé contre des valeurs de référence (règle 8)
-5. ⏳ Façade du moteur : un appel à la fois ; `undef`, `infinity`, `list[...]`, guillemets de `latex()`
-6. ⏳ Arrêt d'un calcul long : `timeout N` et `ctrl_c` sur le Pad 7, sinon Giac dans un service `:calcul` tué au délai
-7. ⏳ Blocs : regrouper les traits proches, lire le bloc à la pause
-8. ⏳ **Tranche verticale** : écrire `2+3=` → LaTeX affiché → résultat exact → valeur approchée, la formule à côté de l'écriture (ADR 0012)
-9. ⏳ Correction : toucher une formule pour la corriger ; toute lecture reste corrigeable (ADR 0003)
+2. ✅ Sauvegarde automatique de la feuille (JSON, sur l'appareil) : revient après arrêt et réinstallation, sur le Pad 7
+3. ✅ Modèle téléchargé depuis les Réglages, empreinte vérifiée, jamais redistribué (ADR 0016) : essai réel sur le Pad 7
+4. ✅ `fikajiana_math` : LaTeX → Giac, 60 tests ; 30 calculs vérifiés à la main sur le Pad 7
+5. ✅ Façade du moteur : un calcul à la fois ; `undef`, `infinity`, vrai ou faux traités
+6. ✅ Arrêt d'un calcul long : `ifactor(2^1009-1)` et `expand((x+y+z+t)^900)` arrêtés, moteur encore utilisable ; délai de 15 s
+7. ✅ Blocs : traits proches regroupés, lus à la pause
+8. 🔄 **Tranche verticale** : `2+3=` écrit → `2+3 = 5` sur le Pad 7, au stylet simulé. Reste : vrai stylet
+9. ✅ Correction : toucher une carte pour corriger le LaTeX ; saisie au clavier
+10. ✅ Résultat écrit à la main après le `=` (ADR 0017) : `5` et la fraction `5/6` sur le Pad 7, au stylet simulé
 
 ## P1 — Mises à jour et versions
 
@@ -38,8 +39,8 @@
 2. ⏳ `tool/release.sh` : APK arm64, `release.json` signé, message sur ce que la version permet de faire (`app/CHANGELOG.md`)
 3. ⏳ Réglages → Mises à jour : version installée, « Rechercher » ; signature, SHA-256, même clé Android (ADR 0015). Rien sans le réseau, aucune donnée envoyée
 4. ⏳ Essai réel : installer une version par-dessus la précédente, la feuille conservée
-5. ❓ Provenance des poids Pix2Text : réponse de l'auteur (ticket n° 209) ou modèle maison. Bloque toute diffusion publique avec ce modèle
-6. ❓ Première version publique, dès que P0 et P1 sont faits et le point 5 tranché
+5. ✅ Provenance des poids : contournée, pas de redistribution (ADR 0016). La question reste ouverte pour un modèle embarqué (P6)
+6. ⏳ Première version publique sur GitHub (demandée par Antsa le 2026-11-06)
 
 ## P2 — Écriture et reconnaissance de qualité
 
@@ -87,6 +88,7 @@
 2. ⏳ Modèle d'encre maison sur données libres (synthétiques + collecte CC0)
 3. ⏳ Vérifier les signatures GNU de GMP et MPFR, licence des gabarits Very Good CLI, Maxima (`reverification.md`)
 4. ⏳ Poids du modèle réduit ; `pix2text-mfr-1.5` à réévaluer sur une nouvelle mesure
+4b. ⏳ Résultat dans l'écriture de l'utilisateur, à partir de ses propres chiffres (non étudié) ; élargir l'alphabet
 5. ⏳ 3D : différée (ADR 0005)
 
 ## Fait
