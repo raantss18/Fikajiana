@@ -44,8 +44,8 @@ Future<ui.Image?> rasteriser(Encre encre) async {
     ..strokeWidth = hauteurEncre * _traitParHauteur
     ..strokeCap = ui.StrokeCap.round
     ..strokeJoin = ui.StrokeJoin.round;
-  for (final points in encre.traits) {
-    canevas.drawPath(cheminDuTrait(points), trait);
+  for (final ecrit in encre.traits) {
+    canevas.drawPath(cheminDuTrait(ecrit.points), trait);
   }
   return await enregistreur.endRecording().toImage(w, h);
 }

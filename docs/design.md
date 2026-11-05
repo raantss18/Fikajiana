@@ -28,6 +28,20 @@
 | `secondary` | `#A33F36` / `#FFB4AA` | second plan (clair / sombre) |
 | `tertiary` | `#8A5000` / `#FFB866` | résultats (clair / sombre) |
 
+## Supports d'écriture (ADR 0012)
+
+Feuille blanche `#FFFFFF`, cahier à grands carreaux (Seyès, 8 mm, interlignes de 2 mm, marge rouge) et à petits carreaux (5 mm)
+`#FFFEFA`, tableau noir `#22282B`. Longueurs sur la base nominale de 160 dp par pouce : pas exactes au millimètre sur tous les écrans.
+
+| Rang | Papier | Contraste (feuille / cahier) | Tableau noir | Contraste |
+|---|---|---|---|---|
+| 1 | bleu `#0B3D91` | 10,04 / 9,95 | craie blanche `#F5F2E8` | 13,33 |
+| 2 | noir `#1A1A1A` | 17,40 / 17,25 | craie jaune `#FFE27A` | 11,67 |
+| 3 | rouge `#C62828` | 5,62 / 5,57 | craie bleue `#8FD3FF` | 9,19 |
+| 4 | vert `#1B7A3D` | 5,39 / 5,34 | craie rose `#FFB3C1` | 8,87 |
+
+Police : Nunito (OFL), `app/assets/polices/`.
+
 ## Contrastes mesurés (2026-11-05, `app/test/ui/theme_test.dart`, formule WCAG 2.2)
 
 Seuils : texte 4,5:1, contour 3:1.

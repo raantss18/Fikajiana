@@ -1,0 +1,229 @@
+import 'package:fikajiana/encre/encre.dart';
+import 'package:fikajiana/encre/feuille_encre.dart';
+import 'package:fikajiana/l10n/l10n.dart';
+import 'package:fikajiana/reglages/reglages.dart';
+import 'package:fikajiana/reglages/support.dart';
+import 'package:fikajiana/ui/theme/espacement.dart';
+import 'package:fikajiana/ui/theme/marque.dart';
+import 'package:flutter/material.dart';
+
+/// La Feuille : on écrit sur le support choisi, les outils à portée de main.
+class EcranFeuille extends StatefulWidget {
+  const new({super.key});
+
+  @override
+  State<EcranFeuille> createState() => _EcranFeuilleState();
+}
+
+class _EcranFeuilleState extends State<EcranFeuille> {
+  final _encre = Encre();
+  var _gomme = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final reglages = PorteeReglages.de(context);
+    final l10n = context.l10n;
+    final compacte = MediaQuery.sizeOf(context).width < AppLargeurs.compacte;
+    final feuille = Stack(
+      fit: StackFit.expand,
+      children: [
+        FeuilleEncre(
+          encre: _encre,
+          libelle: l10n.zoneEcriture,
+          support: reglages.support,
+          stylo: reglages.indiceStylo,
+          gomme: _gomme,
+          surChangement: () => setState(() {}),
+        ),
+        if (_encre.estVide) _Invitation(support: reglages.support),
+      ],
+    );
+    final outils = _BarreOutils(
+      encre: _encre,
+      reglages: reglages,
+      gomme: _gomme,
+      vertical: !compacte,
+      surGomme: (valeur) => setState(() => _gomme = valeur),
+      surChangement: () => setState(() {}),
+    );
+    return compacte
+        ? Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(child: feuille),
+              outils,
+            ],
+          )
+        : Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(child: feuille),
+              outils,
+            ],
+          );
+  }
+}
+
+/// S'efface au premier trait et ne bloque jamais l'écriture.
+class _Invitation extends StatelessWidget {
+  const new({required this.support});
+
+  final SupportEcriture support;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return IgnorePointer(
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const MarquePi(),
+            const SizedBox(height: AppEspacement.sm),
+            Text(
+              context.l10n.ecrireIci,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: support.estSombre
+                    ? support.stylos[0]
+                    : support.stylos[1],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BarreOutils extends StatelessWidget {
+  const new({
+    required this.encre,
+    required this.reglages,
+    required this.gomme,
+    required this.vertical,
+    required this.surGomme,
+    required this.surChangement,
+  });
+
+  final Encre encre;
+  final Reglages reglages;
+  final bool gomme;
+  final bool vertical;
+  final ValueChanged<bool> surGomme;
+  final VoidCallback surChangement;
+
+  void _agir(VoidCallback action) {
+    action();
+    surChangement();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final support = reglages.support;
+    final boutons = <Widget>[
+      for (var i = 0; i < support.stylos.length; i++)
+        _BoutonStylo(
+          couleur: support.stylos[i],
+          fond: support.fond,
+          libelle: support.nomStylo(l10n, i),
+          choisi: !gomme && reglages.indiceStylo == i,
+          surChoix: () {
+            reglages.indiceStylo = i;
+            surGomme(false);
+          },
+        ),
+      IconButton(
+        icon: const Icon(Icons.cleaning_services_outlined),
+        selectedIcon: const Icon(Icons.cleaning_services),
+        isSelected: gomme,
+        tooltip: l10n.gomme,
+        onPressed: () => surGomme(!gomme),
+      ),
+      IconButton(
+        icon: const Icon(Icons.undo),
+        tooltip: l10n.annuler,
+        onPressed: encre.peutAnnuler ? () => _agir(encre.annuler) : null,
+      ),
+      IconButton(
+        icon: const Icon(Icons.redo),
+        tooltip: l10n.refaire,
+        onPressed: encre.peutRefaire ? () => _agir(encre.refaire) : null,
+      ),
+      IconButton(
+        icon: const Icon(Icons.delete_outline),
+        tooltip: l10n.effacerTout,
+        onPressed: encre.estVide ? null : () => _agir(encre.effacer),
+      ),
+    ];
+    return Material(
+      color: Theme.of(context).colorScheme.surfaceContainer,
+      child: SafeArea(
+        top: vertical,
+        left: false,
+        child: SingleChildScrollView(
+          scrollDirection: vertical ? Axis.vertical : Axis.horizontal,
+          child: Flex(
+            direction: vertical ? Axis.vertical : Axis.horizontal,
+            mainAxisSize: MainAxisSize.min,
+            children: boutons,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Pastille de couleur : le stylo choisi porte aussi une coche et un anneau.
+class _BoutonStylo extends StatelessWidget {
+  const new({
+    required this.couleur,
+    required this.fond,
+    required this.libelle,
+    required this.choisi,
+    required this.surChoix,
+  });
+
+  final Color couleur;
+  final Color fond;
+  final String libelle;
+  final bool choisi;
+  final VoidCallback surChoix;
+
+  @override
+  Widget build(BuildContext context) {
+    final couleurs = Theme.of(context).colorScheme;
+    return Semantics(
+      selected: choisi,
+      button: true,
+      label: libelle,
+      excludeSemantics: true,
+      child: Tooltip(
+        message: libelle,
+        child: InkResponse(
+          onTap: surChoix,
+          radius: 24,
+          child: SizedBox.square(
+            dimension: 48,
+            child: Center(
+              child: Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: couleur,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: choisi ? couleurs.primary : couleurs.outline,
+                    width: choisi ? 3 : 1,
+                  ),
+                ),
+                child: choisi ? Icon(Icons.check, size: 16, color: fond) : null,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

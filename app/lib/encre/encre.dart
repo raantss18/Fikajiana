@@ -19,13 +19,21 @@ class PointEncre {
   List<double> versJson() => [x, y, pression];
 }
 
+/// Un trait : ses points et le rang du stylo qui l'a écrit.
+class Trait {
+  const new(this.points, {this.stylo = 0});
+
+  final List<PointEncre> points;
+  final int stylo;
+}
+
 /// Traits écrits sur une feuille, avec annuler et refaire.
 class Encre {
-  final List<List<PointEncre>> _traits = [];
-  final List<List<List<PointEncre>>> _annulations = [];
-  final List<List<List<PointEncre>>> _retablissements = [];
+  final List<Trait> _traits = [];
+  final List<List<Trait>> _annulations = [];
+  final List<List<Trait>> _retablissements = [];
 
-  List<List<PointEncre>> get traits => List.unmodifiable(_traits);
+  List<Trait> get traits => List.unmodifiable(_traits);
   bool get estVide => _traits.isEmpty;
   bool get peutAnnuler => _annulations.isNotEmpty;
   bool get peutRefaire => _retablissements.isNotEmpty;
@@ -35,19 +43,21 @@ class Encre {
     _retablissements.clear();
   }
 
-  void commencer(PointEncre point) {
+  void commencer(PointEncre point, {int stylo = 0}) {
     _memoriser();
-    _traits.add([point]);
+    _traits.add(Trait([point], stylo: stylo));
   }
 
   void prolonger(PointEncre point) {
-    if (_traits.isNotEmpty) _traits.last = [..._traits.last, point];
+    if (_traits.isEmpty) return;
+    final dernier = _traits.last;
+    _traits.last = Trait([...dernier.points, point], stylo: dernier.stylo);
   }
 
   /// Retire les traits qui passent à moins de [rayon] de [position].
   void gommer(Offset position, double rayon) {
-    bool touche(List<PointEncre> trait) =>
-        trait.any((p) => (p.position - position).distance <= rayon);
+    bool touche(Trait trait) =>
+        trait.points.any((p) => (p.position - position).distance <= rayon);
     if (!_traits.any(touche)) return;
     _memoriser();
     _traits.removeWhere(touche);
@@ -77,7 +87,7 @@ class Encre {
 
   /// Rectangle qui contient tous les points, ou `null` sans encre.
   Rect? get cadre {
-    final points = _traits.expand((trait) => trait);
+    final points = _traits.expand((trait) => trait.points);
     if (points.isEmpty) return null;
     var (gauche, haut) = (double.infinity, double.infinity);
     var (droite, bas) = (double.negativeInfinity, double.negativeInfinity);
@@ -91,7 +101,7 @@ class Encre {
   }
 
   List<List<List<double>>> versJson() => [
-    for (final trait in _traits) [for (final p in trait) p.versJson()],
+    for (final trait in _traits) [for (final p in trait.points) p.versJson()],
   ];
 }
 

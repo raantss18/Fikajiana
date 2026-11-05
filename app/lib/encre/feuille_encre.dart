@@ -1,25 +1,31 @@
 import 'package:fikajiana/encre/encre.dart';
+import 'package:fikajiana/reglages/support.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 const double _epaisseur = 3;
 const double _rayonGomme = 18;
-const double _pasQuadrillage = 32;
 
 /// Zone d'écriture au stylet ou au doigt.
 ///
 /// Dès qu'un stylet a servi, le doigt et la paume n'écrivent plus. Le bouton du
-/// stylet, ou son bout gomme, efface les traits touchés.
+/// stylet, son bout gomme ou [gomme] effacent les traits touchés.
 class FeuilleEncre extends StatefulWidget {
   const new({
     required this.encre,
     required this.libelle,
+    this.support = SupportEcriture.feuilleBlanche,
+    this.stylo = 0,
+    this.gomme = false,
     this.surChangement,
     super.key,
   });
 
   final Encre encre;
   final String libelle;
+  final SupportEcriture support;
+  final int stylo;
+  final bool gomme;
   final VoidCallback? surChangement;
 
   @override
@@ -36,6 +42,7 @@ class _FeuilleEncreState extends State<FeuilleEncre> {
       e.kind == PointerDeviceKind.invertedStylus;
 
   bool _estGomme(PointerEvent e) =>
+      widget.gomme ||
       e.kind == PointerDeviceKind.invertedStylus ||
       e.buttons & kSecondaryStylusButton != 0;
 
@@ -56,7 +63,7 @@ class _FeuilleEncreState extends State<FeuilleEncre> {
       if (_gomme) {
         widget.encre.gommer(e.localPosition, _rayonGomme);
       } else {
-        widget.encre.commencer(_point(e));
+        widget.encre.commencer(_point(e), stylo: widget.stylo);
       }
     });
   }
@@ -78,7 +85,6 @@ class _FeuilleEncreState extends State<FeuilleEncre> {
 
   @override
   Widget build(BuildContext context) {
-    final couleurs = Theme.of(context).colorScheme;
     return Semantics(
       label: widget.libelle,
       child: Listener(
@@ -88,13 +94,19 @@ class _FeuilleEncreState extends State<FeuilleEncre> {
         onPointerUp: _lever,
         onPointerCancel: _lever,
         child: ClipRect(
-          child: CustomPaint(
-            painter: _PeintreEncre(
-              traits: widget.encre.traits,
-              couleurEncre: couleurs.onSurface,
-              couleurQuadrillage: couleurs.outlineVariant,
-            ),
-            size: Size.infinite,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              RepaintBoundary(
+                child: CustomPaint(painter: PeintreSupport(widget.support)),
+              ),
+              CustomPaint(
+                painter: _PeintreEncre(
+                  traits: widget.encre.traits,
+                  support: widget.support,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -103,41 +115,25 @@ class _FeuilleEncreState extends State<FeuilleEncre> {
 }
 
 class _PeintreEncre extends CustomPainter {
-  const new({
-    required this.traits,
-    required this.couleurEncre,
-    required this.couleurQuadrillage,
-  });
+  const new({required this.traits, required this.support});
 
-  final List<List<PointEncre>> traits;
-  final Color couleurEncre;
-  final Color couleurQuadrillage;
+  final List<Trait> traits;
+  final SupportEcriture support;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final quadrillage = Paint()
-      ..color = couleurQuadrillage.withValues(alpha: 0.4)
-      ..strokeWidth = 0.5;
-    for (var x = _pasQuadrillage; x < size.width; x += _pasQuadrillage) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), quadrillage);
-    }
-    for (var y = _pasQuadrillage; y < size.height; y += _pasQuadrillage) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), quadrillage);
-    }
     final encre = Paint()
-      ..color = couleurEncre
       ..style = PaintingStyle.stroke
       ..strokeWidth = _epaisseur
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
     for (final trait in traits) {
-      canvas.drawPath(cheminDuTrait(trait), encre);
+      encre.color = support.stylos[trait.stylo];
+      canvas.drawPath(cheminDuTrait(trait.points), encre);
     }
   }
 
   @override
   bool shouldRepaint(_PeintreEncre ancien) =>
-      !identical(ancien.traits, traits) ||
-      ancien.couleurEncre != couleurEncre ||
-      ancien.couleurQuadrillage != couleurQuadrillage;
+      !identical(ancien.traits, traits) || ancien.support != support;
 }

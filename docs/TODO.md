@@ -47,6 +47,7 @@
 
 - ⏳ Équations et systèmes · fonctions + graphe · dérivées, limites, intégrales, suites · polynômes · matrices
 - ⏳ Géométrie dynamique (outils de construction + formes dessinées reconnues)
-- 🔄 Identité : couleurs, π, icône (ADR 0010, `docs/design.md`). Reste : police de texte, composants
+- 🔄 Identité : couleurs, π, icône, Nunito (ADR 0010, `docs/design.md`). Reste : composants
+- 🔄 Supports au choix, stylos, gomme (ADR 0012) : essayés sur le Pad 7 au stylet simulé. Reste : vrai stylet, Poco
 - ⏳ Accessibilité (TalkBack), clair/sombre, téléphone/tablette
 - ⏳ Publication : GitHub Releases signées, puis F-Droid (Giac, GMP, MPFR compilés depuis les sources)

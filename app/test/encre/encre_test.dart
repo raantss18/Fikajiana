@@ -13,13 +13,13 @@ void main() {
       final encre = Encre()
         ..commencer(a)
         ..prolonger(b);
-      expect(encre.traits.single, [a, b]);
+      expect(encre.traits.single.points, [a, b]);
 
       encre.annuler();
       expect(encre.estVide, isTrue);
 
       encre.refaire();
-      expect(encre.traits.single, [a, b]);
+      expect(encre.traits.single.points, [a, b]);
     });
 
     test('un nouveau trait vide la pile de rétablissement', () {
@@ -35,7 +35,7 @@ void main() {
         ..commencer(a)
         ..commencer(loin)
         ..gommer(Offset.zero, 5);
-      expect(encre.traits.single, [loin]);
+      expect(encre.traits.single.points, [loin]);
 
       encre.annuler();
       expect(encre.traits.length, 2);
@@ -56,7 +56,14 @@ void main() {
         ..effacer();
       expect(encre.estVide, isTrue);
       encre.annuler();
-      expect(encre.traits.single, [a]);
+      expect(encre.traits.single.points, [a]);
+    });
+
+    test('un trait garde son stylo en se prolongeant', () {
+      final encre = Encre()
+        ..commencer(a, stylo: 2)
+        ..prolonger(b);
+      expect(encre.traits.single.stylo, 2);
     });
 
     test('cadre', () {
