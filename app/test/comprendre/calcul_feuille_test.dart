@@ -106,7 +106,7 @@ void main() {
   test('une valeur non décimale reçoit son approché', () async {
     moteur.reponse = const ReponseGiac(
       exact: '1/3',
-      latex: 'rac{1}{3}',
+      latex: r'\frac{1}{3}',
       approche: '0.333333333333',
     );
     _trait(encre, 0, 0);
