@@ -57,8 +57,8 @@
 
 ### B. Encre et correction
 
-- ⏳ Spike latence au stylet, caméra rapide sur Pad 7 : `Listener`, paquet `stylet`, `LowLatencyCanvasView` en vue native. Aucun objectif chiffré avant
-- ⏳ Mesurer la perte de points (Flutter ne lit pas l'historique des `MotionEvent`)
+- ⏳ Latence réelle au stylet, caméra rapide sur Pad 7 : `Listener`, puis `LowLatencyCanvasView` en vue native si besoin. Aucun objectif chiffré avant
+- ✅ Perte de points mesurée : au moins 97 % reçus, 250 points/s (`docs/recherche/spike-latence.md`)
 - ⏳ Rendu du trait : filtre 1€ et `perfect_freehand`, pression ; les points bruts restent pour la reconnaissance
 - ⏳ Formes au maintien du stylet : ligne, cercle, rectangle, triangle ($1 et moindres carrés), annulable
 - ⏳ Gestes : rature et barré pour effacer ; ajustement des courbes au levé (Schneider, licence à vérifier ou réécriture)
