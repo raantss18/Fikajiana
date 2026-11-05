@@ -25,6 +25,9 @@
     "annuler": "Annuler",
     "refaire": "Refaire",
     "effacerTout": "Tout effacer",
-    "ecrireIci": "Écris ici, au stylet ou au doigt.",
+    "zoomPlus": "Zoomer",
+    "zoomMoins": "Dézoomer",
+    "recentrer": "Revenir au début de la page",
+    "ecrireIci": "Écris ici. Deux doigts pour déplacer la page et zoomer.",
     "zoneEcriture": "Zone d'écriture"
 }

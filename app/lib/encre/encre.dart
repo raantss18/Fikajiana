@@ -139,6 +139,14 @@ class Encre {
     _traits.last._ajouter(point);
   }
 
+  /// Retire le trait en cours sans laisser d'étape à annuler : un second doigt
+  /// vient de montrer que ce n'était pas de l'écriture.
+  void abandonnerDernierTrait() {
+    if (_traits.isEmpty || _annulations.isEmpty) return;
+    _traits.removeLast();
+    _annulations.removeLast();
+  }
+
   /// Le stylet est levé : le trait reçoit sa fin définitive.
   void terminer() {
     if (_traits.isNotEmpty) _traits.last._terminer();
