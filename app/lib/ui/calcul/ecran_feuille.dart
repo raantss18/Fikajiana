@@ -109,6 +109,17 @@ class _EcranFeuilleState extends State<EcranFeuille> {
           listenable: Listenable.merge([_calcul, _vue]),
           builder: (context, _) => Stack(
             children: [
+              IgnorePointer(
+                child: CustomPaint(
+                  size: Size.infinite,
+                  painter: PeintreResultats(
+                    blocs: _calcul.blocs,
+                    couleur: Theme.of(context).colorScheme.tertiary,
+                    zoom: _vue.zoom,
+                    decalage: _vue.decalage,
+                  ),
+                ),
+              ),
               for (final bloc in _calcul.blocs)
                 CarteBloc(
                   key: ValueKey(bloc.cle),

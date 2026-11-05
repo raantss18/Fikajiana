@@ -56,7 +56,8 @@ class CarteBloc extends StatelessWidget {
     final afficherResultat =
         bloc.etat == EtatBloc.fait &&
         bloc.type != TypeExpression.fonction &&
-        resultat != null;
+        resultat != null &&
+        bloc.ecriture == null;
 
     return Positioned(
       left: position.dx,
@@ -94,7 +95,7 @@ class CarteBloc extends StatelessWidget {
                       ],
                     ],
                   ),
-                  if (afficherResultat && bloc.approche != null)
+                  if (bloc.etat == EtatBloc.fait && bloc.approche != null)
                     Text(
                       '≈ ${nombres(bloc.approche!).replaceAll('{,}', ',')}',
                       style: theme.textTheme.bodyMedium?.copyWith(
@@ -128,6 +129,38 @@ class CarteBloc extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Le résultat écrit à la main après le `=` (ADR 0017), sous la même vue que
+/// l'encre. Il n'intercepte aucun geste.
+class PeintreResultats extends CustomPainter {
+  const new({
+    required this.blocs,
+    required this.couleur,
+    required this.zoom,
+    required this.decalage,
+  });
+
+  final List<BlocCalcul> blocs;
+  final Color couleur;
+  final double zoom;
+  final Offset decalage;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas
+      ..translate(decalage.dx, decalage.dy)
+      ..scale(zoom);
+    final encre = Paint()..color = couleur;
+    for (final bloc in blocs) {
+      for (final contour in bloc.ecriture?.contours ?? const <Path>[]) {
+        canvas.drawPath(contour, encre);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(PeintreResultats ancien) => true;
 }
 
 /// `2+3=` s'affiche `2+3 = 5` : le signe n'est écrit qu'une fois.

@@ -29,6 +29,7 @@
 7. ✅ Blocs : traits proches regroupés, lus à la pause
 8. 🔄 **Tranche verticale** : `2+3=` écrit → `2+3 = 5` sur le Pad 7, au stylet simulé. Reste : vrai stylet
 9. ✅ Correction : toucher une carte pour corriger le LaTeX ; saisie au clavier
+10. ✅ Résultat écrit à la main après le `=` (ADR 0017) : `5` et la fraction `5/6` sur le Pad 7, au stylet simulé
 
 ## P1 — Mises à jour et versions
 
@@ -87,6 +88,7 @@
 2. ⏳ Modèle d'encre maison sur données libres (synthétiques + collecte CC0)
 3. ⏳ Vérifier les signatures GNU de GMP et MPFR, licence des gabarits Very Good CLI, Maxima (`reverification.md`)
 4. ⏳ Poids du modèle réduit ; `pix2text-mfr-1.5` à réévaluer sur une nouvelle mesure
+4b. ⏳ Résultat dans l'écriture de l'utilisateur, à partir de ses propres chiffres (non étudié) ; élargir l'alphabet
 5. ⏳ 3D : différée (ADR 0005)
 
 ## Fait

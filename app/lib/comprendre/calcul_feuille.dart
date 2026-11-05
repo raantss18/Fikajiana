@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:fikajiana/comprendre/blocs.dart';
+import 'package:fikajiana/comprendre/ecriture_resultat.dart';
 import 'package:fikajiana/encre/encre.dart';
 import 'package:fikajiana/moteur/giac.dart';
 import 'package:fikajiana/moteur/moteur.dart';
@@ -64,6 +65,25 @@ class BlocCalcul {
   String? approche;
 
   bool get estSaisie => cle.startsWith('saisie-');
+
+  /// On écrit le résultat à la main seulement si l'écriture finit par `=` :
+  /// c'est là qu'il est attendu, et il y a la place sur la ligne.
+  bool get finitParEgal =>
+      !estSaisie && (latex?.trimRight().endsWith('=') ?? false);
+
+  String? _ecritPour;
+  EcritureResultat? _ecrit;
+
+  /// Le résultat tracé après le `=`, ou `null` s'il reste sur la carte.
+  EcritureResultat? get ecriture {
+    final resultat = this.resultat;
+    if (etat != EtatBloc.fait || resultat == null || !finitParEgal) return null;
+    if (_ecritPour != resultat) {
+      _ecritPour = resultat;
+      _ecrit = ecrireResultat(resultat, cadre);
+    }
+    return _ecrit;
+  }
 
   Map<String, dynamic> versJson() => {
     'cle': cle,

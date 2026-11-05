@@ -1,6 +1,5 @@
 // Essai sur l'appareil : LaTeX → Giac → résultat, puis arrêt d'un calcul long.
 // ignore_for_file: avoid_print
-import 'package:fikajiana/moteur/giac.dart';
 import 'package:fikajiana/moteur/moteur.dart';
 import 'package:fikajiana_math/fikajiana_math.dart';
 import 'package:flutter/material.dart';
