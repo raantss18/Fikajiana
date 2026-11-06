@@ -4,6 +4,22 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+## [0.3.0] — 2026-11-06
+
+### Message fr
+
+La Géométrie est là : pose des points, trace droites, cercles, milieux, médiatrices et intersections, puis déplace un point et toute la figure suit. L'Historique garde toutes tes feuilles : commence-en une nouvelle, reviens à une ancienne.
+
+### Message en
+
+Geometry is here: place points, draw lines, circles, midpoints, bisectors and intersections, then move a point and the whole figure follows. History keeps all your sheets: start a new one, go back to an old one.
+
+### Changements
+
+- Géométrie dynamique : point, segment, droite, cercle, milieu, médiatrice, bissectrice, parallèle, perpendiculaire, intersection. / Dynamic geometry: point, segment, line, circle, midpoint, perpendicular bisector, angle bisector, parallel, perpendicular, intersection.
+- Déplacer un point recalcule tout ; une construction impossible disparaît, puis revient. / Moving a point recalculates everything; an impossible construction disappears, then comes back.
+- Historique : plusieurs feuilles, gardées sur l'appareil ; ta feuille actuelle est reprise. / History: several sheets, kept on the device; your current sheet is carried over.
+
 ## [0.2.0] — 2026-11-06
 
 ### Message fr

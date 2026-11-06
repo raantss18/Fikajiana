@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:fikajiana/comprendre/carnet.dart';
+import 'package:fikajiana/geometrie/atelier.dart';
 import 'package:fikajiana/graphe/courbes.dart';
 import 'package:fikajiana/graphe/vue_graphe.dart';
 import 'package:fikajiana/moteur/giac.dart';
@@ -203,6 +205,8 @@ void main() {
             lecteur: LecteurPix2Text(modele),
             moteur: _Moteur(),
             courbes: Courbes(),
+            atelier: Atelier(),
+            carnet: Carnet(),
           ),
         ),
       );

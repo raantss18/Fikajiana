@@ -1,6 +1,7 @@
 import 'dart:io';
 
-import 'package:fikajiana/comprendre/stockage_feuille.dart';
+import 'package:fikajiana/comprendre/carnet.dart';
+import 'package:fikajiana/geometrie/atelier.dart';
 import 'package:fikajiana/graphe/courbes.dart';
 import 'package:fikajiana/moteur/moteur.dart';
 import 'package:fikajiana/reconnaissance/lecteur.dart';
@@ -15,7 +16,8 @@ class Services {
     required this.lecteur,
     required this.moteur,
     required this.courbes,
-    this.stockage,
+    required this.atelier,
+    required this.carnet,
   });
 
   /// Sans stockage ni modèle.
@@ -26,6 +28,8 @@ class Services {
       lecteur: LecteurPix2Text(modele),
       moteur: MoteurGiac(),
       courbes: Courbes(),
+      atelier: Atelier(),
+      carnet: Carnet(),
     );
   }
 
@@ -38,7 +42,8 @@ class Services {
       lecteur: LecteurPix2Text(modele),
       moteur: MoteurGiac(),
       courbes: Courbes(fichier: File('${dossier.path}/courbes.json')),
-      stockage: StockageFeuille(File('${dossier.path}/feuille.json')),
+      atelier: Atelier(fichier: File('${dossier.path}/figure.json')),
+      carnet: Carnet(dossier: dossier),
     );
   }
 
@@ -46,7 +51,8 @@ class Services {
   final Lecteur lecteur;
   final Moteur moteur;
   final Courbes courbes;
-  final StockageFeuille? stockage;
+  final Atelier atelier;
+  final Carnet carnet;
 }
 
 class PorteeServices extends InheritedWidget {

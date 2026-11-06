@@ -6,7 +6,6 @@
     "destinationGeometrie": "Géométrie",
     "destinationHistorique": "Historique",
     "accueil": "Accueil",
-    "ecranBientot": "Cet écran n'est pas encore disponible.",
     "reglages": "Réglages",
     "reglagesSupport": "Support d'écriture",
     "supportFeuilleBlanche": "Feuille blanche",
@@ -111,6 +110,52 @@
     "grapheDescription": "Graphe de {n} fonctions",
     "@grapheDescription": {
         "description": "Screen reader label of the graph",
+        "placeholders": {
+            "n": {
+                "type": "int"
+            }
+        }
+    },
+    "geometrieVide": "Figure vide. Outils pour choisir une construction, puis touche la feuille.",
+    "outilDeplacer": "Déplacer",
+    "outilPoint": "Point",
+    "outilSegment": "Segment",
+    "outilDroite": "Droite",
+    "outilCercle": "Cercle",
+    "outilMilieu": "Milieu",
+    "outilMediatrice": "Médiatrice",
+    "outilBissectrice": "Bissectrice",
+    "outilParallele": "Parallèle",
+    "outilPerpendiculaire": "Perpendiculaire",
+    "outilIntersection": "Intersection",
+    "outilGomme": "Retirer un objet",
+    "aideDeplacer": "Glisse un point pour déformer la figure.",
+    "aidePoint": "Touche pour poser un point.",
+    "aideDeuxPoints": "Touche deux points : existants ou nouveaux.",
+    "aideCercle": "Touche le centre, puis un point du cercle.",
+    "aideBissectrice": "Touche trois points : le sommet en deuxième.",
+    "aideParDroite": "Touche une droite, puis un point.",
+    "aideIntersection": "Touche deux lignes ou cercles.",
+    "aideGomme": "Touche l'objet à retirer, et ce qui en dépend part avec lui.",
+    "geometrieDescription": "Figure de {n} objets",
+    "@geometrieDescription": {
+        "description": "Screen reader label of the figure",
+        "placeholders": {
+            "n": {
+                "type": "int"
+            }
+        }
+    },
+    "historiqueNouvelle": "Nouvelle feuille",
+    "historiqueSupprimer": "Supprimer",
+    "historiqueSupprimerTitre": "Supprimer cette feuille ?",
+    "historiqueSupprimerTexte": "Elle sera effacée de l'appareil, sans retour possible.",
+    "historiqueEnCours": "en cours",
+    "historiqueVide": "Aucune feuille enregistrée. Écris sur la Feuille : elle se garde toute seule.",
+    "historiqueFeuilleVide": "Feuille vide",
+    "historiqueTraits": "{n} traits, sans calcul",
+    "@historiqueTraits": {
+        "description": "Sheet with strokes but no calculation",
         "placeholders": {
             "n": {
                 "type": "int"
