@@ -4,6 +4,18 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+## [0.1.0] — 2026-11-06
+
+### Message fr
+
+Première version d'essai : écris un calcul à la main, l'app le lit, le calcule et écrit le résultat après le signe égal. Vérifie ce qui est lu : la lecture se trompe encore souvent. Pour lire l'écriture, télécharge le modèle dans les réglages.
+
+### Message en
+
+First test version: write a calculation by hand, the app reads it, computes it and writes the result after the equals sign. Check what is read: recognition is still often wrong. To read handwriting, download the model in the settings.
+
+### Changements
+
 - Écrire sur une feuille blanche, un cahier ou un tableau noir, avec des stylos de couleur et une gomme. / Write on a blank sheet, a notebook or a blackboard, with coloured pens and an eraser.
 - Trait à pression ; maintenir le stylet à la fin d'un trait le transforme en ligne, cercle, triangle ou rectangle. / Pressure-sensitive strokes; holding the stylus at the end of a stroke turns it into a line, circle, triangle or rectangle.
 - Page sans bord : glisser et zoomer. / Borderless page: pan and zoom.
