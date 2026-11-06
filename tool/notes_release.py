@@ -28,9 +28,8 @@ for ligne in bloc("Changements").splitlines():
         en.append("- " + b)
 mo = round(int(octets) / 1_000_000)
 
-print(f"""# Fikajiana {version}
-
-**On écrit des maths à la main, l'app calcule et répond à la main.** Android, libre, sans compte et hors ligne.
+# GitHub affiche déjà le titre de la version : la fiche commence au message.
+print(f"""**On écrit des maths à la main, l'app calcule et répond à la main.** Android, libre, sans compte et hors ligne.
 
 ## ⬇️ Télécharger
 
