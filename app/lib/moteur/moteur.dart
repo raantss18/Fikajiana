@@ -4,7 +4,7 @@ import 'package:fikajiana/moteur/giac.dart';
 
 /// Ce qu'il faut du moteur de calcul : remplaçable dans les tests.
 abstract class Moteur {
-  Future<ReponseGiac> calculer(String entree);
+  Future<ReponseGiac> calculer(String entree, {bool degres = false});
   void interrompre();
 }
 
@@ -16,16 +16,16 @@ class MoteurGiac implements Moteur {
   Future<void> _file = Future.value();
 
   @override
-  Future<ReponseGiac> calculer(String entree) {
-    final resultat = _file.then((_) => _executer(entree));
+  Future<ReponseGiac> calculer(String entree, {bool degres = false}) {
+    final resultat = _file.then((_) => _executer(entree, degres));
     _file = resultat.then((_) {}, onError: (_) {});
     return resultat;
   }
 
-  Future<ReponseGiac> _executer(String entree) async {
+  Future<ReponseGiac> _executer(String entree, bool degres) async {
     final minuteur = Timer(delai, interrompre);
     try {
-      return await calculerGiac(entree);
+      return await calculerGiac(entree, degres: degres);
     } finally {
       minuteur.cancel();
     }

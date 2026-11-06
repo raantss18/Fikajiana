@@ -112,7 +112,7 @@
     "@recentrer": {
         "description": "Button: reset page position and zoom"
     },
-    "ecrireIci": "Write here. Two fingers move the page and zoom.",
+    "ecrireIci": "Write here. Two fingers move the page and zoom. Tap a result to correct it.",
     "@ecrireIci": {
         "description": "Hint on the empty sheet"
     },
@@ -291,5 +291,11 @@
     "aProposLicences": "View licences",
     "@aProposLicences": {
         "description": "Settings: updates and about"
-    }
+    },
+    "outils": "Tools",
+    "menu": "Menu",
+    "modeApproche": "Approximate values: tap for exact values",
+    "modeExact": "Exact values: tap for approximate values",
+    "modeDegres": "Angles in degrees: tap for radians",
+    "modeRadians": "Angles in radians: tap for degrees"
 }

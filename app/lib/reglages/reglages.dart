@@ -6,6 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 const _cleSupport = 'support';
 const _cleStylo = 'stylo';
+const _cleApproche = 'approche';
+const _cleDegres = 'degres';
 
 /// Réglages de l'utilisateur, gardés sur l'appareil seulement.
 class Reglages extends ChangeNotifier {
@@ -16,6 +18,8 @@ class Reglages extends ChangeNotifier {
     _support = SupportEcriture.values.asNameMap()[nom] ?? _support;
     final stylo = stockage.getInt(_cleStylo) ?? 0;
     _indiceStylo = stylo.clamp(0, _support.stylos.length - 1);
+    _approche = stockage.getBool(_cleApproche) ?? false;
+    _degres = stockage.getBool(_cleDegres) ?? false;
   }
 
   static Future<Reglages> charger() async =>
@@ -24,6 +28,29 @@ class Reglages extends ChangeNotifier {
   final SharedPreferences? stockage;
   SupportEcriture _support = SupportEcriture.feuilleBlanche;
   var _indiceStylo = 0;
+
+  var _approche = false;
+  var _degres = false;
+
+  /// Montre la valeur approchée plutôt que la valeur exacte.
+  bool get approche => _approche;
+
+  /// Les angles sont en degrés plutôt qu'en radians.
+  bool get degres => _degres;
+
+  set approche(bool valeur) {
+    if (valeur == _approche) return;
+    _approche = valeur;
+    notifyListeners();
+    unawaited(stockage?.setBool(_cleApproche, valeur));
+  }
+
+  set degres(bool valeur) {
+    if (valeur == _degres) return;
+    _degres = valeur;
+    notifyListeners();
+    unawaited(stockage?.setBool(_cleDegres, valeur));
+  }
 
   SupportEcriture get support => _support;
   int get indiceStylo => _indiceStylo;

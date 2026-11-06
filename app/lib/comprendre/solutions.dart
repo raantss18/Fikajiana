@@ -1,0 +1,88 @@
+import 'package:fikajiana_math/fikajiana_math.dart';
+
+/// Écrit les solutions rendues par Giac comme on les écrit au tableau :
+/// `x = 1`, `x = -2 ou x = 2`, `S = ∅`. Jamais `x+3=4 = {1}`, qui est faux.
+///
+/// Ce qui n'a pas la forme attendue reste tel quel : rien n'est deviné.
+String ecrireSolutions(
+  String latex, {
+  required TypeExpression type,
+  required List<String> inconnues,
+  required bool francais,
+}) {
+  if (inconnues.isEmpty) return latex;
+  // Giac nomme ses entiers n_0, n_1… : `sin(x)=0` a une infinité de solutions.
+  final propre = latex.replaceAll(RegExp(r'\\mathrm\{n\\_\d+\}'), 'n');
+  final suite = propre == latex ? '' : r',\,n \in \mathbb{Z}';
+  final texte = propre.trim();
+  if (texte == '[]' || texte == '' || texte == r'\{\}') return r'S=\emptyset';
+
+  final ou =
+      r'\,\mathrm{'
+      '${francais ? 'ou' : 'or'}'
+      r'}\,';
+  final String? solutions;
+  if (type == TypeExpression.systeme) {
+    solutions = _systeme(texte, inconnues, francais ? 'et' : 'and', ou);
+  } else {
+    solutions = _equation(texte, inconnues.first, ou);
+  }
+  return solutions == null ? latex : '$solutions$suite';
+}
+
+String? _equation(String texte, String inconnue, String ou) {
+  if (!texte.startsWith(r'\{') || !texte.endsWith(r'\}')) return null;
+  final valeurs = _separer(texte.substring(2, texte.length - 2), ',');
+  final nom = _nom(inconnue);
+  if (valeurs.length == 1 && valeurs.single == inconnue) {
+    return r'S=\mathbb{R}';
+  }
+  return valeurs.map((v) => '$nom=$v').join(ou);
+}
+
+String? _systeme(String texte, List<String> inconnues, String et, String ou) {
+  final tableau = RegExp(
+    r'\\begin\{array\}\{[^}]*\}(.*)\\end\{array\}',
+    dotAll: true,
+  ).firstMatch(texte);
+  if (tableau == null) return null;
+  final lignes = <String>[];
+  for (final ligne in tableau[1]!.split(r'\\')) {
+    if (ligne.trim().isEmpty) continue;
+    final valeurs = _separer(ligne, '&');
+    if (valeurs.length != inconnues.length) return null;
+    lignes.add(
+      [
+        for (var i = 0; i < valeurs.length; i++)
+          '${_nom(inconnues[i])}=${valeurs[i]}',
+      ].join(
+        r'\,\mathrm{'
+        '$et'
+        r'}\,',
+      ),
+    );
+  }
+  return lignes.isEmpty ? null : lignes.join(ou);
+}
+
+/// `theta` s'écrit `\theta` ; `x` et `x_1` restent tels quels.
+String _nom(String inconnue) =>
+    RegExp(r'^[a-zA-Z]{2,}$').hasMatch(inconnue) ? '\\$inconnue' : inconnue;
+
+/// Coupe sur [separateur] hors de toute accolade ou parenthèse.
+List<String> _separer(String texte, String separateur) {
+  final morceaux = <String>[];
+  var profondeur = 0;
+  var debut = 0;
+  for (var i = 0; i < texte.length; i++) {
+    final c = texte[i];
+    if ('{(['.contains(c)) profondeur++;
+    if ('})]'.contains(c)) profondeur--;
+    if (c == separateur && profondeur == 0) {
+      morceaux.add(texte.substring(debut, i).trim());
+      debut = i + 1;
+    }
+  }
+  morceaux.add(texte.substring(debut).trim());
+  return morceaux;
+}

@@ -10,6 +10,39 @@ void main() {
     });
   }
 
+  test('une équation et un système disent leurs inconnues', () {
+    expect(analyserLatex('x+3=4').inconnues, ['x']);
+    expect(analyserLatex(r'\begin{cases}x+y=1\\x-y=3\end{cases}').inconnues, [
+      'x',
+      'y',
+    ]);
+    expect(analyserLatex('2+3=').inconnues, isEmpty);
+  });
+
+  group('noms de fonctions lus', () {
+    giac(r'\sin ( \pi )', 'sin(pi)');
+    giac(r'\ln ( 5 ) =', 'ln(5)');
+    giac('l n ( 5 )', 'ln(5)');
+    giac('s i n ( x )', 'sin(x)');
+    giac(r'\operatorname { s i n } ( x )', 'sin(x)');
+    giac(r'\operatorname{ln}(5)', 'ln(5)');
+    giac(r'\mathrm { l n } ( 5 )', 'ln(5)');
+    giac('I n ( 5 )', 'ln(5)');
+  });
+
+  group('degrés', () {
+    test('30° vaut π/6 en radians', () {
+      const attendu = 'sin((30)*pi/180)';
+      expect(analyserLatex(r'\sin ( 3 0 ^ { \circ } )').giac, attendu);
+      expect(analyserLatex(r'\sin(30^\circ)').giac, attendu);
+      expect(analyserLatex(r'\sin(30°)').giac, attendu);
+    });
+
+    test('30° reste 30 quand Giac compte en degrés', () {
+      expect(analyserLatex(r'\sin(30°)', degres: true).giac, 'sin(30)');
+    });
+  });
+
   group('calculs', () {
     giac('2+3', '2+3', TypeExpression.calcul);
     giac('2+3=', '2+3', TypeExpression.calcul);
@@ -33,7 +66,7 @@ void main() {
     giac(r'\sin^{2} x', '(sin(x))^(2)');
     giac(r'\ln(x)', 'ln(x)');
     giac(r'\log(100)', 'log10(100)');
-    giac(r'|x-1|', 'abs(x-1)');
+    giac('|x-1|', 'abs(x-1)');
     giac('5!', 'factorial(5)');
     giac(r'\pi', 'pi');
     giac(r'\left( x \right)', '(x)');

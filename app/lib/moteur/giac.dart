@@ -89,17 +89,19 @@ class ReponseGiac {
   final String? erreur;
 }
 
-String _calculerSurCeFil(String entree) {
+String _calculerSurCeFil(String entree, {required bool degres}) {
   final bibliotheque = DynamicLibrary.open('libfikajiana_giac.so');
-  final calculer = bibliotheque.lookupFunction<_EvalNatif, _EvalNatif>(
-    'fikajiana_giac_calculer',
-  );
+  final calculer = bibliotheque
+      .lookupFunction<
+        Pointer<Utf8> Function(Pointer<Utf8>, Int32),
+        Pointer<Utf8> Function(Pointer<Utf8>, int)
+      >('fikajiana_giac_calculer');
   final liberer = bibliotheque.lookupFunction<_LibererNatif, _Liberer>(
     'fikajiana_giac_liberer',
   );
   final entreeNative = entree.toNativeUtf8();
   try {
-    final sortie = calculer(entreeNative);
+    final sortie = calculer(entreeNative, degres ? 1 : 0);
     try {
       return sortie.toDartString();
     } finally {
@@ -111,8 +113,10 @@ String _calculerSurCeFil(String entree) {
 }
 
 /// Calcule dans un isolat. Un appel à la fois : le contexte Giac est unique.
-Future<ReponseGiac> calculerGiac(String entree) async =>
-    ReponseGiac.analyser(await Isolate.run(() => _calculerSurCeFil(entree)));
+Future<ReponseGiac> calculerGiac(String entree, {bool degres = false}) async =>
+    ReponseGiac.analyser(
+      await Isolate.run(() => _calculerSurCeFil(entree, degres: degres)),
+    );
 
 /// Demande l'arrêt du calcul en cours, depuis n'importe quel fil.
 void interrompreGiac() {

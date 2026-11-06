@@ -141,7 +141,15 @@ class _Jeton {
   bool commande(String s) => genre == _Genre.commande && texte == s;
 }
 
-List<_Jeton> _decouper(String latex) {
+/// `\operatorname{sin}` et `\mathrm { l n }` valent le nom seul.
+final _nomEnveloppe = RegExp(
+  r'\\(?:operatorname\*?|mathrm|mathit|rm)\s*\{([^{}]*)\}',
+);
+
+List<_Jeton> _decouper(String texte) {
+  final latex = texte
+      .replaceAllMapped(_nomEnveloppe, (m) => ' ${m[1]} ')
+      .replaceAll('°', r'^{\circ}');
   final jetons = <_Jeton>[];
   var i = 0;
   bool chiffre(String c) => c.codeUnitAt(0) >= 48 && c.codeUnitAt(0) <= 57;
@@ -182,7 +190,7 @@ List<_Jeton> _decouper(String latex) {
         }
       }
     } else if (chiffre(c)) {
-      // Les espaces ne comptent pas en LaTeX, et le lecteur écrit `1 0` pour 10.
+      // Les espaces ne comptent pas en LaTeX ; le lecteur écrit `1 0` pour 10.
       final nombre = StringBuffer(c);
       var j = i + 1;
       while (true) {
@@ -253,7 +261,10 @@ List<_Jeton> _rassemblerNoms(List<_Jeton> jetons) {
 /// Lecteur à descente récursive d'un sous-ensemble du LaTeX mathématique.
 class LecteurLatex {
   /// Prépare la lecture de [latex].
-  new(String latex) : _jetons = _decouper(latex);
+  new(String latex, {this.degres = false}) : _jetons = _decouper(latex);
+
+  /// Les angles sont en degrés.
+  final bool degres;
 
   final List<_Jeton> _jetons;
   var _i = 0;
@@ -454,11 +465,24 @@ class LecteurLatex {
   Terme _puissance() {
     final base = _postfixe();
     if (!_prendre('^')) return base;
+    if (_estDegre) return _degres(base);
     final exposant = _groupeOuAtome();
     return Terme(
       '(${base.giac})^(${exposant.giac})',
       symboles: {...base.symboles, ...exposant.symboles},
     );
+  }
+
+  /// `^\circ` ou `^{\circ}`, le signe degré.
+  bool get _estDegre =>
+      _courant.commande('circ') ||
+      (_courant.est('{') && _voir(1).commande('circ'));
+
+  Terme _degres(Terme base) {
+    _i += _courant.est('{') ? 3 : 1;
+    return degres
+        ? base
+        : Terme('(${base.giac})*pi/180', symboles: base.symboles);
   }
 
   Terme _postfixe() {
@@ -517,6 +541,11 @@ class LecteurLatex {
 
   Terme _lettre() {
     final nom = _courant.texte;
+    // Un l manuscrit se lit souvent I : `In(5)` veut dire ln(5).
+    if (nom == 'I' && _voir(1).est('n') && _voir(2).est('(')) {
+      _i += 2;
+      return _appel('ln');
+    }
     _i++;
     if (_prendre('_')) {
       final indice = _groupeOuAtome();

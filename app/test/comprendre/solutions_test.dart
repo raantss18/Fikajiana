@@ -1,0 +1,87 @@
+import 'package:fikajiana/comprendre/solutions.dart';
+import 'package:fikajiana_math/fikajiana_math.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+// Les entrées sont les sorties réelles de Giac (commit 19a710a), relevées sur
+// l'émulateur le 2026-11-06.
+String _equation(String latex, {String inconnue = 'x', bool francais = true}) =>
+    ecrireSolutions(
+      latex,
+      type: TypeExpression.equation,
+      inconnues: [inconnue],
+      francais: francais,
+    );
+
+void main() {
+  group('équation', () {
+    test('une solution, sans accolades ni faux signe égal', () {
+      expect(_equation(r'\{1\}'), 'x=1');
+    });
+
+    test('plusieurs solutions', () {
+      expect(
+        _equation(r'\{-\sqrt{2},\sqrt{2}\}'),
+        r'x=-\sqrt{2}\,\mathrm{ou}\,x=\sqrt{2}',
+      );
+      expect(_equation(r'\{0,1\}', francais: false), contains('or'));
+    });
+
+    test('une virgule dans une sous-expression ne coupe pas', () {
+      expect(_equation(r'\{\frac{1}{f(a,b)}\}'), r'x=\frac{1}{f(a,b)}');
+    });
+
+    test('aucune solution', () {
+      expect(_equation('[]'), r'S=\emptyset');
+    });
+
+    test('tous les réels', () {
+      expect(_equation(r'\{x\}'), r'S=\mathbb{R}');
+    });
+
+    test('une famille de solutions dit que n est entier', () {
+      expect(
+        _equation(r'\{\mathrm{n\_0}\cdot \pi \}'),
+        r'x=n\cdot \pi,\,n \in \mathbb{Z}',
+      );
+    });
+
+    test('une inconnue grecque', () {
+      expect(_equation(r'\{1\}', inconnue: 'theta'), r'\theta=1');
+    });
+
+    test('une forme inattendue reste telle quelle', () {
+      expect(_equation('5'), '5');
+    });
+  });
+
+  group('système', () {
+    String systeme(String latex) => ecrireSolutions(
+      latex,
+      type: TypeExpression.systeme,
+      inconnues: const ['x', 'y'],
+      francais: true,
+    );
+
+    test('une solution', () {
+      expect(
+        systeme(
+          r'\left(\begin{array}{cc}'
+          '\n'
+          r'2 & \mathrm{-1}'
+          '\n'
+          r'\end{array}\right) ',
+        ),
+        r'x=2\,\mathrm{et}\,y=\mathrm{-1}',
+      );
+    });
+
+    test('aucune solution', () {
+      expect(systeme('[]'), r'S=\emptyset');
+    });
+
+    test('un autre nombre de valeurs reste tel quel', () {
+      const latex = r'\left(\begin{array}{c}1\end{array}\right)';
+      expect(systeme(latex), latex);
+    });
+  });
+}
