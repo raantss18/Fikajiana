@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:fikajiana/comprendre/carnet.dart';
+import 'package:fikajiana/comprendre/classeur.dart';
 import 'package:fikajiana/geometrie/atelier.dart';
 import 'package:fikajiana/graphe/courbes.dart';
 import 'package:fikajiana/moteur/moteur.dart';
@@ -18,7 +19,12 @@ class Services {
     required this.courbes,
     required this.atelier,
     required this.carnet,
-  });
+    required this.graphes,
+    required this.figures,
+  }) {
+    graphes.addListener(() => courbes.changerDeFichier(graphes.fichier));
+    figures.addListener(() => atelier.changerDeFichier(figures.fichier));
+  }
 
   /// Sans stockage ni modèle.
   factory enMemoire() {
@@ -30,6 +36,8 @@ class Services {
       courbes: Courbes(),
       atelier: Atelier(),
       carnet: Carnet(),
+      graphes: Classeur(),
+      figures: Classeur(),
     );
   }
 
@@ -37,13 +45,23 @@ class Services {
   static Future<Services> charger() async {
     final dossier = await getApplicationSupportDirectory();
     final modele = ModeleOcr(dossier: '${dossier.path}/modele');
+    final graphes = Classeur(
+      dossier: Directory('${dossier.path}/graphes'),
+      ancien: File('${dossier.path}/courbes.json'),
+    );
+    final figures = Classeur(
+      dossier: Directory('${dossier.path}/figures'),
+      ancien: File('${dossier.path}/figure.json'),
+    );
     return Services(
       modele: modele,
       lecteur: LecteurPix2Text(modele),
       moteur: MoteurGiac(),
-      courbes: Courbes(fichier: File('${dossier.path}/courbes.json')),
-      atelier: Atelier(fichier: File('${dossier.path}/figure.json')),
+      courbes: Courbes(fichier: graphes.fichier),
+      atelier: Atelier(fichier: figures.fichier),
       carnet: Carnet(dossier: dossier),
+      graphes: graphes,
+      figures: figures,
     );
   }
 
@@ -53,6 +71,8 @@ class Services {
   final Courbes courbes;
   final Atelier atelier;
   final Carnet carnet;
+  final Classeur graphes;
+  final Classeur figures;
 }
 
 class PorteeServices extends InheritedWidget {
