@@ -3,14 +3,14 @@ import 'dart:async';
 import 'package:fikajiana/comprendre/calcul_feuille.dart';
 import 'package:fikajiana/encre/vue_feuille.dart';
 import 'package:fikajiana/l10n/l10n.dart';
+import 'package:fikajiana/reglages/reglages.dart';
 import 'package:fikajiana/ui/theme/espacement.dart';
-import 'package:fikajiana_math/fikajiana_math.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
 
-/// Sous l'écriture : ce qui a été compris et le résultat. L'écriture reste
-/// telle quelle (ADR 0012). Toucher la carte permet de corriger (ADR 0003).
-class CarteBloc extends StatelessWidget {
+/// Autour d'une expression écrite : le résultat, et rien d'autre (ADR 0018).
+/// La lecture ne s'affiche pas ; toucher le résultat ouvre sa correction.
+class RepereBloc extends StatelessWidget {
   const new({
     required this.bloc,
     required this.calcul,
@@ -23,7 +23,11 @@ class CarteBloc extends StatelessWidget {
   final VueFeuille vue;
 
   Future<void> _corriger(BuildContext context) async {
-    final latex = await demanderLatex(context, bloc.latex ?? '');
+    final latex = await demanderLatex(
+      context,
+      bloc.latex ?? '',
+      surRetirer: bloc.estSaisie ? () => calcul.retirer(bloc) : null,
+    );
     if (latex != null && latex.trim().isNotEmpty) {
       unawaited(calcul.corriger(bloc, latex));
     }
@@ -31,99 +35,147 @@ class CarteBloc extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
-    final position = bloc.cadre.bottomLeft * vue.zoom + vue.decalage;
-    final message = switch (bloc.etat) {
-      EtatBloc.lecture => l10n.blocLecture,
-      EtatBloc.calcul => l10n.blocCalcul,
-      EtatBloc.nonCompris || EtatBloc.sansModele => l10n.blocNonCompris,
-      EtatBloc.sansResultat => l10n.blocSansResultat,
-      EtatBloc.arrete => l10n.blocArrete,
-      EtatBloc.erreur => l10n.blocErreur,
-      EtatBloc.fait =>
-        bloc.type == TypeExpression.fonction ? l10n.blocFonction : null,
-    };
+    final reglages = PorteeReglages.de(context);
     final virgule = Localizations.localeOf(context).languageCode == 'fr';
-    String nombres(String texte) => virgule
-        ? texte.replaceAllMapped(
-            RegExp(r'(\d)\.(\d)'),
-            (m) => '${m[1]}{,}${m[2]}',
-          )
-        : texte;
-    final verite = bloc.verite;
-    final resultat = bloc.resultat;
-    final afficherResultat =
-        bloc.etat == EtatBloc.fait &&
-        bloc.type != TypeExpression.fonction &&
-        resultat != null &&
-        bloc.ecriture == null;
+    final accent = Theme.of(context).colorScheme.tertiary;
+    final l10n = context.l10n;
+    final ecrit = bloc.ecriture(
+      approcheVoulue: reglages.approche,
+      virgule: virgule,
+    );
+    if (ecrit != null) {
+      return _Zone(
+        cadre: ecrit.cadre.inflate(4),
+        vue: vue,
+        libelle: l10n.corriger,
+        surToucher: () => unawaited(_corriger(context)),
+      );
+    }
+
+    final droite = bloc.cadre.centerRight * vue.zoom + vue.decalage;
+    final dessous = bloc.cadre.bottomLeft * vue.zoom + vue.decalage;
+    final Offset position;
+    final Widget contenu;
+    switch (bloc.etat) {
+      case EtatBloc.lecture:
+        return Positioned(
+          left: droite.dx + AppEspacement.sm,
+          top: droite.dy - 24,
+          child: const SizedBox.square(
+            dimension: 48,
+            child: Center(
+              child: SizedBox.square(
+                dimension: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+          ),
+        );
+      case EtatBloc.calcul:
+        return Positioned(
+          left: droite.dx + AppEspacement.sm,
+          top: droite.dy - 24,
+          child: IconButton(
+            icon: const Icon(Icons.stop_circle_outlined),
+            tooltip: l10n.blocArreter,
+            onPressed: calcul.arreter,
+          ),
+        );
+      case EtatBloc.sansModele:
+        return const SizedBox.shrink();
+      case EtatBloc.nonCompris ||
+          EtatBloc.sansResultat ||
+          EtatBloc.arrete ||
+          EtatBloc.erreur:
+        final message = switch (bloc.etat) {
+          EtatBloc.arrete => l10n.blocArrete,
+          EtatBloc.sansResultat => l10n.blocSansResultat,
+          EtatBloc.nonCompris => l10n.blocNonCompris,
+          _ => l10n.blocErreur,
+        };
+        return Positioned(
+          left: droite.dx + AppEspacement.sm,
+          top: droite.dy - 24,
+          child: IconButton(
+            icon: Icon(Icons.help_outline, color: accent),
+            tooltip: message,
+            onPressed: () => unawaited(_corriger(context)),
+          ),
+        );
+      case EtatBloc.fait:
+        final verite = bloc.verite;
+        if (verite != null) {
+          position = droite + const Offset(AppEspacement.sm, -14);
+          contenu = Text(
+            verite ? l10n.blocVrai : l10n.blocFaux,
+            style: Theme.of(context).textTheme.titleMedium
+                ?.copyWith(color: accent),
+          );
+        } else {
+          final valeur = bloc.texte(
+            approcheVoulue: reglages.approche,
+            virgule: virgule,
+          );
+          if (!bloc.montreResultat || valeur == null) {
+            return const SizedBox.shrink();
+          }
+          position = bloc.estSaisie || !bloc.finitParEgal
+              ? dessous
+              : droite + const Offset(AppEspacement.sm, -14);
+          contenu = _Formule(
+            latex: bloc.estSaisie
+                ? '${_sansEgalFinal(bloc.latex ?? '')} = $valeur'
+                : valeur,
+            couleur: accent,
+          );
+        }
+    }
 
     return Positioned(
       left: position.dx,
-      top: position.dy + AppEspacement.sm,
+      top: position.dy,
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 480, minHeight: 48),
-        child: Card(
-          margin: EdgeInsets.zero,
-          child: InkWell(
-            onTap: bloc.etat == EtatBloc.lecture
-                ? null
-                : () => unawaited(_corriger(context)),
-            child: Padding(
-              padding: const EdgeInsets.all(AppEspacement.sm),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Wrap(
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      if (bloc.latex != null && bloc.latex!.isNotEmpty)
-                        _Formule(latex: _sansEgalFinal(bloc.latex!)),
-                      if (afficherResultat) ...[
-                        Text(
-                          ' = ',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            color: theme.colorScheme.tertiary,
-                          ),
-                        ),
-                        _Formule(
-                          latex: nombres(resultat),
-                          couleur: theme.colorScheme.tertiary,
-                        ),
-                      ],
-                    ],
-                  ),
-                  if (bloc.etat == EtatBloc.fait && bloc.approche != null)
-                    Text(
-                      '≈ ${nombres(bloc.approche!).replaceAll('{,}', ',')}',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.tertiary,
-                      ),
-                    ),
-                  if (verite != null)
-                    Text(
-                      verite ? l10n.blocVrai : l10n.blocFaux,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: theme.colorScheme.tertiary,
-                      ),
-                    ),
-                  if (message != null)
-                    Text(message, style: theme.textTheme.bodySmall),
-                  if (bloc.etat == EtatBloc.calcul)
-                    TextButton(
-                      onPressed: calcul.arreter,
-                      child: Text(l10n.blocArreter),
-                    ),
-                  if (bloc.estSaisie && bloc.etat != EtatBloc.calcul)
-                    TextButton(
-                      onPressed: () => calcul.retirer(bloc),
-                      child: Text(l10n.retirer),
-                    ),
-                ],
-              ),
-            ),
+        child: InkWell(
+          onTap: () => unawaited(_corriger(context)),
+          child: Center(widthFactor: 1, child: contenu),
+        ),
+      ),
+    );
+  }
+}
+
+/// Zone invisible sur le résultat écrit : on écrit partout ailleurs.
+class _Zone extends StatelessWidget {
+  const new({
+    required this.cadre,
+    required this.vue,
+    required this.libelle,
+    required this.surToucher,
+  });
+
+  final Rect cadre;
+  final VueFeuille vue;
+  final String libelle;
+  final VoidCallback surToucher;
+
+  @override
+  Widget build(BuildContext context) {
+    final coin = cadre.topLeft * vue.zoom + vue.decalage;
+    final largeur = cadre.width * vue.zoom;
+    final hauteur = cadre.height * vue.zoom;
+    return Positioned(
+      left: coin.dx,
+      top: coin.dy,
+      child: Semantics(
+        button: true,
+        label: libelle,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: surToucher,
+          child: SizedBox(
+            width: largeur < 48 ? 48 : largeur,
+            height: hauteur < 48 ? 48 : hauteur,
           ),
         ),
       ),
@@ -139,12 +191,16 @@ class PeintreResultats extends CustomPainter {
     required this.couleur,
     required this.zoom,
     required this.decalage,
+    required this.approche,
+    required this.virgule,
   });
 
   final List<BlocCalcul> blocs;
   final Color couleur;
   final double zoom;
   final Offset decalage;
+  final bool approche;
+  final bool virgule;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -153,7 +209,8 @@ class PeintreResultats extends CustomPainter {
       ..scale(zoom);
     final encre = Paint()..color = couleur;
     for (final bloc in blocs) {
-      for (final contour in bloc.ecriture?.contours ?? const <Path>[]) {
+      final ecrit = bloc.ecriture(approcheVoulue: approche, virgule: virgule);
+      for (final contour in ecrit?.contours ?? const <Path>[]) {
         canvas.drawPath(contour, encre);
       }
     }
@@ -189,17 +246,22 @@ class _Formule extends StatelessWidget {
 }
 
 /// Dialogue de saisie ou de correction, avec aperçu de la formule.
-Future<String?> demanderLatex(BuildContext context, String initial) {
+Future<String?> demanderLatex(
+  BuildContext context,
+  String initial, {
+  VoidCallback? surRetirer,
+}) {
   return showDialog<String>(
     context: context,
-    builder: (_) => _DialogueLatex(initial: initial),
+    builder: (_) => _DialogueLatex(initial: initial, surRetirer: surRetirer),
   );
 }
 
 class _DialogueLatex extends StatefulWidget {
-  const new({required this.initial});
+  const new({required this.initial, this.surRetirer});
 
   final String initial;
+  final VoidCallback? surRetirer;
 
   @override
   State<_DialogueLatex> createState() => _DialogueLatexState();
@@ -219,13 +281,14 @@ class _DialogueLatexState extends State<_DialogueLatex> {
     final l10n = context.l10n;
     return AlertDialog(
       title: Text(l10n.saisieTitre),
+      scrollable: true,
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           TextField(
             controller: _texte,
-            autofocus: true,
+            autofocus: widget.initial.isEmpty,
             autocorrect: false,
             enableSuggestions: false,
             decoration: InputDecoration(hintText: l10n.saisieAide),
@@ -236,6 +299,14 @@ class _DialogueLatexState extends State<_DialogueLatex> {
         ],
       ),
       actions: [
+        if (widget.surRetirer != null)
+          TextButton(
+            onPressed: () {
+              widget.surRetirer!();
+              Navigator.of(context).pop();
+            },
+            child: Text(l10n.retirer),
+          ),
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           child: Text(l10n.annulerDialogue),

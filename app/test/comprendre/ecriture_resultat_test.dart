@@ -2,10 +2,14 @@ import 'dart:ui';
 
 import 'package:fikajiana/comprendre/calcul_feuille.dart';
 import 'package:fikajiana/comprendre/ecriture_resultat.dart';
+import 'package:fikajiana_math/fikajiana_math.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   const ecriture = Rect.fromLTWH(100, 200, 300, 60);
+
+  EcritureResultat? ecrit(BlocCalcul b) =>
+      b.ecriture(approcheVoulue: false, virgule: false);
 
   group('sait écrire', () {
     for (final latex in [
@@ -23,6 +27,11 @@ void main() {
       'x+y',
       r'8^{\frac{1}{3}}',
       r'\left(x+1\right)',
+      r'\ln\left(5\right)',
+      r'\sin(x)+\cos(x)',
+      r'\tan(1)',
+      r'\exp(x)',
+      'abcdefghijklmnopqrstuvwxyz',
     ]) {
       test(latex, () {
         final ecrit = ecrireResultat(latex, ecriture);
@@ -36,7 +45,6 @@ void main() {
     for (final latex in [
       r'\mbox{false}',
       r'\left(\begin{array}{cc}1&2\\3&4\end{array}\right)',
-      r'\sin(x)',
       'Q',
       r'\frac{1}{2',
       '',
@@ -75,16 +83,18 @@ void main() {
         BlocCalcul(cle: '1', cadre: ecriture, latex: latex, etat: EtatBloc.fait)
           ..resultat = resultat;
 
-    test('écrit seulement après un =', () {
-      expect(bloc('2+3=', resultat: '5').ecriture, isNotNull);
-      expect(bloc('2+3', resultat: '5').ecriture, isNull);
-      expect(bloc('x^2=2', resultat: '5').ecriture, isNull);
+    test('écrit après un =, ou sous une équation', () {
+      expect(ecrit(bloc('2+3=', resultat: '5')), isNotNull);
+      expect(ecrit(bloc('2+3', resultat: '5')), isNull);
+      final equation = bloc('x^2=4', resultat: '2')
+        ..type = TypeExpression.equation;
+      expect(ecrit(equation)!.cadre.top, greaterThan(ecriture.bottom));
     });
 
     test('jamais sans résultat', () {
-      expect(bloc('2+3=').ecriture, isNull);
+      expect(ecrit(bloc('2+3=')), isNull);
       expect(
-        (bloc('2+3=', resultat: '5')..etat = EtatBloc.calcul).ecriture,
+        ecrit(bloc('2+3=', resultat: '5')..etat = EtatBloc.calcul),
         isNull,
       );
     });
@@ -96,14 +106,14 @@ void main() {
         latex: '2+3=',
         etat: EtatBloc.fait,
       )..resultat = '5';
-      expect(saisie.ecriture, isNull);
+      expect(ecrit(saisie), isNull);
     });
 
     test('un résultat corrigé est réécrit', () {
       final b = bloc('2+3=', resultat: '5');
-      final avant = b.ecriture;
+      final avant = ecrit(b);
       b.resultat = '6';
-      expect(identical(b.ecriture, avant), isFalse);
+      expect(identical(ecrit(b), avant), isFalse);
     });
   });
 }

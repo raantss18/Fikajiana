@@ -32,9 +32,11 @@ class _Moteur implements Moteur {
     approche: '5.0',
   );
   final entrees = <String>[];
+  bool derniersDegres = false;
 
   @override
-  Future<ReponseGiac> calculer(String entree) async {
+  Future<ReponseGiac> calculer(String entree, {bool degres = false}) async {
+    derniersDegres = degres;
     entrees.add(entree);
     return reponse;
   }
@@ -90,6 +92,148 @@ void main() {
     expect(grouperTraits(encre.traits), isEmpty);
   });
 
+  group('un résultat ne s’efface pas', () {
+    test('un nouveau calcul juste en dessous laisse le premier', () async {
+      _trait(encre, 0, 0);
+      calcul.encreChangee();
+      await _attendre();
+      final premier = calcul.blocs.single;
+      expect(premier.resultat, '5');
+
+      // Assez près pour que l'ancienne règle fusionne les deux.
+      _trait(encre, 0, 30);
+      calcul.encreChangee();
+      await _attendre();
+      expect(calcul.blocs, hasLength(2));
+      expect(identical(calcul.blocs.first, premier), isTrue);
+      expect(premier.resultat, '5');
+      expect(lecteur.lectures, 2);
+    });
+
+    test('un calcul à droite d’un = ne le touche pas', () async {
+      _trait(encre, 0, 0);
+      calcul.encreChangee();
+      await _attendre();
+      _trait(encre, 60, 0);
+      calcul.encreChangee();
+      await _attendre();
+      expect(calcul.blocs, hasLength(2));
+    });
+
+    test('un trait qui touche le bloc le fait relire', () async {
+      _trait(encre, 0, 0);
+      calcul.encreChangee();
+      await _attendre();
+      _trait(encre, 5, 2);
+      calcul.encreChangee();
+      await _attendre();
+      expect(calcul.blocs, hasLength(1));
+      expect(lecteur.lectures, 2);
+    });
+
+    test('sans =, le trait suivant sur la ligne continue le calcul', () async {
+      lecteur.reponse = '2+3';
+      _trait(encre, 0, 0);
+      calcul.encreChangee();
+      await _attendre();
+      lecteur.reponse = '2+3=';
+      _trait(encre, 40, 0);
+      calcul.encreChangee();
+      await _attendre();
+      expect(calcul.blocs, hasLength(1));
+      expect(calcul.blocs.single.finitParEgal, isTrue);
+    });
+
+    test('un trait prolongé après la pause est relu', () async {
+      _trait(encre, 0, 0);
+      calcul.encreChangee();
+      await _attendre();
+      encre.prolonger(const PointEncre(40, 0, 0.1));
+      calcul.encreChangee();
+      await _attendre();
+      expect(lecteur.lectures, 2);
+    });
+
+    test('gommer un calcul laisse les autres', () async {
+      _trait(encre, 0, 0);
+      calcul.encreChangee();
+      await _attendre();
+      _trait(encre, 0, 400);
+      calcul.encreChangee();
+      await _attendre();
+      expect(calcul.blocs, hasLength(2));
+      encre.gommer(const Offset(0, 400), 5);
+      calcul.encreChangee();
+      await _attendre();
+      expect(calcul.blocs.single.resultat, '5');
+    });
+  });
+
+  group('modes', () {
+    test('exact ou approché, sans recalculer', () async {
+      moteur.reponse = const ReponseGiac(
+        exact: '1/3',
+        latex: r'\frac{1}{3}',
+        approche: '0.333333333333',
+      );
+      _trait(encre, 0, 0);
+      calcul.encreChangee();
+      await _attendre();
+      final bloc = calcul.blocs.single;
+      expect(bloc.texte(approcheVoulue: false, virgule: false), r'\frac{1}{3}');
+      expect(bloc.texte(approcheVoulue: true, virgule: false), '0.33333333');
+      expect(bloc.texte(approcheVoulue: true, virgule: true), '0{,}33333333');
+      expect(moteur.entrees, hasLength(1));
+    });
+
+    test('ce que Giac rend tel quel se montre approché', () async {
+      lecteur.reponse = r'\ln(5)=';
+      moteur.reponse = const ReponseGiac(
+        exact: 'ln(5)',
+        latex: r'\ln\left(5\right)',
+        approche: '1.60943791243',
+      );
+      _trait(encre, 0, 0);
+      calcul.encreChangee();
+      await _attendre();
+      final bloc = calcul.blocs.single;
+      expect(bloc.inchange, isTrue);
+      expect(bloc.texte(approcheVoulue: false, virgule: false), '1.6094379');
+    });
+
+    test('changer de mode d’angle recalcule', () async {
+      var degres = false;
+      final avec = CalculFeuille(
+        encre: encre,
+        lecteur: lecteur,
+        moteur: moteur,
+        pause: Duration.zero,
+        degres: () => degres,
+      );
+      await avec.saisir(r'\sin(30)=', Offset.zero);
+      expect(moteur.derniersDegres, isFalse);
+      degres = true;
+      await avec.recalculer();
+      expect(moteur.derniersDegres, isTrue);
+      avec.dispose();
+    });
+
+    test('abréger un approché', () {
+      expect(abregerApproche('1.60943791243'), '1.6094379');
+      expect(abregerApproche('0.5'), '0.5');
+      expect(abregerApproche('2.0'), '2');
+      expect(abregerApproche('1e+20'), '1e+20');
+    });
+
+    test('une expression sans = n’affiche rien', () async {
+      lecteur.reponse = '2+3';
+      _trait(encre, 0, 0);
+      calcul.encreChangee();
+      await _attendre();
+      expect(calcul.blocs.single.montreResultat, isFalse);
+    });
+  });
+
   test('à la pause : lecture, traduction, résultat', () async {
     _trait(encre, 0, 0);
     calcul.encreChangee();
@@ -122,17 +266,6 @@ void main() {
     calcul.encreChangee();
     await _attendre();
     expect(lecteur.lectures, 1);
-  });
-
-  test('ajouter un trait relit l’expression', () async {
-    _trait(encre, 0, 0);
-    calcul.encreChangee();
-    await _attendre();
-    _trait(encre, 30, 0);
-    calcul.encreChangee();
-    await _attendre();
-    expect(calcul.blocs, hasLength(1));
-    expect(lecteur.lectures, 2);
   });
 
   test('gommer l’écriture retire le résultat', () async {

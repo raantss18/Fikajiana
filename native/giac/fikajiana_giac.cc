@@ -23,8 +23,10 @@ __attribute__((visibility("default"))) char *fikajiana_giac_eval(const char *ent
 }
 
 // Calcule et rend « exact␟latex␟approché » (séparateur 0x1F). « ARRET » si le calcul a été interrompu.
-__attribute__((visibility("default"))) char *fikajiana_giac_calculer(const char *entree) {
+// degres : angles en degrés (mode 1 de Giac) plutôt qu'en radians (mode 0).
+__attribute__((visibility("default"))) char *fikajiana_giac_calculer(const char *entree, int degres) {
   static giac::context contexte;
+  giac::angle_mode(degres ? 1 : 0, &contexte);
   giac::ctrl_c = false;
   giac::interrupted = false;
   std::string sortie;

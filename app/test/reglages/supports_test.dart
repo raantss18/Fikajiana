@@ -88,7 +88,9 @@ void main() {
       t,
     ) async {
       await _monter(t);
-      await t.tap(find.byTooltip('Réglages'));
+      await t.tap(find.byTooltip('Menu'));
+      await t.pumpAndSettle();
+      await t.tap(find.text('Réglages'));
       await t.pumpAndSettle();
       await t.tap(find.text('Tableau noir'));
       await t.pumpAndSettle();
@@ -108,12 +110,16 @@ void main() {
     testWidgets('l’invitation disparaît au premier trait', (t) async {
       await _monter(t);
       expect(
-        find.text('Écris ici. Deux doigts pour déplacer la page et zoomer.'),
+        find.textContaining(
+          'Écris ici. Deux doigts pour déplacer la page et zoomer.',
+        ),
         findsOneWidget,
       );
       await _ecrireAuStylet(t);
       expect(
-        find.text('Écris ici. Deux doigts pour déplacer la page et zoomer.'),
+        find.textContaining(
+          'Écris ici. Deux doigts pour déplacer la page et zoomer.',
+        ),
         findsNothing,
       );
     });
@@ -125,11 +131,15 @@ void main() {
       await _ecrireAuStylet(t);
       expect(encre.traits, hasLength(1));
 
+      await t.tap(find.byTooltip('Outils'));
+      await t.pump();
       await t.tap(find.byTooltip('Gomme'));
       await t.pump();
       await _ecrireAuStylet(t);
       expect(encre.estVide, isTrue);
 
+      await t.tap(find.byTooltip('Outils'));
+      await t.pump();
       await t.tap(find.byTooltip('Annuler'));
       await t.pump();
       expect(encre.traits, hasLength(1));
@@ -140,7 +150,11 @@ void main() {
     ) async {
       await _monter(t);
       final etat = t.state<State<FeuilleEncre>>(find.byType(FeuilleEncre));
+      await t.tap(find.byTooltip('Outils'));
+      await t.pump();
       await t.tap(find.byTooltip('Gomme'));
+      await t.pump();
+      await t.tap(find.byTooltip('Outils'));
       await t.pump();
       await t.tap(find.byTooltip('Stylo rouge'));
       await t.pump();
@@ -160,12 +174,42 @@ void main() {
       expect(etat.widget.encre.traits, hasLength(1));
     });
 
+    testWidgets('les outils sont repliés au départ', (t) async {
+      await _monter(t);
+      expect(find.byTooltip('Gomme'), findsNothing);
+      await t.tap(find.byTooltip('Outils'));
+      await t.pump();
+      expect(find.byTooltip('Gomme'), findsOneWidget);
+      await t.tap(find.byTooltip('Outils'));
+      await t.pump();
+      expect(find.byTooltip('Gomme'), findsNothing);
+    });
+
+    testWidgets('exact et degrés se basculent et se voient', (t) async {
+      final reglages = Reglages();
+      await _monter(t, reglages: reglages);
+      await t.tap(find.byTooltip('Outils'));
+      await t.pump();
+      await t.tap(find.text('='));
+      await t.pump();
+      expect(reglages.approche, isTrue);
+      expect(find.text('≈'), findsOneWidget);
+      await t.tap(find.text('RAD'));
+      await t.pump();
+      expect(reglages.degres, isTrue);
+      expect(find.text('DEG'), findsOneWidget);
+    });
+
     testWidgets('cibles et contrastes, tableau noir', (t) async {
       final semantique = t.ensureSemantics();
       await _monter(
         t,
         reglages: Reglages()..support = SupportEcriture.tableauNoir,
       );
+      await expectLater(t, meetsGuideline(androidTapTargetGuideline));
+      await expectLater(t, meetsGuideline(labeledTapTargetGuideline));
+      await t.tap(find.byTooltip('Outils'));
+      await t.pump();
       await expectLater(t, meetsGuideline(androidTapTargetGuideline));
       await expectLater(t, meetsGuideline(labeledTapTargetGuideline));
       semantique.dispose();

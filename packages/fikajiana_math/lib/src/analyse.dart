@@ -44,9 +44,11 @@ class ErreurLatex implements Exception {
 
 /// Analyse un LaTeX lu ou corrigé, et le traduit pour Giac.
 ///
+/// [degres] : Giac compte en degrés ; `30°` reste donc `30`.
+///
 /// Lève [ErreurLatex] si le texte n'est pas compris : aucun résultat deviné.
-Analyse analyserLatex(String latex) {
-  final lecture = LecteurLatex(latex).lire();
+Analyse analyserLatex(String latex, {bool degres = false}) {
+  final lecture = LecteurLatex(latex, degres: degres).lire();
 
   if (lecture is LectureSysteme) {
     final inconnues = <String>{};

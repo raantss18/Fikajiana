@@ -28,4 +28,4 @@ et propose les actions utiles (calculer, résoudre, tracer, dériver…), sans r
 - Libre : code et modèles sous licences libres ; aucune dépendance propriétaire (ni ML Kit, ni MyScript).
 - Hors ligne : aucun compte, aucune pub, aucune télémétrie ; l'encre ne quitte jamais l'appareil.
 - Exact avant approché : résultat exact affiché d'abord, valeur approchée à la demande.
-- Montrer la reconnaissance : l'utilisateur voit toujours ce que l'app a compris (LaTeX rendu) et peut corriger.
+- Vérifier la reconnaissance : toucher un résultat montre ce que l'app a compris (LaTeX rendu) et permet de corriger (ADR 0018).

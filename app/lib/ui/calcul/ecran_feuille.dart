@@ -17,9 +17,9 @@ import 'package:fikajiana/ui/theme/espacement.dart';
 import 'package:fikajiana/ui/theme/marque.dart';
 import 'package:flutter/material.dart';
 
-const double _ecartSaisies = 140;
+const double _ecartSaisies = 64;
 
-/// La Feuille : on écrit sur le support choisi, les outils à portée de main.
+/// La Feuille : on écrit sur le support choisi, outils repliés dans un bouton.
 class EcranFeuille extends StatefulWidget {
   const new({super.key});
 
@@ -31,6 +31,9 @@ class _EcranFeuilleState extends State<EcranFeuille> {
   final _encre = Encre();
   final _vue = VueFeuille();
   var _gomme = false;
+  var _outilsOuverts = false;
+  bool? _degres;
+  bool get _degresVus => _degres ?? false;
   late final CalculFeuille _calcul;
   late final ModeleOcr _modele;
   StockageFeuille? _stockage;
@@ -47,12 +50,23 @@ class _EcranFeuilleState extends State<EcranFeuille> {
       encre: _encre,
       lecteur: services.lecteur,
       moteur: services.moteur,
+      degres: () => _degresVus,
     )..addListener(_enregistrer);
     final document = _stockage?.charger();
     if (document != null) {
       _encre.chargerDocument(document['traits'] as List<dynamic>? ?? const []);
       _calcul.chargerDocument(document['blocs'] as List<dynamic>? ?? const []);
     }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final degres = PorteeReglages.de(context).degres;
+    final change = _degres != null && _degres != degres;
+    _degres = degres;
+    // Après la construction : recalculer prévient les écouteurs.
+    if (change) unawaited(Future.microtask(_calcul.recalculer));
   }
 
   void _surModele() {
@@ -83,7 +97,7 @@ class _EcranFeuilleState extends State<EcranFeuille> {
   Future<void> _saisirAuClavier() async {
     final latex = await demanderLatex(context, '');
     if (latex == null || latex.trim().isEmpty || !mounted) return;
-    // Chaque saisie sous la précédente : les cartes ne se recouvrent pas.
+    // Chaque saisie sous la précédente : elles ne se recouvrent pas.
     final saisies = _calcul.blocs.where((b) => b.estSaisie).length;
     final depart = MediaQuery.sizeOf(context).center(Offset.zero) / 2;
     final position = depart + Offset(0, saisies * _ecartSaisies);
@@ -95,8 +109,7 @@ class _EcranFeuilleState extends State<EcranFeuille> {
   Widget build(BuildContext context) {
     final reglages = PorteeReglages.de(context);
     final l10n = context.l10n;
-    final compacte = MediaQuery.sizeOf(context).width < AppLargeurs.compacte;
-    final feuille = Stack(
+    return Stack(
       fit: StackFit.expand,
       children: [
         FeuilleEncre(
@@ -122,11 +135,14 @@ class _EcranFeuilleState extends State<EcranFeuille> {
                     couleur: Theme.of(context).colorScheme.tertiary,
                     zoom: _vue.zoom,
                     decalage: _vue.decalage,
+                    approche: reglages.approche,
+                    virgule:
+                        Localizations.localeOf(context).languageCode == 'fr',
                   ),
                 ),
               ),
               for (final bloc in _calcul.blocs)
-                CarteBloc(
+                RepereBloc(
                   key: ValueKey(bloc.cle),
                   bloc: bloc,
                   calcul: _calcul,
@@ -135,18 +151,20 @@ class _EcranFeuilleState extends State<EcranFeuille> {
               if (_calcul.modeleManquant)
                 Positioned(
                   left: AppEspacement.md,
-                  right: AppEspacement.md,
+                  right: 80,
                   bottom: AppEspacement.md,
-                  child: Card(
-                    child: ListTile(
-                      leading: const Icon(Icons.download_outlined),
-                      title: Text(l10n.modeleManquant),
-                      trailing: TextButton(
-                        onPressed: () {
-                          Navigator.of(context)
-                              .push(RouteEcran((_) => const EcranReglages()));
-                        },
-                        child: Text(l10n.reglages),
+                  child: SafeArea(
+                    child: Card(
+                      child: ListTile(
+                        leading: const Icon(Icons.download_outlined),
+                        title: Text(l10n.modeleManquant),
+                        trailing: TextButton(
+                          onPressed: () {
+                            Navigator.of(context)
+                                .push(RouteEcran((_) => const EcranReglages()));
+                          },
+                          child: Text(l10n.reglages),
+                        ),
                       ),
                     ),
                   ),
@@ -154,33 +172,35 @@ class _EcranFeuilleState extends State<EcranFeuille> {
             ],
           ),
         ),
+        Positioned(
+          right: 0,
+          bottom: 0,
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(AppEspacement.sm),
+              child: _Outils(
+                ouverts: _outilsOuverts,
+                surBasculer: () =>
+                    setState(() => _outilsOuverts = !_outilsOuverts),
+                encre: _encre,
+                vue: _vue,
+                reglages: reglages,
+                gomme: _gomme,
+                surGomme: (valeur) => setState(() {
+                  _gomme = valeur;
+                  _outilsOuverts = false;
+                }),
+                surChangement: _surEncre,
+                surClavier: () {
+                  setState(() => _outilsOuverts = false);
+                  unawaited(_saisirAuClavier());
+                },
+              ),
+            ),
+          ),
+        ),
       ],
     );
-    final outils = _BarreOutils(
-      encre: _encre,
-      vue: _vue,
-      reglages: reglages,
-      gomme: _gomme,
-      vertical: !compacte,
-      surGomme: (valeur) => setState(() => _gomme = valeur),
-      surChangement: _surEncre,
-      surClavier: _saisirAuClavier,
-    );
-    return compacte
-        ? Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(child: feuille),
-              outils,
-            ],
-          )
-        : Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(child: feuille),
-              outils,
-            ],
-          );
   }
 }
 
@@ -216,13 +236,15 @@ class _Invitation extends StatelessWidget {
   }
 }
 
-class _BarreOutils extends StatelessWidget {
+/// Tous les outils, repliés dans un seul bouton à la couleur du stylo.
+class _Outils extends StatelessWidget {
   const new({
     required this.encre,
     required this.vue,
     required this.reglages,
     required this.gomme,
-    required this.vertical,
+    required this.ouverts,
+    required this.surBasculer,
     required this.surGomme,
     required this.surChangement,
     required this.surClavier,
@@ -233,7 +255,8 @@ class _BarreOutils extends StatelessWidget {
   final VueFeuille vue;
   final Reglages reglages;
   final bool gomme;
-  final bool vertical;
+  final bool ouverts;
+  final VoidCallback surBasculer;
   final ValueChanged<bool> surGomme;
   final VoidCallback surChangement;
 
@@ -252,6 +275,20 @@ class _BarreOutils extends StatelessWidget {
     final l10n = context.l10n;
     final support = reglages.support;
     final boutons = <Widget>[
+      Tooltip(
+        message: reglages.approche ? l10n.modeApproche : l10n.modeExact,
+        child: TextButton(
+          onPressed: () => reglages.approche = !reglages.approche,
+          child: Text(reglages.approche ? '≈' : '='),
+        ),
+      ),
+      Tooltip(
+        message: reglages.degres ? l10n.modeDegres : l10n.modeRadians,
+        child: TextButton(
+          onPressed: () => reglages.degres = !reglages.degres,
+          child: Text(reglages.degres ? 'DEG' : 'RAD'),
+        ),
+      ),
       for (var i = 0; i < support.stylos.length; i++)
         _BoutonStylo(
           couleur: support.stylos[i],
@@ -310,20 +347,67 @@ class _BarreOutils extends StatelessWidget {
         ),
       ),
     ];
-    return Material(
-      color: Theme.of(context).colorScheme.surfaceContainer,
-      child: SafeArea(
-        top: vertical,
-        left: false,
-        child: SingleChildScrollView(
-          scrollDirection: vertical ? Axis.vertical : Axis.horizontal,
-          child: Flex(
-            direction: vertical ? Axis.vertical : Axis.horizontal,
-            mainAxisSize: MainAxisSize.min,
-            children: boutons,
+    final couleurs = Theme.of(context).colorScheme;
+    final bouton = Semantics(
+      button: true,
+      expanded: ouverts,
+      label: l10n.outils,
+      excludeSemantics: true,
+      child: Tooltip(
+        message: l10n.outils,
+        child: Material(
+          elevation: 2,
+          shape: const CircleBorder(),
+          color: couleurs.surfaceContainerHigh,
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: surBasculer,
+            child: SizedBox.square(
+              dimension: 48,
+              child: Center(
+                child: ouverts
+                    ? const Icon(Icons.close)
+                    : gomme
+                    ? const Icon(Icons.cleaning_services)
+                    : Container(
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          color: support.stylos[reglages.indiceStylo],
+                          shape: BoxShape.circle,
+                          border: Border.all(color: couleurs.outline),
+                        ),
+                        child: Icon(Icons.edit, size: 16, color: support.fond),
+                      ),
+              ),
+            ),
           ),
         ),
       ),
+    );
+    if (!ouverts) return bouton;
+    final taille = MediaQuery.sizeOf(context);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Card(
+          margin: EdgeInsets.zero,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              // En paysage, le panneau s'étale plutôt qu'il ne monte.
+              maxWidth: taille.height < taille.width ? 340 : 224,
+              maxHeight: taille.height * 0.6,
+            ),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(AppEspacement.sm),
+              child: Wrap(children: boutons),
+            ),
+          ),
+        ),
+        const SizedBox(height: AppEspacement.sm),
+        bouton,
+      ],
     );
   }
 }

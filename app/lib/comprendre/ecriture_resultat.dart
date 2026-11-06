@@ -7,7 +7,7 @@ import 'package:perfect_freehand/perfect_freehand.dart';
 ///
 /// Les tracés sont dessinés pour Fikajiana, dans un repère où la hauteur d'un
 /// chiffre vaut 1. Rien n'est repris d'une police ni d'une autre application.
-/// Ce qui n'est pas pris en charge rend `null` : la carte montre le résultat.
+/// Ce qui n'est pas pris en charge rend `null` : une formule le remplace.
 
 typedef _Trace = List<Offset>;
 
@@ -133,6 +133,87 @@ final Map<String, _Glyphe> _glyphes = {
   'k': _Glyphe(0.5, [
     _l([0.06, 0, 0.06, 1]),
     _l([0.44, 0.42, 0.06, 0.72, 0.46, 1]),
+  ]),
+  'c': _Glyphe(0.46, [_arc(0.26, 0.71, 0.22, 0.29, -0.7, -2 * _pi + 0.7)]),
+  'd': _Glyphe(0.54, [
+    _arc(0.25, 0.71, 0.21, 0.29, 0, 2 * _pi),
+    _l([0.46, 0, 0.47, 1]),
+  ]),
+  'f': _Glyphe(0.4, [
+    [
+      ..._arc(0.28, 0.14, 0.12, 0.14, -0.2, -_pi),
+      ..._l([0.16, 1]),
+    ],
+    _l([0.02, 0.44, 0.34, 0.44]),
+  ]),
+  'g': _Glyphe(0.52, [
+    _arc(0.24, 0.7, 0.2, 0.28, 0, 2 * _pi),
+    [
+      ..._l([0.44, 0.42, 0.44, 1.02]),
+      ..._arc(0.24, 1.04, 0.2, 0.2, 0, _pi),
+    ],
+  ]),
+  'h': _Glyphe(0.54, [
+    _l([0.06, 0, 0.06, 1]),
+    [
+      ..._arc(0.27, 0.62, 0.21, 0.2, -_pi, 0),
+      ..._l([0.48, 1]),
+    ],
+  ]),
+  'j': _Glyphe(0.24, [
+    [
+      ..._l([0.16, 0.42, 0.16, 1.04]),
+      ..._arc(0.04, 1.04, 0.12, 0.2, 0, _pi * 0.8),
+    ],
+    _l([0.16, 0.16, 0.16, 0.2]),
+  ]),
+  'l': _Glyphe(0.2, [
+    _l([0.1, 0, 0.1, 1]),
+  ]),
+  'm': _Glyphe(0.8, [
+    _l([0.06, 0.42, 0.06, 1]),
+    [
+      ..._arc(0.24, 0.62, 0.18, 0.2, -_pi, 0),
+      ..._l([0.42, 1]),
+    ],
+    [
+      ..._arc(0.6, 0.62, 0.18, 0.2, -_pi, 0),
+      ..._l([0.78, 1]),
+    ],
+  ]),
+  'o': _Glyphe(0.5, [
+    _arc(0.25, 0.71, 0.22, 0.29, -_pi / 2, 3 * _pi / 2 + 0.2),
+  ]),
+  'p': _Glyphe(0.52, [
+    _l([0.08, 0.42, 0.08, 1.24]),
+    _arc(0.28, 0.71, 0.2, 0.29, -_pi, _pi),
+  ]),
+  'q': _Glyphe(0.52, [
+    _arc(0.24, 0.71, 0.2, 0.29, 0, 2 * _pi),
+    _l([0.44, 0.42, 0.44, 1.24]),
+  ]),
+  'r': _Glyphe(0.38, [
+    _l([0.06, 0.42, 0.06, 1]),
+    _arc(0.24, 0.62, 0.18, 0.18, -_pi, -0.3),
+  ]),
+  's': _Glyphe(0.44, [
+    [
+      ..._arc(0.22, 0.56, 0.18, 0.14, -0.3, -_pi - 0.9),
+      ..._arc(0.22, 0.85, 0.18, 0.15, -1.6, 3),
+    ],
+  ]),
+  'u': _Glyphe(0.5, [
+    [
+      ..._l([0.05, 0.42, 0.05, 0.76]),
+      ..._arc(0.25, 0.78, 0.2, 0.22, _pi, 0),
+    ],
+    _l([0.45, 0.42, 0.47, 1]),
+  ]),
+  'v': _Glyphe(0.48, [
+    _l([0.03, 0.42, 0.24, 1, 0.45, 0.42]),
+  ]),
+  'w': _Glyphe(0.72, [
+    _l([0.03, 0.42, 0.19, 1, 0.36, 0.56, 0.53, 1, 0.69, 0.42]),
   ]),
   'π': _Glyphe(0.6, [
     _l([0.02, 0.46, 0.2, 0.4, 0.58, 0.42]),
@@ -297,8 +378,8 @@ class _Compositeur {
     if (g == null) throw const _NonPrisEnCharge();
     return _Boite(
       g.largeur,
-      c == 'x' || c == 'z' || c == 'a' || c == 'e' || c == 'n' ? 0.58 : 1,
-      c == 'y' || c == ',' ? 0.24 : 0,
+      'acegmnopqrsuvwxyz'.contains(c) ? 0.58 : 1,
+      'gjpqy,'.contains(c) ? 0.24 : 0,
       [
         for (final t in g.traces) [for (final p in t) p - const Offset(0, 1)],
       ],
@@ -331,6 +412,8 @@ class _Compositeur {
     }
     final nom = _s.substring(debut, _i);
     return switch (nom) {
+      'sin' || 'cos' || 'tan' || 'ln' || 'log' || 'exp' => _mot(nom),
+      'mathrm' || 'operatorname' => _groupe(),
       'frac' => _fraction(),
       'sqrt' => _racine(),
       'pi' => _lettre('π'),
@@ -340,6 +423,10 @@ class _Compositeur {
       _ => throw const _NonPrisEnCharge(),
     };
   }
+
+  /// Le nom d'une fonction : ses lettres, l'une après l'autre.
+  _Boite _mot(String nom) =>
+      _rangee([for (final c in nom.split('')) _lettre(c)]);
 
   _Boite _fraction() {
     final numerateur = _deplacer(_groupe(), Offset.zero, 0.8);
@@ -402,9 +489,13 @@ class EcritureResultat {
 const double _hauteurMin = 22;
 const double _hauteurMax = 90;
 
-/// Compose [latex] à droite de [ecriture], à la taille de l'écriture.
-/// Rend `null` si ce résultat ne sait pas s'écrire à la main.
-EcritureResultat? ecrireResultat(String latex, Rect ecriture) {
+/// Compose [latex] à droite de [ecriture], ou [dessous], à la taille de
+/// l'écriture. Rend `null` si ce résultat ne sait pas s'écrire à la main.
+EcritureResultat? ecrireResultat(
+  String latex,
+  Rect ecriture, {
+  bool dessous = false,
+}) {
   final _Boite boite;
   try {
     boite = _Compositeur(latex).composer();
@@ -415,14 +506,18 @@ EcritureResultat? ecrireResultat(String latex, Rect ecriture) {
 
   final total = boite.haut + boite.bas;
   // Le résultat occupe environ 80 % de la hauteur de ce qu'on a écrit.
-  final echelle = ((ecriture.height * 0.8) / total).clamp(
+  // Sous une équation sur plusieurs lignes, la hauteur d'une seule ligne.
+  final reference = dessous ? math.min(ecriture.height, 70) : ecriture.height;
+  final echelle = ((reference * 0.8) / total).clamp(
     _hauteurMin / total,
     _hauteurMax,
   );
-  final origine = Offset(
-    ecriture.right + 0.3 * echelle,
-    ecriture.center.dy + (boite.haut - boite.bas) / 2 * echelle,
-  );
+  final origine = dessous
+      ? Offset(ecriture.left, ecriture.bottom + (0.3 + boite.haut) * echelle)
+      : Offset(
+          ecriture.right + 0.3 * echelle,
+          ecriture.center.dy + (boite.haut - boite.bas) / 2 * echelle,
+        );
 
   final contours = <Path>[];
   for (var k = 0; k < boite.traces.length; k++) {
