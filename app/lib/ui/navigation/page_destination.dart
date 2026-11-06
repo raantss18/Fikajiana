@@ -100,9 +100,9 @@ class _Menu extends StatelessWidget {
           ),
         const PopupMenuDivider(),
         PopupMenuItem(
-          onTap: () => Navigator.of(
-            context,
-          ).push(RouteEcran((_) => const EcranReglages())),
+          onTap: () =>
+              Navigator.of(context)
+                  .push(RouteEcran((_) => const EcranReglages())),
           child: ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.settings_outlined),
