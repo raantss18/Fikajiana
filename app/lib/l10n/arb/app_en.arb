@@ -24,10 +24,6 @@
     "@accueil": {
         "description": "Tooltip of the button that returns directly to the home screen, distinct from back"
     },
-    "ecranBientot": "This screen is not available yet.",
-    "@ecranBientot": {
-        "description": "Message shown on screens that are not built yet"
-    },
     "reglages": "Settings",
     "@reglages": {
         "description": "Settings screen title and button"
@@ -337,6 +333,22 @@
     "geometrieDescription": "Figure with {n} objects",
     "@geometrieDescription": {
         "description": "Screen reader label of the figure",
+        "placeholders": {
+            "n": {
+                "type": "int"
+            }
+        }
+    },
+    "historiqueNouvelle": "New sheet",
+    "historiqueSupprimer": "Delete",
+    "historiqueSupprimerTitre": "Delete this sheet?",
+    "historiqueSupprimerTexte": "It will be erased from the device, with no way back.",
+    "historiqueEnCours": "current",
+    "historiqueVide": "No saved sheet. Write on the Sheet: it saves itself.",
+    "historiqueFeuilleVide": "Empty sheet",
+    "historiqueTraits": "{n} strokes, no calculation",
+    "@historiqueTraits": {
+        "description": "Sheet with strokes but no calculation",
         "placeholders": {
             "n": {
                 "type": "int"

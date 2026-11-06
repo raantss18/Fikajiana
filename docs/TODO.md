@@ -77,7 +77,8 @@
 2. ⏳ Courbes paramétrées, polaires, implicites ; tableau de valeurs ; écran partagé sur tablette
 3. ⏳ Fiabilité des implicites : intervalles façon Tupper, à comparer à `graphest` (MIT)
 4. ⏳ `FragmentProgram` en option pour aperçus et fonds denses, avec repli CPU ; pas de `flutter_gpu` en préversion
-5. ⏳ Géométrie dynamique : outils de construction, formes dessinées reconnues, transformations, lieux, mesures
+5. 🔄 Géométrie dynamique : ✅ noyau et outils de construction (points, droites, cercles, intersections, déplacement). Reste : formes dessinées reconnues, transformations, lieux, mesures, points sur objet
+6. ✅ Historique : plusieurs feuilles, reprise de la feuille existante
 
 ## P5 — Design, confort et accessibilité
 

@@ -44,7 +44,7 @@ class _EcranFeuilleState extends State<EcranFeuille> {
     final services = context
         .getInheritedWidgetOfExactType<PorteeServices>()!
         .services;
-    _stockage = services.stockage;
+    _stockage = services.carnet.stockage;
     _modele = services.modele..addListener(_surModele);
     _calcul = CalculFeuille(
       encre: _encre,

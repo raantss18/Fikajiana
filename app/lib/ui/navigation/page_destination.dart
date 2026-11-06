@@ -3,8 +3,10 @@ import 'package:fikajiana/reglages/reglages.dart';
 import 'package:fikajiana/ui/calcul/ecran_feuille.dart';
 import 'package:fikajiana/ui/geometrie/ecran_geometrie.dart';
 import 'package:fikajiana/ui/graphe/ecran_graphe.dart';
+import 'package:fikajiana/ui/historique/ecran_historique.dart';
 import 'package:fikajiana/ui/navigation/destination.dart';
 import 'package:fikajiana/ui/reglages/ecran_reglages.dart';
+import 'package:fikajiana/ui/services.dart';
 import 'package:fikajiana/ui/theme/espacement.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -22,10 +24,16 @@ class PageDestination extends StatelessWidget {
   Widget build(BuildContext context) {
     final sombre = PorteeReglages.de(context).support.estSombre;
     final corps = switch (destination) {
-      Destination.feuille => const EcranFeuille(),
+      // Changer de feuille reconstruit l'écran : l'ancienne s'enregistre.
+      Destination.feuille => ListenableBuilder(
+        listenable: PorteeServices.de(context).carnet,
+        builder: (context, _) => EcranFeuille(
+          key: ValueKey(PorteeServices.de(context).carnet.courante),
+        ),
+      ),
       Destination.graphe => const EcranGraphe(),
       Destination.geometrie => const EcranGeometrie(),
-      _ => _EcranABatir(destination: destination),
+      Destination.historique => const EcranHistorique(),
     };
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: (sombre ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark)
@@ -141,40 +149,6 @@ class RouteEcran extends MaterialPageRoute<void> {
       animation,
       secondaryAnimation,
       child,
-    );
-  }
-}
-
-class _EcranABatir extends StatelessWidget {
-  const new({required this.destination});
-
-  final Destination destination;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppEspacement.lg),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(destination.icone, color: theme.colorScheme.onSurfaceVariant),
-            const SizedBox(height: AppEspacement.sm),
-            Text(
-              destination.libelle(context.l10n),
-              textAlign: TextAlign.center,
-              style: theme.textTheme.titleLarge,
-            ),
-            const SizedBox(height: AppEspacement.sm),
-            Text(
-              context.l10n.ecranBientot,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyLarge,
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:fikajiana/comprendre/stockage_feuille.dart';
+import 'package:fikajiana/comprendre/carnet.dart';
 import 'package:fikajiana/geometrie/atelier.dart';
 import 'package:fikajiana/graphe/courbes.dart';
 import 'package:fikajiana/moteur/moteur.dart';
@@ -17,7 +17,7 @@ class Services {
     required this.moteur,
     required this.courbes,
     required this.atelier,
-    this.stockage,
+    required this.carnet,
   });
 
   /// Sans stockage ni modèle.
@@ -29,6 +29,7 @@ class Services {
       moteur: MoteurGiac(),
       courbes: Courbes(),
       atelier: Atelier(),
+      carnet: Carnet(),
     );
   }
 
@@ -42,7 +43,7 @@ class Services {
       moteur: MoteurGiac(),
       courbes: Courbes(fichier: File('${dossier.path}/courbes.json')),
       atelier: Atelier(fichier: File('${dossier.path}/figure.json')),
-      stockage: StockageFeuille(File('${dossier.path}/feuille.json')),
+      carnet: Carnet(dossier: dossier),
     );
   }
 
@@ -51,7 +52,7 @@ class Services {
   final Moteur moteur;
   final Courbes courbes;
   final Atelier atelier;
-  final StockageFeuille? stockage;
+  final Carnet carnet;
 }
 
 class PorteeServices extends InheritedWidget {

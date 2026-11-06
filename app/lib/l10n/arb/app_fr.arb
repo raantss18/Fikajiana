@@ -6,7 +6,6 @@
     "destinationGeometrie": "Géométrie",
     "destinationHistorique": "Historique",
     "accueil": "Accueil",
-    "ecranBientot": "Cet écran n'est pas encore disponible.",
     "reglages": "Réglages",
     "reglagesSupport": "Support d'écriture",
     "supportFeuilleBlanche": "Feuille blanche",
@@ -141,6 +140,22 @@
     "geometrieDescription": "Figure de {n} objets",
     "@geometrieDescription": {
         "description": "Screen reader label of the figure",
+        "placeholders": {
+            "n": {
+                "type": "int"
+            }
+        }
+    },
+    "historiqueNouvelle": "Nouvelle feuille",
+    "historiqueSupprimer": "Supprimer",
+    "historiqueSupprimerTitre": "Supprimer cette feuille ?",
+    "historiqueSupprimerTexte": "Elle sera effacée de l'appareil, sans retour possible.",
+    "historiqueEnCours": "en cours",
+    "historiqueVide": "Aucune feuille enregistrée. Écris sur la Feuille : elle se garde toute seule.",
+    "historiqueFeuilleVide": "Feuille vide",
+    "historiqueTraits": "{n} traits, sans calcul",
+    "@historiqueTraits": {
+        "description": "Sheet with strokes but no calculation",
         "placeholders": {
             "n": {
                 "type": "int"
