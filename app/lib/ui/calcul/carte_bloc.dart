@@ -230,8 +230,11 @@ class PeintreResultats extends CustomPainter {
     required this.decalage,
     required this.approche,
     required this.virgule,
+    this.avancees = const {},
   });
 
+  /// Où en est l'écriture de chaque résultat, de 0 à 1 ; absent : fini.
+  final Map<String, double> avancees;
   final List<BlocCalcul> blocs;
   final Color couleur;
   final double zoom;
@@ -247,7 +250,8 @@ class PeintreResultats extends CustomPainter {
     final encre = Paint()..color = couleur;
     for (final bloc in blocs) {
       final ecrit = bloc.ecriture(approcheVoulue: approche, virgule: virgule);
-      for (final contour in ecrit?.contours ?? const <Path>[]) {
+      final avancee = avancees[bloc.cle] ?? 1;
+      for (final contour in ecrit?.ecrit(avancee) ?? const <Path>[]) {
         canvas.drawPath(contour, encre);
       }
     }

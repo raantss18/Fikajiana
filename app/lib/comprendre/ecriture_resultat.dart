@@ -507,10 +507,64 @@ class _Compositeur {
 
 /// Le résultat écrit : ses contours, prêts à remplir, en coordonnées de page.
 class EcritureResultat {
-  const new(this.contours, this.cadre);
+  const new(
+    this.contours,
+    this.cadre, {
+    this.traces = const [],
+    this.taille = 4,
+  });
 
   final List<Path> contours;
   final Rect cadre;
+
+  /// Le chemin de la plume, trait par trait, pour le voir s'écrire.
+  final List<List<PointVector>> traces;
+  final double taille;
+
+  /// Ce qui est déjà écrit quand on en est à [avancee], de 0 à 1 : les traits
+  /// finis, puis le début du trait en cours.
+  List<Path> ecrit(double avancee) {
+    if (avancee >= 1 || traces.length != contours.length) return contours;
+    final total = traces.fold(0, (s, t) => s + t.length);
+    var reste = (avancee.clamp(0.0, 1.0) * total).round();
+    final faits = <Path>[];
+    for (var k = 0; k < traces.length && reste > 0; k++) {
+      if (reste >= traces[k].length) {
+        faits.add(contours[k]);
+        reste -= traces[k].length;
+      } else {
+        final partiel = _contour(
+          traces[k].sublist(0, reste),
+          taille,
+          fini: false,
+        );
+        if (partiel != null) faits.add(partiel);
+        reste = 0;
+      }
+    }
+    return faits;
+  }
+}
+
+Path? _contour(List<PointVector> points, double taille, {bool fini = true}) {
+  final contour = getStroke(
+    points,
+    options: StrokeOptions(
+      size: taille,
+      thinning: 0.45,
+      smoothing: 0.6,
+      streamline: 0.3,
+      simulatePressure: false,
+      isComplete: fini,
+    ),
+  );
+  if (contour.isEmpty) return null;
+  final chemin = Path()..moveTo(contour.first.dx, contour.first.dy);
+  for (var i = 1; i < contour.length - 1; i++) {
+    final (a, b) = (contour[i], contour[i + 1]);
+    chemin.quadraticBezierTo(a.dx, a.dy, (a.dx + b.dx) / 2, (a.dy + b.dy) / 2);
+  }
+  return chemin..close();
 }
 
 /// Des points rapprochés : le lissage du trait raccourcit sinon les droites.
@@ -560,6 +614,8 @@ EcritureResultat? ecrireResultat(
         );
 
   final contours = <Path>[];
+  final traces = <List<PointVector>>[];
+  final taille = math.max(3.2, echelle * 0.075);
   for (var k = 0; k < boite.traces.length; k++) {
     if (boite.traces[k].length < 2) continue;
     final points = _densifier(boite.traces[k]);
@@ -571,32 +627,14 @@ EcritureResultat? ecrireResultat(
       final pression = 0.5 + 0.2 * math.sin(i / points.length * _pi);
       vecteurs.add(PointVector(p.dx + bruit, p.dy - bruit, pression));
     }
-    final contour = getStroke(
-      vecteurs,
-      options: StrokeOptions(
-        size: math.max(3.2, echelle * 0.075),
-        thinning: 0.45,
-        smoothing: 0.6,
-        streamline: 0.3,
-        simulatePressure: false,
-      ),
-    );
-    if (contour.isEmpty) continue;
-    final chemin = Path()..moveTo(contour.first.dx, contour.first.dy);
-    for (var i = 1; i < contour.length - 1; i++) {
-      final (a, b) = (contour[i], contour[i + 1]);
-      chemin.quadraticBezierTo(
-        a.dx,
-        a.dy,
-        (a.dx + b.dx) / 2,
-        (a.dy + b.dy) / 2,
-      );
-    }
-    contours.add(chemin..close());
+    final chemin = _contour(vecteurs, taille);
+    if (chemin == null) continue;
+    contours.add(chemin);
+    traces.add(vecteurs);
   }
   if (contours.isEmpty) return null;
   final cadre = contours
       .map((c) => c.getBounds())
       .reduce((a, b) => a.expandToInclude(b));
-  return EcritureResultat(contours, cadre);
+  return EcritureResultat(contours, cadre, traces: traces, taille: taille);
 }

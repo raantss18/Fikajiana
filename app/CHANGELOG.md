@@ -4,6 +4,11 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Gribouiller sur ce qu'on a écrit l'efface, en douceur, et le calcul se refait quand on réécrit. Annuler reste à portée pendant quelques secondes. / Scribbling over your writing erases it gently, and the calculation runs again when you rewrite. Undo stays at hand for a few seconds.
+- `1/3` écrit en ligne glisse vers une vraie fraction, avec vos propres traits. Annuler remet tout en place. / `1/3` written inline slides into a real fraction, with your own strokes. Undo puts everything back.
+- Le résultat s'écrit trait par trait, comme une main rapide ; l'animation se coupe si l'appareil le demande. / The result writes itself stroke by stroke, like a quick hand; the animation stops if the device asks for it.
+- Au doigt, le trait a maintenant des pleins et des déliés ; au stylet, ses bouts s'affinent. / With a finger, strokes now vary in width; with a stylus, their ends taper.
+
 ## [0.4.0] — 2026-11-06
 
 ### Message fr
