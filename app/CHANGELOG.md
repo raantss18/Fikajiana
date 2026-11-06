@@ -4,6 +4,22 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+## [0.2.0] — 2026-11-06
+
+### Message fr
+
+Le Graphe est là : écris une fonction, touche l'icône à côté d'elle, et sa courbe s'affiche, glissable et zoomable. Plusieurs courbes à la fois, coupées proprement aux asymptotes, et un toucher lit les coordonnées d'un point.
+
+### Message en
+
+The Graph is here: write a function, tap the icon next to it, and its curve appears, ready to pan and zoom. Several curves at once, cleanly cut at asymptotes, and a tap reads the coordinates of a point.
+
+### Changements
+
+- Tracer `f(x)=x^2`, `y=\sin(x)` ou une expression de `x`, depuis la feuille ou le Graphe. / Plot `f(x)=x^2`, `y=\sin(x)` or an expression in `x`, from the sheet or the Graph.
+- Glisser, pincer, boutons de zoom ; plusieurs courbes numérotées ; lire un point en le touchant. / Pan, pinch, zoom buttons; several numbered curves; read a point by tapping it.
+- `y=2x+1` est une fonction à tracer, plus une équation en `x`. / `y=2x+1` is a function to plot, no longer an equation in `x`.
+
 ## [0.1.1] — 2026-11-06
 
 ### Message fr

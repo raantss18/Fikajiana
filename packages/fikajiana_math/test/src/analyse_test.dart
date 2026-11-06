@@ -19,6 +19,18 @@ void main() {
     expect(analyserLatex('2+3=').inconnues, isEmpty);
   });
 
+  test('une fonction dit son corps et sa variable', () {
+    final f = analyserLatex('f(x)=x^{2}');
+    expect(f.corps, '(x)^(2)');
+    expect(f.inconnues, ['x']);
+    final y = analyserLatex('y=3x+2');
+    expect(y.type, TypeExpression.fonction);
+    expect(y.corps, '3*x+2');
+    expect(y.inconnues, ['x']);
+    expect(analyserLatex('y=2').type, TypeExpression.equation);
+    expect(analyserLatex('y=x+y').type, TypeExpression.equation);
+  });
+
   group('noms de fonctions lus', () {
     giac(r'\sin ( \pi )', 'sin(pi)');
     giac(r'\ln ( 5 ) =', 'ln(5)');

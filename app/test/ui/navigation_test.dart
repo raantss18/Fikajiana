@@ -1,5 +1,6 @@
 import 'package:fikajiana/encre/feuille_encre.dart';
 import 'package:fikajiana/ui/calcul/ecran_feuille.dart';
+import 'package:fikajiana/ui/graphe/ecran_graphe.dart';
 import 'package:fikajiana/ui/navigation/page_destination.dart';
 import 'package:fikajiana/ui/theme/marque.dart';
 import 'package:flutter/material.dart';
@@ -49,7 +50,7 @@ void main() {
 
       await t.tap(find.byType(BackButton));
       await t.pumpAndSettle();
-      expect(find.text('Graphe'), findsOneWidget);
+      expect(find.byType(EcranGraphe), findsOneWidget);
     });
 
     testWidgets('Feuille, dans le menu, revient directement à l’accueil', (
@@ -105,7 +106,7 @@ void main() {
       for (final s in ['Feuille', 'Graphe', 'Géométrie', 'Historique']) {
         expect(find.text(s), findsWidgets);
       }
-      await t.tap(find.text('Graphe'));
+      await t.tap(find.text('Géométrie'));
       await t.pumpAndSettle();
       expect(
         find.text("Cet écran n'est pas encore disponible."),
@@ -120,7 +121,7 @@ void main() {
       for (final s in ['Sheet', 'Graph', 'Geometry', 'History']) {
         expect(find.text(s), findsWidgets);
       }
-      await t.tap(find.text('Graph'));
+      await t.tap(find.text('Geometry'));
       await t.pumpAndSettle();
       expect(find.text('This screen is not available yet.'), findsOneWidget);
     });

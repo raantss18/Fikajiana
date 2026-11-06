@@ -73,7 +73,7 @@
 
 ## P4 — Graphique et géométrie
 
-1. ⏳ Traceur Dart : échantillonnage adaptatif, quadtree et marching squares ; budget d'une image mesuré sur le Pad 7
+1. 🔄 Traceur Dart : ✅ fonctions `y=f(x)`, échantillonnage adaptatif, coupures, glisser, zoom, lecture d'un point. Reste : quadtree et marching squares (implicites), budget d'une image mesuré sur un appareil réel
 2. ⏳ Courbes paramétrées, polaires, implicites ; tableau de valeurs ; écran partagé sur tablette
 3. ⏳ Fiabilité des implicites : intervalles façon Tupper, à comparer à `graphest` (MIT)
 4. ⏳ `FragmentProgram` en option pour aperçus et fonds denses, avec repli CPU ; pas de `flutter_gpu` en préversion

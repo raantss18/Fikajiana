@@ -24,7 +24,11 @@ build=$("$aapt2" dump badging "$apk" | sed -n "s/.*versionCode='\([0-9]*\)'.*/\1
 out="$racine/release-out"
 mkdir -p "$out"
 nom="fikajiana-$version-arm64-v8a.apk"
+# Les APK d'avant ne repartent pas avec cette version.
+rm -f "$out"/fikajiana-*.apk
 cp "$apk" "$out/$nom"
+# Un nom stable : releases/latest/download/fikajiana-arm64-v8a.apk marche toujours.
+cp "$apk"
 sha=$(sha256sum "$out/$nom" | cut -d' ' -f1)
 octets=$(stat -c %s "$out/$nom")
 url="https://github.com/raantss18/Fikajiana/releases/download/app-v$version/$nom"
@@ -36,4 +40,6 @@ json.dump({"format": 1, "latest": {"build": int(build), "version": version, "not
           open(chemin, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
 PY
 openssl pkeyutl -sign -inkey "$cles/ed25519.pem" -rawin -in "$out/release.json" | base64 -w0 > "$out/release.json.sig"
+(cd "$out" && sha256sum "$nom" fikajiana-arm64-v8a.apk > SHA256SUMS.txt)
+python3 -I "$racine/tool/notes_release.py" "$racine/app/CHANGELOG.md" "$version" "$nom" "$octets" > "$out/notes.md"
 echo "Prêt dans $out : $nom (build $build, $octets octets), release.json, release.json.sig"

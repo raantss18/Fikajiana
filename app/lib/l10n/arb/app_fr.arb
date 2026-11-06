@@ -101,5 +101,20 @@
     "modeApproche": "Valeurs approchées : toucher pour les valeurs exactes",
     "modeExact": "Valeurs exactes : toucher pour les valeurs approchées",
     "modeDegres": "Angles en degrés : toucher pour les radians",
-    "modeRadians": "Angles en radians : toucher pour les degrés"
+    "modeRadians": "Angles en radians : toucher pour les degrés",
+    "grapheAjouter": "Ajouter une fonction",
+    "grapheModifier": "Modifier la fonction",
+    "grapheAide": "Par exemple f(x)=x^2 ou y=\\sin(x)",
+    "grapheTracer": "Tracer",
+    "grapheErreur": "Cette expression ne se trace pas : il faut une seule variable.",
+    "grapheVide": "Aucune courbe. Outils, puis + pour ajouter une fonction, ou trace une fonction écrite sur la feuille.",
+    "grapheDescription": "Graphe de {n} fonctions",
+    "@grapheDescription": {
+        "description": "Screen reader label of the graph",
+        "placeholders": {
+            "n": {
+                "type": "int"
+            }
+        }
+    }
 }
