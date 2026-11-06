@@ -28,7 +28,7 @@ nom="fikajiana-$version-arm64-v8a.apk"
 rm -f "$out"/fikajiana-*.apk
 cp "$apk" "$out/$nom"
 # Un nom stable : releases/latest/download/fikajiana-arm64-v8a.apk marche toujours.
-cp "$apk"
+cp "$apk" "$out/fikajiana-arm64-v8a.apk"
 sha=$(sha256sum "$out/$nom" | cut -d' ' -f1)
 octets=$(stat -c %s "$out/$nom")
 url="https://github.com/raantss18/Fikajiana/releases/download/app-v$version/$nom"
