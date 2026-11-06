@@ -101,13 +101,13 @@
     "modeExact": "Valeurs exactes : toucher pour les valeurs approchées",
     "modeDegres": "Angles en degrés : toucher pour les radians",
     "modeRadians": "Angles en radians : toucher pour les degrés",
-    "grapheAjouter": "Ajouter une fonction",
-    "grapheModifier": "Modifier la fonction",
-    "grapheAide": "Par exemple f(x)=x^2 ou y=\\sin(x)",
+    "grapheAjouter": "Ajouter une courbe",
+    "grapheModifier": "Modifier la courbe",
+    "grapheAide": "Par exemple f(x)=x^2, x^2+y^2=4, (\\cos(t),\\sin(t)) ou r=2\\cos(\\theta)",
     "grapheTracer": "Tracer",
-    "grapheErreur": "Cette expression ne se trace pas : il faut une seule variable.",
-    "grapheVide": "Aucune courbe. Outils, puis + pour ajouter une fonction, ou trace une fonction écrite sur la feuille.",
-    "grapheDescription": "Graphe de {n} fonctions",
+    "grapheErreur": "Cela ne se trace pas : il faut une fonction, une équation en x et y, (x(t), y(t)) ou r=…",
+    "grapheVide": "Aucune courbe. Touche Outils pour en ajouter une, ou trace une fonction écrite sur la feuille.",
+    "grapheDescription": "Graphe de {n} courbes",
     "@grapheDescription": {
         "description": "Screen reader label of the graph",
         "placeholders": {
@@ -309,5 +309,29 @@
                 "type": "int"
             }
         }
-    }
+    },
+    "grapheTableau": "Tableau de valeurs",
+    "grapheTableauVide": "Le tableau lit les fonctions : ajoute une courbe comme f(x)=x^2.",
+    "grapheDebut": "Début",
+    "graphePas": "Pas",
+    "grapheTableauInvalide": "Il faut deux nombres, et un pas non nul.",
+    "grapheNonDefini": "non défini",
+    "grapheAngles": "Angles en radians : toucher pour les degrés",
+    "grapheAnglesDegres": "Angles en degrés : toucher pour les radians",
+    "grapheTableauDecrire": "x = {x}, courbe {n} : {y}",
+    "@grapheTableauDecrire": {
+        "description": "grapheTableauDecrire",
+        "placeholders": {
+            "x": {
+                "type": "String"
+            },
+            "n": {
+                "type": "int"
+            },
+            "y": {
+                "type": "String"
+            }
+        }
+    },
+    "recentrerGraphe": "Revenir au cadrage de départ"
 }

@@ -11,7 +11,9 @@ import 'package:fikajiana/reconnaissance/lecteur.dart';
 import 'package:fikajiana/reconnaissance/modele.dart';
 import 'package:fikajiana/ui/app.dart';
 import 'package:fikajiana/ui/graphe/ecran_graphe.dart';
+import 'package:fikajiana/ui/graphe/tableau_valeurs.dart';
 import 'package:fikajiana/ui/services.dart';
+import 'package:fikajiana_math/fikajiana_math.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -36,9 +38,118 @@ void main() {
     });
 
     test('ce qui ne se trace pas : null, rien de deviné', () {
-      for (final latex in ['x^2=2', 'a+b', '(', 'x^2+y^2=1']) {
+      for (final latex in [
+        'x^2=2',
+        'a+b',
+        '(',
+        'x^2+y^2=z',
+        r'(t,t),t\in[3,1]',
+        'a,b,c',
+      ]) {
         expect(lireCourbe(latex), isNull, reason: latex);
       }
+    });
+  });
+
+  group('lire les autres courbes', () {
+    test('implicite : équation en x et y, ou droite verticale', () {
+      final c = lireCourbe('x^2+y^2=4')!;
+      expect(c.genre, GenreCourbe.implicite);
+      expect(c.corps, '((x)^(2)+(y)^(2))-(4)');
+      expect(lireCourbe('x=3')!.genre, GenreCourbe.implicite);
+      expect(lireCourbe('y^2=x')!.genre, GenreCourbe.implicite);
+    });
+
+    test('y=… reste une fonction', () {
+      expect(lireCourbe('y=x^2')!.genre, GenreCourbe.fonction);
+    });
+
+    test('paramétrée : trois écritures', () {
+      for (final latex in [
+        r'(\cos(t),\sin(t))',
+        r'\left(\cos(t),\sin(t)\right)',
+        r'x=\cos(t),y=\sin(t)',
+      ]) {
+        final c = lireCourbe(latex);
+        expect(c?.genre, GenreCourbe.parametree, reason: latex);
+        expect(c!.corps, 'cos(t)');
+        expect(c.corpsY, 'sin(t)');
+        expect(c.variable, 't');
+      }
+    });
+
+    test('polaire : r=… en θ', () {
+      final c = lireCourbe(r'r=1+\cos(\theta)')!;
+      expect(c.genre, GenreCourbe.polaire);
+      expect(c.variable, 'theta');
+      expect(lireCourbe(r'r(\theta)=2')!.genre, GenreCourbe.polaire);
+    });
+
+    test('domaine écrit après la courbe', () {
+      final c = lireCourbe(r'(t,t^2),t\in[0,\pi]')!;
+      expect(c.debut, 0);
+      expect(c.fin, closeTo(3.14159265358979, 1e-12));
+      final m = c.tracer(
+        const Fenetre(
+          xMin: -10,
+          xMax: 10,
+          yMin: -10,
+          yMax: 10,
+          largeurPixels: 800,
+          hauteurPixels: 800,
+        ),
+        degres: false,
+      );
+      expect(m.single.first.x, 0);
+      expect(m.single.last.x, closeTo(3.14159265358979, 1e-9));
+    });
+
+    // Valeur relevée avec SymPy 1.14 : (1 + cos(π/3)) cos(π/3), … en θ = π/3.
+    test('cardioïde : passe par (0,75 ; 1,29904)', () {
+      for (final degres in [false, true]) {
+        final m = lireCourbe(r'r=1+\cos(\theta)')!.tracer(
+          const Fenetre(
+            xMin: -3,
+            xMax: 3,
+            yMin: -3,
+            yMax: 3,
+            largeurPixels: 600,
+            hauteurPixels: 600,
+          ),
+          degres: degres,
+        );
+        final proche = m
+            .expand((s) => s)
+            .map((p) {
+              final (dx, dy) = (p.x - 0.75, p.y - 1.29903810567666);
+              return dx * dx + dy * dy;
+            })
+            .reduce((a, b) => a < b ? a : b);
+        expect(proche, lessThan(0.001), reason: 'degres : $degres');
+      }
+    });
+
+    test('doublon : même x(t), y(t) différent, deux courbes', () {
+      final courbes = Courbes()
+        ..ajouter('(t,t)')
+        ..ajouter('(t,t^2)')
+        ..ajouter('(t,t)');
+      expect(courbes.liste, hasLength(2));
+    });
+  });
+
+  group('tableau de valeurs', () {
+    test('valeurs exactes, NaN hors du domaine, sans dérive', () {
+      final l = calculerTableau(
+        [compilerFonction('(x)^(2)'), compilerFonction('ln(x)')],
+        -1,
+        0.1,
+      );
+      expect(l, hasLength(lignesTableau));
+      expect(l[0].y[0], closeTo(1, 1e-12));
+      expect(l[0].y[1].isNaN, isTrue);
+      expect(l[20].x, closeTo(1, 1e-12));
+      expect(l[20].y[1], closeTo(0, 1e-12));
     });
   });
 
@@ -169,9 +280,9 @@ void main() {
     }
 
     Future<void> ajouter(WidgetTester t, String latex) async {
-      await t.tap(find.byTooltip('Outils'));
-      await t.pump();
-      await t.tap(find.byTooltip('Ajouter une fonction'));
+      await t.tap(find.text('Outils'));
+      await t.pumpAndSettle();
+      await t.tap(find.text('Ajouter une courbe'));
       await t.pumpAndSettle();
       await t.enterText(find.byType(TextField), latex);
       await t.tap(find.widgetWithText(FilledButton, 'Tracer'));
@@ -239,11 +350,63 @@ void main() {
       final semantique = t.ensureSemantics();
       await ouvrir(t, taille: const Size(800, 400));
       await ajouter(t, r'\tan(x)');
-      await t.tap(find.byTooltip('Outils'));
-      await t.pump();
+      await t.tap(find.text('Outils'));
+      await t.pumpAndSettle();
       await expectLater(t, meetsGuideline(androidTapTargetGuideline));
       await expectLater(t, meetsGuideline(labeledTapTargetGuideline));
       semantique.dispose();
+    });
+
+    testWidgets('les quatre genres se tracent ; un toucher lit un point', (
+      t,
+    ) async {
+      await ouvrir(t);
+      for (final latex in [
+        'x^2+y^2=4',
+        r'(3\cos(t),\sin(t))',
+        r'r=1+\cos(\theta)',
+        'y=x',
+      ]) {
+        await ajouter(t, latex);
+      }
+      expect(t.takeException(), isNull);
+      expect(find.text('4'), findsOneWidget);
+      // Sur le cercle de rayon 2 : 80 pixels à droite du centre (200 ; 400).
+      await t.tapAt(const Offset(280, 400));
+      await t.pump();
+      expect(t.takeException(), isNull);
+    });
+
+    testWidgets('tableau de valeurs : réglages, valeur non définie', (t) async {
+      await ouvrir(t);
+      await ajouter(t, r'\frac{1}{x}');
+      await t.tap(find.text('Outils'));
+      await t.pumpAndSettle();
+      await t.tap(find.text('Tableau de valeurs'));
+      await t.pumpAndSettle();
+      expect(find.text('−5'), findsOneWidget);
+      expect(find.text('−0,2'), findsOneWidget);
+      await t.enterText(find.widgetWithText(TextField, '-5'), '0');
+      await t.tap(find.text('Appliquer'));
+      await t.pumpAndSettle();
+      expect(find.text('non défini'), findsOneWidget);
+      await t.enterText(find.widgetWithText(TextField, '1'), '0');
+      await t.tap(find.text('Appliquer'));
+      await t.pump();
+      expect(find.textContaining('pas non nul'), findsOneWidget);
+    });
+
+    testWidgets('sans fonction, le tableau le dit', (t) async {
+      await ouvrir(t);
+      await ajouter(t, 'x^2+y^2=4');
+      await t.tap(find.text('Outils'));
+      await t.pumpAndSettle();
+      await t.tap(find.text('Tableau de valeurs'));
+      await t.pumpAndSettle();
+      expect(
+        find.textContaining('Le tableau lit les fonctions'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('glisser déplace, sans erreur de rendu', (t) async {

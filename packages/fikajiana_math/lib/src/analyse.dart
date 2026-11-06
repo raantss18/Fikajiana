@@ -21,7 +21,13 @@ enum TypeExpression {
 /// Résultat de l'analyse d'un LaTeX : son type et l'entrée à donner à Giac.
 class Analyse {
   /// Crée une analyse.
-  const new(this.type, this.giac, {this.inconnues = const [], this.corps});
+  const new(
+    this.type,
+    this.giac, {
+    this.inconnues = const [],
+    this.corps,
+    this.membres,
+  });
 
   /// Type deviné.
   final TypeExpression type;
@@ -35,6 +41,9 @@ class Analyse {
   /// Ce que Giac résout, dans l'ordre de ses solutions ; la variable d'une
   /// fonction.
   final List<String> inconnues;
+
+  /// Les deux membres d'une équation, traduits pour Giac.
+  final (String, String)? membres;
 }
 
 /// Le LaTeX n'a pas pu être compris.
@@ -122,6 +131,7 @@ Analyse analyserLatex(String latex, {bool degres = false}) {
     TypeExpression.equation,
     'solve(${expression.gauche.giac}=${droite.giac},$variable)',
     inconnues: [variable],
+    membres: (expression.gauche.giac, droite.giac),
   );
 }
 

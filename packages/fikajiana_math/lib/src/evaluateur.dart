@@ -27,8 +27,33 @@ FonctionReelle compilerFonction(
   return _Lecteur(giac, variable, degres ? math.pi / 180 : 1).expression();
 }
 
+/// Une fonction réelle de deux variables : `NaN` là où elle n'est pas définie.
+typedef FonctionDeuxVariables = double Function(double, double);
+
+/// Compile une entrée Giac en `x` et `y`, pour une courbe implicite.
+FonctionDeuxVariables compilerFonctionXY(String giac, {bool degres = false}) {
+  final y = _Case();
+  final f = _Lecteur(
+    giac,
+    'x',
+    degres ? math.pi / 180 : 1,
+    autre: y,
+  ).expression();
+  return (a, b) {
+    y.valeur = b;
+    return f(a);
+  };
+}
+
+/// La valeur de `y` pendant une évaluation.
+class _Case {
+  double valeur = 0;
+}
+
 class _Lecteur {
-  new(this._s, this._variable, this._angle);
+  new(this._s, this._variable, this._angle, {this._autre});
+
+  final _Case? _autre;
 
   final String _s;
   final String _variable;
@@ -133,6 +158,8 @@ class _Lecteur {
       return _appel(nom, argument);
     }
     if (nom == _variable) return (x) => x;
+    final autre = _autre;
+    if (nom == 'y' && autre != null) return (_) => autre.valeur;
     return switch (nom) {
       'pi' => (_) => math.pi,
       'e' => (_) => math.e,
