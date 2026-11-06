@@ -4,7 +4,11 @@ import 'package:fikajiana/comprendre/calcul_feuille.dart';
 import 'package:fikajiana/encre/vue_feuille.dart';
 import 'package:fikajiana/l10n/l10n.dart';
 import 'package:fikajiana/reglages/reglages.dart';
+import 'package:fikajiana/ui/navigation/destination.dart';
+import 'package:fikajiana/ui/navigation/page_destination.dart';
+import 'package:fikajiana/ui/services.dart';
 import 'package:fikajiana/ui/theme/espacement.dart';
+import 'package:fikajiana_math/fikajiana_math.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
 
@@ -103,6 +107,33 @@ class RepereBloc extends StatelessWidget {
           ),
         );
       case EtatBloc.fait:
+        // Une fonction : rien à calculer, un bouton pour la tracer.
+        if (bloc.type == TypeExpression.fonction) {
+          final tracer = IconButton(
+            icon: Icon(Icons.show_chart, color: accent),
+            tooltip: l10n.grapheTracer,
+            onPressed: () {
+              final services = PorteeServices.de(context);
+              if (services.courbes.ajouter(bloc.latex ?? '')) {
+                Navigator.of(context)
+                    .push(RouteDestination(Destination.graphe));
+              }
+            },
+          );
+          return Positioned(
+            left: droite.dx + AppEspacement.sm,
+            top: droite.dy - 24,
+            child: bloc.estSaisie
+                ? Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _Formule(latex: bloc.latex ?? '', couleur: accent),
+                      tracer,
+                    ],
+                  )
+                : tracer,
+          );
+        }
         final verite = bloc.verite;
         if (verite != null) {
           position = droite + const Offset(AppEspacement.sm, -14);
@@ -256,18 +287,36 @@ Future<String?> demanderLatex(
   BuildContext context,
   String initial, {
   VoidCallback? surRetirer,
+  String? titre,
+  String? aide,
+  String? action,
 }) {
   return showDialog<String>(
     context: context,
-    builder: (_) => _DialogueLatex(initial: initial, surRetirer: surRetirer),
+    builder: (_) => _DialogueLatex(
+      initial: initial,
+      surRetirer: surRetirer,
+      titre: titre,
+      aide: aide,
+      action: action,
+    ),
   );
 }
 
 class _DialogueLatex extends StatefulWidget {
-  const new({required this.initial, this.surRetirer});
+  const new({
+    required this.initial,
+    this.surRetirer,
+    this.titre,
+    this.aide,
+    this.action,
+  });
 
   final String initial;
   final VoidCallback? surRetirer;
+  final String? titre;
+  final String? aide;
+  final String? action;
 
   @override
   State<_DialogueLatex> createState() => _DialogueLatexState();
@@ -286,7 +335,7 @@ class _DialogueLatexState extends State<_DialogueLatex> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return AlertDialog(
-      title: Text(l10n.saisieTitre),
+      title: Text(widget.titre ?? l10n.saisieTitre),
       scrollable: true,
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -297,7 +346,9 @@ class _DialogueLatexState extends State<_DialogueLatex> {
             autofocus: widget.initial.isEmpty,
             autocorrect: false,
             enableSuggestions: false,
-            decoration: InputDecoration(hintText: l10n.saisieAide),
+            decoration: InputDecoration(
+              hintText: widget.aide ?? l10n.saisieAide,
+            ),
             onChanged: (_) => setState(() {}),
             // En paysage, le clavier couvre les boutons du dialogue.
             textInputAction: TextInputAction.done,
@@ -322,7 +373,7 @@ class _DialogueLatexState extends State<_DialogueLatex> {
         ),
         FilledButton(
           onPressed: () => Navigator.of(context).pop(_texte.text),
-          child: Text(l10n.valider),
+          child: Text(widget.action ?? l10n.valider),
         ),
       ],
     );

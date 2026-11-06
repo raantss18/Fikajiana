@@ -1,6 +1,7 @@
 import 'package:fikajiana/l10n/l10n.dart';
 import 'package:fikajiana/reglages/reglages.dart';
 import 'package:fikajiana/ui/calcul/ecran_feuille.dart';
+import 'package:fikajiana/ui/graphe/ecran_graphe.dart';
 import 'package:fikajiana/ui/navigation/destination.dart';
 import 'package:fikajiana/ui/reglages/ecran_reglages.dart';
 import 'package:fikajiana/ui/theme/espacement.dart';
@@ -19,9 +20,11 @@ class PageDestination extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sombre = PorteeReglages.de(context).support.estSombre;
-    final corps = destination == Destination.feuille
-        ? const EcranFeuille()
-        : _EcranABatir(destination: destination);
+    final corps = switch (destination) {
+      Destination.feuille => const EcranFeuille(),
+      Destination.graphe => const EcranGraphe(),
+      _ => _EcranABatir(destination: destination),
+    };
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: (sombre ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark)
           .copyWith(

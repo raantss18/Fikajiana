@@ -30,7 +30,8 @@
 
 - **Autonomie** : décider seul ce qui est réversible et le noter (ADR). Une branche et une PR par tâche, ouverte dès que la tâche est poussée ;
   fusionner soi-même quand tous les contrôles sont verts, si la PR ne publie rien.
-- **Réservé à Antsa** : publier une version, les clés (`release-keys/`), toute action publique hors du dépôt, un grand changement de cap.
+- **Versions** : en sortir une après chaque modification majeure ou plusieurs améliorations, sans redemander (demande d'Antsa, 2026-11-06), une fois les contrôles passés.
+- **Réservé à Antsa** : les clés (`release-keys/`), toute action publique hors du dépôt, un grand changement de cap.
 - **Pile de PR** : ne jamais supprimer la branche d'une PR qui sert de base à une autre (les PR empilées seraient fermées).
 - **Nouveautés** : une ligne fr/en sous `## [Non publié]` de `app/CHANGELOG.md`. Le message de mise à jour dit ce que la version permet de faire.
 - **Léger** : mesurer le poids avant et après chaque dépendance.
