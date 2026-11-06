@@ -17,6 +17,8 @@ import 'package:fikajiana/ui/theme/espacement.dart';
 import 'package:fikajiana/ui/theme/marque.dart';
 import 'package:flutter/material.dart';
 
+const double _ecartSaisies = 140;
+
 /// La Feuille : on écrit sur le support choisi, les outils à portée de main.
 class EcranFeuille extends StatefulWidget {
   const new({super.key});
@@ -81,8 +83,11 @@ class _EcranFeuilleState extends State<EcranFeuille> {
   Future<void> _saisirAuClavier() async {
     final latex = await demanderLatex(context, '');
     if (latex == null || latex.trim().isEmpty || !mounted) return;
-    final centre = MediaQuery.sizeOf(context).center(Offset.zero) / 2;
-    unawaited(_calcul.saisir(latex, _vue.versPage(centre)));
+    // Chaque saisie sous la précédente : les cartes ne se recouvrent pas.
+    final saisies = _calcul.blocs.where((b) => b.estSaisie).length;
+    final depart = MediaQuery.sizeOf(context).center(Offset.zero) / 2;
+    final position = depart + Offset(0, saisies * _ecartSaisies);
+    unawaited(_calcul.saisir(latex, _vue.versPage(position)));
     setState(() {});
   }
 
