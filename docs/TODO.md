@@ -20,7 +20,7 @@
 - ✅ 2026-11-06 : en paysage, le bandeau et le rail bloquent la feuille (Antsa, Poco). Plein écran, un bouton Menu et un bouton Outils (ADR 0018) ; test sur trois tailles.
 - ✅ 2026-11-06 : `x+3=4 = {1}` est faux, et la solution n'était pas manuscrite (Antsa, Poco). La solution s'écrit à la main sous l'équation : `x = 1`, `x = -2 ou x = 2`, `S = ∅`.
   Même classe : `sin(x)=0` ne rendait que 0 et π ; Giac donne maintenant toute la famille. Tests dans `solutions_test.dart`.
-- ✅ 2026-11-06 : Géométrie « pas claire et incomplète », le `=` ne dit pas « parallèle » (Antsa, Poco). Cause : des icônes génériques sans nom. Chaque outil porte son nom et un dessin propre (ADR 0019). Même classe : le bouton Outils et le Graphe restent à revoir au prochain passage de design (P5.1).
+- ✅ 2026-11-06 : Géométrie « pas claire et incomplète », le `=` ne dit pas « parallèle » (Antsa, Poco). Cause : des icônes génériques sans nom. Chaque outil porte son nom et un dessin propre (ADR 0019). Même classe : le Graphe est corrigé en 0.5.0 ; les Outils de la Feuille restent à revoir (P5.1).
 - ✅ 2026-11-06 : créer une nouvelle feuille, un graphe ou une figure n'est pas évident (Antsa). Les trois sont en tête du Menu ; graphes et figures gardés dans l'Historique. Test dans `classeur_test.dart`.
 - 🔄 2026-11-06 : l'écriture manque de vie : pas de rature, pas d'animation (Antsa). Rature, fractions redressées, résultat animé et trait au doigt ajoutés (ADR 0021). Reste : essai au vrai stylet sur le Pad 7 et au doigt sur le Poco.
 - ✅ 2026-11-06 : « la page est trop petite » (Antsa, Poco). Page sans bord, glisser et zoomer (ADR 0014).
@@ -76,8 +76,8 @@
 
 ## P4 — Graphique et géométrie
 
-1. 🔄 Traceur Dart : ✅ fonctions `y=f(x)`, échantillonnage adaptatif, coupures, glisser, zoom, lecture d'un point. Reste : quadtree et marching squares (implicites), budget d'une image mesuré sur un appareil réel
-2. ⏳ Courbes paramétrées, polaires, implicites ; tableau de valeurs ; écran partagé sur tablette
+1. 🔄 Traceur Dart : ✅ fonctions `y=f(x)`, échantillonnage adaptatif, coupures, glisser, zoom, lecture d'un point. ✅ implicites par carrés marchants (ADR 0020). Reste : budget d'une image mesuré sur un appareil réel, avec cache si besoin
+2. 🔄 ✅ Courbes paramétrées, polaires, implicites ; tableau de valeurs (ADR 0020). Reste : écran partagé sur tablette, tracer une équation depuis la Feuille
 3. ⏳ Fiabilité des implicites : intervalles façon Tupper, à comparer à `graphest` (MIT)
 4. ⏳ `FragmentProgram` en option pour aperçus et fonds denses, avec repli CPU ; pas de `flutter_gpu` en préversion
 5. 🔄 Géométrie dynamique (ADR 0019) : ✅ 40 outils, points sur objet, arcs, polygones, coniques, transformations, mesures, curseurs animés, lieux, relations, liste et propriétés des objets, annuler et refaire, aimant. Reste : texte libre, trace d'un point, fonctions dans la figure, saisie d'équations, formes dessinées reconnues, tangence entre coniques

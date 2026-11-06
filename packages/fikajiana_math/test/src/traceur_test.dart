@@ -122,4 +122,157 @@ void main() {
       expect(dense.expand((m) => m).length, lessThan(20000));
     });
   });
+
+  group('deux variables', () {
+    // Valeurs relevées avec SymPy 1.14, 2026-11-06.
+    test('évaluer', () {
+      final f = compilerFonctionXY('(x)^(3)+(y)^(3)-3*x*y');
+      expect(f(1.5, 1.5), closeTo(0, 1e-12));
+      expect(compilerFonctionXY('x+y')(2, 3), 5);
+    });
+
+    test('une autre lettre reste refusée', () {
+      expect(() => compilerFonctionXY('x+z'), throwsA(isA<ErreurEvaluation>()));
+    });
+
+    test('compilerFonction refuse toujours y', () {
+      expect(() => compilerFonction('y'), throwsA(isA<ErreurEvaluation>()));
+    });
+  });
+
+  group('courbes implicites', () {
+    List<List<PointTrace>> tracer(String giac) =>
+        tracerImplicite(compilerFonctionXY(giac), _fenetre);
+
+    void verifier(
+      List<List<PointTrace>> m,
+      double Function(double, double) distance,
+    ) {
+      expect(m, isNotEmpty);
+      for (final segment in m) {
+        for (final p in segment) {
+          // Un pixel vaut 1/40 d'unité.
+          expect(distance(p.x, p.y).abs() * 40, lessThan(1), reason: '$p');
+        }
+      }
+    }
+
+    test('cercle x²+y²=16 : sur le cercle, et sa longueur', () {
+      final m = tracer('(x)^(2)+(y)^(2)-(16)');
+      verifier(m, (x, y) => math.sqrt(x * x + y * y) - 4);
+      var longueur = 0.0;
+      for (final s in m) {
+        longueur += math.sqrt(
+          math.pow(s[1].x - s[0].x, 2) + math.pow(s[1].y - s[0].y, 2),
+        );
+      }
+      expect(longueur, closeTo(2 * math.pi * 4, 0.05));
+    });
+
+    test('droite verticale x=3', () {
+      verifier(tracer('x-(3)'), (x, _) => x - 3);
+    });
+
+    test('hyperbole xy=1 : deux branches, rien entre elles', () {
+      final m = tracer('x*y-(1)');
+      verifier(m, (x, y) => (x * y - 1) / math.sqrt(x * x + y * y));
+      for (final s in m) {
+        expect(s[0].x.sign, s[1].x.sign);
+      }
+    });
+
+    test('folium x³+y³=3xy passe par (3/2 ; 3/2)', () {
+      final m = tracer('(x)^(3)+(y)^(3)-3*x*y');
+      final proche = m
+          .expand((s) => s)
+          .map((p) {
+            return math.sqrt(math.pow(p.x - 1.5, 2) + math.pow(p.y - 1.5, 2));
+          })
+          .reduce(math.min);
+      expect(proche, lessThan(0.05));
+    });
+
+    test('un pôle n’est pas une courbe : y=1/x sans trait vertical', () {
+      final m = tracer('y-(1)/(x)');
+      for (final s in m) {
+        expect(s[0].x * s[1].x, greaterThan(0), reason: '$s');
+      }
+    });
+
+    test('une courbe bornée par son domaine', () {
+      // y = sqrt(x) sur x positif seulement.
+      final m = tracer('y-sqrt(x)');
+      expect(m, isNotEmpty);
+      for (final s in m) {
+        expect(s[0].x, greaterThanOrEqualTo(0));
+      }
+    });
+
+    test('vide : x²+y²=-1 ne trace rien', () {
+      expect(tracer('(x)^(2)+(y)^(2)+1'), isEmpty);
+    });
+
+    test('reste léger', () {
+      // Des dizaines d'hyperboles xy = kπ sur 20 × 20 unités : le pire cas.
+      expect(tracer('sin(x*y)').expand((s) => s).length, lessThan(60000));
+    });
+  });
+
+  group('courbes paramétrées', () {
+    List<List<PointTrace>> tracer(
+      String x,
+      String y,
+      double debut,
+      double fin,
+    ) => tracerParametree(
+      compilerFonction(x, variable: 't'),
+      compilerFonction(y, variable: 't'),
+      debut,
+      fin,
+      _fenetre,
+    );
+
+    double longueur(List<PointTrace> m) {
+      var l = 0.0;
+      for (var i = 1; i < m.length; i++) {
+        l += math.sqrt(
+          math.pow(m[i].x - m[i - 1].x, 2) + math.pow(m[i].y - m[i - 1].y, 2),
+        );
+      }
+      return l;
+    }
+
+    test('cercle de rayon 2 : longueur 4π', () {
+      final m = tracer('2*cos(t)', '2*sin(t)', 0, 2 * math.pi);
+      expect(m, hasLength(1));
+      expect(longueur(m.single), closeTo(12.5663706143592, 0.01));
+    });
+
+    test('cycloïde : longueur 8 sur une arche', () {
+      final m = tracer('t-sin(t)', '1-cos(t)', 0, 2 * math.pi);
+      expect(longueur(m.single), closeTo(8, 0.01));
+    });
+
+    test('Lissajous en t=1 : (sin 3 ; cos 2) d’après SymPy', () {
+      final m = tracer('sin(3*t)', 'cos(2*t)', 0, 1);
+      expect(m.single.last.x, closeTo(0.141120008059867, 1e-9));
+      expect(m.single.last.y, closeTo(-0.416146836547142, 1e-9));
+    });
+
+    test('hors du domaine : coupée, pas reliée', () {
+      final m = tracer('t', 'sqrt(t)', -2, 2);
+      expect(m, hasLength(1));
+      expect(m.single.first.x, greaterThanOrEqualTo(0));
+    });
+
+    test('un saut est coupé', () {
+      final m = tracer('t', '(1)/(t)', -2, 2);
+      expect(m, hasLength(2));
+    });
+
+    test('loin de l’écran : rien de relié à travers', () {
+      final m = tracer('t+100', 't', -1, 1);
+      expect(m, isEmpty);
+    });
+  });
 }

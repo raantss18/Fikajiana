@@ -89,9 +89,9 @@ String texteGraduation(double valeur, double pas, {required bool virgule}) {
 }
 
 /// Une coordonnée lue sur la courbe : 4 chiffres significatifs.
-String texteValeur(double valeur, {required bool virgule}) {
+String texteValeur(double valeur, {required bool virgule, int chiffres = 4}) {
   if (valeur.abs() < 1e-9) return '0';
-  var texte = valeur.toStringAsPrecision(4);
+  var texte = valeur.toStringAsPrecision(chiffres);
   if (texte.contains('.') && !texte.contains('e')) {
     texte = texte
         .replaceFirst(RegExp(r'0+$'), '')
@@ -101,9 +101,33 @@ String texteValeur(double valeur, {required bool virgule}) {
   return texte.replaceAll('-', '−');
 }
 
-/// La courbe la plus proche de [point], à moins de [rayon] pixels.
+/// Le point tracé le plus proche de [point], à moins de [rayon] pixels : pour
+/// une courbe qui n'est pas une fonction de x.
+({double x, double y, double distance})? pointTraceProche(
+  List<List<PointTrace>> morceaux,
+  Offset point,
+  VueGraphe vue,
+  Size taille, {
+  double rayon = 32,
+}) {
+  ({double x, double y, double distance})? meilleur;
+  var distance = rayon;
+  for (final morceau in morceaux) {
+    for (final p in morceau) {
+      final d = (vue.versEcran(p.x, p.y, taille) - point).distance;
+      if (d <= distance) {
+        distance = d;
+        meilleur = (x: p.x, y: p.y, distance: d);
+      }
+    }
+  }
+  return meilleur;
+}
+
+/// La courbe la plus proche de [point], à moins de [rayon] pixels. Une entrée
+/// `null` n'est pas une fonction de x : voir [pointTraceProche].
 ({int indice, double x, double y})? courbeProche(
-  List<FonctionReelle> fonctions,
+  List<FonctionReelle?> fonctions,
   Offset point,
   VueGraphe vue,
   Size taille, {
@@ -113,8 +137,8 @@ String texteValeur(double valeur, {required bool virgule}) {
   var distance = rayon;
   final maths = vue.versMaths(point, taille);
   for (var i = 0; i < fonctions.length; i++) {
-    final y = fonctions[i](maths.x);
-    if (!y.isFinite) continue;
+    final y = fonctions[i]?.call(maths.x);
+    if (y == null || !y.isFinite) continue;
     final d = (vue.versEcran(maths.x, y, taille).dy - point.dy).abs();
     if (d <= distance) {
       distance = d;

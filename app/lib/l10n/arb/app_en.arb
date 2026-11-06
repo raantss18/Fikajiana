@@ -294,13 +294,13 @@
     "modeExact": "Exact values: tap for approximate values",
     "modeDegres": "Angles in degrees: tap for radians",
     "modeRadians": "Angles in radians: tap for degrees",
-    "grapheAjouter": "Add a function",
-    "grapheModifier": "Edit the function",
-    "grapheAide": "For example f(x)=x^2 or y=\\sin(x)",
+    "grapheAjouter": "Add a curve",
+    "grapheModifier": "Edit the curve",
+    "grapheAide": "For example f(x)=x^2, x^2+y^2=4, (\\cos(t),\\sin(t)) or r=2\\cos(\\theta)",
     "grapheTracer": "Plot",
-    "grapheErreur": "This expression cannot be plotted: it needs a single variable.",
-    "grapheVide": "No curve. Tools, then + to add a function, or plot a function written on the sheet.",
-    "grapheDescription": "Graph of {n} functions",
+    "grapheErreur": "This cannot be plotted: it needs a function, an equation in x and y, (x(t), y(t)) or r=…",
+    "grapheVide": "No curves. Tap Tools to add one, or plot a function written on the sheet.",
+    "grapheDescription": "Graph of {n} curves",
     "@grapheDescription": {
         "description": "Screen reader label of the graph",
         "placeholders": {
@@ -503,5 +503,29 @@
             }
         }
     },
+    "grapheTableau": "Table of values",
+    "grapheTableauVide": "The table reads functions: add a curve such as f(x)=x^2.",
+    "grapheDebut": "Start",
+    "graphePas": "Step",
+    "grapheTableauInvalide": "It needs two numbers, and a non-zero step.",
+    "grapheNonDefini": "undefined",
+    "grapheAngles": "Angles in radians: tap for degrees",
+    "grapheAnglesDegres": "Angles in degrees: tap for radians",
+    "grapheTableauDecrire": "x = {x}, curve {n}: {y}",
+    "@grapheTableauDecrire": {
+        "description": "grapheTableauDecrire",
+        "placeholders": {
+            "x": {
+                "type": "String"
+            },
+            "n": {
+                "type": "int"
+            },
+            "y": {
+                "type": "String"
+            }
+        }
+    },
+    "recentrerGraphe": "Back to the starting view",
     "ratureFaite": "Erased by scribbling"
 }
