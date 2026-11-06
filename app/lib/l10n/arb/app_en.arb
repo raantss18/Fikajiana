@@ -312,5 +312,35 @@
                 "type": "int"
             }
         }
+    },
+    "geometrieVide": "Empty figure. Tools to choose a construction, then tap the sheet.",
+    "outilDeplacer": "Move",
+    "outilPoint": "Point",
+    "outilSegment": "Segment",
+    "outilDroite": "Line",
+    "outilCercle": "Circle",
+    "outilMilieu": "Midpoint",
+    "outilMediatrice": "Perpendicular bisector",
+    "outilBissectrice": "Angle bisector",
+    "outilParallele": "Parallel",
+    "outilPerpendiculaire": "Perpendicular",
+    "outilIntersection": "Intersection",
+    "outilGomme": "Remove an object",
+    "aideDeplacer": "Drag a point to reshape the figure.",
+    "aidePoint": "Tap to place a point.",
+    "aideDeuxPoints": "Tap two points: existing or new.",
+    "aideCercle": "Tap the centre, then a point of the circle.",
+    "aideBissectrice": "Tap three points: the vertex second.",
+    "aideParDroite": "Tap a line, then a point.",
+    "aideIntersection": "Tap two lines or circles.",
+    "aideGomme": "Tap the object to remove; what depends on it goes too.",
+    "geometrieDescription": "Figure with {n} objects",
+    "@geometrieDescription": {
+        "description": "Screen reader label of the figure",
+        "placeholders": {
+            "n": {
+                "type": "int"
+            }
+        }
     }
 }

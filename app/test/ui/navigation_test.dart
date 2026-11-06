@@ -45,8 +45,8 @@ void main() {
     testWidgets("← revient à l'écran précédent, pas à l'accueil", (t) async {
       await t.pumpFikajiana();
       await _aller(t, 'Graphe');
-      await _aller(t, 'Géométrie');
-      expect(find.text('Géométrie'), findsOneWidget);
+      await _aller(t, 'Historique');
+      expect(find.text('Historique'), findsOneWidget);
 
       await t.tap(find.byType(BackButton));
       await t.pumpAndSettle();
@@ -106,7 +106,7 @@ void main() {
       for (final s in ['Feuille', 'Graphe', 'Géométrie', 'Historique']) {
         expect(find.text(s), findsWidgets);
       }
-      await t.tap(find.text('Géométrie'));
+      await t.tap(find.text('Historique'));
       await t.pumpAndSettle();
       expect(
         find.text("Cet écran n'est pas encore disponible."),
@@ -121,7 +121,7 @@ void main() {
       for (final s in ['Sheet', 'Graph', 'Geometry', 'History']) {
         expect(find.text(s), findsWidgets);
       }
-      await t.tap(find.text('Geometry'));
+      await t.tap(find.text('History'));
       await t.pumpAndSettle();
       expect(find.text('This screen is not available yet.'), findsOneWidget);
     });

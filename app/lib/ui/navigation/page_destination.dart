@@ -1,6 +1,7 @@
 import 'package:fikajiana/l10n/l10n.dart';
 import 'package:fikajiana/reglages/reglages.dart';
 import 'package:fikajiana/ui/calcul/ecran_feuille.dart';
+import 'package:fikajiana/ui/geometrie/ecran_geometrie.dart';
 import 'package:fikajiana/ui/graphe/ecran_graphe.dart';
 import 'package:fikajiana/ui/navigation/destination.dart';
 import 'package:fikajiana/ui/reglages/ecran_reglages.dart';
@@ -23,6 +24,7 @@ class PageDestination extends StatelessWidget {
     final corps = switch (destination) {
       Destination.feuille => const EcranFeuille(),
       Destination.graphe => const EcranGraphe(),
+      Destination.geometrie => const EcranGeometrie(),
       _ => _EcranABatir(destination: destination),
     };
     return AnnotatedRegion<SystemUiOverlayStyle>(

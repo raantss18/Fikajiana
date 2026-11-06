@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:fikajiana/comprendre/stockage_feuille.dart';
+import 'package:fikajiana/geometrie/atelier.dart';
 import 'package:fikajiana/graphe/courbes.dart';
 import 'package:fikajiana/moteur/moteur.dart';
 import 'package:fikajiana/reconnaissance/lecteur.dart';
@@ -15,6 +16,7 @@ class Services {
     required this.lecteur,
     required this.moteur,
     required this.courbes,
+    required this.atelier,
     this.stockage,
   });
 
@@ -26,6 +28,7 @@ class Services {
       lecteur: LecteurPix2Text(modele),
       moteur: MoteurGiac(),
       courbes: Courbes(),
+      atelier: Atelier(),
     );
   }
 
@@ -38,6 +41,7 @@ class Services {
       lecteur: LecteurPix2Text(modele),
       moteur: MoteurGiac(),
       courbes: Courbes(fichier: File('${dossier.path}/courbes.json')),
+      atelier: Atelier(fichier: File('${dossier.path}/figure.json')),
       stockage: StockageFeuille(File('${dossier.path}/feuille.json')),
     );
   }
@@ -46,6 +50,7 @@ class Services {
   final Lecteur lecteur;
   final Moteur moteur;
   final Courbes courbes;
+  final Atelier atelier;
   final StockageFeuille? stockage;
 }
 
