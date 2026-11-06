@@ -19,3 +19,6 @@ models/pix2text-mfr/
 # Sources et produits de compilation de Giac
 native/giac/sources/
 native/giac/construit/
+
+# Versions préparées
+release-out/

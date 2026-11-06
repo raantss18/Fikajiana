@@ -35,9 +35,9 @@
 
 > Modèle commun à COMIMa, zanakiantsa et academik (`docs/RELEASING.md`). **Seul Antsa décide d'une publication.**
 
-1. ⏳ Clés hors de Git : signature Android et Ed25519, sauvegardées par Antsa. Passage de la clé de débogage : désinstaller une fois
-2. ⏳ `tool/release.sh` : APK arm64, `release.json` signé, message sur ce que la version permet de faire (`app/CHANGELOG.md`)
-3. ⏳ Réglages → Mises à jour : version installée, « Rechercher » ; signature, SHA-256, même clé Android (ADR 0015). Rien sans le réseau, aucune donnée envoyée
+1. 🔄 Clés créées dans `release-keys/`, hors de Git. Reste : **Antsa doit les sauvegarder ailleurs**. Passage de la clé de débogage : désinstaller une fois
+2. ✅ `tool/release.sh` : APK arm64, `release.json` signé, message sur ce que la version permet de faire (`app/CHANGELOG.md`)
+3. 🔄 Réglages → Mises à jour : version installée, « Rechercher » ; signature, SHA-256, même clé Android (ADR 0015). Rien sans le réseau, aucune donnée envoyée
 4. ⏳ Essai réel : installer une version par-dessus la précédente, la feuille conservée
 5. ✅ Provenance des poids : contournée, pas de redistribution (ADR 0016). La question reste ouverte pour un modèle embarqué (P6)
 6. ⏳ Première version publique sur GitHub (demandée par Antsa le 2026-11-06)
