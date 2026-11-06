@@ -589,6 +589,7 @@ EcritureResultat? ecrireResultat(
   String latex,
   Rect ecriture, {
   bool dessous = false,
+  double? hauteurLigne,
 }) {
   final _Boite boite;
   try {
@@ -601,7 +602,9 @@ EcritureResultat? ecrireResultat(
   final total = boite.haut + boite.bas;
   // Le résultat occupe environ 80 % de la hauteur de ce qu'on a écrit.
   // Sous une équation sur plusieurs lignes, la hauteur d'une seule ligne.
-  final reference = dessous ? math.min(ecriture.height, 70) : ecriture.height;
+  // Une fraction redressée double la hauteur, pas la taille de l'écriture.
+  final hauteur = hauteurLigne ?? ecriture.height;
+  final reference = dessous ? math.min(hauteur, 70) : hauteur;
   final echelle = ((reference * 0.8) / total).clamp(
     _hauteurMin / total,
     _hauteurMax,

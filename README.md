@@ -26,6 +26,7 @@ Android, téléphone et tablette. <b>Libre</b>, sans compte, sans pub, et <b>hor
 - **Tracer** : écris `f(x)=x^2`, touche l'icône à côté, et la courbe s'affiche. Dans le Graphe, ajoute aussi `x^2+y^2=4`, `(\cos(t),\sin(t))` ou `r=1+\cos(\theta)`. Glisser, pincer, plusieurs courbes, tableau de valeurs, un toucher lit les coordonnées d'un point.
 - **Construire** : 40 outils nommés, de la parallèle à la conique par cinq points : polygones, arcs, tangentes, symétries, rotations, homothéties, mesures, curseurs, lieux. Déplace un point : toute la figure suit. L'outil Relation dit ce qui lie deux objets.
 - **Retrouver** : le Menu crée une nouvelle feuille, un graphe ou une figure, et l'Historique les garde tous, sur l'appareil.
+- **Effacer d'un geste** : gribouille sur ce que tu as écrit ; un `1/3` en ligne se range en fraction, avec tes propres traits.
 - **Corriger** : touche un résultat pour voir ce qui a été lu et le changer, ou saisis au clavier.
 - **Dessiner net** : maintiens le stylet à la fin d'un trait pour obtenir une ligne, un cercle, un triangle ou un rectangle.
 

@@ -64,6 +64,7 @@ class BlocCalcul {
       ..resultat = json['resultat'] as String?
       ..approche = json['approche'] as String?
       ..inchange = json['inchange'] as bool? ?? false
+      ..hauteurLigne = (json['hl'] as num?)?.toDouble()
       .._points = json['points'] as int? ?? 0;
   }
 
@@ -86,6 +87,9 @@ class BlocCalcul {
 
   /// Giac rend l'entrée telle quelle, comme `ln(5)` : l'approchée informe.
   bool inchange = false;
+
+  /// La hauteur de l'écriture avant qu'une fraction ne soit redressée.
+  double? hauteurLigne;
 
   /// Nombre de points lus : un trait prolongé se relit.
   int _points = 0;
@@ -150,7 +154,12 @@ class BlocCalcul {
     if (valeur == null) return null;
     if (_ecritPour != valeur) {
       _ecritPour = valeur;
-      _ecrit = ecrireResultat(valeur, cadre, dessous: _sousLEcriture);
+      _ecrit = ecrireResultat(
+        valeur,
+        cadre,
+        dessous: _sousLEcriture,
+        hauteurLigne: hauteurLigne,
+      );
     }
     return _ecrit;
   }
@@ -182,6 +191,7 @@ class BlocCalcul {
     'approche': approche,
     'inchange': inchange,
     'points': _points,
+    'hl': ?hauteurLigne,
   };
 }
 
@@ -381,6 +391,7 @@ class CalculFeuille extends ChangeNotifier {
     final traits = _traitsDe(bloc);
     final redresse = redresserFractions(traits, latex);
     if (redresse == null) return latex;
+    bloc.hauteurLigne = bloc.cadre.height;
     encre.remplacer(redresse.traits);
     bloc.cadre = cadreDuGroupe(_traitsDe(bloc));
     return redresse.latex;

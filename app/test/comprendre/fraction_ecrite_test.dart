@@ -97,6 +97,11 @@ void main() {
         final barre = e.traits[1];
         expect(barre.points.first.y, barre.points.last.y);
         expect(bloc.cadre.bottom, greaterThan(40));
+        // Le résultat garde la taille de l'écriture, pas celle de la fraction.
+        expect(bloc.hauteurLigne, 40);
+        expect(bloc.cadre.height, greaterThan(40));
+        final relu = BlocCalcul.depuisJson(bloc.versJson());
+        expect(relu.hauteurLigne, 40);
 
         final redresse = bloc.cadre;
         e.annuler();
@@ -139,6 +144,16 @@ void main() {
     expect(cadre(nc).top, greaterThan(y));
     expect(cadre(na).center.dx, closeTo(cadre(nc).center.dx, 1e-9));
     expect(cadre(na).center.dx, closeTo(cadre(nb).center.dx, 1e-9));
+  });
+
+  test('la lecture réelle du modèle : `1 / 3 =`, avec ses espaces', () {
+    final (a, b, c, d) = (signe(0), barre(10), signe(40), signe(60));
+    expect(
+      redresserFractions([a, b, c, d], '1 / 3 =')!.latex,
+      r'\frac{1}{3} =',
+    );
+    final (e, f, g, h) = (signe(0), signe(14), barre(24), signe(50));
+    expect(redresserFractions([e, f, g, h], '1 2 / 5')!.latex, r'\frac{12}{5}');
   });
 
   test('l’identifiant reste, l’ancien trait n’est pas touché', () {

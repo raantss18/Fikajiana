@@ -15,10 +15,13 @@ class FractionsRedressees {
   final Map<int, Trait> traits;
 }
 
-/// `1/3`, `12/5`, `x/2` ; pas `sin/2`, ni ce qui suit une commande LaTeX.
+/// `1/3`, `12/5`, `x/2` ; pas `sin/2`, ni ce qui suit une commande LaTeX. Le
+/// modèle sépare ce qu'il lit par des espaces : `1 / 3 =`, parfois `1 2 / 5`.
 final _fraction = RegExp(
-  r'(?<![\\a-zA-Z0-9.])(\d+|[a-zA-Z])/(\d+|[a-zA-Z])(?![a-zA-Z0-9.])',
+  r'(?<![\\a-zA-Z0-9.])(\d(?:\s*\d)*|[a-zA-Z])\s*/\s*(\d(?:\s*\d)*|[a-zA-Z])(?![a-zA-Z0-9.])',
 );
+
+String _serre(String texte) => texte.replaceAll(RegExp(r'\s'), '');
 
 /// Rend de quoi redresser les fractions de [latex], ou `null` si quelque chose
 /// ne colle pas entre la lecture et les traits : dans le doute, rien ne bouge.
@@ -37,15 +40,15 @@ FractionsRedressees? redresserFractions(List<Trait> traits, String latex) {
     final suivants = _redresser(
       courants,
       barres[i].id,
-      fractions[i][1]!.length,
-      fractions[i][2]!.length,
+      _serre(fractions[i][1]!).length,
+      _serre(fractions[i][2]!).length,
     );
     if (suivants == null) return null;
     courants = suivants;
   }
   final ecrit = latex.replaceAllMapped(
     _fraction,
-    (m) => '\\frac{${m[1]}}{${m[2]}}',
+    (m) => '\\frac{${_serre(m[1]!)}}{${_serre(m[2]!)}}',
   );
   return FractionsRedressees(ecrit, {
     for (final t in traits)

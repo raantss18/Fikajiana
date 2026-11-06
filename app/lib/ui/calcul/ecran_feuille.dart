@@ -95,6 +95,14 @@ class _EcranFeuilleState extends State<EcranFeuille> {
         SnackBar(
           content: Text(l10n.ratureFaite),
           behavior: SnackBarBehavior.floating,
+          // Avec une action, Flutter la garderait jusqu'à ce qu'on la ferme.
+          persist: false,
+          // À gauche du bouton Outils, qu'elle ne doit pas couvrir.
+          margin: const EdgeInsets.only(
+            left: AppEspacement.sm,
+            right: 72,
+            bottom: AppEspacement.sm,
+          ),
           action: SnackBarAction(
             label: l10n.annuler,
             onPressed: () {

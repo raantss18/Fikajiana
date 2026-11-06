@@ -4,6 +4,17 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+## [0.6.0] — 2026-11-06
+
+### Message fr
+
+L'écriture prend vie : gribouille sur ce que tu as écrit et cela s'efface en douceur, 1/3 glisse vers une vraie fraction avec tes propres traits, et le résultat s'écrit sous tes yeux. Au doigt, le trait a maintenant des pleins et des déliés.
+
+### Message en
+
+Writing comes alive: scribble over what you wrote and it gently erases, 1/3 slides into a real fraction with your own strokes, and the result writes itself before your eyes. With a finger, strokes now vary in width.
+
+### Changements
 
 - Gribouiller sur ce qu'on a écrit l'efface, en douceur, et le calcul se refait quand on réécrit. Annuler reste à portée pendant quelques secondes. / Scribbling over your writing erases it gently, and the calculation runs again when you rewrite. Undo stays at hand for a few seconds.
 - `1/3` écrit en ligne glisse vers une vraie fraction, avec vos propres traits. Annuler remet tout en place. / `1/3` written inline slides into a real fraction, with your own strokes. Undo puts everything back.

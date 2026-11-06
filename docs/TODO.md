@@ -22,7 +22,7 @@
   Même classe : `sin(x)=0` ne rendait que 0 et π ; Giac donne maintenant toute la famille. Tests dans `solutions_test.dart`.
 - ✅ 2026-11-06 : Géométrie « pas claire et incomplète », le `=` ne dit pas « parallèle » (Antsa, Poco). Cause : des icônes génériques sans nom. Chaque outil porte son nom et un dessin propre (ADR 0019). Même classe : le Graphe est corrigé en 0.5.0 ; les Outils de la Feuille restent à revoir (P5.1).
 - ✅ 2026-11-06 : créer une nouvelle feuille, un graphe ou une figure n'est pas évident (Antsa). Les trois sont en tête du Menu ; graphes et figures gardés dans l'Historique. Test dans `classeur_test.dart`.
-- 🔄 2026-11-06 : l'écriture manque de vie : pas de rature, pas d'animation (Antsa). Rature, fractions redressées, résultat animé et trait au doigt ajoutés (ADR 0021). Reste : essai au vrai stylet sur le Pad 7 et au doigt sur le Poco.
+- 🔄 2026-11-06 : l'écriture manque de vie : pas de rature, pas d'animation (Antsa). Rature, fractions redressées, résultat animé et trait au doigt ajoutés (ADR 0021). Vu sur émulateur avec le vrai modèle (`1 / 3 =` lu, redressé). Reste : essai au vrai stylet sur le Pad 7 et au doigt sur le Poco.
 - ✅ 2026-11-06 : « la page est trop petite » (Antsa, Poco). Page sans bord, glisser et zoomer (ADR 0014).
 
 ## P0 — Une app qui calcule ce qu'on écrit (prioritaire)
