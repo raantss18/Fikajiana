@@ -32,6 +32,12 @@ void main() {
       r'\tan(1)',
       r'\exp(x)',
       'abcdefghijklmnopqrstuvwxyz',
+      'x=1',
+      r'x=-\sqrt{2}\,\mathrm{ou}\,x=\sqrt{2}',
+      r'x=2\,\mathrm{et}\,y=\mathrm{-1}',
+      r'S=\emptyset',
+      r'S=\mathbb{R}',
+      r'x=n\cdot \pi,\,n \in \mathbb{Z}',
     ]) {
       test(latex, () {
         final ecrit = ecrireResultat(latex, ecriture);

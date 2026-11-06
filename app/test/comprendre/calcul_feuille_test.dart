@@ -169,6 +169,49 @@ void main() {
     });
   });
 
+  group('équation', () {
+    setUp(() {
+      lecteur.reponse = 'x^2=2';
+      moteur.reponse = const ReponseGiac(
+        exact: 'list[-√2,√2]',
+        latex: r'\{-\sqrt{2},\sqrt{2}\}',
+        approche: 'list[-1.41421356237,1.41421356237]',
+      );
+    });
+
+    test('la solution s’écrit sous l’équation, sans faux =', () async {
+      _trait(encre, 0, 0);
+      calcul.encreChangee();
+      await _attendre();
+      final bloc = calcul.blocs.single;
+      expect(
+        bloc.texte(approcheVoulue: false, virgule: true),
+        r'x=-\sqrt{2}\,\mathrm{ou}\,x=\sqrt{2}',
+      );
+      final ecrit = bloc.ecriture(approcheVoulue: false, virgule: true);
+      expect(ecrit, isNotNull);
+      expect(ecrit!.cadre.top, greaterThan(bloc.cadre.bottom));
+    });
+
+    test('valeurs approchées, avec la virgule française', () async {
+      _trait(encre, 0, 0);
+      calcul.encreChangee();
+      await _attendre();
+      expect(
+        calcul.blocs.single.texte(approcheVoulue: true, virgule: true),
+        r'x=-1{,}4142136\,\mathrm{ou}\,x=1{,}4142136',
+      );
+    });
+
+    test('les inconnues survivent à la sauvegarde', () async {
+      _trait(encre, 0, 0);
+      calcul.encreChangee();
+      await _attendre();
+      final relu = BlocCalcul.depuisJson(calcul.blocs.single.versJson());
+      expect(relu.inconnues, ['x']);
+    });
+  });
+
   group('modes', () {
     test('exact ou approché, sans recalculer', () async {
       moteur.reponse = const ReponseGiac(
@@ -371,6 +414,23 @@ void main() {
   });
 
   group('sauvegarde', () {
+    test('une feuille de la 0.1.0 garde ses traits et ses résultats', () {
+      final bloc = BlocCalcul.depuisJson({
+        'cle': '1,2,3',
+        'g': 0,
+        'h': 0,
+        'd': 10,
+        'b': 10,
+        'latex': '2+3=',
+        'etat': 'fait',
+        'type': 'calcul',
+        'resultat': '5',
+      });
+      expect(bloc.traits, {1, 2, 3});
+      expect(bloc.resultat, '5');
+      expect(bloc.estSaisie, isFalse);
+    });
+
     late Directory dossier;
     late File fichier;
 

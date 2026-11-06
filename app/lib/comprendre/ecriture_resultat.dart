@@ -215,6 +215,31 @@ final Map<String, _Glyphe> _glyphes = {
   'w': _Glyphe(0.72, [
     _l([0.03, 0.42, 0.19, 1, 0.36, 0.56, 0.53, 1, 0.69, 0.42]),
   ]),
+  'S': _Glyphe(0.56, [
+    [
+      ..._arc(0.28, 0.25, 0.23, 0.24, -0.4, -_pi - 1),
+      ..._arc(0.28, 0.73, 0.25, 0.27, -1.7, 2.9),
+    ],
+  ]),
+  // Les ensembles de nombres : barre doublée, comme au tableau.
+  'R': _Glyphe(0.64, [
+    _l([0.08, 0, 0.08, 1]),
+    _l([0.2, 0, 0.2, 1]),
+    _arc(0.26, 0.26, 0.28, 0.26, -_pi / 2, _pi / 2),
+    _l([0.26, 0.52, 0.58, 1]),
+  ]),
+  'Z': _Glyphe(0.62, [
+    _l([0.04, 0, 0.58, 0, 0.04, 1, 0.6, 1]),
+    _l([0.44, 0, 0.0, 0.92]),
+  ]),
+  '∈': _Glyphe(0.5, [
+    [..._arc(0.3, 0.71, 0.26, 0.28, -_pi / 2, -3 * _pi / 2)],
+    _l([0.05, 0.71, 0.46, 0.71]),
+  ]),
+  '∅': _Glyphe(0.66, [
+    _arc(0.33, 0.56, 0.26, 0.38, -_pi / 2, 3 * _pi / 2 + 0.2),
+    _l([0.08, 1, 0.58, 0.1]),
+  ]),
   'π': _Glyphe(0.6, [
     _l([0.02, 0.46, 0.2, 0.4, 0.58, 0.42]),
     _l([0.2, 0.42, 0.16, 1]),
@@ -378,7 +403,7 @@ class _Compositeur {
     if (g == null) throw const _NonPrisEnCharge();
     return _Boite(
       g.largeur,
-      'acegmnopqrsuvwxyz'.contains(c) ? 0.58 : 1,
+      'acegmnopqrsuvwxyz∈'.contains(c) ? 0.58 : 1,
       'gjpqy,'.contains(c) ? 0.24 : 0,
       [
         for (final t in g.traces) [for (final p in t) p - const Offset(0, 1)],
@@ -413,7 +438,9 @@ class _Compositeur {
     final nom = _s.substring(debut, _i);
     return switch (nom) {
       'sin' || 'cos' || 'tan' || 'ln' || 'log' || 'exp' => _mot(nom),
-      'mathrm' || 'operatorname' => _groupe(),
+      'mathrm' || 'operatorname' || 'mathbb' => _groupe(),
+      'in' => _lettre('∈'),
+      'emptyset' => _lettre('∅'),
       'frac' => _fraction(),
       'sqrt' => _racine(),
       'pi' => _lettre('π'),
@@ -486,6 +513,19 @@ class EcritureResultat {
   final Rect cadre;
 }
 
+/// Des points rapprochés : le lissage du trait raccourcit sinon les droites.
+_Trace _densifier(_Trace trace) {
+  final dense = <Offset>[trace.first];
+  for (var i = 1; i < trace.length; i++) {
+    final (a, b) = (trace[i - 1], trace[i]);
+    final n = math.max(1, ((b - a).distance / 0.06).ceil());
+    for (var k = 1; k <= n; k++) {
+      dense.add(Offset.lerp(a, b, k / n)!);
+    }
+  }
+  return dense;
+}
+
 const double _hauteurMin = 22;
 const double _hauteurMax = 90;
 
@@ -521,8 +561,8 @@ EcritureResultat? ecrireResultat(
 
   final contours = <Path>[];
   for (var k = 0; k < boite.traces.length; k++) {
-    final points = boite.traces[k];
-    if (points.length < 2) continue;
+    if (boite.traces[k].length < 2) continue;
+    final points = _densifier(boite.traces[k]);
     final vecteurs = <PointVector>[];
     for (var i = 0; i < points.length; i++) {
       final p = points[i] * echelle + origine;

@@ -122,10 +122,16 @@ class RepereBloc extends StatelessWidget {
           position = bloc.estSaisie || !bloc.finitParEgal
               ? dessous
               : droite + const Offset(AppEspacement.sm, -14);
+          final ecrit = _sansEgalFinal(bloc.latex ?? '');
           contenu = _Formule(
-            latex: bloc.estSaisie
-                ? '${_sansEgalFinal(bloc.latex ?? '')} = $valeur'
-                : valeur,
+            latex: !bloc.estSaisie
+                ? valeur
+                : !bloc.estResolution
+                ? '$ecrit = $valeur'
+                // `x+3=4 = {1}` serait faux : deux écritures équivalentes.
+                : valeur.startsWith('S=')
+                ? '$ecrit \\quad $valeur'
+                : '$ecrit \\iff $valeur',
             couleur: accent,
           );
         }
@@ -293,6 +299,9 @@ class _DialogueLatexState extends State<_DialogueLatex> {
             enableSuggestions: false,
             decoration: InputDecoration(hintText: l10n.saisieAide),
             onChanged: (_) => setState(() {}),
+            // En paysage, le clavier couvre les boutons du dialogue.
+            textInputAction: TextInputAction.done,
+            onSubmitted: (texte) => Navigator.of(context).pop(texte),
           ),
           const SizedBox(height: AppEspacement.md),
           if (_texte.text.isNotEmpty) _Formule(latex: _texte.text),

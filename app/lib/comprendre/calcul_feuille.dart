@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:fikajiana/comprendre/blocs.dart';
 import 'package:fikajiana/comprendre/ecriture_resultat.dart';
+import 'package:fikajiana/comprendre/solutions.dart';
 import 'package:fikajiana/encre/encre.dart';
 import 'package:fikajiana/moteur/giac.dart';
 import 'package:fikajiana/moteur/moteur.dart';
@@ -56,6 +57,8 @@ class BlocCalcul {
         etat: EtatBloc.values.asNameMap()[json['etat']] ?? EtatBloc.erreur,
       )
       ..type = TypeExpression.values.asNameMap()[json['type']]
+      ..inconnues = (json['inconnues'] as List<dynamic>? ?? const [])
+          .cast<String>()
       ..verite = json['verite'] as bool?
       ..resultat = json['resultat'] as String?
       ..approche = json['approche'] as String?
@@ -69,6 +72,9 @@ class BlocCalcul {
   String? latex;
   EtatBloc etat;
   TypeExpression? type;
+
+  /// Ce que Giac a résolu, pour écrire `x = 1`.
+  List<String> inconnues = const [];
 
   /// Réponse à une égalité sans inconnue, comme `2+2=5`.
   bool? verite;
@@ -94,17 +100,35 @@ class BlocCalcul {
   /// Une expression sans `=` ne demande rien.
   bool get montreResultat {
     if (etat != EtatBloc.fait || verite != null) return false;
-    if (estSaisie || finitParEgal) return true;
-    return type == TypeExpression.equation || type == TypeExpression.systeme;
+    return estSaisie || finitParEgal || estResolution;
   }
 
   bool get _sousLEcriture => !finitParEgal;
 
+  /// Une équation ou un système : le résultat n'est pas une valeur à égaler.
+  bool get estResolution =>
+      type == TypeExpression.equation || type == TypeExpression.systeme;
+
   /// Ce qu'il faut afficher selon le mode, en LaTeX.
   String? texte({required bool approcheVoulue, required bool virgule}) {
-    final valeur = (approcheVoulue || inchange) && approche != null
-        ? abregerApproche(approche!)
-        : resultat;
+    final exact = resultat;
+    // Une valeur que Giac n'a trouvée que numériquement est déjà approchée.
+    final longue = exact != null && RegExp(r'\d\.\d{9}').hasMatch(exact);
+    final choisie = approcheVoulue || inchange || longue ? approche : null;
+    final String? valeur;
+    if (estResolution) {
+      final brut = choisie == null ? exact : _ensembleApproche(choisie);
+      valeur = brut == null
+          ? null
+          : ecrireSolutions(
+              brut,
+              type: type!,
+              inconnues: inconnues,
+              francais: virgule,
+            );
+    } else {
+      valeur = choisie == null ? exact : abregerApproche(choisie);
+    }
     if (valeur == null || !virgule) return valeur;
     return valeur.replaceAllMapped(
       RegExp(r'(\d)\.(\d)'),
@@ -136,6 +160,7 @@ class BlocCalcul {
     approche = null;
     inchange = false;
     type = null;
+    inconnues = const [];
     _ecritPour = null;
     _ecrit = null;
   }
@@ -150,12 +175,22 @@ class BlocCalcul {
     'latex': latex,
     'etat': etat.name,
     'type': type?.name,
+    'inconnues': inconnues,
     'verite': verite,
     'resultat': resultat,
     'approche': approche,
     'inchange': inchange,
     'points': _points,
   };
+}
+
+/// `list[-1.41421356237,1.41421356237]` de Giac, en LaTeX et abrégé.
+String _ensembleApproche(String approche) {
+  final valeurs = approche
+      .replaceAll(RegExp(r'list\[|\[|\]'), '')
+      .split(',')
+      .map(abregerApproche);
+  return '\\{${valeurs.join(',')}\\}';
 }
 
 /// Une valeur approchée courte : assez de chiffres, sans encombrer.
@@ -352,6 +387,7 @@ class CalculFeuille extends ChangeNotifier {
     }
     bloc
       ..type = analyse.type
+      ..inconnues = analyse.inconnues
       ..etat = EtatBloc.calcul;
     notifyListeners();
     final ReponseGiac reponse;

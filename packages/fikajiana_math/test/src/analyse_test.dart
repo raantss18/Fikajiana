@@ -10,6 +10,15 @@ void main() {
     });
   }
 
+  test('une équation et un système disent leurs inconnues', () {
+    expect(analyserLatex('x+3=4').inconnues, ['x']);
+    expect(analyserLatex(r'\begin{cases}x+y=1\\x-y=3\end{cases}').inconnues, [
+      'x',
+      'y',
+    ]);
+    expect(analyserLatex('2+3=').inconnues, isEmpty);
+  });
+
   group('noms de fonctions lus', () {
     giac(r'\sin ( \pi )', 'sin(pi)');
     giac(r'\ln ( 5 ) =', 'ln(5)');
@@ -57,7 +66,7 @@ void main() {
     giac(r'\sin^{2} x', '(sin(x))^(2)');
     giac(r'\ln(x)', 'ln(x)');
     giac(r'\log(100)', 'log10(100)');
-    giac(r'|x-1|', 'abs(x-1)');
+    giac('|x-1|', 'abs(x-1)');
     giac('5!', 'factorial(5)');
     giac(r'\pi', 'pi');
     giac(r'\left( x \right)', '(x)');

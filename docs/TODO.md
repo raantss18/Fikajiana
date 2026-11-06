@@ -18,6 +18,8 @@
   de clé et perdait son résultat. Un bloc lu est maintenant stable ; tests dans `calcul_feuille_test.dart`.
 - ✅ 2026-11-06 : `sin(π)` et `ln(5)` sans résultat utile : noms enveloppés (`\operatorname{sin}`) non compris, lettres absentes de l'alphabet, `ln(5)` rendu tel quel.
 - ✅ 2026-11-06 : en paysage, le bandeau et le rail bloquent la feuille (Antsa, Poco). Plein écran, un bouton Menu et un bouton Outils (ADR 0018) ; test sur trois tailles.
+- ✅ 2026-11-06 : `x+3=4 = {1}` est faux, et la solution n'était pas manuscrite (Antsa, Poco). La solution s'écrit à la main sous l'équation : `x = 1`, `x = -2 ou x = 2`, `S = ∅`.
+  Même classe : `sin(x)=0` ne rendait que 0 et π ; Giac donne maintenant toute la famille. Tests dans `solutions_test.dart`.
 - ✅ 2026-11-06 : « la page est trop petite » (Antsa, Poco). Page sans bord, glisser et zoomer (ADR 0014).
 
 ## P0 — Une app qui calcule ce qu'on écrit (prioritaire)
@@ -45,6 +47,7 @@
 4. 🔄 Essai réel : sur émulateur, 0.0.9 trouve la 0.1.0 publiée, vérifie signature et empreinte, l'installateur la pose. Reste : sur un appareil réel, avec une feuille conservée, à la version suivante
 5. ✅ Provenance des poids : contournée, pas de redistribution (ADR 0016). La question reste ouverte pour un modèle embarqué (P6)
 6. ✅ Première version publique : [`app-v0.1.0`](https://github.com/raantss18/Fikajiana/releases/tag/app-v0.1.0) (demandée par Antsa le 2026-11-06)
+7. ✅ Version corrective `app-v0.1.1`, retours du Poco (demandée par Antsa le 2026-11-06)
 7. ⏳ Installer cette version signée sur le Pad 7 et le Poco : à faire par Antsa (désinstaller l'ancienne d'abord), puis essai au vrai stylet
 
 ## P2 — Écriture et reconnaissance de qualité

@@ -190,7 +190,7 @@ List<_Jeton> _decouper(String texte) {
         }
       }
     } else if (chiffre(c)) {
-      // Les espaces ne comptent pas en LaTeX, et le lecteur écrit `1 0` pour 10.
+      // Les espaces ne comptent pas en LaTeX ; le lecteur écrit `1 0` pour 10.
       final nombre = StringBuffer(c);
       var j = i + 1;
       while (true) {

@@ -27,6 +27,8 @@ __attribute__((visibility("default"))) char *fikajiana_giac_eval(const char *ent
 __attribute__((visibility("default"))) char *fikajiana_giac_calculer(const char *entree, int degres) {
   static giac::context contexte;
   giac::angle_mode(degres ? 1 : 0, &contexte);
+  // sin(x)=0 a une infinité de solutions : Giac n'en rend sinon que deux.
+  giac::all_trig_sol(true, &contexte);
   giac::ctrl_c = false;
   giac::interrupted = false;
   std::string sortie;
@@ -41,7 +43,15 @@ __attribute__((visibility("default"))) char *fikajiana_giac_calculer(const char 
       sortie += giac::gen2tex(resultat, &contexte);
       sortie += '\x1f';
       giac::gen approche = giac::evalf(resultat, 1, &contexte);
-      if (approche.type == giac::_DOUBLE_ || approche.type == giac::_REAL) {
+      // Une valeur, ou les solutions d'une équation, si elles sont toutes numériques.
+      bool numerique = approche.type == giac::_DOUBLE_ || approche.type == giac::_REAL;
+      if (approche.type == giac::_VECT && !approche._VECTptr->empty()) {
+        numerique = true;
+        for (const giac::gen &valeur : *approche._VECTptr) {
+          numerique = numerique && (valeur.type == giac::_DOUBLE_ || valeur.type == giac::_REAL);
+        }
+      }
+      if (numerique) {
         sortie += approche.print(&contexte);
       }
     }
