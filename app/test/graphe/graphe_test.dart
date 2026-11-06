@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:fikajiana/comprendre/carnet.dart';
+import 'package:fikajiana/comprendre/classeur.dart';
 import 'package:fikajiana/geometrie/atelier.dart';
 import 'package:fikajiana/graphe/courbes.dart';
 import 'package:fikajiana/graphe/vue_graphe.dart';
@@ -207,6 +208,8 @@ void main() {
             courbes: Courbes(),
             atelier: Atelier(),
             carnet: Carnet(),
+            graphes: Classeur(),
+            figures: Classeur(),
           ),
         ),
       );

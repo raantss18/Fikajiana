@@ -4,6 +4,26 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+## [0.4.0] — 2026-11-06
+
+### Message fr
+
+La Géométrie s'explique toute seule : chaque outil a son nom et un dessin clair, et une barre dit quoi toucher. Ajoute polygones, arcs, ellipses, symétries, rotations, mesures, curseurs et lieux. Demande ce qui lie deux objets. Le Menu crée une nouvelle feuille, un graphe ou une figure, et l'Historique les garde tous.
+
+### Message en
+
+Geometry now explains itself: each tool has a name and a clear drawing, and a bar says what to tap. Add polygons, arcs, ellipses, reflections, rotations, measures, sliders and loci. Ask what links two objects. The Menu creates a new sheet, graph or figure, and History keeps them all.
+
+### Changements
+
+- Boîte à outils rangée par familles, chaque outil avec son nom et son dessin. / Toolbox sorted by family, each tool with its name and drawing.
+- 40 outils : demi-droite, vecteur, tangente, arcs, polygones, coniques, cinq transformations, mesures, curseur, lieu, relation. / 40 tools: ray, vector, tangent, arcs, polygons, conics, five transformations, measures, slider, locus, relation.
+- Un point touché sur un objet y reste ; sur un croisement, il devient l'intersection ; près de la grille, il s'y aimante. / A point tapped on an object stays on it; on a crossing, it becomes the intersection; near the grid, it snaps to it.
+- Glisser construit, avec un aperçu ; un objet entier se déplace. / Dragging builds, with a preview; a whole object can be moved.
+- Liste des objets avec équations et valeurs ; nom, couleur, pointillé, masquer, coordonnées. / Object list with equations and values; name, colour, dashes, hide, coordinates.
+- Annuler et refaire ; grille et axes au choix. / Undo and redo; optional grid and axes.
+- Menu : nouvelle feuille, nouveau graphe, nouvelle figure ; l'Historique les garde tous. / Menu: new sheet, new graph, new figure; History keeps them all.
+
 ## [0.3.0] — 2026-11-06
 
 ### Message fr

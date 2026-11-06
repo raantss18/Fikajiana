@@ -31,8 +31,18 @@ class PageDestination extends StatelessWidget {
           key: ValueKey(PorteeServices.de(context).carnet.courante),
         ),
       ),
-      Destination.graphe => const EcranGraphe(),
-      Destination.geometrie => const EcranGeometrie(),
+      Destination.graphe => ListenableBuilder(
+        listenable: PorteeServices.de(context).graphes,
+        builder: (context, _) => EcranGraphe(
+          key: ValueKey(PorteeServices.de(context).graphes.courant),
+        ),
+      ),
+      Destination.geometrie => ListenableBuilder(
+        listenable: PorteeServices.de(context).figures,
+        builder: (context, _) => EcranGeometrie(
+          key: ValueKey(PorteeServices.de(context).figures.courant),
+        ),
+      ),
       Destination.historique => const EcranHistorique(),
     };
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -92,15 +102,42 @@ class _Menu extends StatelessWidget {
     }
   }
 
+  PopupMenuItem<Destination> _nouveau(
+    IconData icone,
+    String titre,
+    VoidCallback surToucher,
+  ) => PopupMenuItem(
+    onTap: surToucher,
+    child: ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Icon(icone),
+      title: Text(titre),
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final services = PorteeServices.de(context);
     return PopupMenuButton<Destination>(
       icon: const Icon(Icons.menu),
       tooltip: l10n.menu,
       style: _styleFlottant(context),
       onSelected: (cible) => _aller(context, cible),
       itemBuilder: (_) => [
+        _nouveau(Icons.note_add_outlined, l10n.nouvelleFeuille, () {
+          services.carnet.nouvelle();
+          _aller(context, Destination.feuille);
+        }),
+        _nouveau(Icons.add_chart, l10n.nouveauGraphe, () {
+          services.graphes.nouveau();
+          _aller(context, Destination.graphe);
+        }),
+        _nouveau(Icons.add_box_outlined, l10n.nouvelleFigure, () {
+          services.figures.nouveau();
+          _aller(context, Destination.geometrie);
+        }),
+        const PopupMenuDivider(),
         for (final d in Destination.values)
           PopupMenuItem(
             value: d,

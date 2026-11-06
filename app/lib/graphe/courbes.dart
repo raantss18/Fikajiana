@@ -42,6 +42,10 @@ Courbe? lireCourbe(String latex) {
 /// Les fonctions tracées, gardées sur l'appareil.
 class Courbes extends ChangeNotifier {
   new({this.fichier}) {
+    _charger();
+  }
+
+  void _charger() {
     final fichier = this.fichier;
     if (fichier == null || !fichier.existsSync()) return;
     try {
@@ -55,7 +59,7 @@ class Courbes extends ChangeNotifier {
 
   static const int maximum = 6;
 
-  final File? fichier;
+  File? fichier;
   final _courbes = <Courbe>[];
 
   List<Courbe> get liste => List.unmodifiable(_courbes);
@@ -78,6 +82,14 @@ class Courbes extends ChangeNotifier {
     _courbes[indice] = courbe;
     _changer();
     return true;
+  }
+
+  /// Passe aux courbes gardées dans [autre].
+  void changerDeFichier(File? autre) {
+    fichier = autre;
+    _courbes.clear();
+    _charger();
+    notifyListeners();
   }
 
   void retirer(int indice) {

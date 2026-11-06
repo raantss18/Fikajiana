@@ -1,6 +1,7 @@
 abstract class AppEspacement {
   static const double unite = 16;
 
+  static const double xxs = 0.25 * unite;
   static const double sm = 0.5 * unite;
   static const double md = unite;
   static const double lg = 1.5 * unite;
