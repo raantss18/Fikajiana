@@ -40,7 +40,7 @@
 3. 🔄 Réglages → Mises à jour : version installée, « Rechercher » ; signature, SHA-256, même clé Android (ADR 0015). Rien sans le réseau, aucune donnée envoyée
 4. ⏳ Essai réel : installer une version par-dessus la précédente, la feuille conservée
 5. ✅ Provenance des poids : contournée, pas de redistribution (ADR 0016). La question reste ouverte pour un modèle embarqué (P6)
-6. ⏳ Première version publique sur GitHub (demandée par Antsa le 2026-11-06)
+6. 🔄 Première version publique sur GitHub, `app-v0.1.0` (demandée par Antsa le 2026-11-06)
 
 ## P2 — Écriture et reconnaissance de qualité
 
