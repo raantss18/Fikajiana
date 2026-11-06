@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:fikajiana/comprendre/blocs.dart';
 import 'package:fikajiana/comprendre/ecriture_resultat.dart';
+import 'package:fikajiana/comprendre/fraction_ecrite.dart';
 import 'package:fikajiana/comprendre/solutions.dart';
 import 'package:fikajiana/encre/encre.dart';
 import 'package:fikajiana/moteur/giac.dart';
@@ -63,6 +64,7 @@ class BlocCalcul {
       ..resultat = json['resultat'] as String?
       ..approche = json['approche'] as String?
       ..inchange = json['inchange'] as bool? ?? false
+      ..hauteurLigne = (json['hl'] as num?)?.toDouble()
       .._points = json['points'] as int? ?? 0;
   }
 
@@ -85,6 +87,9 @@ class BlocCalcul {
 
   /// Giac rend l'entrée telle quelle, comme `ln(5)` : l'approchée informe.
   bool inchange = false;
+
+  /// La hauteur de l'écriture avant qu'une fraction ne soit redressée.
+  double? hauteurLigne;
 
   /// Nombre de points lus : un trait prolongé se relit.
   int _points = 0;
@@ -149,7 +154,12 @@ class BlocCalcul {
     if (valeur == null) return null;
     if (_ecritPour != valeur) {
       _ecritPour = valeur;
-      _ecrit = ecrireResultat(valeur, cadre, dessous: _sousLEcriture);
+      _ecrit = ecrireResultat(
+        valeur,
+        cadre,
+        dessous: _sousLEcriture,
+        hauteurLigne: hauteurLigne,
+      );
     }
     return _ecrit;
   }
@@ -181,6 +191,7 @@ class BlocCalcul {
     'approche': approche,
     'inchange': inchange,
     'points': _points,
+    'hl': ?hauteurLigne,
   };
 }
 
@@ -252,11 +263,47 @@ class CalculFeuille extends ChangeNotifier {
     for (final bloc in _blocs.values) {
       if (bloc.estSaisie) continue;
       bloc.traits.retainAll(vivants);
-      if (bloc.traits.isEmpty) vides.add(bloc.cle);
+      if (bloc.traits.isEmpty) {
+        vides.add(bloc.cle);
+      } else {
+        _suivreTraits(bloc);
+      }
     }
     if (vides.isEmpty) return;
     vides.forEach(_blocs.remove);
     notifyListeners();
+  }
+
+  /// Des traits ont bougé, comme une fraction redressée puis annulée : le
+  /// résultat suit.
+  void _suivreTraits(BlocCalcul bloc) {
+    final traits = _traitsDe(bloc);
+    if (traits.isEmpty) return;
+    final cadre = cadreDuGroupe(traits);
+    if (cadre == bloc.cadre) return;
+    bloc
+      ..cadre = cadre
+      .._ecritPour = null;
+    notifyListeners();
+  }
+
+  /// Les traits du résultat qui touche [zone] : le raturer efface le calcul.
+  Set<int> traitsDuResultatSous(
+    Rect zone, {
+    required bool approcheVoulue,
+    required bool virgule,
+  }) {
+    final traits = <int>{};
+    for (final bloc in _blocs.values.toList()) {
+      final ecrit = bloc.ecriture(
+        approcheVoulue: approcheVoulue,
+        virgule: virgule,
+      );
+      if (ecrit != null && ecrit.cadre.overlaps(zone)) {
+        traits.addAll(bloc.traits);
+      }
+    }
+    return traits;
   }
 
   /// Le modèle vient d'arriver : relire ce qui attendait.
@@ -329,7 +376,7 @@ class CalculFeuille extends ChangeNotifier {
       if (bloc._version != version || !identical(_blocs[bloc.cle], bloc)) {
         return;
       }
-      bloc.latex = latex;
+      bloc.latex = _redresser(bloc, latex);
       await _calculer(bloc);
     } on ModeleAbsent {
       bloc.etat = EtatBloc.sansModele;
@@ -337,6 +384,17 @@ class CalculFeuille extends ChangeNotifier {
       bloc.etat = EtatBloc.erreur;
     }
     if (!_ferme) notifyListeners();
+  }
+
+  /// `1/3` écrit en ligne : les traits se rangent en fraction, et s'annulent.
+  String _redresser(BlocCalcul bloc, String latex) {
+    final traits = _traitsDe(bloc);
+    final redresse = redresserFractions(traits, latex);
+    if (redresse == null) return latex;
+    bloc.hauteurLigne = bloc.cadre.height;
+    encre.remplacer(redresse.traits);
+    bloc.cadre = cadreDuGroupe(_traitsDe(bloc));
+    return redresse.latex;
   }
 
   /// Toute lecture reste corrigeable : le calcul repart du texte corrigé.

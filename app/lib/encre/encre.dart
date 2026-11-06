@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:fikajiana/encre/filtre_un_euro.dart';
 import 'package:fikajiana/encre/formes.dart';
+import 'package:fikajiana/encre/rature.dart';
 import 'package:perfect_freehand/perfect_freehand.dart';
 
 /// Un point d'un trait, en pixels logiques, avec la pression du stylet.
@@ -60,6 +61,17 @@ class Trait {
       stylo = source.stylo,
       auStylet = source.auStylet;
 
+  /// Le même trait, ailleurs : même identifiant, pour rester dans son bloc.
+  /// L'ancien reste intact : annuler le retrouve.
+  new deplace(Trait source, this.points)
+    : id = source.id,
+      stylo = source.stylo,
+      auStylet = source.auStylet,
+      _lisses = [] {
+    points.forEach(_ajouterLisse);
+    _termine = true;
+  }
+
   /// Identifiant stable : désigne ce trait dans un bloc et dans la sauvegarde.
   final int id;
   static int _idSuivant = 0;
@@ -116,10 +128,28 @@ class Trait {
       entree,
       options: StrokeOptions(
         size: _taille,
-        thinning: forme == null && auStylet ? 0.55 : 0,
+        // Au stylet, sa pression ; au doigt, la vitesse fait le plein et le
+        // délié, comme une plume. Une forme nette reste régulière.
+        thinning: forme != null
+            ? 0
+            : auStylet
+            ? 0.55
+            : 0.5,
         smoothing: 0.5,
-        streamline: forme == null ? 0.35 : 0,
-        simulatePressure: false,
+        streamline: forme != null
+            ? 0
+            : auStylet
+            ? 0.35
+            : 0.45,
+        simulatePressure: forme == null && !auStylet,
+        start: StrokeEndOptions.start(
+          taperEnabled: forme == null,
+          customTaper: _taille * 1.5,
+        ),
+        end: StrokeEndOptions.end(
+          taperEnabled: forme == null && _termine,
+          customTaper: _taille * 3,
+        ),
         isComplete: _termine || forme != null,
       ),
     );
@@ -145,8 +175,19 @@ Path _cheminFerme(List<Offset> contour) {
   return chemin..close();
 }
 
+/// Ce qu'une rature vient d'emporter, pour le faire disparaître en douceur.
+class Rature {
+  const new(this.trait, this.emportes);
+
+  final Trait trait;
+  final List<Trait> emportes;
+}
+
 /// Traits écrits sur une feuille, avec annuler et refaire.
 class Encre {
+  /// Prévenu quand des traits changent de place : (avant, après).
+  void Function(List<(Trait, Trait)>)? surDeplacement;
+
   final List<Trait> _traits = [];
   final List<List<Trait>> _annulations = [];
   final List<List<Trait>> _retablissements = [];
@@ -195,6 +236,43 @@ class Encre {
     _memoriser();
     _traits.last = Trait._avecForme(dernier, forme);
     return true;
+  }
+
+  /// Le dernier trait est-il une rature sur quelque chose ? Elle s'efface alors
+  /// avec ce qu'elle couvre, plus les traits [enPlus]. Le tout s'annule d'un
+  /// coup : `commencer` a déjà mémorisé l'état d'avant la rature.
+  Rature? raturerDernierTrait({Set<int> Function(Rect)? enPlus}) {
+    if (_traits.isEmpty || _traits.last.forme != null) return null;
+    final dernier = _traits.last;
+    final points = [for (final p in dernier.points) p.position];
+    if (!estRature(points)) return null;
+    final zone = cadreDeRature(points);
+    final suppl = enPlus?.call(zone) ?? const <int>{};
+    final emportes = [
+      for (final t in _traits)
+        if (!identical(t, dernier) &&
+            (suppl.contains(t.id) || estSousRature(t.pointsVisibles, zone)))
+          t,
+    ];
+    // Rien dessous : c'est de l'écriture, on n'y touche pas.
+    if (emportes.isEmpty && suppl.isEmpty) return null;
+    _traits.removeWhere((t) => identical(t, dernier) || emportes.contains(t));
+    return Rature(dernier, emportes);
+  }
+
+  /// Remplace des traits par les mêmes, déplacés. S'annule.
+  void remplacer(Map<int, Trait> nouveaux) {
+    if (nouveaux.isEmpty) return;
+    _memoriser();
+    final paires = <(Trait, Trait)>[];
+    for (var i = 0; i < _traits.length; i++) {
+      final nouveau = nouveaux[_traits[i].id];
+      if (nouveau != null) {
+        paires.add((_traits[i], nouveau));
+        _traits[i] = nouveau;
+      }
+    }
+    surDeplacement?.call(paires);
   }
 
   /// Retire les traits qui passent à moins de [rayon] de [position].

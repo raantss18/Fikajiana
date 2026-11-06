@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 const double _rayonGomme = 18;
 const Duration _dureeMaintien = Duration(milliseconds: 450);
 const double _bougeMaintien = 6;
+const Duration _dureeAnimation = Duration(milliseconds: 340);
 
 /// Zone d'écriture au stylet ou au doigt, sur une page sans bord.
 ///
@@ -27,6 +28,8 @@ class FeuilleEncre extends StatefulWidget {
     this.stylo = 0,
     this.gomme = false,
     this.surChangement,
+    this.surRature,
+    this.ciblesRature,
     super.key,
   });
 
@@ -38,11 +41,32 @@ class FeuilleEncre extends StatefulWidget {
   final bool gomme;
   final VoidCallback? surChangement;
 
+  /// Une rature vient d'effacer quelque chose.
+  final VoidCallback? surRature;
+
+  /// Les traits à emporter en plus, pour une rature sur ce rectangle de page :
+  /// ceux d'un calcul dont on rature le résultat.
+  final Set<int> Function(Rect)? ciblesRature;
+
   @override
   State<FeuilleEncre> createState() => _FeuilleEncreState();
 }
 
-class _FeuilleEncreState extends State<FeuilleEncre> {
+class _FeuilleEncreState extends State<FeuilleEncre>
+    with SingleTickerProviderStateMixin {
+  /// Les traits qui s'en vont, et ceux qui vont ailleurs : (avant, après).
+  var _partants = <Trait>[];
+  var _trajets = <(Trait, Trait)>[];
+  late final AnimationController _animation =
+      AnimationController(vsync: this, duration: _dureeAnimation)
+        ..addStatusListener((etat) {
+          if (etat == AnimationStatus.completed && mounted) {
+            setState(() {
+              _partants = [];
+              _trajets = [];
+            });
+          }
+        });
   late final VueFeuille _vueLocale = VueFeuille();
   VueFeuille get _vue => widget.vue ?? _vueLocale;
 
@@ -55,6 +79,45 @@ class _FeuilleEncreState extends State<FeuilleEncre> {
 
   /// Doigts qui déplacent ou zooment, avec leur dernière position.
   final Map<int, Offset> _doigts = {};
+
+  @override
+  void initState() {
+    super.initState();
+    widget.encre.surDeplacement = _surDeplacement;
+  }
+
+  @override
+  void didUpdateWidget(FeuilleEncre ancien) {
+    super.didUpdateWidget(ancien);
+    if (!identical(ancien.encre, widget.encre)) {
+      ancien.encre.surDeplacement = null;
+      widget.encre.surDeplacement = _surDeplacement;
+    }
+  }
+
+  bool get _animer => !MediaQuery.disableAnimationsOf(context);
+
+  void _surDeplacement(List<(Trait, Trait)> paires) {
+    if (!mounted) return;
+    setState(() {
+      if (!_animer) return;
+      _trajets = paires;
+      _animation.forward(from: 0);
+    });
+  }
+
+  void _raturer() {
+    final rature = widget.encre.raturerDernierTrait(
+      enPlus: widget.ciblesRature,
+    );
+    if (rature == null) return;
+    unawaited(HapticFeedback.lightImpact());
+    if (_animer) {
+      _partants = [rature.trait, ...rature.emportes];
+      _animation.forward(from: 0);
+    }
+    widget.surRature?.call();
+  }
 
   void _armerMaintien(Offset position) {
     _ancre = position;
@@ -71,6 +134,10 @@ class _FeuilleEncreState extends State<FeuilleEncre> {
   @override
   void dispose() {
     _maintien?.cancel();
+    if (identical(widget.encre.surDeplacement, _surDeplacement)) {
+      widget.encre.surDeplacement = null;
+    }
+    _animation.dispose();
     _vueLocale.dispose();
     super.dispose();
   }
@@ -191,7 +258,12 @@ class _FeuilleEncreState extends State<FeuilleEncre> {
     if (e.pointer != _pointeur) return;
     _pointeur = null;
     _maintien?.cancel();
-    if (!_gomme) _changer(widget.encre.terminer);
+    if (!_gomme) {
+      _changer(() {
+        widget.encre.terminer();
+        _raturer();
+      });
+    }
   }
 
   @override
@@ -219,12 +291,18 @@ class _FeuilleEncreState extends State<FeuilleEncre> {
                     ),
                   ),
                 ),
-                CustomPaint(
-                  painter: _PeintreEncre(
-                    traits: widget.encre.traits,
-                    support: widget.support,
-                    zoom: _vue.zoom,
-                    decalage: _vue.decalage,
+                AnimatedBuilder(
+                  animation: _animation,
+                  builder: (context, _) => CustomPaint(
+                    painter: _PeintreEncre(
+                      traits: widget.encre.traits,
+                      support: widget.support,
+                      zoom: _vue.zoom,
+                      decalage: _vue.decalage,
+                      partants: _partants,
+                      trajets: _trajets,
+                      avancee: _animation.value,
+                    ),
                   ),
                 ),
               ],
@@ -242,8 +320,14 @@ class _PeintreEncre extends CustomPainter {
     required this.support,
     required this.zoom,
     required this.decalage,
+    this.partants = const [],
+    this.trajets = const [],
+    this.avancee = 0,
   });
 
+  final List<Trait> partants;
+  final List<(Trait, Trait)> trajets;
+  final double avancee;
   final List<Trait> traits;
   final SupportEcriture support;
   final double zoom;
@@ -255,10 +339,36 @@ class _PeintreEncre extends CustomPainter {
       ..translate(decalage.dx, decalage.dy)
       ..scale(zoom);
     final encre = Paint()..style = PaintingStyle.fill;
+    final enRoute = {for (final (_, apres) in trajets) apres.id};
     for (final trait in traits) {
+      if (enRoute.contains(trait.id)) continue;
       encre.color = support.stylos[trait.stylo];
       canvas.drawPath(trait.contour, encre);
     }
+    // Les traits voyagent en douceur, freinés à l'arrivée.
+    final t = Curves.easeOutCubic.transform(avancee);
+    for (final (avant, apres) in trajets) {
+      encre.color = support.stylos[apres.stylo];
+      canvas.drawPath(_entre(avant, apres, t).contour, encre);
+    }
+    // Ce qui est raturé s'évapore : plus pâle, un peu plus haut.
+    for (final trait in partants) {
+      encre.color = support.stylos[trait.stylo].withValues(alpha: 1 - t);
+      canvas.drawPath(trait.contour.shift(Offset(0, -10 * t)), encre);
+    }
+  }
+
+  Trait _entre(Trait avant, Trait apres, double t) {
+    if (avant.points.length != apres.points.length) return apres;
+    return Trait.deplace(avant, [
+      for (var i = 0; i < avant.points.length; i++)
+        PointEncre(
+          avant.points[i].x + (apres.points[i].x - avant.points[i].x) * t,
+          avant.points[i].y + (apres.points[i].y - avant.points[i].y) * t,
+          avant.points[i].pression,
+          tempsMs: avant.points[i].tempsMs,
+        ),
+    ]);
   }
 
   @override
@@ -266,5 +376,6 @@ class _PeintreEncre extends CustomPainter {
       !identical(ancien.traits, traits) ||
       ancien.support != support ||
       ancien.zoom != zoom ||
-      ancien.decalage != decalage;
+      ancien.decalage != decalage ||
+      ancien.avancee != avancee;
 }

@@ -10,6 +10,7 @@ import 'package:fikajiana/reconnaissance/modele.dart';
 import 'package:fikajiana/reglages/reglages.dart';
 import 'package:fikajiana/reglages/support.dart';
 import 'package:fikajiana/ui/calcul/carte_bloc.dart';
+import 'package:fikajiana/ui/calcul/couche_resultats.dart';
 import 'package:fikajiana/ui/navigation/page_destination.dart';
 import 'package:fikajiana/ui/reglages/ecran_reglages.dart';
 import 'package:fikajiana/ui/services.dart';
@@ -85,6 +86,34 @@ class _EcranFeuilleState extends State<EcranFeuille> {
     _enregistrer();
   }
 
+  /// Une rature a effacé : un geste si rapide doit pouvoir se rattraper.
+  void _surRature() {
+    final l10n = context.l10n;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(l10n.ratureFaite),
+          behavior: SnackBarBehavior.floating,
+          // Avec une action, Flutter la garderait jusqu'à ce qu'on la ferme.
+          persist: false,
+          // À gauche du bouton Outils, qu'elle ne doit pas couvrir.
+          margin: const EdgeInsets.only(
+            left: AppEspacement.sm,
+            right: 72,
+            bottom: AppEspacement.sm,
+          ),
+          action: SnackBarAction(
+            label: l10n.annuler,
+            onPressed: () {
+              _encre.annuler();
+              _surEncre();
+            },
+          ),
+        ),
+      );
+  }
+
   @override
   void dispose() {
     _stockage?.enregistrer();
@@ -120,6 +149,12 @@ class _EcranFeuilleState extends State<EcranFeuille> {
           stylo: reglages.indiceStylo,
           gomme: _gomme,
           surChangement: _surEncre,
+          surRature: _surRature,
+          ciblesRature: (zone) => _calcul.traitsDuResultatSous(
+            zone,
+            approcheVoulue: reglages.approche,
+            virgule: Localizations.localeOf(context).languageCode == 'fr',
+          ),
         ),
         if (_encre.estVide && _calcul.blocs.isEmpty)
           _Invitation(support: reglages.support),
@@ -127,19 +162,11 @@ class _EcranFeuilleState extends State<EcranFeuille> {
           listenable: Listenable.merge([_calcul, _vue]),
           builder: (context, _) => Stack(
             children: [
-              IgnorePointer(
-                child: CustomPaint(
-                  size: Size.infinite,
-                  painter: PeintreResultats(
-                    blocs: _calcul.blocs,
-                    couleur: Theme.of(context).colorScheme.tertiary,
-                    zoom: _vue.zoom,
-                    decalage: _vue.decalage,
-                    approche: reglages.approche,
-                    virgule:
-                        Localizations.localeOf(context).languageCode == 'fr',
-                  ),
-                ),
+              CoucheResultats(
+                blocs: _calcul.blocs,
+                vue: _vue,
+                approche: reglages.approche,
+                virgule: Localizations.localeOf(context).languageCode == 'fr',
               ),
               for (final bloc in _calcul.blocs)
                 RepereBloc(
