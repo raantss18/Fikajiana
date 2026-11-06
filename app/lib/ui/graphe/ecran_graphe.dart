@@ -6,9 +6,9 @@ import 'package:fikajiana/graphe/vue_graphe.dart';
 import 'package:fikajiana/l10n/l10n.dart';
 import 'package:fikajiana/reglages/reglages.dart';
 import 'package:fikajiana/ui/calcul/carte_bloc.dart';
+import 'package:fikajiana/ui/graphe/tableau_valeurs.dart';
 import 'package:fikajiana/ui/services.dart';
 import 'package:fikajiana/ui/theme/espacement.dart';
-import 'package:fikajiana_math/fikajiana_math.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
 
@@ -22,7 +22,6 @@ class EcranGraphe extends StatefulWidget {
 
 class _EcranGrapheState extends State<EcranGraphe> {
   final _vue = VueGraphe();
-  var _outilsOuverts = false;
   Offset _dernierFocal = Offset.zero;
   double _derniereEchelle = 1;
   Size _taille = Size.zero;
@@ -36,13 +35,120 @@ class _EcranGrapheState extends State<EcranGraphe> {
     super.dispose();
   }
 
-  List<FonctionReelle> _fonctions(bool degres) => [
-    for (final c in _courbes.liste) c.fonction(degres: degres),
-  ];
+  /// Les fonctions de x d'abord, lues juste sous le doigt ; les autres courbes
+  /// au point tracé le plus proche, si elles sont plus près.
+  void _lirePoint(Offset ecran, {required bool degres}) {
+    final courbes = _courbes.liste;
+    var trouve = courbeProche(
+      [
+        for (final c in courbes)
+          if (c.genre == GenreCourbe.fonction)
+            c.fonction(degres: degres)
+          else
+            null,
+      ],
+      ecran,
+      _vue,
+      _taille,
+    );
+    var distance = trouve == null
+        ? double.infinity
+        : (_vue.versEcran(trouve.x, trouve.y, _taille) - ecran).distance;
+    final fenetre = _vue.fenetre(_taille);
+    for (var i = 0; i < courbes.length; i++) {
+      if (courbes[i].genre == GenreCourbe.fonction) continue;
+      final p = pointTraceProche(
+        courbes[i].tracer(fenetre, degres: degres),
+        ecran,
+        _vue,
+        _taille,
+      );
+      if (p != null && p.distance < distance) {
+        distance = p.distance;
+        trouve = (indice: i, x: p.x, y: p.y);
+      }
+    }
+    setState(() => _point = trouve);
+  }
+
+  Future<void> _ouvrirOutils(Reglages reglages) {
+    final l10n = context.l10n;
+    final centre = _taille.center(Offset.zero);
+    return showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      showDragHandle: true,
+      constraints: const BoxConstraints(maxWidth: 560),
+      builder: (contexte) {
+        void fermerPuis(VoidCallback action) {
+          Navigator.of(contexte).pop();
+          action();
+        }
+
+        return SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.add),
+                title: Text(l10n.grapheAjouter),
+                onTap: () => fermerPuis(() => unawaited(_ajouter())),
+              ),
+              ListTile(
+                leading: const Icon(Icons.table_chart_outlined),
+                title: Text(l10n.grapheTableau),
+                onTap: () => fermerPuis(
+                  () => unawaited(_ouvrirTableau(reglages.degres)),
+                ),
+              ),
+              // Sans geste à deux doigts (WCAG 2.2, critère 2.5.7).
+              ListTile(
+                leading: const Icon(Icons.zoom_in),
+                title: Text(l10n.zoomPlus),
+                onTap: () => _vue.zoomer(1.5, centre, _taille),
+              ),
+              ListTile(
+                leading: const Icon(Icons.zoom_out),
+                title: Text(l10n.zoomMoins),
+                onTap: () => _vue.zoomer(1 / 1.5, centre, _taille),
+              ),
+              ListTile(
+                leading: const Icon(Icons.fit_screen_outlined),
+                title: Text(l10n.recentrerGraphe),
+                onTap: () => fermerPuis(_vue.recentrer),
+              ),
+              ListTile(
+                leading: const Icon(Icons.straighten),
+                title: Text(
+                  reglages.degres ? l10n.grapheAnglesDegres : l10n.grapheAngles,
+                ),
+                onTap: () =>
+                    fermerPuis(() => reglages.degres = !reglages.degres),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _ouvrirTableau(bool degres) {
+    final courbes = _courbes.liste;
+    return showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      showDragHandle: true,
+      builder: (contexte) => SizedBox(
+        height: MediaQuery.sizeOf(contexte).height * 0.8,
+        child: TableauValeurs(courbes: courbes, degres: degres),
+      ),
+    );
+  }
 
   Future<void> _ajouter() async {
     final l10n = context.l10n;
-    setState(() => _outilsOuverts = false);
     final latex = await demanderLatex(
       context,
       '',
@@ -90,7 +196,6 @@ class _EcranGrapheState extends State<EcranGraphe> {
       listenable: Listenable.merge([_courbes, _vue]),
       builder: (context, _) {
         final courbes = _courbes.liste;
-        final fonctions = _fonctions(reglages.degres);
         return Stack(
           fit: StackFit.expand,
           children: [
@@ -119,19 +224,14 @@ class _EcranGrapheState extends State<EcranGraphe> {
                       _dernierFocal = d.localFocalPoint;
                       _derniereEchelle = d.scale;
                     },
-                    onTapUp: (d) => setState(() {
-                      _point = courbeProche(
-                        fonctions,
-                        d.localPosition,
-                        _vue,
-                        _taille,
-                      );
-                    }),
+                    onTapUp: (d) =>
+                        _lirePoint(d.localPosition, degres: reglages.degres),
                     child: CustomPaint(
                       size: Size.infinite,
                       painter: PeintreGraphe(
                         vue: _vue,
-                        fonctions: fonctions,
+                        courbes: courbes,
+                        degres: reglages.degres,
                         stylos: stylos,
                         fond: reglages.support.fond,
                         axes: couleurs.onSurface,
@@ -193,14 +293,12 @@ class _EcranGrapheState extends State<EcranGraphe> {
               child: SafeArea(
                 child: Padding(
                   padding: const EdgeInsets.all(AppEspacement.sm),
-                  child: _Outils(
-                    ouverts: _outilsOuverts,
-                    surBasculer: () =>
-                        setState(() => _outilsOuverts = !_outilsOuverts),
-                    surAjouter: () => unawaited(_ajouter()),
-                    vue: _vue,
-                    taille: _taille,
-                    reglages: reglages,
+                  child: FloatingActionButton.extended(
+                    heroTag: null,
+                    elevation: 2,
+                    onPressed: () => unawaited(_ouvrirOutils(reglages)),
+                    icon: const Icon(Icons.show_chart),
+                    label: Text(l10n.outils),
                   ),
                 ),
               ),
@@ -266,92 +364,12 @@ class _Legende extends StatelessWidget {
   }
 }
 
-class _Outils extends StatelessWidget {
-  const new({
-    required this.ouverts,
-    required this.surBasculer,
-    required this.surAjouter,
-    required this.vue,
-    required this.taille,
-    required this.reglages,
-  });
-
-  final bool ouverts;
-  final VoidCallback surBasculer;
-  final VoidCallback surAjouter;
-  final VueGraphe vue;
-  final Size taille;
-  final Reglages reglages;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final centre = Offset(taille.width / 2, taille.height / 2);
-    final bouton = FloatingActionButton.small(
-      heroTag: null,
-      tooltip: l10n.outils,
-      elevation: 2,
-      materialTapTargetSize: MaterialTapTargetSize.padded,
-      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
-      foregroundColor: Theme.of(context).colorScheme.onSurface,
-      onPressed: surBasculer,
-      child: Icon(ouverts ? Icons.close : Icons.tune),
-    );
-    if (!ouverts) return bouton;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Card(
-          margin: EdgeInsets.zero,
-          child: Padding(
-            padding: const EdgeInsets.all(AppEspacement.sm),
-            child: Wrap(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.add),
-                  tooltip: l10n.grapheAjouter,
-                  onPressed: surAjouter,
-                ),
-                // Sans geste à deux doigts (WCAG 2.2, critère 2.5.7).
-                IconButton(
-                  icon: const Icon(Icons.zoom_in),
-                  tooltip: l10n.zoomPlus,
-                  onPressed: () => vue.zoomer(1.5, centre, taille),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.zoom_out),
-                  tooltip: l10n.zoomMoins,
-                  onPressed: () => vue.zoomer(1 / 1.5, centre, taille),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.fit_screen_outlined),
-                  tooltip: l10n.recentrer,
-                  onPressed: vue.estInitiale ? null : vue.recentrer,
-                ),
-                Tooltip(
-                  message: reglages.degres ? l10n.modeDegres : l10n.modeRadians,
-                  child: TextButton(
-                    onPressed: () => reglages.degres = !reglages.degres,
-                    child: Text(reglages.degres ? 'DEG' : 'RAD'),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: AppEspacement.sm),
-        bouton,
-      ],
-    );
-  }
-}
-
 /// Grille, axes, graduations, courbes numérotées et point lu.
 class PeintreGraphe extends CustomPainter {
   const new({
     required this.vue,
-    required this.fonctions,
+    required this.courbes,
+    required this.degres,
     required this.stylos,
     required this.fond,
     required this.axes,
@@ -362,7 +380,8 @@ class PeintreGraphe extends CustomPainter {
   });
 
   final VueGraphe vue;
-  final List<FonctionReelle> fonctions;
+  final List<Courbe> courbes;
+  final bool degres;
   final List<Color> stylos;
   final Color fond;
   final Color axes;
@@ -377,7 +396,7 @@ class PeintreGraphe extends CustomPainter {
       ..drawRect(Offset.zero & size, Paint()..color = fond)
       ..clipRect(Offset.zero & size);
     _grille(canvas, size);
-    for (var i = 0; i < fonctions.length; i++) {
+    for (var i = 0; i < courbes.length; i++) {
       _courbe(canvas, size, i);
     }
     final point = this.point;
@@ -435,25 +454,29 @@ class PeintreGraphe extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeJoin = StrokeJoin.round
       ..strokeCap = StrokeCap.round;
-    final morceaux = tracerFonction(fonctions[indice], vue.fenetre(size));
+    final morceaux = courbes[indice].tracer(vue.fenetre(size), degres: degres);
     Offset? repere;
+    // Un seul chemin : une courbe implicite compte des milliers de segments.
+    final chemin = Path();
     for (final morceau in morceaux) {
-      final chemin = Path();
       for (var i = 0; i < morceau.length; i++) {
         // Skia gère mal les coordonnées immenses des asymptotes.
         final p = vue.versEcran(morceau[i].x, morceau[i].y, size);
-        final q = Offset(p.dx, p.dy.clamp(-4000.0, size.height + 4000));
+        final q = Offset(
+          p.dx.clamp(-4000.0, size.width + 4000),
+          p.dy.clamp(-4000.0, size.height + 4000),
+        );
         if (i == 0) {
           chemin.moveTo(q.dx, q.dy);
         } else {
           chemin.lineTo(q.dx, q.dy);
         }
         final dansLaVue = q.dy >= 72 && q.dy <= size.height - 72;
-        final etale = q.dx <= size.width - 40 - indice * 24;
+        final etale = q.dx >= 0 && q.dx <= size.width - 40 - indice * 24;
         if (dansLaVue && etale) repere = q;
       }
-      canvas.drawPath(chemin, trait);
     }
+    canvas.drawPath(chemin, trait);
     // Chaque courbe porte son numéro, celui de la légende.
     final position = repere;
     if (position != null) {

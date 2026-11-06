@@ -1,42 +1,248 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:fikajiana_math/fikajiana_math.dart';
 import 'package:flutter/foundation.dart';
 
-/// Une fonction à tracer : ce qui a été écrit, et sa traduction pour le calcul.
+/// Les quatre manières d'écrire une courbe.
+enum GenreCourbe { fonction, implicite, parametree, polaire }
+
+/// Une courbe à tracer : ce qui a été écrit, et sa traduction pour le calcul.
 class Courbe {
-  const new({required this.latex, required this.corps, required this.variable});
+  new({
+    required this.latex,
+    required this.corps,
+    required this.variable,
+    this.genre = GenreCourbe.fonction,
+    this.corpsY,
+    this.debut,
+    this.fin,
+  });
 
   final String latex;
+
+  /// La fonction ; pour une courbe paramétrée, son abscisse ; pour une courbe
+  /// implicite `g = d`, `g - d`.
   final String corps;
   final String variable;
+  final GenreCourbe genre;
 
-  FonctionReelle fonction({required bool degres}) =>
-      compilerFonction(corps, variable: variable, degres: degres);
+  /// L'ordonnée d'une courbe paramétrée.
+  final String? corpsY;
+
+  /// Le domaine écrit après la courbe, sinon celui par défaut.
+  final double? debut;
+  final double? fin;
+
+  final _fonctions = <bool, FonctionReelle>{};
+
+  FonctionReelle fonction({required bool degres}) => _fonctions.putIfAbsent(
+    degres,
+    () => compilerFonction(corps, variable: variable, degres: degres),
+  );
+
+  final _implicites = <bool, FonctionDeuxVariables>{};
+  final _ordonnees = <bool, FonctionReelle>{};
+
+  /// De quoi la dessiner dans [fenetre].
+  List<List<PointTrace>> tracer(Fenetre fenetre, {required bool degres}) {
+    final tour = degres ? 180 / math.pi : 1.0;
+    switch (genre) {
+      case GenreCourbe.fonction:
+        return tracerFonction(fonction(degres: degres), fenetre);
+      case GenreCourbe.implicite:
+        return tracerImplicite(
+          _implicites.putIfAbsent(
+            degres,
+            () => compilerFonctionXY(corps, degres: degres),
+          ),
+          fenetre,
+        );
+      case GenreCourbe.parametree:
+        return tracerParametree(
+          fonction(degres: degres),
+          _ordonnees.putIfAbsent(
+            degres,
+            () => compilerFonction(corpsY!, variable: variable, degres: degres),
+          ),
+          debut ?? -10 * tour,
+          fin ?? 10 * tour,
+          fenetre,
+        );
+      case GenreCourbe.polaire:
+        final r = fonction(degres: degres);
+        // θ est compté comme le demandent les réglages.
+        return tracerParametree(
+          (t) => r(t) * math.cos(t / tour),
+          (t) => r(t) * math.sin(t / tour),
+          debut ?? 0,
+          fin ?? 4 * math.pi * tour,
+          fenetre,
+        );
+    }
+  }
 }
 
-/// Traduit `f(x)=x^2`, `y=2x+1` ou `x^2` ; `null` si ce n'est pas traçable.
+/// `, t \in [0, \pi]` à la fin d'une courbe.
+final _plage = RegExp(
+  r'^(.*),\s*(?:t|\\theta)\s*\\in\s*(?:\\left)?\[(.*),(.*?)(?:\\right)?\]\s*$',
+  dotAll: true,
+);
+
+/// Traduit `f(x)=x^2`, `y=2x+1`, `x^2`, `x^2+y^2=4`, `(\cos(t),\sin(t))`,
+/// `x=\cos(t),y=\sin(t)` ou `r=2\cos(\theta)` ; `null` si ce n'est pas traçable.
 Courbe? lireCourbe(String latex) {
-  final Analyse analyse;
   try {
-    analyse = analyserLatex(latex);
+    final courbe = _lire(latex);
+    if (courbe == null) return null;
+    // Une erreur d'écriture se voit ici, pas au moment de dessiner.
+    const essai = Fenetre(
+      xMin: -1,
+      xMax: 1,
+      yMin: -1,
+      yMax: 1,
+      largeurPixels: 16,
+      hauteurPixels: 16,
+    );
+    courbe.tracer(essai, degres: false);
+    return courbe;
   } on ErreurLatex {
     return null;
-  }
-  final fonction = analyse.type == TypeExpression.fonction;
-  if (!fonction && analyse.type != TypeExpression.calcul) return null;
-  final courbe = Courbe(
-    latex: latex,
-    corps: fonction ? analyse.corps! : analyse.giac,
-    variable: fonction ? analyse.inconnues.single : 'x',
-  );
-  try {
-    courbe.fonction(degres: false);
   } on ErreurEvaluation {
     return null;
   }
-  return courbe;
+}
+
+Courbe? _lire(String latex) {
+  var texte = latex.trim();
+  double? debut;
+  double? fin;
+  final plage = _plage.firstMatch(texte);
+  if (plage != null) {
+    (debut, fin) = (_nombre(plage[2]!), _nombre(plage[3]!));
+    if (debut == null || fin == null || debut >= fin) return null;
+    texte = plage[1]!.trim();
+  }
+  final parametree = _parametree(latex, texte, debut, fin);
+  if (parametree != null) return parametree;
+
+  final analyse = analyserLatex(texte);
+  final membres = analyse.membres;
+  if (membres != null) {
+    final (gauche, droite) = membres;
+    // `r=2` est un cercle ; `r=x` reste une équation.
+    final polaire =
+        RegExp(r'^r(\*?\(theta\))?$').hasMatch(gauche) &&
+        !RegExp(r'\b[xy]\b').hasMatch(droite);
+    if (polaire) {
+      return Courbe(
+        latex: latex,
+        corps: droite,
+        variable: RegExp(r'\bt\b').hasMatch(droite) ? 't' : 'theta',
+        genre: GenreCourbe.polaire,
+        debut: debut,
+        fin: fin,
+      );
+    }
+    // `x^2=2` reste une équation à résoudre ; `x=3` est une droite verticale.
+    final tous = '$gauche $droite';
+    final enY = RegExp(r'\by\b').hasMatch(tous);
+    if (!enY && gauche != 'x') return null;
+    return Courbe(
+      latex: latex,
+      corps: '($gauche)-($droite)',
+      variable: 'x',
+      genre: GenreCourbe.implicite,
+    );
+  }
+  final fonction = analyse.type == TypeExpression.fonction;
+  if (!fonction && analyse.type != TypeExpression.calcul) return null;
+  final corps = fonction ? analyse.corps! : analyse.giac;
+  // `r(\theta)=…` s'écrit aussi comme une fonction.
+  if (fonction &&
+      analyse.giac.startsWith('r(') &&
+      analyse.inconnues.single == 'theta') {
+    return Courbe(
+      latex: latex,
+      corps: corps,
+      variable: 'theta',
+      genre: GenreCourbe.polaire,
+      debut: debut,
+      fin: fin,
+    );
+  }
+  return Courbe(
+    latex: latex,
+    corps: corps,
+    variable: fonction ? analyse.inconnues.single : 'x',
+  );
+}
+
+Courbe? _parametree(String latex, String texte, double? debut, double? fin) {
+  var interieur = texte;
+  if (interieur.startsWith(r'\left(') && interieur.endsWith(r'\right)')) {
+    interieur = interieur.substring(6, interieur.length - 7);
+  } else if (interieur.startsWith('(') && interieur.endsWith(')')) {
+    interieur = interieur.substring(1, interieur.length - 1);
+  }
+  final morceaux = _couperVirgule(interieur);
+  if (morceaux == null) return null;
+  var (ex, ey) = morceaux;
+  // La forme `x=…, y=…`.
+  final egaux = RegExp(r'^x\s*=(.*)$', dotAll: true).firstMatch(ex);
+  final egauy = RegExp(r'^y\s*=(.*)$', dotAll: true).firstMatch(ey);
+  if (egaux != null && egauy != null) {
+    (ex, ey) = (egaux[1]!, egauy[1]!);
+  }
+  final (gx, gy) = (analyserLatex(ex), analyserLatex(ey));
+  if (gx.type != TypeExpression.calcul || gy.type != TypeExpression.calcul) {
+    return null;
+  }
+  final ensemble = '${gx.giac} ${gy.giac}';
+  final variable = RegExp(r'\btheta\b').hasMatch(ensemble) ? 'theta' : 't';
+  if (!RegExp('\\b$variable\\b').hasMatch(ensemble)) return null;
+  return Courbe(
+    latex: latex,
+    corps: gx.giac,
+    corpsY: gy.giac,
+    variable: variable,
+    genre: GenreCourbe.parametree,
+    debut: debut,
+    fin: fin,
+  );
+}
+
+/// Coupe sur l'unique virgule hors de toute parenthèse.
+(String, String)? _couperVirgule(String texte) {
+  var profondeur = 0;
+  int? virgule;
+  for (var i = 0; i < texte.length; i++) {
+    final c = texte[i];
+    if ('({['.contains(c)) profondeur++;
+    if (')}]'.contains(c)) profondeur--;
+    if (profondeur < 0) return null;
+    if (c == ',' && profondeur == 0) {
+      if (virgule != null) return null;
+      virgule = i;
+    }
+  }
+  if (virgule == null) return null;
+  return (
+    texte.substring(0, virgule).trim(),
+    texte.substring(virgule + 1).trim(),
+  );
+}
+
+double? _nombre(String latex) {
+  try {
+    final v = compilerFonction(analyserLatex(latex).giac, variable: '_')(0);
+    return v.isFinite ? v : null;
+  } on ErreurLatex {
+    return null;
+  } on ErreurEvaluation {
+    return null;
+  }
 }
 
 /// Les fonctions tracées, gardées sur l'appareil.
@@ -68,7 +274,11 @@ class Courbes extends ChangeNotifier {
   bool ajouter(String latex) {
     final courbe = lireCourbe(latex);
     if (courbe == null) return false;
-    if (_courbes.any((c) => c.corps == courbe.corps)) return true;
+    if (_courbes.any(
+      (c) => c.corps == courbe.corps && c.corpsY == courbe.corpsY,
+    )) {
+      return true;
+    }
     if (_courbes.length == maximum) _courbes.removeAt(0);
     _courbes.add(courbe);
     _changer();

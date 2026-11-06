@@ -4,6 +4,25 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+## [0.5.0] — 2026-11-06
+
+### Message fr
+
+Le Graphe trace bien plus que des fonctions : un cercle avec x^2+y^2=9, une courbe paramétrée avec (cos(t), sin(t)), une cardioïde avec r=1+cos(θ). Le tableau de valeurs lit tes fonctions, et les Outils du Graphe disent enfin leur nom.
+
+### Message en
+
+The Graph now plots much more than functions: a circle with x^2+y^2=9, a parametric curve with (cos(t), sin(t)), a cardioid with r=1+cos(θ). The table of values reads your functions, and the Graph's Tools now say their names.
+
+### Changements
+
+- Courbes implicites : `x^2+y^2=4`, `y^2=x`, `x=3`. / Implicit curves: `x^2+y^2=4`, `y^2=x`, `x=3`.
+- Courbes paramétrées : `(\cos(t),\sin(t))` ou `x=…,y=…`, avec un domaine facultatif `, t \in [a,b]`. / Parametric curves: `(\cos(t),\sin(t))` or `x=…,y=…`, with an optional range `, t \in [a,b]`.
+- Courbes polaires : `r=1+\cos(\theta)`. / Polar curves: `r=1+\cos(\theta)`.
+- Tableau de valeurs des fonctions : début et pas au choix. / Table of values for functions: choose the start and the step.
+- Un toucher lit aussi un point sur ces courbes. / A tap also reads a point on these curves.
+- Outils du Graphe : une liste de commandes nommées. / Graph Tools: a list of named commands.
+
 ## [0.4.0] — 2026-11-06
 
 ### Message fr
