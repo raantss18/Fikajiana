@@ -37,10 +37,11 @@
 
 1. 🔄 Clés créées dans `release-keys/`, hors de Git. Reste : **Antsa doit les sauvegarder ailleurs**. Passage de la clé de débogage : désinstaller une fois
 2. ✅ `tool/release.sh` : APK arm64, `release.json` signé, message sur ce que la version permet de faire (`app/CHANGELOG.md`)
-3. 🔄 Réglages → Mises à jour : version installée, « Rechercher » ; signature, SHA-256, même clé Android (ADR 0015). Rien sans le réseau, aucune donnée envoyée
-4. ⏳ Essai réel : installer une version par-dessus la précédente, la feuille conservée
+3. ✅ Réglages → Mises à jour : version installée, « Rechercher » ; signature, SHA-256, même clé Android (ADR 0015). Rien sans le réseau, aucune donnée envoyée
+4. 🔄 Essai réel : sur émulateur, 0.0.9 trouve la 0.1.0 publiée, vérifie signature et empreinte, l'installateur la pose. Reste : sur un appareil réel, avec une feuille conservée, à la version suivante
 5. ✅ Provenance des poids : contournée, pas de redistribution (ADR 0016). La question reste ouverte pour un modèle embarqué (P6)
-6. 🔄 Première version publique sur GitHub, `app-v0.1.0` (demandée par Antsa le 2026-11-06)
+6. ✅ Première version publique : [`app-v0.1.0`](https://github.com/raantss18/Fikajiana/releases/tag/app-v0.1.0) (demandée par Antsa le 2026-11-06)
+7. ⏳ Installer cette version signée sur le Pad 7 et le Poco : à faire par Antsa (désinstaller l'ancienne d'abord), puis essai au vrai stylet
 
 ## P2 — Écriture et reconnaissance de qualité
 
