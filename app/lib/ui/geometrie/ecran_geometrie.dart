@@ -2,14 +2,18 @@ import 'dart:async';
 
 import 'package:fikajiana/export/capture.dart';
 import 'package:fikajiana/geometrie/atelier.dart';
+import 'package:fikajiana/graphe/courbes.dart';
 import 'package:fikajiana/graphe/vue_graphe.dart';
 import 'package:fikajiana/l10n/l10n.dart';
 import 'package:fikajiana/reglages/reglages.dart';
 import 'package:fikajiana/reglages/support.dart';
+import 'package:fikajiana/ui/calcul/carte_bloc.dart';
 import 'package:fikajiana/ui/export.dart';
 import 'package:fikajiana/ui/geometrie/panneaux.dart';
 import 'package:fikajiana/ui/geometrie/peintre_figure.dart';
 import 'package:fikajiana/ui/geometrie/pictogrammes.dart';
+import 'package:fikajiana/ui/graphe/peintre_graphe.dart';
+import 'package:fikajiana/ui/graphe/tableau_valeurs.dart';
 import 'package:fikajiana/ui/services.dart';
 import 'package:fikajiana/ui/theme/espacement.dart';
 import 'package:fikajiana_math/fikajiana_math.dart';
@@ -43,6 +47,10 @@ class _EcranGeometrieState extends State<EcranGeometrie> {
   Offset? _depart;
 
   Atelier get _atelier => PorteeServices.de(context).atelier;
+  Courbes get _courbes => PorteeServices.de(context).courbes;
+
+  /// Le point lu sur une courbe touchée.
+  ({int indice, double x, double y})? _point;
 
   double get _tolerance => _rayonToucher / _vue.unite;
 
@@ -119,6 +127,14 @@ class _EcranGeometrieState extends State<EcranGeometrie> {
 
   void _toucher(Offset ecran) {
     final m = _vue.versMaths(ecran, _taille);
+    // Sans outil ni objet sous le doigt, on lit le point de la courbe.
+    if (!_construit &&
+        _courbes.liste.isNotEmpty &&
+        _atelier.objetProche(m.x, m.y, _tolerance) == null) {
+      _lirePoint(ecran, degres: PorteeReglages.de(context).degres);
+      return;
+    }
+    if (_point != null) setState(() => _point = null);
     _atelier.toucher(m.x, m.y, _tolerance);
     unawaited(_apresToucher());
   }
@@ -218,11 +234,134 @@ class _EcranGeometrieState extends State<EcranGeometrie> {
     );
   }
 
+  /// Les fonctions de x d'abord, lues juste sous le doigt ; les autres courbes
+  /// au point tracé le plus proche, si elles sont plus près.
+  void _lirePoint(Offset ecran, {required bool degres}) {
+    final courbes = _courbes.liste;
+    var trouve = courbeProche(
+      [
+        for (final c in courbes)
+          if (c.genre == GenreCourbe.fonction)
+            c.fonction(degres: degres)
+          else
+            null,
+      ],
+      ecran,
+      _vue,
+      _taille,
+    );
+    var distance = trouve == null
+        ? double.infinity
+        : (_vue.versEcran(trouve.x, trouve.y, _taille) - ecran).distance;
+    final fenetre = _vue.fenetre(_taille);
+    for (var i = 0; i < courbes.length; i++) {
+      if (courbes[i].genre == GenreCourbe.fonction) continue;
+      final p = pointTraceProche(
+        courbes[i].tracer(fenetre, degres: degres),
+        ecran,
+        _vue,
+        _taille,
+      );
+      if (p != null && p.distance < distance) {
+        distance = p.distance;
+        trouve = (indice: i, x: p.x, y: p.y);
+      }
+    }
+    setState(() => _point = trouve);
+  }
+
+  Future<void> _ajouterCourbe() async {
+    final l10n = context.l10n;
+    final latex = await demanderLatex(
+      context,
+      '',
+      aide: l10n.grapheAide,
+      action: l10n.grapheTracer,
+    );
+    if (latex == null || latex.trim().isEmpty || !mounted) return;
+    if (!_courbes.ajouter(latex)) _signalerErreur();
+  }
+
+  Future<void> _modifierCourbe(int indice) async {
+    final l10n = context.l10n;
+    final courbes = _courbes;
+    final latex = await demanderLatex(
+      context,
+      courbes.liste[indice].latex,
+      aide: l10n.grapheAide,
+      action: l10n.grapheTracer,
+      surRetirer: () {
+        setState(() => _point = null);
+        courbes.retirer(indice);
+      },
+    );
+    if (latex == null || latex.trim().isEmpty || !mounted) return;
+    setState(() => _point = null);
+    if (!courbes.remplacer(indice, latex)) _signalerErreur();
+  }
+
+  void _signalerErreur() {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(context.l10n.grapheErreur)));
+  }
+
+  Future<void> _ouvrirTableau(bool degres) {
+    final courbes = _courbes.liste;
+    return showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      showDragHandle: true,
+      builder: (contexte) => SizedBox(
+        height: MediaQuery.sizeOf(contexte).height * 0.8,
+        child: TableauValeurs(courbes: courbes, degres: degres),
+      ),
+    );
+  }
+
   Future<void> _ouvrirOutils() {
     final centre = _taille.center(Offset.zero);
     return _feuille(
       (contexte) => PanneauOutils(
         atelier: _atelier,
+        peutExporter: !_atelier.estVide || _courbes.liste.isNotEmpty,
+        enTete: [
+          Wrap(
+            spacing: AppEspacement.sm,
+            runSpacing: AppEspacement.xxs,
+            children: [
+              ActionChip(
+                avatar: const Icon(Icons.show_chart),
+                label: Text(context.l10n.grapheAjouter),
+                onPressed: () {
+                  Navigator.of(contexte).pop();
+                  unawaited(_ajouterCourbe());
+                },
+              ),
+              ActionChip(
+                avatar: const Icon(Icons.table_chart_outlined),
+                label: Text(context.l10n.grapheTableau),
+                onPressed: () {
+                  Navigator.of(contexte).pop();
+                  unawaited(_ouvrirTableau(PorteeReglages.de(context).degres));
+                },
+              ),
+              ActionChip(
+                avatar: const Icon(Icons.straighten),
+                label: Text(
+                  PorteeReglages.de(context).degres
+                      ? context.l10n.grapheAnglesDegres
+                      : context.l10n.grapheAngles,
+                ),
+                onPressed: () {
+                  Navigator.of(contexte).pop();
+                  final reglages = PorteeReglages.de(context);
+                  reglages.degres = !reglages.degres;
+                },
+              ),
+            ],
+          ),
+        ],
         surOutil: (outil) {
           Navigator.of(contexte).pop();
           if (outil == OutilGeo.curseur) {
@@ -304,8 +443,10 @@ class _EcranGeometrieState extends State<EcranGeometrie> {
     final atelier = _atelier;
     final francais = Localizations.localeOf(context).languageCode == 'fr';
     return ListenableBuilder(
-      listenable: Listenable.merge([atelier, _vue]),
+      listenable: Listenable.merge([atelier, _vue, _courbes]),
       builder: (context, _) {
+        final courbes = _courbes.liste;
+        final stylos = reglages.support.stylos;
         final pas = pasDeGraduation(_vue.unite);
         atelier.reglerAimant(pas, _rayonAimant / _vue.unite);
         final doigt = _doigt;
@@ -318,51 +459,102 @@ class _EcranGeometrieState extends State<EcranGeometrie> {
           children: [
             RepaintBoundary(
               key: _image,
-              child: LayoutBuilder(
-                builder: (context, contraintes) {
-                  _taille = contraintes.biggest;
-                  return Semantics(
-                    label: atelier.estVide
-                        ? l10n.geometrieVide
-                        : l10n.geometrieDescription(
-                            atelier.figure.objets.length,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  LayoutBuilder(
+                    builder: (context, contraintes) {
+                      _taille = contraintes.biggest;
+                      return Semantics(
+                        label: atelier.estVide
+                            ? l10n.geometrieVide
+                            : l10n.geometrieDescription(
+                                atelier.figure.objets.length,
+                              ),
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onScaleStart: _surDebut,
+                          onScaleUpdate: _surGeste,
+                          onScaleEnd: _surFin,
+                          onTapUp: (d) => _toucher(d.localPosition),
+                          onLongPressStart: (d) {
+                            final m = _vue.versMaths(d.localPosition, _taille);
+                            final id = atelier.objetProche(
+                              m.x,
+                              m.y,
+                              _tolerance,
+                            );
+                            if (id != null) unawaited(_ouvrirProprietes(id));
+                          },
+                          child: CustomPaint(
+                            size: Size.infinite,
+                            painter: PeintreFigure(
+                              atelier: atelier,
+                              vue: _vue,
+                              fond: reglages.support.fond,
+                              grille: theme.colorScheme.outlineVariant,
+                              palette: reglages.support.stylos,
+                              choix: theme.colorScheme.tertiary,
+                              francais: francais,
+                              texte: theme.textTheme.titleSmall!.copyWith(
+                                color: theme.colorScheme.onSurface,
+                              ),
+                              doigt: doigt,
+                              apercu: doigtMaths == null
+                                  ? null
+                                  : atelier.apercu(doigtMaths.x, doigtMaths.y),
+                              courbes: PeintreGraphe(
+                                vue: _vue,
+                                courbes: courbes,
+                                degres: reglages.degres,
+                                stylos: stylos,
+                                fond: reglages.support.fond,
+                                axes: theme.colorScheme.onSurface,
+                                grille: theme.colorScheme.outlineVariant,
+                                texte: theme.textTheme.bodySmall!.copyWith(
+                                  color: theme.colorScheme.onSurface,
+                                ),
+                                virgule: francais,
+                                point: _point,
+                              ),
+                            ),
                           ),
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onScaleStart: _surDebut,
-                      onScaleUpdate: _surGeste,
-                      onScaleEnd: _surFin,
-                      onTapUp: (d) => _toucher(d.localPosition),
-                      onLongPressStart: (d) {
-                        final m = _vue.versMaths(d.localPosition, _taille);
-                        final id = atelier.objetProche(m.x, m.y, _tolerance);
-                        if (id != null) unawaited(_ouvrirProprietes(id));
-                      },
-                      child: CustomPaint(
-                        size: Size.infinite,
-                        painter: PeintreFigure(
-                          atelier: atelier,
-                          vue: _vue,
-                          fond: reglages.support.fond,
-                          grille: theme.colorScheme.outlineVariant,
-                          palette: reglages.support.stylos,
-                          choix: theme.colorScheme.tertiary,
-                          francais: francais,
-                          texte: theme.textTheme.titleSmall!.copyWith(
-                            color: theme.colorScheme.onSurface,
+                        ),
+                      );
+                    },
+                  ),
+                  // Dans l'image aussi : numéro et formule, jamais la couleur
+                  // seule.
+                  if (courbes.isNotEmpty)
+                    Positioned(
+                      left: AppEspacement.sm,
+                      right: AppEspacement.sm,
+                      top: 64,
+                      child: SafeArea(
+                        bottom: false,
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              for (var i = 0; i < courbes.length; i++)
+                                LegendeCourbe(
+                                  numero: i + 1,
+                                  latex: courbes[i].latex,
+                                  couleur: stylos[i % stylos.length],
+                                  surToucher: () =>
+                                      unawaited(_modifierCourbe(i)),
+                                ),
+                            ],
                           ),
-                          doigt: doigt,
-                          apercu: doigtMaths == null
-                              ? null
-                              : atelier.apercu(doigtMaths.x, doigtMaths.y),
                         ),
                       ),
                     ),
-                  );
-                },
+                ],
               ),
             ),
-            if (atelier.estVide && atelier.outil == OutilGeo.deplacer)
+            if (atelier.estVide &&
+                courbes.isEmpty &&
+                atelier.outil == OutilGeo.deplacer)
               IgnorePointer(
                 child: Center(
                   child: Padding(
@@ -375,28 +567,31 @@ class _EcranGeometrieState extends State<EcranGeometrie> {
                   ),
                 ),
               ),
-            // Ce qui se passe, à droite de ← et de Menu.
+            // Sous la barre et les courbes : ce qui se passe.
             Positioned(
-              left: 112,
+              left: AppEspacement.sm,
               right: AppEspacement.sm,
-              top: 0,
+              top: courbes.isEmpty ? 64 : 120,
               child: SafeArea(
                 bottom: false,
-                child: Padding(
-                  padding: const EdgeInsets.only(top: AppEspacement.sm),
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: selection != null
-                        ? _BandeauSelection(
-                            atelier: atelier,
-                            id: selection,
-                            surModifier: () =>
-                                unawaited(_ouvrirProprietes(selection)),
-                          )
-                        : _construit
-                        ? _BandeauOutil(atelier: atelier)
-                        : const SizedBox.shrink(),
-                  ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: selection != null
+                          ? _BandeauSelection(
+                              atelier: atelier,
+                              id: selection,
+                              surModifier: () =>
+                                  unawaited(_ouvrirProprietes(selection)),
+                            )
+                          : _construit
+                          ? _BandeauOutil(atelier: atelier)
+                          : const SizedBox.shrink(),
+                    ),
+                  ],
                 ),
               ),
             ),

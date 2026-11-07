@@ -1,6 +1,6 @@
 import 'package:fikajiana/encre/feuille_encre.dart';
 import 'package:fikajiana/ui/calcul/ecran_feuille.dart';
-import 'package:fikajiana/ui/graphe/ecran_graphe.dart';
+import 'package:fikajiana/ui/geometrie/ecran_geometrie.dart';
 import 'package:fikajiana/ui/historique/ecran_historique.dart';
 import 'package:fikajiana/ui/navigation/page_destination.dart';
 import 'package:fikajiana/ui/theme/marque.dart';
@@ -45,20 +45,20 @@ void main() {
 
     testWidgets("← revient à l'écran précédent, pas à l'accueil", (t) async {
       await t.pumpFikajiana();
-      await _aller(t, 'Graphe');
+      await _aller(t, 'Figure');
       await _aller(t, 'Historique');
       expect(find.byType(EcranHistorique), findsOneWidget);
 
       await t.tap(find.byType(BackButton));
       await t.pumpAndSettle();
-      expect(find.byType(EcranGraphe), findsOneWidget);
+      expect(find.byType(EcranGeometrie), findsOneWidget);
     });
 
     testWidgets('Feuille, dans le menu, revient directement à l’accueil', (
       t,
     ) async {
       await t.pumpFikajiana();
-      await _aller(t, 'Graphe');
+      await _aller(t, 'Figure');
       await _aller(t, 'Historique');
       await _aller(t, 'Feuille');
       expect(find.byType(EcranFeuille), findsOneWidget);
@@ -70,10 +70,10 @@ void main() {
       await t.tap(find.byTooltip('Menu'));
       await t.pump();
       await t.pump(const Duration(milliseconds: 500));
-      await t.tap(find.text('Graphe'));
+      await t.tap(find.text('Figure').last);
       await t.pump();
       await t.pump(const Duration(milliseconds: 500));
-      final titre = find.text('Graphe');
+      final titre = find.text('Figure').first;
       expect(
         find.ancestor(of: titre, matching: find.byType(SlideTransition)),
         findsNothing,
@@ -94,7 +94,7 @@ void main() {
         ),
         findsOneWidget,
       );
-      await _aller(t, 'Graphe');
+      await _aller(t, 'Figure');
       expect(find.byType(MarquePi), findsNothing);
     });
   });
@@ -104,7 +104,7 @@ void main() {
       await t.pumpFikajiana();
       await t.tap(find.byTooltip('Menu'));
       await t.pumpAndSettle();
-      for (final s in ['Feuille', 'Graphe', 'Géométrie', 'Historique']) {
+      for (final s in ['Feuille', 'Figure', 'Historique']) {
         expect(find.text(s), findsWidgets);
       }
     });
@@ -113,7 +113,7 @@ void main() {
       await t.pumpFikajiana(langue: const Locale('en'));
       await t.tap(find.byTooltip('Menu'));
       await t.pumpAndSettle();
-      for (final s in ['Sheet', 'Graph', 'Geometry', 'History']) {
+      for (final s in ['Sheet', 'Figure', 'History']) {
         expect(find.text(s), findsWidgets);
       }
     });
@@ -127,7 +127,7 @@ void main() {
       testWidgets('cibles et libellés, $nom', (t) async {
         final semantique = t.ensureSemantics();
         await t.pumpFikajiana(taille: taille);
-        await _aller(t, 'Graphe');
+        await _aller(t, 'Figure');
         expect(find.byType(PageDestination), findsOneWidget);
         await expectLater(t, meetsGuideline(androidTapTargetGuideline));
         await expectLater(t, meetsGuideline(labeledTapTargetGuideline));

@@ -114,9 +114,16 @@ class PanneauOutils extends StatelessWidget {
     required this.surZoomMoins,
     required this.surRecentrer,
     required this.surExporter,
+    this.enTete = const [],
+    this.peutExporter,
     super.key,
   });
 
+  /// Ce qui passe avant les outils : les courbes de la Figure.
+  final List<Widget> enTete;
+
+  /// Il y a de quoi exporter, courbes comprises.
+  final bool? peutExporter;
   final ValueChanged<FormatExport> surExporter;
   final Atelier atelier;
   final ValueChanged<OutilGeo> surOutil;
@@ -146,6 +153,7 @@ class PanneauOutils extends StatelessWidget {
           vertical: AppEspacement.sm,
         ),
         children: [
+          ...enTete,
           for (final groupe in GroupeOutils.values) ...[
             titre(_titreGroupe(groupe, l10n)),
             LayoutBuilder(
@@ -224,7 +232,7 @@ class PanneauOutils extends StatelessWidget {
           titre(l10n.exportTitre),
           ...lignesExport(
             context,
-            actif: !atelier.estVide,
+            actif: peutExporter ?? !atelier.estVide,
             surChoix: surExporter,
           ),
         ],

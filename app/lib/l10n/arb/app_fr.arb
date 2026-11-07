@@ -2,8 +2,6 @@
     "@@locale": "fr",
     "appTitle": "Fikajiana",
     "destinationFeuille": "Feuille",
-    "destinationGraphe": "Graphe",
-    "destinationGeometrie": "Géométrie",
     "destinationHistorique": "Historique",
     "accueil": "Accueil",
     "reglages": "Réglages",
@@ -119,7 +117,7 @@
             }
         }
     },
-    "geometrieVide": "Figure vide. Touche Outils pour choisir quoi construire.",
+    "geometrieVide": "Touche Outils pour construire une figure ou ajouter une courbe.",
     "outilDeplacer": "Déplacer",
     "outilPoint": "Point",
     "outilSegment": "Segment",
@@ -297,7 +295,6 @@
     },
     "relationIciSeulement": "Vrai dans cette position seulement : cela cesse quand on déforme la figure.",
     "nouvelleFeuille": "Nouvelle feuille",
-    "nouveauGraphe": "Nouveau graphe",
     "nouvelleFigure": "Nouvelle figure",
     "historiqueSectionFeuilles": "Feuilles",
     "historiqueSectionGraphes": "Graphes",
@@ -359,5 +356,7 @@
     "saisieLectureUne": "Revenir à la première lecture",
     "saisieAide": "Tapez comme vous écrivez, ou en LaTeX",
     "saisieOuvrir": "Taper un calcul",
-    "placerEnGeometrie": "Placer en Géométrie"
+    "destinationFigure": "Figure",
+    "voirDansFigure": "Voir dans la Figure",
+    "placerDansFigure": "Placer dans la Figure"
 }
