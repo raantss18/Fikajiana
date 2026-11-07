@@ -25,6 +25,11 @@ def nombre(v):
     return [float(re), float(im)]
 
 
+def fonction_en(famille, latex, attendu, variable, points):
+    cas.append({"f": famille, "l": latex, "g": "fonction", "v": str(variable), "p": points,
+                "a": [float(sp.N(attendu.subs(variable, p), 20)) for p in points]})
+
+
 def valeur(famille, latex, attendu):
     cas.append({"f": famille, "l": latex, "g": "valeur", "a": nombre(attendu)})
 
@@ -230,6 +235,21 @@ solutions("memoire", "f(x)=5", sp.solveset(F - 5, x, sp.S.Reals))
 fonction("memoire", "f(x)+1", F + 1)
 for c in cas[AVANT:]:
     c["d"] = "f(x)=x^2+1"
+
+# Suites : le terme général, comparé à celui de SymPy.
+u = sp.Function("u")
+for latex, recurrence, depart in [
+    (r"\begin{cases}u_{n+1}=2u_n\\u_0=1\end{cases}", u(n + 1) - 2 * u(n), {u(0): 1}),
+    (r"\begin{cases}u_{n+1}=u_n+3\\u_0=1\end{cases}", u(n + 1) - u(n) - 3, {u(0): 1}),
+    (r"\begin{cases}u_{n+1}=2u_n+1\\u_0=0\end{cases}", u(n + 1) - 2 * u(n) - 1, {u(0): 0}),
+    (r"\begin{cases}v_{n+1}=\frac{1}{2}v_n\\v_0=8\end{cases}", u(n + 1) - u(n) / 2, {u(0): 8}),
+    (r"\begin{cases}u_{n+1}=-u_n+2\\u_0=5\end{cases}", u(n + 1) + u(n) - 2, {u(0): 5}),
+    (r"\begin{cases}u_{n+1}=0{,}5u_n+1\\u_0=4\end{cases}", u(n + 1) - u(n) / 2 - 1, {u(0): 4}),
+    (r"\begin{cases}u_{n+1}=u_n\\u_0=7\end{cases}", u(n + 1) - u(n), {u(0): 7}),
+    (r"\begin{cases}u_{n+1}=3u_n-2\\u_1=2\end{cases}", u(n + 1) - 3 * u(n) + 2, {u(1): 2}),
+    (r"\begin{cases}u_n=2u_{n-1}\\u_0=3\end{cases}", u(n + 1) - 2 * u(n), {u(0): 3}),
+]:
+    fonction_en("suites", latex, sp.rsolve(recurrence, u(n), depart), n, [2, 5])
 
 # Vrai ou faux
 verite("verite", "2+2=5", False)

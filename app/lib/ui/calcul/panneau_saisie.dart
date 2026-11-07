@@ -47,6 +47,7 @@ Verbe? verbeDe(String latex) {
     TypeExpression.fonction => const VerbeTracer(),
     TypeExpression.equation => VerbeResoudre(analyse.inconnues.first),
     TypeExpression.systeme ||
+    TypeExpression.suite ||
     TypeExpression.calcul ||
     TypeExpression.matrice => const VerbeCalculer(),
   };

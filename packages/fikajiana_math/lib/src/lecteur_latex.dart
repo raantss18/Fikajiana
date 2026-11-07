@@ -367,6 +367,9 @@ class LecteurLatex {
   /// Variables liées (intégrales, sommes, limites), absentes du résultat.
   final List<String> _liees = [];
 
+  /// Le nom de la suite, si le texte contient un terme comme `u_{n+1}`.
+  String? suite;
+
   /// Dans la cible d'une limite : `0^+` et `0+` y disent un côté.
   var _dansCible = false;
 
@@ -772,7 +775,12 @@ class LecteurLatex {
         _i += 2;
         return Terme('$combinaison(${indice.giac},$haut)');
       }
-      // `u_{n+1}` n'est pas la variable `u_n` plus 1 : mieux vaut refuser.
+      // `u_{n+1}` dit une suite. Tout le texte sera relu par [analyserLatex].
+      if (RegExp(r'^[a-z][+-]\d+$').hasMatch(indice.giac)) {
+        suite = nom;
+        return Terme('$nom(${indice.giac})');
+      }
+      // Autrement, `u_{2n}` n'est pas une variable : mieux vaut refuser.
       if (!RegExp(r'^[A-Za-z0-9]+$').hasMatch(indice.giac)) {
         throw ErreurLatex('indice non pris en charge : ${indice.giac}');
       }
