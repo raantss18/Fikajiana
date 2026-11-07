@@ -11,6 +11,12 @@ void main() {
   EcritureResultat? ecrit(BlocCalcul b) =>
       b.ecriture(approcheVoulue: false, virgule: false);
 
+  test('une inéquation s’écrit à la main', () {
+    for (final texte in ['x>2', '-2<x<2', r'x\leq -1', r'x\geq 1']) {
+      expect(ecrireResultat(texte, ecriture), isNotNull, reason: texte);
+    }
+  });
+
   test('le signe de la racine laisse de la place au nombre', () {
     final seul = ecrireResultat('2', ecriture)!.cadre;
     final racine = ecrireResultat(r'\sqrt{2}', ecriture)!.cadre;

@@ -120,6 +120,17 @@ Analyse analyserLatex(String latex, {bool degres = false}) {
     );
   }
   final symboles = {...expression.gauche.symboles, ...droite.symboles};
+  final ordre = expression.ordre;
+  if (ordre != null) {
+    final relation = '${expression.gauche.giac}$ordre${droite.giac}';
+    if (symboles.isEmpty) return Analyse(TypeExpression.calcul, relation);
+    final variable = _ordonner(symboles).first;
+    return Analyse(
+      TypeExpression.equation,
+      'solve($relation,$variable)',
+      inconnues: [variable],
+    );
+  }
   if (symboles.isEmpty) {
     return Analyse(
       TypeExpression.calcul,

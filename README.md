@@ -21,7 +21,7 @@ Android, téléphone et tablette. <b>Libre</b>, sans compte, sans pub, et <b>hor
 ## Ce qu'on peut faire
 
 - **Écrire** au stylet ou au doigt, sur une feuille blanche, un cahier ou un tableau noir, avec des stylos de couleur et une gomme, sur une page sans bord.
-- **Calculer** : écris `2+3=` et le résultat s'écrit à la main après le signe égal. Écris `x+3=4` et la solution s'écrit dessous. Fractions, racines, équations, systèmes, intégrales, limites, sommes, matrices.
+- **Calculer** : écris `2+3=` et le résultat s'écrit à la main après le signe égal. Écris `x+3=4` et la solution s'écrit dessous. Fractions, racines, équations, inéquations, systèmes, dérivées, intégrales, limites, sommes, matrices, nombres complexes.
 - **Basculer** entre valeur exacte et approchée, degrés et radians.
 - **Tracer** : écris `f(x)=x^2`, touche Tracer à côté, et la courbe s'affiche. Cela marche aussi avec `x^2+y^2=4`, `(\cos(t),\sin(t))` ou `r=1+\cos(\theta)`. Glisser, pincer, plusieurs courbes, tableau de valeurs, un toucher lit les coordonnées d'un point.
 - **Exporter** : la feuille entière, le graphe ou la figure, en image PNG ou en PDF, à l'endroit de ton choix.

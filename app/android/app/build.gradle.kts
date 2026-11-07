@@ -30,6 +30,8 @@ android {
 
     defaultConfig {
         applicationId = "mg.fikajiana.app"
+        // Le banc de calcul vit à côté de l'app : il ne la remplace jamais.
+        if (project.hasProperty("banc")) applicationIdSuffix = ".banc"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

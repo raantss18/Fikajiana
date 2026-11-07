@@ -241,6 +241,9 @@ String abregerApproche(String approche) {
 /// **Un bloc lu reste stable** : seul un trait qui le touche, ou un trait écrit
 /// juste à sa droite sur la même ligne avant son `=`, le modifie. Un nouveau
 /// calcul, même proche, ne l'efface donc jamais.
+final _appelFonction = RegExp(r"\b[fgh]'*\(");
+final _definitionLibre = RegExp(r'^[fgh]\(');
+
 class CalculFeuille extends ChangeNotifier {
   new({
     required this.encre,
@@ -467,11 +470,20 @@ class CalculFeuille extends ChangeNotifier {
     }
     bloc
       ..type = analyse.type
-      ..inconnues = analyse.inconnues
-      ..etat = EtatBloc.calcul;
+      ..inconnues = analyse.inconnues;
+    // Une définition n'a rien à rendre : elle reste sur la feuille. Envoyée à
+    // Giac telle quelle, `y=2x+1` empêcherait ensuite de résoudre en y.
+    if (analyse.type == TypeExpression.fonction) {
+      bloc.etat = EtatBloc.fait;
+      return;
+    }
+    bloc.etat = EtatBloc.calcul;
     notifyListeners();
     final ReponseGiac reponse;
     try {
+      if (_appelFonction.hasMatch(analyse.giac)) {
+        await _rappelerFonctions(enDegres);
+      }
       reponse = await moteur.calculer(analyse.giac, degres: enDegres);
     } on Object {
       bloc.etat = EtatBloc.erreur;
@@ -498,6 +510,25 @@ class CalculFeuille extends ChangeNotifier {
             : reponse.approche
         ..inchange = sansEspaces(exact) == sansEspaces(analyse.giac)
         ..etat = EtatBloc.fait;
+    }
+  }
+
+  /// `f(3)` ou `g'(x)` : Giac ne doit voir que les fonctions de cette feuille,
+  /// pas celles d'une autre, ni une fonction effacée depuis.
+  Future<void> _rappelerFonctions(bool enDegres) async {
+    await moteur.calculer('purge(f,g,h)', degres: enDegres);
+    for (final bloc in _blocs.values) {
+      final latex = bloc.latex;
+      if (bloc.type != TypeExpression.fonction || latex == null) continue;
+      final Analyse definition;
+      try {
+        definition = analyserLatex(latex, degres: enDegres);
+      } on ErreurLatex {
+        continue;
+      }
+      if (_definitionLibre.hasMatch(definition.giac)) {
+        await moteur.calculer(definition.giac, degres: enDegres);
+      }
     }
   }
 

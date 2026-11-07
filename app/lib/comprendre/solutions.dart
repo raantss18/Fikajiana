@@ -34,10 +34,33 @@ String? _equation(String texte, String inconnue, String ou) {
   if (!texte.startsWith(r'\{') || !texte.endsWith(r'\}')) return null;
   final valeurs = _separer(texte.substring(2, texte.length - 2), ',');
   final nom = _nom(inconnue);
+  if (valeurs.any(_estRelation.hasMatch)) {
+    return valeurs.map(_inequation).join(ou);
+  }
   if (valeurs.length == 1 && valeurs.single == inconnue) {
     return r'S=\mathbb{R}';
   }
   return valeurs.map((v) => '$nom=$v').join(ou);
+}
+
+final _estRelation = RegExp(r'[<>]|\\leq|\\geq');
+
+/// Giac rend `(x>\mathrm{-2})\mbox{ and }(x<2)` : on écrit `-2<x<2`.
+String _inequation(String relation) {
+  final propre = relation.replaceAllMapped(
+    RegExp(r'\\mathrm\{(-[^{}]*)\}'),
+    (m) => m[1]!,
+  );
+  final deux = RegExp(
+    r'^\((.+?)(>|\\geq )(.+?)\)\\mbox\{ and \}\(\1(<|\\leq )(.+?)\)$',
+  ).firstMatch(propre);
+  if (deux == null) return propre;
+  String signe(String s) => s.trim() == '>'
+      ? '<'
+      : s.trim() == r'\geq'
+      ? r'\leq '
+      : s;
+  return '${deux[3]}${signe(deux[2]!)}${deux[1]}${deux[4]}${deux[5]}';
 }
 
 String? _systeme(String texte, List<String> inconnues, String et, String ou) {
