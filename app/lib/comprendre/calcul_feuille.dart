@@ -2,8 +2,10 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:fikajiana/comprendre/blocs.dart';
+import 'package:fikajiana/comprendre/decimale.dart';
 import 'package:fikajiana/comprendre/ecriture_resultat.dart';
 import 'package:fikajiana/comprendre/fraction_ecrite.dart';
+import 'package:fikajiana/comprendre/mots.dart';
 import 'package:fikajiana/comprendre/solutions.dart';
 import 'package:fikajiana/comprendre/structure.dart';
 import 'package:fikajiana/encre/encre.dart';
@@ -214,10 +216,21 @@ class BlocCalcul {
               francais: virgule,
             );
     } else {
-      valeur = choisie == null ? exact : abregerApproche(choisie);
+      // `74×10^{-4}+85×10^8` : la fraction exacte 42500000000037/5000 ne se
+      // lit pas ; sa valeur décimale, exacte aussi, si (Pad 7).
+      final decimale =
+          choisie == null && exact != null && ecritEnDecimal(latex ?? '')
+          ? decimaleExacte(exact)
+          : null;
+      valeur = decimale ?? (choisie == null ? exact : abregerApproche(choisie));
     }
-    if (valeur == null || !virgule) return valeur;
-    return valeur.replaceAllMapped(
+    // `2\cdot x^{2}` de Giac s'écrit `2x^{2}`, comme à la main.
+    final sansPoint = valeur?.replaceAllMapped(
+      RegExp(r'(\d|\})\s*\\cdot\s*([a-zA-Z(]|\\left|\\sqrt|\\pi)'),
+      (m) => '${m[1]}${m[2]}',
+    );
+    if (sansPoint == null || !virgule) return sansPoint;
+    return sansPoint.replaceAllMapped(
       RegExp(r'(\d)\.(\d)'),
       (m) => '${m[1]}{,}${m[2]}',
     );
@@ -231,8 +244,14 @@ class BlocCalcul {
     required bool approcheVoulue,
     required bool virgule,
   }) {
-    if (!montreResultat || estSaisie) return null;
-    final valeur = texte(approcheVoulue: approcheVoulue, virgule: virgule);
+    if (estSaisie || etat != EtatBloc.fait) return null;
+    final v = verite;
+    // `premier(17)` : « = vrai », écrit à la main comme tout résultat (Antsa).
+    final valeur = v != null
+        ? '\\mathrm{${virgule ? (v ? 'vrai' : 'faux') : (v ? 'true' : 'false')}}'
+        : montreResultat
+        ? texte(approcheVoulue: approcheVoulue, virgule: virgule)
+        : null;
     if (valeur == null) return null;
     if (_ecritPour != valeur) {
       _ecritPour = valeur;
@@ -246,7 +265,11 @@ class BlocCalcul {
   EcritureResultat? _placer(String valeur) {
     EcritureResultat? essai({required bool dessous}) => ecrireResultat(
       // Sous l'écriture, la valeur seule ne dirait pas ce qu'elle égale.
-      egalAjoute || (finitParEgal && dessous) ? '=$valeur' : valeur,
+      // `2+2=5` est faux : le mot suit, sans `=` ; `premier(17) = vrai`.
+      (verite != null ? demandeResultat : egalAjoute) ||
+              (finitParEgal && dessous)
+          ? '=$valeur'
+          : valeur,
       cadre,
       dessous: dessous,
       hauteurLigne: hauteurLigne,
@@ -258,7 +281,12 @@ class BlocCalcul {
     return autre != null && !_gene(autre.cadre) ? autre : voulu;
   }
 
-  bool _gene(Rect zone) => _voisins.any(zone.deflate(1).overlaps);
+  /// Le bord droit de la page : un résultat qui le dépasse sort de l'écran
+  /// (vu sur le Pad 7 avec `développer(…)`).
+  double _bordDroit = double.infinity;
+
+  bool _gene(Rect zone) =>
+      zone.right > _bordDroit || _voisins.any(zone.deflate(1).overlaps);
 
   void _oublierResultat() {
     verite = null;
@@ -343,6 +371,21 @@ class CalculFeuille extends ChangeNotifier {
   var _compteur = 0;
 
   List<BlocCalcul> get blocs => _blocs.values.toList();
+
+  /// Le bord droit de la page visible, en coordonnées de page.
+  double _bordDroit = double.infinity;
+
+  double get bordDroit => _bordDroit;
+
+  set bordDroit(double bord) {
+    if (bord == _bordDroit) return;
+    _bordDroit = bord;
+    for (final bloc in _blocs.values) {
+      bloc
+        .._bordDroit = bord
+        .._ecritPour = null;
+    }
+  }
 
   /// Un résultat ne s'écrit pas sur la ligne d'en dessous.
   void _placerResultats() {
@@ -543,12 +586,44 @@ class CalculFeuille extends ChangeNotifier {
         // Un nom se vérifie à l'œil ; les chiffres d'une matrice, moins.
         ..lueParMorceaux = structuree?.contains('matrix') ?? false;
       await _calculer(bloc);
+      if (structuree == null && bloc.etat == EtatBloc.nonCompris) {
+        await _lireUnMot(bloc, traits, version);
+      }
     } on ModeleAbsent {
       bloc.etat = EtatBloc.sansModele;
     } on Object {
       bloc.etat = EtatBloc.erreur;
     }
     if (!_ferme) notifyListeners();
+  }
+
+  /// `premier(17)` en cursive : le modèle ne lit pas les mots. Le mot se
+  /// reconnaît à sa silhouette, la parenthèse se lit à part (ADR 0031). Dans
+  /// le doute, rien n'est choisi : les mots proches sont proposés.
+  Future<void> _lireUnMot(
+    BlocCalcul bloc,
+    List<Trait> traits,
+    int version,
+  ) async {
+    final ecrit = separerMot(traits);
+    if (ecrit == null) return;
+    final classes = classerMots(ecrit.mot);
+    final suite = (await lireAuMieux(lecteur, ecrit.suite)).trim();
+    if (bloc._version != version || !identical(_blocs[bloc.cle], bloc)) return;
+    final candidats = [
+      for (final (nom, _) in classes.take(3)) '\\text{$nom}$suite',
+    ];
+    final sur = motSur(classes);
+    bloc.autresLectures = [
+      ...candidats.skip(sur == null ? 0 : 1),
+      ...bloc.autresLectures,
+    ];
+    if (sur == null) return;
+    bloc
+      ..latex = candidats.first
+      // Ce qui a été compris s'affiche, à vérifier d'un coup d'œil.
+      ..lueParMorceaux = true;
+    await _calculer(bloc);
   }
 
   /// `1/3` écrit en ligne : les traits se rangent en fraction, et s'annulent.

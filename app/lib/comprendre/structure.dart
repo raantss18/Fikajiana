@@ -57,6 +57,19 @@ Structure? trouverStructure(List<Trait> traits) {
   return _norme(nets) ?? _fleche(nets) ?? _matrice(nets);
 }
 
+/// Un trait sans ventre : une barre. `((` et `))` ne sont pas `‖` (vu sur
+/// le Pad 7 : `développer((2x-1)(x-4))` lu comme une norme).
+bool _droit(Trait t, double hauteur) {
+  final points = [for (final p in t.points) p.position];
+  final (a, b) = (points.first, points.last);
+  final corde = b - a;
+  if (corde.distance == 0) return false;
+  final ecart = points
+      .map((p) => ((p - a).dx * corde.dy - (p - a).dy * corde.dx).abs())
+      .reduce(math.max);
+  return ecart / corde.distance <= 0.1 * hauteur;
+}
+
 /// Deux barres de chaque côté, plus hautes que ce qu'elles entourent.
 StructureNorme? _norme(List<Trait> traits) {
   if (traits.length < 5) return null;
@@ -68,7 +81,9 @@ StructureNorme? _norme(List<Trait> traits) {
   );
   bool barre(Trait t) {
     final c = _c(t);
-    return c.height >= 0.8 * haut && c.width <= 0.3 * c.height;
+    return c.height >= 0.8 * haut &&
+        c.width <= 0.3 * c.height &&
+        _droit(t, c.height);
   }
 
   if (!barre(tries[0]) || !barre(tries[1])) return null;

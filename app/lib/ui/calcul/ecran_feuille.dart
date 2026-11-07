@@ -232,10 +232,6 @@ class _EcranFeuilleState extends State<EcranFeuille> {
     }
     for (final bloc in _calcul.blocs) {
       yield bloc.cadre;
-      // Ce qui a été lu par morceaux s'affiche sous la ligne (une matrice).
-      if (bloc.lueParMorceaux && !bloc.resultatDessous) {
-        yield bloc.cadre.bottomLeft & (_placeSaisie * 1.5 / _vue.zoom);
-      }
       final ecrit = bloc.ecriture(
         approcheVoulue: reglages.approche,
         virgule: virgule,
@@ -271,6 +267,8 @@ class _EcranFeuilleState extends State<EcranFeuille> {
   Widget build(BuildContext context) {
     final reglages = PorteeReglages.de(context);
     final l10n = context.l10n;
+    // La largeur de l'écran borne les résultats, à la vue de départ.
+    _calcul.bordDroit = MediaQuery.sizeOf(context).width - AppEspacement.sm;
     return Stack(
       fit: StackFit.expand,
       children: [

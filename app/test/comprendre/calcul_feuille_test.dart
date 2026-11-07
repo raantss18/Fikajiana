@@ -18,11 +18,14 @@ class _Lecteur extends Lecteur {
   bool absent = false;
   int lectures = 0;
 
+  /// Une réponse selon les traits lus, comme le modèle sur le Pad 7.
+  String? Function(List<Trait> traits)? selon;
+
   @override
   Future<String> lire(List<Trait> traits) async {
     lectures++;
     if (absent) throw const ModeleAbsent();
-    return reponse;
+    return selon?.call(traits) ?? reponse;
   }
 
   /// Ce que répond la recherche en faisceau.
@@ -658,6 +661,80 @@ void main() {
       final e = ecrit(b)!;
       expect(calcul.blocs.last.cadre.overlaps(e.cadre), isFalse);
       expect(e.cadre.top, greaterThan(b.cadre.bottom));
+    });
+  });
+
+  group('un mot écrit à la main', () {
+    List<Trait> charger(String nom) => [
+      for (final t in jsonDecode(
+        File('test/fixtures/pad7/$nom.json').readAsStringSync(),
+      ) as List<dynamic>)
+        Trait.depuisDocument(t as Map<String, dynamic>),
+    ];
+
+    Future<BlocCalcul> ecrire(
+      String nom,
+      String toutLu,
+      String suiteLue,
+    ) async {
+      final traits = charger(nom);
+      lecteur
+        ..reponse = toutLu
+        // Lue seule, la parenthèse et son contenu se lisent bien.
+        ..selon = (lus) => lus.length < traits.length ? suiteLue : null;
+      encre.chargerDocument([for (final t in traits) t.versDocument()]);
+      calcul.encreChangee();
+      await _attendre();
+      return calcul.blocs.single;
+    }
+
+    // Vu sur le Pad 7, avec ces traits et cette lecture du modèle.
+    test('premier(17) : reconnu, calculé, et montré à vérifier', () async {
+      moteur.reponse = const ReponseGiac(
+        exact: 'true',
+        latex: 'true',
+        approche: 'true',
+      );
+      final b = await ecrire(
+        'premier_17',
+        r'\wp ^ { \pi a m ^ { 2 } } \O \pi ( 1 7 )',
+        '( 1 7 )',
+      );
+      expect(b.latex, r'\text{premier}( 1 7 )');
+      expect(moteur.entrees.last, 'isprime(17)');
+      expect(b.verite, isTrue);
+      expect(b.lueParMorceaux, isTrue);
+      expect(b.autresLectures, isNotEmpty);
+      // « = vrai » s'écrit à la main, à droite (Antsa : l'égal manquait).
+      final ecrit = b.ecriture(approcheVoulue: false, virgule: true)!;
+      expect(ecrit.cadre.left, greaterThan(b.cadre.right));
+      // Un résultat ne sort pas de l'écran : il passe dessous.
+      calcul.bordDroit = b.cadre.right + 20;
+      final dessous = b.ecriture(approcheVoulue: false, virgule: true)!;
+      expect(dessous.cadre.top, greaterThan(b.cadre.bottom));
+    });
+
+    test('développer((2x-1)(x-4)) : reconnu et développé', () async {
+      moteur.reponse = const ReponseGiac(
+        exact: r'2\cdot x^{2}-9\cdot x+4',
+        latex: r'2\cdot x^{2}-9\cdot x+4',
+        approche: '2*x^2-9*x+4',
+      );
+      final b = await ecrire(
+        'developper',
+        r'\alpha \lim _ { \log _ { 1 } \alpha _ { 2 } } ( ( 2 x - \pi ) ( x - 4 ) )',
+        '( ( 2 x - 1 ) ( x - 4 ) )',
+      );
+      expect(b.etat, EtatBloc.fait);
+      // `2\cdot x^2` de Giac s'écrit `2x^2`.
+      expect(
+        b.texte(approcheVoulue: false, virgule: true),
+        isNot(contains(r'\cdot')),
+      );
+      // `((` et `))` ne sont pas les barres d'une norme.
+      expect(b.latex, isNot(contains(r'\|')));
+      expect(moteur.entrees.last, startsWith('expand('));
+      expect(b.egalAjoute, isTrue);
     });
   });
 

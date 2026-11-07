@@ -101,59 +101,8 @@ class RepereBloc extends StatelessWidget {
     final contenu = _contenu(context);
     final objets = bloc.aPlacer;
     final commande = bloc.commande;
-    if (bloc.lueParMorceaux && !enExport && bloc.etat == EtatBloc.fait) {
-      // Ce qui a été compris, à vérifier d'un coup d'œil : un chiffre mal lu
-      // fausserait le résultat sans le dire.
-      // Sous la ligne si le résultat va à droite, à droite s'il va dessous.
-      final ou = !bloc.resultatDessous
-          ? bloc.cadre.bottomLeft * vue.zoom +
-                vue.decalage +
-                const Offset(0, AppEspacement.xxs)
-          : bloc.cadre.topRight * vue.zoom +
-                vue.decalage +
-                const Offset(AppEspacement.sm, 0);
-      return Positioned.fill(
-        child: Stack(
-          children: [
-            contenu,
-            Positioned(
-              left: ou.dx,
-              top: ou.dy,
-              child: TraverseEcriture(
-                child: InkWell(
-                  onTap: () => unawaited(_corriger(context)),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      minHeight: 48,
-                      maxWidth: 480,
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Flexible(child: _Formule(latex: bloc.latex ?? '')),
-                        const Icon(Icons.edit_outlined, size: 18),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            if (objets.isNotEmpty)
-              Positioned(
-                left: bloc.cadre.right * vue.zoom + vue.decalage.dx + 8,
-                top: bloc.cadre.top * vue.zoom + vue.decalage.dy,
-                child: TraverseEcriture(
-                  child: _BoutonPlacer(
-                    objets: objets,
-                    commande: commande,
-                    surTouche: surTouche,
-                  ),
-                ),
-              ),
-          ],
-        ),
-      );
-    }
+    // Ce qui a été lu ne se réécrit pas sur la feuille (Antsa) : il se voit
+    // en touchant le résultat, et se corrige là.
     if (objets.isEmpty || enExport || bloc.etat != EtatBloc.fait) {
       return contenu;
     }
