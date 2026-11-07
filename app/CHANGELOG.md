@@ -4,6 +4,16 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+## [1.0.5] — 2026-11-07
+
+### Message fr
+
+L'écriture se lit encore plus souvent sur son tracé, sans attendre le modèle : lettres minuscules, fractions, racines, nombres à virgule. Un « n » n'est plus jamais pris pour un 4.
+
+### Message en
+
+Handwriting is read from its strokes even more often, without waiting for the model: lowercase letters, fractions, square roots, decimal numbers. An "n" is never taken for a 4 anymore.
+
 ### Changements
 
 - La lecture au tracé lit aussi les minuscules usuelles (x, y, n, t, e, f…), π, `f'`, les fractions, les racines et les nombres à virgule ; dans le doute, le modèle lit toujours la ligne. / Stroke reading now also reads common lowercase letters (x, y, n, t, e, f…), π, `f'`, fractions, square roots and decimal numbers; when in doubt, the model still reads the line.
