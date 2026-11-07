@@ -2,6 +2,7 @@ import 'package:fikajiana/geometrie/atelier.dart';
 import 'package:fikajiana/geometrie/ecriture_geo.dart';
 import 'package:fikajiana/graphe/vue_graphe.dart';
 import 'package:fikajiana/l10n/l10n.dart';
+import 'package:fikajiana/ui/export.dart';
 import 'package:fikajiana/ui/geometrie/pictogrammes.dart';
 import 'package:fikajiana/ui/theme/espacement.dart';
 import 'package:fikajiana_math/fikajiana_math.dart';
@@ -112,9 +113,11 @@ class PanneauOutils extends StatelessWidget {
     required this.surZoomPlus,
     required this.surZoomMoins,
     required this.surRecentrer,
+    required this.surExporter,
     super.key,
   });
 
+  final ValueChanged<FormatExport> surExporter;
   final Atelier atelier;
   final ValueChanged<OutilGeo> surOutil;
   final VoidCallback surZoomPlus;
@@ -217,6 +220,12 @@ class PanneauOutils extends StatelessWidget {
                 onPressed: atelier.estVide ? null : atelier.effacer,
               ),
             ],
+          ),
+          titre(l10n.exportTitre),
+          ...lignesExport(
+            context,
+            actif: !atelier.estVide,
+            surChoix: surExporter,
           ),
         ],
       ),

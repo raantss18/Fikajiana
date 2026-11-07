@@ -8,7 +8,6 @@ import 'package:fikajiana/ui/navigation/destination.dart';
 import 'package:fikajiana/ui/navigation/page_destination.dart';
 import 'package:fikajiana/ui/services.dart';
 import 'package:fikajiana/ui/theme/espacement.dart';
-import 'package:fikajiana_math/fikajiana_math.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
 
@@ -19,9 +18,12 @@ class RepereBloc extends StatelessWidget {
     required this.bloc,
     required this.calcul,
     required this.vue,
+    this.enExport = false,
     super.key,
   });
 
+  /// Dans une image exportée : ce qui est écrit, sans aucun bouton.
+  final bool enExport;
   final BlocCalcul bloc;
   final CalculFeuille calcul;
   final VueFeuille vue;
@@ -56,6 +58,8 @@ class RepereBloc extends StatelessWidget {
       );
     }
 
+    // Un état passager ou un point d'interrogation ne s'imprime pas.
+    if (enExport && bloc.etat != EtatBloc.fait) return const SizedBox.shrink();
     final droite = bloc.cadre.centerRight * vue.zoom + vue.decalage;
     final dessous = bloc.cadre.bottomLeft * vue.zoom + vue.decalage;
     final Offset position;
@@ -107,31 +111,38 @@ class RepereBloc extends StatelessWidget {
           ),
         );
       case EtatBloc.fait:
-        // Une fonction : rien à calculer, un bouton pour la tracer.
-        if (bloc.type == TypeExpression.fonction) {
-          final tracer = IconButton(
-            icon: Icon(Icons.show_chart, color: accent),
-            tooltip: l10n.grapheTracer,
-            onPressed: () {
-              final services = PorteeServices.de(context);
-              if (services.courbes.ajouter(bloc.latex ?? '')) {
-                Navigator.of(context)
-                    .push(RouteDestination(Destination.graphe));
-              }
-            },
-          );
+        // Une courbe : rien à calculer, un bouton nommé pour la tracer. La
+        // lecture peut être fausse : elle se corrige à côté.
+        if (bloc.seTrace) {
+          final formule = _Formule(latex: bloc.latex ?? '', couleur: accent);
+          if (enExport && !bloc.estSaisie) return const SizedBox.shrink();
           return Positioned(
             left: droite.dx + AppEspacement.sm,
             top: droite.dy - 24,
-            child: bloc.estSaisie
-                ? Row(
+            child: enExport
+                ? formule
+                : Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      _Formule(latex: bloc.latex ?? '', couleur: accent),
-                      tracer,
+                      if (bloc.estSaisie) formule,
+                      FilledButton.tonalIcon(
+                        icon: const Icon(Icons.show_chart),
+                        label: Text(l10n.grapheTracer),
+                        onPressed: () {
+                          final services = PorteeServices.de(context);
+                          if (services.courbes.ajouter(bloc.latex ?? '')) {
+                            Navigator.of(context)
+                                .push(RouteDestination(Destination.graphe));
+                          }
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.edit_outlined),
+                        tooltip: l10n.corriger,
+                        onPressed: () => unawaited(_corriger(context)),
+                      ),
                     ],
-                  )
-                : tracer,
+                  ),
           );
         }
         final verite = bloc.verite;

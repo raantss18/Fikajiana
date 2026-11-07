@@ -38,6 +38,13 @@ class VueFeuille extends ChangeNotifier {
   void zoomerPlus(Offset centre) => zoomer(_pasBouton, centre);
   void zoomerMoins(Offset centre) => zoomer(1 / _pasBouton, centre);
 
+  /// Remet une vue relevée plus tôt ; le temps d'un export, zoom compris.
+  void placer(double zoom, Offset decalage) {
+    _zoom = zoom;
+    _decalage = decalage;
+    notifyListeners();
+  }
+
   void recentrer() {
     if (estInitiale) return;
     _zoom = 1;
