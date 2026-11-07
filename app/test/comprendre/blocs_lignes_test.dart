@@ -96,4 +96,45 @@ void main() {
       expect(estDenominateur(bloc, encre.traits), isFalse);
     });
   });
+
+  group('les bornes d’un grand signe (Pad 7 d’Antsa)', () {
+    // Un bloc « lim » : le l est grand.
+    const bloc = Rect.fromLTWH(0, 0, 120, 60);
+    List<Trait> lim() {
+      trait(0, 0, 4, 60);
+      trait(20, 30, 0, 30);
+      trait(40, 30, 40, 30);
+      return encre.traits.toList();
+    }
+
+    test('x → 0 juste dessous va avec lim', () {
+      final traitsDuBloc = lim();
+      trait(0, 75, 20, 35);
+      trait(30, 92, 40, 0);
+      trait(80, 80, 20, 30);
+      final groupe = encre.traits.skip(3).toList();
+      expect(estBorne(bloc, traitsDuBloc, groupe), isTrue);
+    });
+
+    test('un 5 au-dessus aussi', () {
+      final traitsDuBloc = lim();
+      trait(0, -40, 20, 32);
+      final groupe = encre.traits.skip(3).toList();
+      expect(estBorne(bloc, traitsDuBloc, groupe), isTrue);
+    });
+
+    test('une ligne entière dessous, non', () {
+      final traitsDuBloc = lim();
+      trait(0, 80, 200, 40);
+      final groupe = encre.traits.skip(3).toList();
+      expect(estBorne(bloc, traitsDuBloc, groupe), isFalse);
+    });
+
+    test('trop loin dessous, non', () {
+      final traitsDuBloc = lim();
+      trait(0, 110, 20, 40);
+      final groupe = encre.traits.skip(3).toList();
+      expect(estBorne(bloc, traitsDuBloc, groupe), isFalse);
+    });
+  });
 }

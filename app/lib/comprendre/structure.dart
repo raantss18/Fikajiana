@@ -51,6 +51,14 @@ class StructureLimite extends Structure {
   final List<Trait> queue;
 }
 
+/// Σ avec sa borne du haut, sa borne du bas, et ce qu'il somme à droite.
+class StructureSomme extends Structure {
+  const new(this.haut, this.bas, this.corps);
+  final List<Trait> haut;
+  final List<Trait> bas;
+  final List<Trait> corps;
+}
+
 /// `‖…‖`, et ce qui suit.
 class StructureNorme extends Structure {
   const new(this.dedans, this.queue);
@@ -79,6 +87,7 @@ Structure? trouverStructure(List<Trait> traits) {
   return _norme(nets) ??
       _fleche(nets) ??
       _limite(nets) ??
+      _somme(nets) ??
       _point(nets) ??
       _matrice(nets);
 }
@@ -170,6 +179,64 @@ StructureFleche? _fleche(List<Trait> traits) {
     // trait coiffe le nom.
     if (nom.left < f.left - 0.5 * f.width) continue;
     return StructureFleche(dessous, queue);
+  }
+  return null;
+}
+
+/// Un Σ d'un trait : part en haut à droite, va à gauche, descend en zigzag
+/// et finit en bas à droite ; au moins trois changements de sens.
+bool _estSigma(Trait t, double hauteur) {
+  final c = _c(t);
+  // Avec ses bornes dessus et dessous, le Σ fait la moitié du bloc.
+  if (c.height < 0.35 * hauteur || c.width < 0.35 * c.height) return false;
+  final s = [for (final p in t.points) p.position];
+  if (s.length < 4) return false;
+  if (s.first.dx < c.center.dx || s.last.dx < c.center.dx) return false;
+  if (s.first.dy > c.top + 0.35 * c.height ||
+      s.last.dy < c.bottom - 0.35 * c.height) {
+    return false;
+  }
+  var sens = 0;
+  var changements = 0;
+  for (var i = 1; i < s.length; i++) {
+    final dx = s[i].dx - s[i - 1].dx;
+    if (dx.abs() < 0.04 * c.width) continue;
+    final nouveau = dx.sign.toInt();
+    if (sens != 0 && nouveau != sens) changements++;
+    sens = nouveau;
+  }
+  return changements >= 3;
+}
+
+/// `Σ` avec `5` dessus et `n = 0` dessous, puis ce qu'il somme (Pad 7
+/// d'Antsa : le modèle lit `\sum^{\frac{t}{2}}` ou invente `n = 1`).
+StructureSomme? _somme(List<Trait> traits) {
+  final hauteur = cadreDuGroupe(traits).height;
+  for (final sigma in traits) {
+    if (!_estSigma(sigma, hauteur)) continue;
+    final c = _c(sigma);
+    final haut = <Trait>[];
+    final bas = <Trait>[];
+    final corps = <Trait>[];
+    var autre = false;
+    for (final t in traits) {
+      if (identical(t, sigma)) continue;
+      final ct = _c(t);
+      final enColonne =
+          ct.center.dx >= c.left - 0.3 * c.height &&
+          ct.center.dx <= c.right + 0.3 * c.height;
+      if (enColonne && ct.bottom <= c.top + 0.15 * c.height) {
+        haut.add(t);
+      } else if (enColonne && ct.top >= c.bottom - 0.15 * c.height) {
+        bas.add(t);
+      } else if (ct.left >= c.right - 0.1 * c.height) {
+        corps.add(t);
+      } else {
+        autre = true;
+      }
+    }
+    if (autre || bas.isEmpty || corps.isEmpty) continue;
+    return StructureSomme(haut, bas, corps);
   }
   return null;
 }
@@ -583,6 +650,32 @@ Future<String?> lireStructure(Lecteur lecteur, List<Trait> traits) async {
       final corps = await morceau(queue);
       if (corps.isEmpty) return null;
       return '\\lim_{$lettre \\to $vers} $corps';
+    case StructureSomme(:final haut, :final bas, :final corps):
+      final somme = await morceau(corps);
+      if (somme.isEmpty) return null;
+      // L'indice : la seule minuscule du corps, plus sûre que la lecture de
+      // la borne (`n` lu `x` ou `4`).
+      final lettres = RegExp(r'(?<![\\a-zA-Z])[a-z](?![a-zA-Z])')
+          .allMatches(somme.replaceAll(RegExp(r'\\[a-zA-Z]+'), ' '))
+          .map((m) => m[0]!)
+          .toSet();
+      final indice = lettres.length == 1
+          ? lettres.single
+          : _lettreMinuscule(await lecteur.lireCourt(_glyphes(bas).first));
+      if (indice == null) return null;
+      // La borne du bas : `n = 0`, les chiffres après le `=` au tracé.
+      final glyphesBas = _glyphes(bas);
+      final debut =
+          _bornesAuTrace(glyphesBas.skip(1).toList()) ??
+          _borneDuModele(await lecteur.lireCourt(bas));
+      if (debut == null) return null;
+      final fin = haut.isEmpty
+          ? null
+          : _exposantAuTrace(haut) ??
+                _borneDuModele(await lecteur.lireCourt(haut));
+      if (haut.isNotEmpty && fin == null) return null;
+      final dessus = fin == null ? '' : '^{$fin}';
+      return '\\sum_{$indice=$debut}$dessus $somme';
     case StructureFleche(:final nom, :final queue):
       final lettres = [
         for (final g in _glyphes(nom)) reconnaitreCapitale(_dessin(g)),
@@ -626,6 +719,34 @@ Future<String?> lireStructure(Lecteur lecteur, List<Trait> traits) async {
 }
 
 /// Une capitale lue par le modèle : `β` est un `B` mal lu.
+/// Après le `=` d'une borne : les chiffres, lus au tracé ; `null` sinon.
+String? _bornesAuTrace(List<List<Trait>> glyphes) {
+  // Le `=` (deux plats) ou `:` écrit vite, puis les chiffres.
+  final chiffres = <String>[];
+  var apresEgal = false;
+  for (final g in glyphes) {
+    final c = cadreDuGroupe(g);
+    if (!apresEgal) {
+      if (g.every((t) => _plat(_c(t))) || c.width < 0.3 * c.height) {
+        apresEgal = true;
+      }
+      continue;
+    }
+    final lu = reconnaitreChiffre(_dessin(g));
+    if (lu == null) return null;
+    chiffres.add(lu);
+  }
+  return apresEgal && chiffres.isNotEmpty ? chiffres.join() : null;
+}
+
+/// `n=0`, `k = 1`, `5`, `\infty` lus par le modèle : la valeur seule.
+String? _borneDuModele(String lu) {
+  final propre = lu.replaceAll(RegExp(r'[\s{}]'), '');
+  final m = RegExp(r'^(?:[a-z]=)?([+-]?\d+|\\infty|[+-]\\infty)$')
+      .firstMatch(propre);
+  return m?[1];
+}
+
 /// La variable d'une limite : une minuscule, `x` le plus souvent.
 String? _lettreMinuscule(String lu) {
   final propre = lu.replaceAll(RegExp(r'[\s{}]'), '');

@@ -86,6 +86,7 @@ class BlocCalcul {
           .cast<String>()
       ..verite = json['verite'] as bool?
       ..resultat = json['resultat'] as String?
+      ..corrige = json['co'] as bool? ?? false
       ..approche = json['approche'] as String?
       ..inchange = json['inchange'] as bool? ?? false
       ..hauteurLigne = (json['hl'] as num?)?.toDouble()
@@ -195,6 +196,9 @@ class BlocCalcul {
 
   /// Ce qui est écrit autour : un résultat ne s'y pose pas.
   List<Rect> _voisins = const [];
+
+  /// Corrigé à la main : « Relire la feuille » ne le regroupe pas.
+  bool corrige = false;
 
   /// `f'(x)`, `det(…)` sans `=` : l'app l'écrit devant la valeur. Une
   /// équation se résout dessous, sans `=` (« x+3=4 = {1} » serait faux).
@@ -395,6 +399,7 @@ class BlocCalcul {
     'verite': verite,
     'resultat': resultat,
     'approche': approche,
+    'co': corrige,
     'inchange': inchange,
     'points': _points,
     'hl': ?hauteurLigne,
@@ -630,21 +635,30 @@ class CalculFeuille extends ChangeNotifier {
   void _rattacher() {
     final pris = {for (final b in _blocs.values) ...b.traits};
     final nouveaux = _ecrits.where((t) => !pris.contains(t.id)).toList();
-    for (final groupe in grouperTraits(nouveaux)) {
-      final cadre = cadreDuGroupe(groupe);
-      final hote = _blocs.values.where((b) => !b.estSaisie).where((b) {
-        return prolonge(b.cadre, cadre, ferme: b.finitParEgal) ||
-            estDenominateur(b.cadre, groupe);
-      }).firstOrNull;
-      final bloc =
-          hote ??
-          BlocCalcul(
-            cle: 'bloc-${_compteur++}-${groupe.first.id}',
-            cadre: cadre,
-          );
-      bloc.traits.addAll(groupe.map((t) => t.id));
-      _blocs[bloc.cle] = bloc;
-    }
+    // Les grands groupes d'abord : un Σ avant ses bornes, `lim` avant
+    // `x → 0`, pour que la borne trouve son signe.
+    grouperTraits(nouveaux)
+      ..sort(
+        (a, b) => cadreDuGroupe(b).height.compareTo(cadreDuGroupe(a).height),
+      )
+      ..forEach(_rattacherGroupe);
+  }
+
+  /// Un groupe de traits rejoint le bloc qu'il prolonge, ou en fait un.
+  void _rattacherGroupe(List<Trait> groupe) {
+    final cadre = cadreDuGroupe(groupe);
+    final hote = _blocs.values.where((b) => !b.estSaisie).where((b) {
+      return prolonge(b.cadre, cadre, ferme: b.finitParEgal) ||
+          estDenominateur(b.cadre, groupe) ||
+          estBorne(b.cadre, _traitsDe(b), groupe);
+    }).firstOrNull;
+    final bloc =
+        hote ??
+        BlocCalcul(cle: 'bloc-${_compteur++}-${groupe.first.id}', cadre: cadre);
+    bloc.traits.addAll(groupe.map((t) => t.id));
+    // Le cadre suit tout de suite : la borne suivante voit le bloc entier.
+    if (hote != null) bloc.cadre = bloc.cadre.expandToInclude(cadre);
+    _blocs[bloc.cle] = bloc;
   }
 
   List<Trait> _traitsDe(BlocCalcul bloc) =>
@@ -693,9 +707,13 @@ class CalculFeuille extends ChangeNotifier {
           ? lireNomDePoints(traits, _contextePour(bloc).points.keys.toSet())
           : null;
       // Une ligne simple se lit sur son tracé, sans le modèle (ADR 0035).
-      final tracee = structuree == null && nomDePoints == null
+      var tracee = structuree == null && nomDePoints == null
           ? lireAuTrace(traits)
           : null;
+      // `4=0` : personne n'écrit cela ; c'est `n = 0` mal vu (Pad 7).
+      if (tracee != null && RegExp(r'^\d+=\d*$').hasMatch(tracee)) {
+        tracee = null;
+      }
       var latex =
           structuree ??
           nomDePoints ??
@@ -730,6 +748,19 @@ class CalculFeuille extends ChangeNotifier {
         ];
         latex = choix;
       }
+      // Dans le journal de l'appareil seulement (logcat), pour comprendre une
+      // lecture fausse : l'encre ne quitte pas l'appareil.
+      final voie = structuree != null
+          ? 'structure'
+          : tracee != null
+          ? 'tracé'
+          : 'modèle';
+      // Un print : c'est bien le journal local qu'on veut, rien d'autre.
+      // ignore: avoid_print
+      print(
+        'fikajiana.lecture $voie (${trouverStructure(traits).runtimeType}) : '
+        '$latex',
+      );
       bloc
         ..latex = _redresser(
           bloc,
@@ -890,6 +921,7 @@ class CalculFeuille extends ChangeNotifier {
     bloc
       ..note = null
       ..latex = latex
+      ..corrige = !bloc.estSaisie
       .._oublierResultat();
     await _calculer(bloc);
     if (!_ferme) notifyListeners();
@@ -1017,6 +1049,26 @@ class CalculFeuille extends ChangeNotifier {
 
   /// Relit toute la feuille : après une mise à jour, tout peut mieux se lire.
   void relireTout() {
+    // Ce qui n'a rien donné (une borne lue à part : `x → 0` sous `lim`,
+    // `n = 0` sous Σ, Pad 7 d'Antsa) cherche un bloc à rejoindre, en
+    // gardant son découpage d'origine : tout regrouper d'un coup fondait la
+    // page en une matrice. Les lignes tapées et corrigées ne bougent pas.
+    final orphelins = [
+      for (final b in _blocs.values)
+        if (!b.estSaisie &&
+            !b.corrige &&
+            (b.etat == EtatBloc.nonCompris || !b._compris))
+          b,
+    ];
+    for (final b in orphelins) {
+      _blocs.remove(b.cle);
+    }
+    orphelins.sort((a, b) => b.cadre.height.compareTo(a.cadre.height));
+    for (final ancien in orphelins) {
+      final groupe = _traitsDe(ancien);
+      if (groupe.isEmpty) continue;
+      _rattacherGroupe(groupe);
+    }
     for (final bloc in _blocs.values) {
       if (!bloc.estSaisie) bloc._points = -1;
     }
