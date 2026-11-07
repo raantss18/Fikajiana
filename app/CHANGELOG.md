@@ -4,6 +4,8 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Un Guide, dans le Menu, présente tout ce que l'app sait faire, avec une recherche ; « Essayer » pose l'exemple sur la Feuille ou ouvre la Figure avec l'outil. / A Guide, in the Menu, shows everything the app can do, with a search; “Try” puts the example on the Sheet or opens the Figure with the tool.
+
 ## [1.0.3] — 2026-11-07
 
 ### Message fr
