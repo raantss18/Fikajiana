@@ -713,6 +713,37 @@ class _EcranGeometrieState extends State<EcranGeometrie> {
                   ),
                 ),
               ),
+            // En bas à gauche : la liste des objets (Antsa), loin des outils.
+            Positioned(
+              left: 0,
+              bottom: 0,
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(AppEspacement.sm),
+                  child: Builder(
+                    builder: (context) =>
+                        // Discret mais visible : nommé, avec le nombre d'objets
+                        // présents (Antsa : la seule icône passait inaperçue).
+                        FilledButton.tonalIcon(
+                          style: FilledButton.styleFrom(
+                            backgroundColor:
+                                theme.colorScheme.surfaceContainerHigh,
+                            foregroundColor: theme.colorScheme.onSurface,
+                            elevation: 2,
+                            minimumSize: const Size(48, 48),
+                          ),
+                          icon: const Icon(Icons.format_list_bulleted),
+                          label: Text(
+                            l10n.objetsPresents(
+                              atelier.figure.objets.length + courbes.length,
+                            ),
+                          ),
+                          onPressed: () => unawaited(_ouvrirObjets()),
+                        ),
+                  ),
+                ),
+              ),
+            ),
             Positioned(
               right: 0,
               bottom: 0,
@@ -736,24 +767,7 @@ class _EcranGeometrieState extends State<EcranGeometrie> {
                             ? atelier.retablir
                             : null,
                       ),
-                      // Discret mais visible : nommé, avec le nombre d'objets
-                      // présents (Antsa : la seule icône passait inaperçue).
-                      FilledButton.tonalIcon(
-                        style: FilledButton.styleFrom(
-                          backgroundColor:
-                              theme.colorScheme.surfaceContainerHigh,
-                          foregroundColor: theme.colorScheme.onSurface,
-                          elevation: 2,
-                          minimumSize: const Size(48, 48),
-                        ),
-                        icon: const Icon(Icons.format_list_bulleted),
-                        label: Text(
-                          l10n.objetsPresents(
-                            atelier.figure.objets.length + courbes.length,
-                          ),
-                        ),
-                        onPressed: () => unawaited(_ouvrirObjets()),
-                      ),
+
                       const SizedBox(width: AppEspacement.xxs),
                       FloatingActionButton.extended(
                         heroTag: null,

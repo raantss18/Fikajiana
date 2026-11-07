@@ -16,6 +16,7 @@ Fikajiana 1.0: each sheet now has its own Figure, and a new sheet starts with an
 
 ### Changements
 
+- Barre épurée : Feuille et Figure en dessins en haut à gauche, Menu en haut à droite, liste des objets en bas à gauche de la Figure. / Cleaner bar: Sheet and Figure as drawings at the top left, Menu at the top right, object list at the bottom left of the Figure.
 
 - Un document, c'est une feuille et sa Figure : nouvelle feuille, nouvelle Figure ; l'Historique n'a plus qu'une liste. Les figures d'avant rejoignent la feuille dont elles viennent. / A document is a sheet and its Figure: new sheet, new Figure; the History has a single list. Earlier figures join the sheet they came from.
 - Mieux lus à la main : `A(8;-1)` et `B(5;8)`, `det` d'une matrice 2×2, `(…)^{-1}`, `e^x = 7` (le `=` n'est plus pris pour un `-`). `30×8` donne `= 240`. / Better read by hand: `A(8;-1)` and `B(5;8)`, `det` of a 2×2 matrix, `(…)^{-1}`, `e^x = 7` (the `=` is no longer taken for a `-`). `30×8` gives `= 240`.

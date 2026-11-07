@@ -50,26 +50,28 @@ class PageDestination extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             corps,
+            // En haut à gauche : Feuille ou Figure, en dessins nommés pour
+            // TalkBack ; l'Historique, lui, garde son retour (Antsa).
             Positioned(
               left: 0,
               top: 0,
               child: SafeArea(
                 child: Padding(
                   padding: const EdgeInsets.all(AppEspacement.sm),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (Navigator.of(context).canPop()) ...[
-                        BackButton(style: _styleFlottant(context)),
-                        const SizedBox(width: AppEspacement.sm),
-                      ],
-                      _Menu(destination: destination),
-                      if (destination != Destination.historique) ...[
-                        const SizedBox(width: AppEspacement.sm),
-                        _DeuxEspaces(destination: destination),
-                      ],
-                    ],
-                  ),
+                  child: destination == Destination.historique
+                      ? BackButton(style: _styleFlottant(context))
+                      : _DeuxEspaces(destination: destination),
+                ),
+              ),
+            ),
+            // En haut à droite : le Menu.
+            Positioned(
+              right: 0,
+              top: 0,
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(AppEspacement.sm),
+                  child: _Menu(destination: destination),
                 ),
               ),
             ),
@@ -94,8 +96,6 @@ class _DeuxEspaces extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    // Sur un téléphone, le nom suffit : la place reste à l'écriture.
-    final etroit = MediaQuery.sizeOf(context).width < 600;
     return SegmentedButton<Destination>(
       showSelectedIcon: false,
       style: SegmentedButton.styleFrom(
@@ -104,10 +104,11 @@ class _DeuxEspaces extends StatelessWidget {
       ),
       segments: [
         for (final d in [Destination.feuille, Destination.figure])
+          // Le dessin seul (Antsa) ; le nom reste dit et montré au toucher.
           ButtonSegment(
             value: d,
-            icon: etroit ? null : Icon(d.icone),
-            label: Text(d.libelle(l10n)),
+            icon: Icon(d == destination ? d.iconeActive : d.icone),
+            tooltip: d.libelle(l10n),
           ),
       ],
       selected: {destination},
@@ -172,17 +173,16 @@ class _Menu extends StatelessWidget {
                 : Destination.feuille,
           );
         }),
+        // Feuille et Figure sont déjà en haut à gauche : ici, l'Historique.
         const PopupMenuDivider(),
-        for (final d in Destination.values)
-          PopupMenuItem(
-            value: d,
-            child: ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: Icon(d == destination ? d.iconeActive : d.icone),
-              title: Text(d.libelle(l10n)),
-              trailing: d == destination ? const Icon(Icons.check) : null,
-            ),
+        PopupMenuItem(
+          value: Destination.historique,
+          child: ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: Icon(Destination.historique.icone),
+            title: Text(Destination.historique.libelle(l10n)),
           ),
+        ),
         const PopupMenuDivider(),
         PopupMenuItem(
           onTap: () =>

@@ -422,9 +422,9 @@ class _EcranFeuilleState extends State<EcranFeuille> {
           _Invitation(support: reglages.support),
         if (!_enExport)
           Positioned(
-            right: 0,
-            // Sur un petit téléphone, sous la barre : rien ne se chevauche.
-            top: MediaQuery.sizeOf(context).width < 420 ? 56 : 0,
+            // À gauche du Menu, en haut à droite (Antsa).
+            right: 64,
+            top: 0,
             child: SafeArea(
               child: Padding(
                 padding: const EdgeInsets.all(AppEspacement.sm),
