@@ -245,8 +245,29 @@ class _EcranFeuilleState extends State<EcranFeuille> {
     }
   }
 
+  /// Le coin de la page : (0, 0), ou plus haut et plus à gauche si une
+  /// feuille d'avant les limites y a de l'encre.
+  late final Offset _coin = () {
+    var (x, y) = (0.0, 0.0);
+    for (final trait in _encre.traits) {
+      for (final p in trait.pointsVisibles) {
+        x = math.min(x, p.dx - AppEspacement.md);
+        y = math.min(y, p.dy - AppEspacement.md);
+      }
+    }
+    return Offset(x, y);
+  }();
+
   Future<ui.Image> _capturer(Reglages reglages) async {
-    final cadre = cadreDeLaPage(_zonesEcrites(reglages))!;
+    // La page depuis son coin, comme une feuille de cahier : au moins la
+    // largeur de l'écran, jusqu'à ce qui est écrit (demande d'Antsa).
+    final ecrit = cadreDeLaPage(_zonesEcrites(reglages))!;
+    final cadre = Rect.fromLTRB(
+      _vue.coin.dx,
+      _vue.coin.dy,
+      math.max(ecrit.right, _vue.coin.dx + MediaQuery.sizeOf(context).width),
+      ecrit.bottom,
+    );
     final (zoom, decalage) = (_vue.zoom, _vue.decalage);
     setState(() {
       _enExport = true;
@@ -269,7 +290,7 @@ class _EcranFeuilleState extends State<EcranFeuille> {
     final l10n = context.l10n;
     // La largeur de l'écran borne les résultats, à la vue de départ.
     _calcul.bordDroit = MediaQuery.sizeOf(context).width - AppEspacement.sm;
-    _vue.borner(MediaQuery.sizeOf(context).width);
+    _vue.borner(MediaQuery.sizeOf(context).width, coin: _coin);
     return Stack(
       fit: StackFit.expand,
       children: [
