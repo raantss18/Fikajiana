@@ -5,8 +5,22 @@
 > **Ordre de travail : toujours la première ligne non faite du niveau le plus haut.** P0 avant P1, et ainsi de suite ; dans un
 > niveau, de haut en bas. Détail des études : `docs/recherche/ambition.md`.
 
+## Cap en cours (demandes d'Antsa, 2026-11-07)
+
+> À lire d'abord pour ne pas se perdre. Dans l'ordre ; une PR par ligne.
+
+1. 🔄 **Comprendre l'écriture réelle** : lignes séparées, lectures redressées, résultat qui ne couvre plus la ligne suivante (ADR 0026). À réécrire au stylet sur le Pad 7.
+2. 🔄 **Meilleur modèle** : recherche en cours (`docs/recherche/modele-manuscrit.md`), avec un banc sur les traits réels d'Antsa. Décision d'Antsa ensuite. Peut aller jusqu'à tout recoder.
+3. ⏳ **Deux espaces** : Feuille (écriture, calcul) et Figure (Graphe et Géométrie réunis, mêmes axes, mêmes objets) (ADR 0027).
+4. ⏳ **Lien Feuille ↔ Figure** : Tracer et Placer vont au même endroit ; un objet de la Figure garde sa ligne d'origine.
+5. ⏳ **`a=2`** définit `a` ; `cercle(A;2)` et commandes géométriques depuis la Feuille.
+6. ⏳ **Essai réseau coupé sur le Pad 7** : manque pour 0.7.1 et 0.7.2 (mode avion à activer par Antsa).
+
+Déjà livré ce jour : rature et stylet (0.6.1), lueur et trait ondulé (0.7.1), main qui défile (0.7.2). Fusionné, pas encore publié : saisie naturelle, mémoire de la feuille, `det`, points et vecteurs, calcul formel de la PR 29 (0.8.0).
+
 ## 0. Erreurs signalées
 
+- 🔄 2026-11-07 : « rien ne va » sur le Pad 7 (Antsa) : `f` lu `1/4`, `f'` lu `f^1`, `g(x)` lu `g^((x))`, `5e^x` lu `50^x`, deux lignes lues dans une `matrix`, `S=∅` écrit sur la ligne suivante. Causes : lignes collées au regroupement, confusions du modèle jamais corrigées, placement aveugle du résultat. `_separerLignes`, `redresserLecture` (lectures réelles en tests), `dessousLibre` (ADR 0026). Reste : réécrire les lignes au stylet.
 - ✅ 2026-11-05 : « Fikajiana keeps stopping » sur téléphone (essai.1). Cause : `SMARTPTR64` de Giac tronque les étiquettes de
   pointeurs arm64. Corrigé par `correctifs/0002`. Protection : essai obligatoire sur arm64 réel, l'émulateur ne le voit pas.
 - ✅ 2026-11-05 : écran d'essai `0×0 dp`, taille lue trop tôt en release, puis perdue à une réécriture. Corrigé en attendant une

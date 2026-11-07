@@ -563,4 +563,27 @@ void main() {
       expect(moteur.entrees, isEmpty);
     });
   });
+
+  test('un résultat ne s’écrit pas sur la ligne d’en dessous', () async {
+    void barre(double y) {
+      encre.commencer(PointEncre(0, y, 0.1));
+      for (var i = 1; i <= 5; i++) {
+        encre.prolonger(PointEncre(0, y + i * 10.0, 0.1));
+      }
+      encre.terminer();
+    }
+
+    barre(0);
+    lecteur.reponse = 'x+1=2';
+    calcul.encreChangee();
+    await _attendre();
+    final haut = calcul.blocs.single;
+    expect(haut.dessousLibre, isTrue);
+    barre(97);
+    lecteur.reponse = 'y+1=2';
+    calcul.encreChangee();
+    await _attendre();
+    expect(calcul.blocs, hasLength(2));
+    expect(haut.dessousLibre, isFalse);
+  });
 }
