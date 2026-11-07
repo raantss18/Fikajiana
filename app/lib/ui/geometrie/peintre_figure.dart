@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:fikajiana/geometrie/atelier.dart';
 import 'package:fikajiana/geometrie/ecriture_geo.dart';
 import 'package:fikajiana/graphe/vue_graphe.dart';
+import 'package:fikajiana/ui/graphe/peintre_graphe.dart';
 import 'package:fikajiana_math/fikajiana_math.dart';
 import 'package:flutter/material.dart';
 
@@ -19,7 +20,11 @@ class PeintreFigure extends CustomPainter {
     required this.francais,
     this.apercu,
     this.doigt,
+    this.courbes,
   });
+
+  /// Les courbes de la Figure, sous les objets, dans le même repère.
+  final PeintreGraphe? courbes;
 
   final Atelier atelier;
   final VueGraphe vue;
@@ -50,8 +55,14 @@ class PeintreFigure extends CustomPainter {
     canvas
       ..drawRect(Offset.zero & size, Paint()..color = fond)
       ..clipRect(Offset.zero & size);
-    if (atelier.grille) _grille(canvas, size);
-    if (atelier.axes) _axes(canvas, size);
+    final courbes = this.courbes;
+    if (courbes != null && courbes.courbes.isNotEmpty) {
+      // Des courbes se lisent sur des axes gradués.
+      courbes.peindreSousLaFigure(canvas, size);
+    } else {
+      if (atelier.grille) _grille(canvas, size);
+      if (atelier.axes) _axes(canvas, size);
+    }
     final figure = atelier.figure;
     final choisis = atelier.choisis;
     final selection = atelier.selection;

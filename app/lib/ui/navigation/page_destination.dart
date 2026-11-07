@@ -2,7 +2,6 @@ import 'package:fikajiana/l10n/l10n.dart';
 import 'package:fikajiana/reglages/reglages.dart';
 import 'package:fikajiana/ui/calcul/ecran_feuille.dart';
 import 'package:fikajiana/ui/geometrie/ecran_geometrie.dart';
-import 'package:fikajiana/ui/graphe/ecran_graphe.dart';
 import 'package:fikajiana/ui/historique/ecran_historique.dart';
 import 'package:fikajiana/ui/navigation/destination.dart';
 import 'package:fikajiana/ui/reglages/ecran_reglages.dart';
@@ -31,16 +30,16 @@ class PageDestination extends StatelessWidget {
           key: ValueKey(PorteeServices.de(context).carnet.courante),
         ),
       ),
-      Destination.graphe => ListenableBuilder(
-        listenable: PorteeServices.de(context).graphes,
-        builder: (context, _) => EcranGraphe(
-          key: ValueKey(PorteeServices.de(context).graphes.courant),
-        ),
-      ),
-      Destination.geometrie => ListenableBuilder(
-        listenable: PorteeServices.de(context).figures,
+      Destination.figure => ListenableBuilder(
+        listenable: Listenable.merge([
+          PorteeServices.de(context).figures,
+          PorteeServices.de(context).graphes,
+        ]),
         builder: (context, _) => EcranGeometrie(
-          key: ValueKey(PorteeServices.de(context).figures.courant),
+          key: ValueKey(
+            '${PorteeServices.de(context).figures.courant}'
+            '/${PorteeServices.de(context).graphes.courant}',
+          ),
         ),
       ),
       Destination.historique => const EcranHistorique(),
@@ -70,6 +69,10 @@ class PageDestination extends StatelessWidget {
                         const SizedBox(width: AppEspacement.sm),
                       ],
                       _Menu(destination: destination),
+                      if (destination != Destination.historique) ...[
+                        const SizedBox(width: AppEspacement.sm),
+                        _DeuxEspaces(destination: destination),
+                      ],
                     ],
                   ),
                 ),
@@ -86,6 +89,42 @@ ButtonStyle _styleFlottant(BuildContext context) => IconButton.styleFrom(
   backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
   elevation: 2,
 );
+
+/// Feuille ou Figure, toujours en vue : on sait où l'on est (ADR 0027).
+class _DeuxEspaces extends StatelessWidget {
+  const new({required this.destination});
+
+  final Destination destination;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return SegmentedButton<Destination>(
+      showSelectedIcon: false,
+      style: SegmentedButton.styleFrom(
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+        minimumSize: const Size(48, 48),
+      ),
+      segments: [
+        for (final d in [Destination.feuille, Destination.figure])
+          ButtonSegment(
+            value: d,
+            icon: Icon(d.icone),
+            label: Text(d.libelle(l10n)),
+          ),
+      ],
+      selected: {destination},
+      onSelectionChanged: (choix) {
+        final navigateur = Navigator.of(context);
+        if (choix.single == Destination.feuille) {
+          navigateur.popUntil((route) => route.isFirst);
+        } else {
+          navigateur.push(RouteDestination(choix.single));
+        }
+      },
+    );
+  }
+}
 
 /// Le seul bouton de navigation : tous les écrans et les réglages.
 class _Menu extends StatelessWidget {
@@ -129,13 +168,10 @@ class _Menu extends StatelessWidget {
           services.carnet.nouvelle();
           _aller(context, Destination.feuille);
         }),
-        _nouveau(Icons.add_chart, l10n.nouveauGraphe, () {
-          services.graphes.nouveau();
-          _aller(context, Destination.graphe);
-        }),
         _nouveau(Icons.add_box_outlined, l10n.nouvelleFigure, () {
+          services.graphes.nouveau();
           services.figures.nouveau();
-          _aller(context, Destination.geometrie);
+          _aller(context, Destination.figure);
         }),
         const PopupMenuDivider(),
         for (final d in Destination.values)

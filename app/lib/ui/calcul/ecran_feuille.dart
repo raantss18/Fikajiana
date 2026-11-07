@@ -146,12 +146,12 @@ class _EcranFeuilleState extends State<EcranFeuille> {
     final objet = lireObjet(latex);
     if (objet != null) {
       services.atelier.placerObjet(objet);
-      Navigator.of(context).push(RouteDestination(Destination.geometrie));
+      Navigator.of(context).push(RouteDestination(Destination.figure));
       return;
     }
     // Le bouton a dit Tracer : la ligne se pose, et le graphique s'ouvre.
     if (verbeDe(latex) is VerbeTracer && services.courbes.ajouter(latex)) {
-      Navigator.of(context).push(RouteDestination(Destination.graphe));
+      Navigator.of(context).push(RouteDestination(Destination.figure));
     }
   }
 

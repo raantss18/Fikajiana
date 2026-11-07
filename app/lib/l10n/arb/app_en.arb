@@ -8,11 +8,9 @@
     "@destinationFeuille": {
         "description": "Home screen: the page where the user writes by hand"
     },
-    "destinationGraphe": "Graph",
     "@destinationGraphe": {
         "description": "Screen that plots curves"
     },
-    "destinationGeometrie": "Geometry",
     "@destinationGeometrie": {
         "description": "Dynamic plane geometry screen"
     },
@@ -312,7 +310,7 @@
             }
         }
     },
-    "geometrieVide": "Empty figure. Tap Tools to choose what to build.",
+    "geometrieVide": "Tap Tools to build a figure or add a curve.",
     "outilDeplacer": "Move",
     "outilPoint": "Point",
     "outilSegment": "Segment",
@@ -490,7 +488,6 @@
     },
     "relationIciSeulement": "True in this position only: it stops when the figure is deformed.",
     "nouvelleFeuille": "New sheet",
-    "nouveauGraphe": "New graph",
     "nouvelleFigure": "New figure",
     "historiqueSectionFeuilles": "Sheets",
     "historiqueSectionGraphes": "Graphs",
@@ -552,5 +549,7 @@
     "saisieLectureUne": "Back to the first reading",
     "saisieAide": "Type as you write, or in LaTeX",
     "saisieOuvrir": "Type a calculation",
-    "placerEnGeometrie": "Place in Geometry"
+    "destinationFigure": "Figure",
+    "voirDansFigure": "See in Figure",
+    "placerDansFigure": "Place in Figure"
 }

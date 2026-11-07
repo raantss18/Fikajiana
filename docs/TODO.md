@@ -11,8 +11,8 @@
 
 1. 🔄 **Comprendre l'écriture réelle** : lignes séparées, lectures redressées, résultat qui ne couvre plus la ligne suivante (ADR 0026). À réécrire au stylet sur le Pad 7.
 2. 🔄 **Meilleur modèle** : recherche en cours (`docs/recherche/modele-manuscrit.md`), avec un banc sur les traits réels d'Antsa. Décision d'Antsa ensuite. Peut aller jusqu'à tout recoder.
-3. ⏳ **Deux espaces** : Feuille (écriture, calcul) et Figure (Graphe et Géométrie réunis, mêmes axes, mêmes objets) (ADR 0027).
-4. ⏳ **Lien Feuille ↔ Figure** : Tracer et Placer vont au même endroit ; un objet de la Figure garde sa ligne d'origine.
+3. 🔄 **Deux espaces** : Feuille (écriture, calcul) et Figure (Graphe et Géométrie réunis, mêmes axes) (ADR 0027). Reste : essai sur le Pad 7 et le Poco.
+4. 🔄 **Lien Feuille ↔ Figure** : Tracer et Placer vont au même endroit (fait). Reste : accrocher les constructions aux courbes ; un objet garde sa ligne d'origine.
 5. ⏳ **`a=2`** définit `a` ; `cercle(A;2)` et commandes géométriques depuis la Feuille.
 6. ⏳ **Essai réseau coupé sur le Pad 7** : manque pour 0.7.1 et 0.7.2 (mode avion à activer par Antsa).
 
