@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:fikajiana/comprendre/calcul_feuille.dart';
+import 'package:fikajiana/encre/traverse_ecriture.dart';
 import 'package:fikajiana/encre/vue_feuille.dart';
 import 'package:fikajiana/l10n/l10n.dart';
 import 'package:fikajiana/reglages/reglages.dart';
@@ -19,6 +20,7 @@ class RepereBloc extends StatelessWidget {
     required this.bloc,
     required this.calcul,
     required this.vue,
+    required this.surTouche,
     super.key,
   });
 
@@ -26,7 +28,12 @@ class RepereBloc extends StatelessWidget {
   final CalculFeuille calcul;
   final VueFeuille vue;
 
+  /// Un bouton de ce repère vient d'être touché, le stylet a aussi laissé un
+  /// point dans l'encre : voir [TraverseEcriture].
+  final VoidCallback surTouche;
+
   Future<void> _corriger(BuildContext context) async {
+    surTouche();
     final latex = await demanderLatex(
       context,
       bloc.latex ?? '',
@@ -79,10 +86,15 @@ class RepereBloc extends StatelessWidget {
         return Positioned(
           left: droite.dx + AppEspacement.sm,
           top: droite.dy - 24,
-          child: IconButton(
-            icon: const Icon(Icons.stop_circle_outlined),
-            tooltip: l10n.blocArreter,
-            onPressed: calcul.arreter,
+          child: TraverseEcriture(
+            child: IconButton(
+              icon: const Icon(Icons.stop_circle_outlined),
+              tooltip: l10n.blocArreter,
+              onPressed: () {
+                surTouche();
+                calcul.arreter();
+              },
+            ),
           ),
         );
       case EtatBloc.sansModele:
@@ -100,10 +112,12 @@ class RepereBloc extends StatelessWidget {
         return Positioned(
           left: droite.dx + AppEspacement.sm,
           top: droite.dy - 24,
-          child: IconButton(
-            icon: Icon(Icons.help_outline, color: accent),
-            tooltip: message,
-            onPressed: () => unawaited(_corriger(context)),
+          child: TraverseEcriture(
+            child: IconButton(
+              icon: Icon(Icons.help_outline, color: accent),
+              tooltip: message,
+              onPressed: () => unawaited(_corriger(context)),
+            ),
           ),
         );
       case EtatBloc.fait:
@@ -113,6 +127,7 @@ class RepereBloc extends StatelessWidget {
             icon: Icon(Icons.show_chart, color: accent),
             tooltip: l10n.grapheTracer,
             onPressed: () {
+              surTouche();
               final services = PorteeServices.de(context);
               if (services.courbes.ajouter(bloc.latex ?? '')) {
                 Navigator.of(context)
@@ -123,15 +138,17 @@ class RepereBloc extends StatelessWidget {
           return Positioned(
             left: droite.dx + AppEspacement.sm,
             top: droite.dy - 24,
-            child: bloc.estSaisie
-                ? Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _Formule(latex: bloc.latex ?? '', couleur: accent),
-                      tracer,
-                    ],
-                  )
-                : tracer,
+            child: TraverseEcriture(
+              child: bloc.estSaisie
+                  ? Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _Formule(latex: bloc.latex ?? '', couleur: accent),
+                        tracer,
+                      ],
+                    )
+                  : tracer,
+            ),
           );
         }
         final verite = bloc.verite;
@@ -171,18 +188,20 @@ class RepereBloc extends StatelessWidget {
     return Positioned(
       left: position.dx,
       top: position.dy,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 480, minHeight: 48),
-        child: InkWell(
-          onTap: () => unawaited(_corriger(context)),
-          child: Center(widthFactor: 1, child: contenu),
+      child: TraverseEcriture(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 480, minHeight: 48),
+          child: InkWell(
+            onTap: () => unawaited(_corriger(context)),
+            child: Center(widthFactor: 1, child: contenu),
+          ),
         ),
       ),
     );
   }
 }
 
-/// Zone invisible sur le résultat écrit : on écrit partout ailleurs.
+/// Zone invisible sur le résultat : la toucher le corrige, y écrire écrit.
 class _Zone extends StatelessWidget {
   const new({
     required this.cadre,
@@ -208,7 +227,8 @@ class _Zone extends StatelessWidget {
         button: true,
         label: libelle,
         child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
+          // Le stylet passe aussi à la feuille : on rature un résultat.
+          behavior: HitTestBehavior.translucent,
           onTap: surToucher,
           child: SizedBox(
             width: largeur < 48 ? 48 : largeur,

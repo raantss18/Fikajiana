@@ -7,13 +7,33 @@ import 'dart:ui';
 /// place. Un `m`, un `w` ou un `8` font moins de retours. Seul, ce test ne
 /// décide pas : encore faut-il qu'il y ait quelque chose dessous.
 bool estRature(List<Offset> points) {
-  if (points.length < 12) return false;
+  final (:demiTours, :rapport) = _mesurer(points);
+  // Relevé au vrai stylet sur le Pad 7 (ADR 0021) : une rature naturelle est
+  // un zigzag qui avance, de 6 retours et d'un rapport de 2,5 ; sur toute une
+  // expression, 8 retours et 1,9. Le `m` le plus proche fait 5 retours. Un `m`
+  // lié écrit sur de l'encre reste possible : Annuler est là.
+  if (demiTours >= 8 && rapport >= 1.7) return true;
+  if (demiTours >= 6 && rapport >= 2.2) return true;
+  if (demiTours >= 4 && rapport >= 3.2) return true;
+  return demiTours >= 3 && rapport >= 4;
+}
+
+/// Une rature vite faite, dont la forme ressemble à un `w`. Elle ne compte que
+/// si elle couvre presque tout un trait : voir [couvreBien].
+bool estRatureHesitante(List<Offset> points) {
+  final (:demiTours, :rapport) = _mesurer(points);
+  return demiTours >= 4 && rapport >= 2;
+}
+
+({int demiTours, double rapport}) _mesurer(List<Offset> points) {
+  const rien = (demiTours: 0, rapport: 0.0);
+  if (points.length < 12) return rien;
   final cadre = _cadre(points);
   final diagonale = cadre.size.longestSide;
-  if (diagonale < 12) return false;
+  if (diagonale < 12) return rien;
   final pas = math.max(4, diagonale / 24).toDouble();
   final jalons = _jalonner(points, pas);
-  if (jalons.length < 8) return false;
+  if (jalons.length < 8) return rien;
 
   var longueur = 0.0;
   for (var i = 1; i < jalons.length; i++) {
@@ -22,15 +42,14 @@ bool estRature(List<Offset> points) {
   final etendue = math.sqrt(
     cadre.width * cadre.width + cadre.height * cadre.height,
   );
-  final rapport = longueur / etendue;
-
   // Les retours en arrière, sur l'axe où il y en a le plus.
-  final demiTours = math.max(
-    _retours([for (final p in jalons) p.dx]),
-    _retours([for (final p in jalons) p.dy]),
+  return (
+    demiTours: math.max(
+      _retours([for (final p in jalons) p.dx]),
+      _retours([for (final p in jalons) p.dy]),
+    ),
+    rapport: longueur / etendue,
   );
-  if (demiTours >= 4 && rapport >= 3.2) return true;
-  return demiTours >= 3 && rapport >= 4;
 }
 
 /// Combien de fois [valeurs] repart en sens inverse, d'au moins 15 % de son
@@ -82,12 +101,22 @@ List<Offset> _jalonner(List<Offset> points, double pas) {
   return jalons;
 }
 
-/// Les points de [trait] sont-ils pour moitié au moins sous la rature ?
-bool estSousRature(List<Offset> trait, Rect rature) {
-  if (trait.isEmpty) return false;
-  final zone = rature.inflate(4);
-  return trait.where(zone.contains).length * 2 >= trait.length;
+/// La part des points de [trait] sous la [rature], de 0 à 1.
+double couverture(List<Offset> trait, Rect rature) {
+  if (trait.isEmpty) return 0;
+  final zone = rature.inflate(6);
+  return trait.where(zone.contains).length / trait.length;
 }
+
+/// Un trait est emporté dès qu'un bon tiers est couvert : une rature est
+/// souvent moins haute que ce qu'elle barre (43 % relevés au stylet).
+bool estSousRature(List<Offset> trait, Rect rature) =>
+    couverture(trait, rature) >= 0.35;
+
+/// La rature couvre-t-elle presque tout [trait] ? On n'écrit pas par-dessus ce
+/// qu'on vient d'écrire : c'est ce qui distingue une rature hésitante d'un `w`.
+bool couvreBien(List<Offset> trait, Rect rature) =>
+    couverture(trait, rature) >= 0.7;
 
 /// Le rectangle couvert par une rature.
 Rect cadreDeRature(List<Offset> points) => _cadre(points);

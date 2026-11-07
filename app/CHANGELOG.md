@@ -4,6 +4,22 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+## [0.6.1] — 2026-11-07
+
+### Message fr
+
+La rature marche enfin comme on la fait au stylet : un zigzag rapide efface du premier coup, même sur toute une expression ou en partant du résultat. Et la racine se lit mieux dans les résultats : √29 ne ressemble plus à (29.
+
+### Message en
+
+Scribbling now works the way you really do it with a stylus: a quick zigzag erases the first time, even across a whole expression or starting on the result. Roots are easier to read in results too: √29 no longer looks like (29.
+
+### Changements
+
+- On peut commencer un trait sur un résultat ou sur un `?` : il s'écrit ou rature, et toucher le résultat ouvre toujours sa correction. / You can start a stroke on a result or a `?`: it writes or scribbles out, and tapping the result still opens its correction.
+- La rature au stylet est mieux reconnue : un zigzag naturel efface du premier coup, même rapide ou sur toute une expression. / Scribbling with a stylus is recognised better: a natural zigzag erases the first time, even a quick one or across a whole expression.
+- Le signe de la racine laisse de la place au nombre : `√29` ne se confond plus avec `(29`. / The root sign leaves room for the number: `√29` no longer looks like `(29`.
+
 ## [0.6.0] — 2026-11-06
 
 ### Message fr

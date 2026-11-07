@@ -194,6 +194,8 @@ class Encre {
 
   List<Trait> get traits => List.unmodifiable(_traits);
   bool get estVide => _traits.isEmpty;
+  DateTime? _finDernierTrait;
+
   bool get peutAnnuler => _annulations.isNotEmpty;
   bool get peutRefaire => _retablissements.isNotEmpty;
 
@@ -222,6 +224,7 @@ class Encre {
 
   /// Le stylet est levé : le trait reçoit sa fin définitive.
   void terminer() {
+    _finDernierTrait = DateTime.now();
     if (_traits.isNotEmpty) _traits.last._terminer();
   }
 
@@ -238,6 +241,22 @@ class Encre {
     return true;
   }
 
+  /// Un bouton posé sur la feuille vient d'être touché : le petit point que ce
+  /// toucher a laissé dans l'encre n'est pas de l'écriture.
+  ///
+  /// Sans effet si le dernier trait n'est pas ce point : un doigt ignoré, ou le
+  /// lecteur d'écran, touchent le bouton sans rien écrire.
+  void retirerPointDuToucher() {
+    final fin = _finDernierTrait;
+    if (fin == null || _traits.isEmpty) return;
+    if (DateTime.now().difference(fin) > const Duration(milliseconds: 200)) {
+      return;
+    }
+    final points = [for (final p in _traits.last.points) p.position];
+    if (points.any((p) => (p - points.first).distance > 18)) return;
+    abandonnerDernierTrait();
+  }
+
   /// Le dernier trait est-il une rature sur quelque chose ? Elle s'efface alors
   /// avec ce qu'elle couvre, plus les traits [enPlus]. Le tout s'annule d'un
   /// coup : `commencer` a déjà mémorisé l'état d'avant la rature.
@@ -245,8 +264,15 @@ class Encre {
     if (_traits.isEmpty || _traits.last.forme != null) return null;
     final dernier = _traits.last;
     final points = [for (final p in dernier.points) p.position];
-    if (!estRature(points)) return null;
+    final franche = estRature(points);
+    if (!franche && !estRatureHesitante(points)) return null;
     final zone = cadreDeRature(points);
+    if (!franche &&
+        !_traits.any(
+          (t) => !identical(t, dernier) && couvreBien(t.pointsVisibles, zone),
+        )) {
+      return null;
+    }
     final suppl = enPlus?.call(zone) ?? const <int>{};
     final emportes = [
       for (final t in _traits)
