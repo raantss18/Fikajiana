@@ -443,9 +443,7 @@ void main() {
       Size taille = const Size(400, 800),
     }) async {
       await t.pumpFikajiana(taille: taille);
-      await t.tap(find.byTooltip('Menu'));
-      await t.pumpAndSettle();
-      await t.tap(find.text('Figure').last);
+      await t.tap(find.byTooltip('Figure').first);
       await t.pumpAndSettle();
       expect(find.byType(EcranGeometrie), findsOneWidget);
     }

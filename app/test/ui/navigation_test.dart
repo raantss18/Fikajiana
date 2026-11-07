@@ -14,6 +14,12 @@ Future<void> _aller(
   String ecran, {
   String menu = 'Menu',
 }) async {
+  // Feuille et Figure sont en haut à gauche, en dessins nommés (Antsa).
+  if (const {'Feuille', 'Figure', 'Sheet'}.contains(ecran)) {
+    await t.tap(find.byTooltip(ecran).first);
+    await t.pumpAndSettle();
+    return;
+  }
   await t.tap(find.byTooltip(menu));
   await t.pumpAndSettle();
   await t.tap(find.text(ecran).last);
@@ -60,6 +66,8 @@ void main() {
       await t.pumpFikajiana();
       await _aller(t, 'Figure');
       await _aller(t, 'Historique');
+      await t.tap(find.byType(BackButton));
+      await t.pumpAndSettle();
       await _aller(t, 'Feuille');
       expect(find.byType(EcranFeuille), findsOneWidget);
       expect(find.byType(BackButton), findsNothing);
@@ -67,13 +75,10 @@ void main() {
 
     testWidgets('animations coupées : aucune transition', (t) async {
       await t.pumpFikajiana(sansAnimation: true);
-      await t.tap(find.byTooltip('Menu'));
+      await t.tap(find.byTooltip('Figure').first);
       await t.pump();
       await t.pump(const Duration(milliseconds: 500));
-      await t.tap(find.text('Figure').last);
-      await t.pump();
-      await t.pump(const Duration(milliseconds: 500));
-      final titre = find.text('Figure').first;
+      final titre = find.byType(EcranGeometrie);
       expect(
         find.ancestor(of: titre, matching: find.byType(SlideTransition)),
         findsNothing,
@@ -123,18 +128,21 @@ void main() {
       await t.pumpFikajiana();
       await t.tap(find.byTooltip('Menu'));
       await t.pumpAndSettle();
-      for (final s in ['Feuille', 'Figure', 'Historique']) {
-        expect(find.text(s), findsWidgets);
+      for (final s in ['Feuille', 'Figure']) {
+        expect(find.byTooltip(s), findsWidgets);
       }
+      expect(find.text('Historique'), findsOneWidget);
+      expect(find.text('Nouveau document'), findsOneWidget);
     });
 
     testWidgets('anglais', (t) async {
       await t.pumpFikajiana(langue: const Locale('en'));
       await t.tap(find.byTooltip('Menu'));
       await t.pumpAndSettle();
-      for (final s in ['Sheet', 'Figure', 'History']) {
-        expect(find.text(s), findsWidgets);
+      for (final s in ['Sheet', 'Figure']) {
+        expect(find.byTooltip(s), findsWidgets);
       }
+      expect(find.text('History'), findsOneWidget);
     });
   });
 
