@@ -7,6 +7,7 @@ import 'package:fikajiana/ui/geometrie/pictogrammes.dart';
 import 'package:fikajiana/ui/theme/espacement.dart';
 import 'package:fikajiana_math/fikajiana_math.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_math_fork/flutter_math.dart';
 
 extension LibellesOutil on OutilGeo {
   String libelle(AppLocalizations l10n) => switch (this) {
@@ -361,10 +362,23 @@ String titreObjet(Atelier atelier, int id, {required bool francais}) {
 
 /// La liste des objets : tout ce qui est dessiné, en toutes lettres.
 class PanneauObjets extends StatelessWidget {
-  const new({required this.atelier, required this.surObjet, super.key});
+  const new({
+    required this.atelier,
+    required this.surObjet,
+    this.courbes = const [],
+    this.surCourbe,
+    super.key,
+  });
 
   final Atelier atelier;
   final ValueChanged<int> surObjet;
+
+  /// Les courbes de la Figure, en tête, comme les autres objets : numéro,
+  /// formule et couleur (jamais la couleur seule).
+  final List<({String latex, Color couleur})> courbes;
+
+  /// Toucher une courbe : la modifier.
+  final ValueChanged<int>? surCourbe;
 
   @override
   Widget build(BuildContext context) {
@@ -374,13 +388,40 @@ class PanneauObjets extends StatelessWidget {
       listenable: atelier,
       builder: (context, _) {
         final objets = atelier.figure.objets.toList();
-        if (objets.isEmpty) {
+        if (objets.isEmpty && courbes.isEmpty) {
           return Center(child: Text(l10n.objetsVide));
         }
+        final enTete = courbes.length;
+        final style = Theme.of(context).textTheme.bodyLarge;
         return ListView.builder(
-          itemCount: objets.length,
+          itemCount: objets.length + enTete,
           itemBuilder: (context, i) {
-            final id = objets[i];
+            if (i < enTete) {
+              // Même ligne que les autres objets (Antsa) : nom, formule,
+              // genre dessous.
+              final courbe = courbes[i];
+              return ListTile(
+                title: Row(
+                  children: [
+                    Text(
+                      '${i + 1} : ',
+                      style: style?.copyWith(color: courbe.couleur),
+                    ),
+                    Flexible(
+                      child: Math.tex(
+                        courbe.latex,
+                        textStyle: style,
+                        onErrorFallback: (_) =>
+                            Text(courbe.latex, style: style),
+                      ),
+                    ),
+                  ],
+                ),
+                subtitle: Text(l10n.objetCourbe),
+                onTap: () => surCourbe?.call(i),
+              );
+            }
+            final id = objets[i - enTete];
             final visible = atelier.figure.apparence(id).visible;
             return ListTile(
               title: Text(titreObjet(atelier, id, francais: francais)),

@@ -282,6 +282,16 @@ final Map<String, _Glyphe> _glyphes = {
   ',': _Glyphe(0.2, [
     _l([0.12, 0.92, 0.1, 1, 0.04, 1.14]),
   ]),
+  ';': _Glyphe(0.24, [
+    _l([0.12, 0.5, 0.12, 0.53]),
+    _l([0.14, 0.92, 0.12, 1, 0.06, 1.14]),
+  ]),
+  '⇔': _Glyphe(1.1, [
+    _l([0.22, 0.48, 0.88, 0.48]),
+    _l([0.22, 0.66, 0.88, 0.66]),
+    _l([0.3, 0.36, 0.06, 0.57, 0.3, 0.78]),
+    _l([0.8, 0.36, 1.04, 0.57, 0.8, 0.78]),
+  ]),
   '(': _Glyphe(0.28, [_arc(0.42, 0.52, 0.34, 0.62, 2.3, 4)]),
   ')': _Glyphe(0.28, [_arc(-0.14, 0.52, 0.34, 0.62, -0.86, 0.84)]),
   '{': _Glyphe(0.32, [
@@ -418,7 +428,7 @@ class _Compositeur {
     return _Boite(
       g.largeur,
       'acegmnopqrsuvwxyz∈<>≤≥'.contains(c) ? 0.58 : 1,
-      'gjpqy,'.contains(c) ? 0.24 : 0,
+      'gjpqy,;'.contains(c) ? 0.24 : 0,
       [
         for (final t in g.traces) [for (final p in t) p - const Offset(0, 1)],
       ],
@@ -452,7 +462,9 @@ class _Compositeur {
     final nom = _s.substring(debut, _i);
     return switch (nom) {
       'sin' || 'cos' || 'tan' || 'ln' || 'log' || 'exp' => _mot(nom),
-      'mathrm' || 'operatorname' || 'mathbb' => _groupe(),
+      'mathrm' || 'operatorname' || 'mathbb' || 'text' => _groupe(),
+      'iff' || 'Leftrightarrow' => _lettre('⇔'),
+      'quad' || 'qquad' => const _Boite(0.8, 0, 0, []),
       'in' => _lettre('∈'),
       'leq' => _lettre('≤'),
       'geq' => _lettre('≥'),

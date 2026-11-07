@@ -124,7 +124,8 @@ class RepereBloc extends StatelessWidget {
                   if (bloc.estSaisie)
                     _Formule(
                       latex: bloc.latex ?? '',
-                      couleur: Theme.of(context).colorScheme.tertiary,
+                      couleur: PorteeReglages.de(context).support.stylos.first,
+                      manuscrite: true,
                     ),
                   _BoutonPlacer(
                     objets: objets,
@@ -144,6 +145,8 @@ class RepereBloc extends StatelessWidget {
     final reglages = PorteeReglages.de(context);
     final virgule = Localizations.localeOf(context).languageCode == 'fr';
     final accent = Theme.of(context).colorScheme.tertiary;
+    // L'encre de la feuille : une ligne tapée s'écrit comme à la main.
+    final encre = PorteeReglages.de(context).support.stylos.first;
     final l10n = context.l10n;
     final ecrit = bloc.ecriture(
       approcheVoulue: reglages.approche,
@@ -225,7 +228,11 @@ class RepereBloc extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (bloc.estSaisie)
-                    _Formule(latex: bloc.latex ?? '', couleur: accent),
+                    _Formule(
+                      latex: bloc.latex ?? '',
+                      couleur: encre,
+                      manuscrite: true,
+                    ),
                   ActionManuscrite(
                     mot: l10n.motPlacer,
                     libelle: l10n.placerDansFigure,
@@ -248,7 +255,11 @@ class RepereBloc extends StatelessWidget {
         // Une courbe : rien à calculer, un bouton nommé pour la tracer. La
         // lecture peut être fausse : elle se corrige à côté.
         if (bloc.seTrace) {
-          final formule = _Formule(latex: bloc.latex ?? '', couleur: accent);
+          final formule = _Formule(
+            latex: bloc.latex ?? '',
+            couleur: enExport ? accent : encre,
+            manuscrite: true,
+          );
           if (enExport && !bloc.estSaisie) return const SizedBox.shrink();
           final dejaTracee = PorteeServices.de(context).courbes.liste
               .any((c) => c.latex == bloc.latex);
@@ -301,16 +312,25 @@ class RepereBloc extends StatelessWidget {
           position = bloc.estSaisie
               ? dessous
               : droite + const Offset(AppEspacement.sm, -14);
+          // À la main comme le reste : `premier(91) = faux` (Antsa).
+          final motEcrit = virgule
+              ? (verite ? 'vrai' : 'faux')
+              : (verite ? 'true' : 'false');
           contenu = bloc.estSaisie
-              ? Row(
-                  mainAxisSize: MainAxisSize.min,
+              ? Wrap(
+                  spacing: AppEspacement.md,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     _Formule(
-                      latex: '${_sansEgalFinal(bloc.latex ?? '')} :',
-                      couleur: accent,
+                      latex: _sansEgalFinal(bloc.latex ?? ''),
+                      couleur: encre,
+                      manuscrite: true,
                     ),
-                    const SizedBox(width: AppEspacement.sm),
-                    mot,
+                    EcritureManuscrite(
+                      latex: '=\\mathrm{$motEcrit}',
+                      couleur: accent,
+                      repli: mot,
+                    ),
                   ],
                 )
               : mot;
@@ -335,19 +355,28 @@ class RepereBloc extends StatelessWidget {
               ? dessous
               : droite + const Offset(AppEspacement.sm, -14);
           final ecrit = _sansEgalFinal(bloc.latex ?? '');
-          contenu = _Formule(
-            latex: bloc.egalAjoute
-                ? '= $valeur'
-                : !bloc.estSaisie
-                ? valeur
-                : !bloc.estResolution
-                ? '$ecrit = $valeur'
-                // `x+3=4 = {1}` serait faux : deux écritures équivalentes.
-                : valeur.startsWith('S=')
-                ? '$ecrit \\quad $valeur'
-                : '$ecrit \\iff $valeur',
-            couleur: accent,
-          );
+          final reponse = bloc.egalAjoute
+              ? '= $valeur'
+              : !bloc.estSaisie
+              ? valeur
+              : !bloc.estResolution
+              ? '= $valeur'
+              // `x+3=4 = {1}` serait faux : deux écritures équivalentes.
+              : valeur.startsWith('S=')
+              ? valeur
+              : '\\iff $valeur';
+          // Tapée, la ligne s'écrit aussi à la main : la question à l'encre
+          // de la feuille, la réponse comme les autres résultats (Antsa).
+          contenu = bloc.estSaisie
+              ? Wrap(
+                  spacing: AppEspacement.md,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    _Formule(latex: ecrit, couleur: encre, manuscrite: true),
+                    _Formule(latex: reponse, couleur: accent, manuscrite: true),
+                  ],
+                )
+              : _Formule(latex: reponse, couleur: accent, manuscrite: true);
         }
     }
 
@@ -592,22 +621,31 @@ String _sansEgalFinal(String latex) =>
     latex.trimRight().replaceFirst(RegExp(r'=$'), '').trimRight();
 
 class _Formule extends StatelessWidget {
-  const new({required this.latex, this.couleur});
+  const new({required this.latex, this.couleur, this.manuscrite = false});
 
   final String latex;
   final Color? couleur;
 
+  /// Sur la Feuille, même tapée, une formule s'écrit à la main (Antsa).
+  final bool manuscrite;
+
   @override
   Widget build(BuildContext context) {
-    final style = Theme.of(context).textTheme.titleMedium
-        ?.copyWith(color: couleur);
-    return SingleChildScrollView(
+    final theme = Theme.of(context);
+    final style = theme.textTheme.titleMedium?.copyWith(color: couleur);
+    final imprimee = SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Math.tex(
         pourAffichage(latex),
         textStyle: style,
         onErrorFallback: (_) => Text(latex, style: style),
       ),
+    );
+    if (!manuscrite) return imprimee;
+    return EcritureManuscrite(
+      latex: latex,
+      couleur: couleur ?? theme.colorScheme.onSurface,
+      repli: imprimee,
     );
   }
 }

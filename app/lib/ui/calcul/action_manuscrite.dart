@@ -167,3 +167,56 @@ class _PeintreCrayon extends CustomPainter {
   @override
   bool shouldRepaint(_PeintreCrayon ancien) => ancien.couleur != couleur;
 }
+
+/// Une formule écrite à la main, comme les résultats : une ligne tapée au
+/// clavier s'écrit elle aussi à la main sur la Feuille (Antsa). Ce que la
+/// main ne sait pas écrire garde [repli].
+class EcritureManuscrite extends StatelessWidget {
+  const new({
+    required this.latex,
+    required this.couleur,
+    required this.repli,
+    this.hauteur = 36,
+    super.key,
+  });
+
+  final String latex;
+  final Color couleur;
+  final Widget repli;
+
+  /// La hauteur d'écriture, proche de celle d'une ligne écrite au stylet.
+  final double hauteur;
+
+  @override
+  Widget build(BuildContext context) {
+    final ecrit = ecrireResultat(latex, Rect.fromLTWH(0, 0, 0, hauteur));
+    if (ecrit == null) return repli;
+    return Semantics(
+      label: latex,
+      child: CustomPaint(
+        size: ecrit.cadre.size,
+        painter: _PeintreEcriture(ecrit, couleur),
+      ),
+    );
+  }
+}
+
+class _PeintreEcriture extends CustomPainter {
+  const new(this.ecrit, this.couleur);
+
+  final EcritureResultat ecrit;
+  final Color couleur;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final encre = Paint()..color = couleur;
+    canvas.translate(-ecrit.cadre.left, -ecrit.cadre.top);
+    for (final contour in ecrit.contours) {
+      canvas.drawPath(contour, encre);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_PeintreEcriture ancien) =>
+      ancien.ecrit != ecrit || ancien.couleur != couleur;
+}
