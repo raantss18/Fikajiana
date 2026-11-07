@@ -8,13 +8,14 @@ Une ligne par changement, en français et en anglais.
 
 ### Message fr
 
-Fikajiana 1.0 : chaque feuille a maintenant sa propre Figure, et une nouvelle feuille part d'une Figure vide. L'écriture se lit mieux : points `A(8;-1)`, déterminants, inverse d'une matrice, `e^x = 7`, et des mots comme « plot » ou « longueur ». Les résultats et les actions s'écrivent à la main ; la page s'arrête en haut et à gauche, comme un cahier.
+Fikajiana 1.0 : chaque feuille a maintenant sa propre Figure, et une nouvelle feuille part d'une Figure vide. L'écriture se lit mieux : points `A(8;-1)`, déterminants, inverse d'une matrice, `e^x = 7`, et des mots comme « plot » ou « longueur ». Ce qui est lu s'écrit au propre, les lignes tapées aussi ; dans la Figure, un trait au stylet devient un segment, un rond un cercle, un triangle se redresse et ses sommets se nomment. La page s'arrête en haut et à gauche, comme un cahier.
 
 ### Message en
 
-Fikajiana 1.0: each sheet now has its own Figure, and a new sheet starts with an empty Figure. Handwriting is read better: points `A(8;-1)`, determinants, matrix inverses, `e^x = 7`, and words such as "plot" or "longueur". Results and actions are written by hand; the page stops at the top and on the left, like a notebook.
+Fikajiana 1.0: each sheet now has its own Figure, and a new sheet starts with an empty Figure. Handwriting is read better: points `A(8;-1)`, determinants, matrix inverses, `e^x = 7`, and words such as "plot" or "longueur". What is read is written neatly, typed lines too; in the Figure, a stylus stroke becomes a segment, a round shape a circle, a triangle straightens and its vertices are named. The page stops at the top and on the left, like a notebook.
 
 ### Changements
+
 
 - Un document, c'est une feuille et sa Figure : nouvelle feuille, nouvelle Figure ; l'Historique n'a plus qu'une liste. Les figures d'avant rejoignent la feuille dont elles viennent. / A document is a sheet and its Figure: new sheet, new Figure; the History has a single list. Earlier figures join the sheet they came from.
 - Mieux lus à la main : `A(8;-1)` et `B(5;8)`, `det` d'une matrice 2×2, `(…)^{-1}`, `e^x = 7` (le `=` n'est plus pris pour un `-`). `30×8` donne `= 240`. / Better read by hand: `A(8;-1)` and `B(5;8)`, `det` of a 2×2 matrix, `(…)^{-1}`, `e^x = 7` (the `=` is no longer taken for a `-`). `30×8` gives `= 240`.
@@ -24,6 +25,9 @@ Fikajiana 1.0: each sheet now has its own Figure, and a new sheet starts with an
 - Dans la Figure, un bouton discret nommé « 4 objets » ouvre la liste de tout ce qu'elle contient, courbes comprises ; la légende flottante ne gêne plus la vue (elle reste dans l'image exportée). / In the Figure, a discreet button named "4 objects" opens the list of everything it holds, curves included; the floating legend no longer blocks the view (it stays in the exported image).
 - `AB =` écrit à la main donne la distance entre les points A et B de la feuille, même quand le modèle lit mal les deux lettres. / Handwritten `AB =` gives the distance between points A and B of the sheet, even when the model misreads the two letters.
 - Une ligne tapée au clavier s'écrit à la main sur la Feuille, comme le reste : la question à l'encre de la feuille, la réponse en résultat. / A line typed on the keyboard is handwritten on the Sheet like everything else: the question in the sheet's ink, the answer as a result.
+- Ce qui est lu s'écrit au propre à la place de votre encre (réglage « Mettre au propre »). / What is read is written neatly in place of your ink ("Write neatly" setting).
+- Dans la Figure, au stylet : un trait devient un segment, un rond un cercle, un tracé fermé un triangle ou un quadrilatère ; les sommets sont nommés tout seuls. / In the Figure, with the stylus: a stroke becomes a segment, a round shape a circle, a closed path a triangle or quadrilateral; vertices are named automatically.
+- `C : x^2+y^3=0` sur la Feuille est la courbe C de la Figure ; un nom déjà pris devient C₁. / `C : x^2+y^3=0` on the Sheet is curve C in the Figure; a name already taken becomes C₁.
 - La page s'arrête en haut ; l'export PNG et PDF part de son coin. / The page stops at the top; PNG and PDF export start from its corner.
 
 ## [0.9.1] — 2026-11-07

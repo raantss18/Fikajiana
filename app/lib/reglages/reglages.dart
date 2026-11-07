@@ -10,6 +10,7 @@ const _cleApproche = 'approche';
 const _cleDegres = 'degres';
 const _cleStyletConnu = 'stylet_connu';
 const _cleEcrireAuDoigt = 'ecrire_au_doigt';
+const _cleAuPropre = 'au_propre';
 
 /// Réglages de l'utilisateur, gardés sur l'appareil seulement.
 class Reglages extends ChangeNotifier {
@@ -24,6 +25,19 @@ class Reglages extends ChangeNotifier {
     _degres = stockage.getBool(_cleDegres) ?? false;
     _styletConnu = stockage.getBool(_cleStyletConnu) ?? false;
     _ecrireAuDoigt = stockage.getBool(_cleEcrireAuDoigt) ?? false;
+    _auPropre = stockage.getBool(_cleAuPropre) ?? true;
+  }
+
+  var _auPropre = true;
+
+  /// Ce qui est lu s'écrit au propre à la place de l'encre (Antsa).
+  bool get auPropre => _auPropre;
+
+  set auPropre(bool valeur) {
+    if (valeur == _auPropre) return;
+    _auPropre = valeur;
+    notifyListeners();
+    unawaited(stockage?.setBool(_cleAuPropre, valeur));
   }
 
   static Future<Reglages> charger() async =>

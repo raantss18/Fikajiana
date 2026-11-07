@@ -19,7 +19,8 @@
    Essayé sur le Pad 7 au clavier : `moyenne`, `médiane`, `variance`, `écart-type`, `développer`, `discriminant`, `tangente(f;0)`, `premier` justes. Corrigé en route : `\operatorname` affiché brut, ligne tapée posée sur l'écriture, panneau qui ignorait les fonctions de la feuille, « Vrai » sans sa formule. Reste : la lecture d'une matrice 3×3, affichée sous sa ligne, touche la ligne suivante.
 8. 🔄 **Feuille toute manuscrite** (Tracer, Placer, Corriger, matrices et lignes tapées faits ; reste : les panneaux de correction) (demande d'Antsa, 2026-11-07) : sur la Feuille, les boutons (Placer dans la Figure, Tracer…) s'écrivent à la main, comme les résultats, et le petit stylo Corriger reste toujours là. Garder les cibles de 48 dp, le contraste AA et le nom lu par TalkBack (règle 9).
 9. ⏳ **Liste des objets de la Figure** (demande d'Antsa, 2026-11-07) : un bouton discret mais visible, qui ne gêne pas la vue, ouvre la liste des objets présents (points, droites, cercles, courbes).
-10. ⏳ **Essai réseau coupé sur le Pad 7** : manque pour 0.7.1 et 0.7.2 (mode avion à activer par Antsa).
+10. ✅ **Au propre, main levée, courbes nommées** (demandes d'Antsa, ADR 0033), vus sur le Pad 7 au stylet simulé ; reste un vrai stylet.
+11. ⏳ **Essai réseau coupé sur le Pad 7** : manque pour 0.7.1 et 0.7.2 (mode avion à activer par Antsa).
 
 Déjà livré ce jour : rature et stylet (0.6.1), lueur et trait ondulé (0.7.1), main qui défile (0.7.2). Fusionné, pas encore publié : saisie naturelle, mémoire de la feuille, `det`, points et vecteurs, calcul formel de la PR 29 (0.8.0).
 

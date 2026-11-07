@@ -22,6 +22,9 @@ class Services {
     required this.graphes,
     required this.figures,
   }) {
+    // Une courbe `C : …` et un objet de la Figure n'ont jamais le même nom.
+    courbes.nomsPris = () => atelier.figure.noms;
+    atelier.nomsReserves = () => courbes.noms;
     graphes.addListener(() => courbes.changerDeFichier(graphes.fichier));
     figures.addListener(() => atelier.changerDeFichier(figures.fichier));
     // La Figure suit la feuille : un document, c'est les deux (ADR 0032).

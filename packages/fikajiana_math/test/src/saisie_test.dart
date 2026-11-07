@@ -14,6 +14,11 @@ void vaut(String texte, double attendu, {double x = 1.7}) {
 }
 
 void main() {
+  test('une courbe nommée garde son nom : C : x^2+y^3=0', () {
+    expect(lireSaisie('C : x^2+y^3=0').latex, 'C : x^{2}+y^{3}=0');
+    expect(lireSaisie('C_1:x^2+y^2=4').latex, 'C_1 : x^{2}+y^{2}=4');
+  });
+
   const x = 1.7;
   group('ce qu’on tape se comprend', () {
     vaut('2+3', 5);
