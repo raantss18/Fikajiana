@@ -26,6 +26,50 @@ void main() {
     lit('7 ^ { 1 } ( x ) =', "f'(x)=");
   });
 
+  group('relevées le 7 novembre, deuxième essai', () {
+    test('le déterminant lu alpha + binomial', () {
+      final r = redresserLecture(r'\alpha + \binom { 2 5 } { - 1 - 3 } =');
+      final a = analyserLatex(r);
+      expect(a.giac, 'det([[2,5],[(-1),(-3)]])');
+      expect(a.demandeResultat, isTrue);
+    });
+    test('le déterminant lu d e t', () {
+      final r = redresserLecture(
+        r'd e t \begin{pmatrix} 1 & 5 \\ - 1 & 8 \end{pmatrix}',
+      );
+      expect(analyserLatex(r).giac, startsWith('det('));
+    });
+    test('le point lu A(1/2)', () {
+      for (final lu in [
+        'A(1/2)',
+        'A ( 1 / 2 )',
+        r'A \left( \frac { 1 } { 2 } \right)',
+      ]) {
+        final o = lireObjet(redresserLecture(lu));
+        expect(o, isA<PointLu>(), reason: lu);
+        expect((o!.x, o.y), (1, 2), reason: lu);
+      }
+    });
+    test('un vecteur en colonne lu comme un binomial', () {
+      final o = lireObjet(r'\overrightarrow { A B } \binom { 1 } { 3 }');
+      expect(o, isA<VecteurLu>());
+      expect((o!.nom, o.x, o.y), ('AB', 1, 3));
+    });
+  });
+
+  group('un binomial reste un binomial', () {
+    void reste(String lu) {
+      test(lu, () => expect(redresserLecture(lu), lu));
+    }
+
+    reste(r'\binom{10}{2}');
+    reste(r'\binom{n}{k}');
+    reste(r'\binom{5}{2}');
+    reste(r'\alpha+1');
+    reste('f(1/2)');
+    reste('a(1/2)');
+  });
+
   group('ce qui a du sens ne bouge pas', () {
     void reste(String lu) {
       test(lu, () {

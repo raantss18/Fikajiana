@@ -38,39 +38,7 @@ class EcranReglages extends StatelessWidget {
               style: Theme.of(context).textTheme.titleMedium,
             ),
           ),
-          RadioGroup<SupportEcriture>(
-            groupValue: reglages.support,
-            onChanged: (valeur) {
-              if (valeur != null) reglages.support = valeur;
-            },
-            child: Column(
-              children: [
-                for (final support in SupportEcriture.values)
-                  RadioListTile<SupportEcriture>(
-                    value: support,
-                    title: Text(support.libelle(l10n)),
-                    secondary: ExcludeSemantics(
-                      child: DecoratedBox(
-                        position: DecorationPosition.foreground,
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: Theme.of(context).colorScheme.outline,
-                          ),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: CustomPaint(
-                            size: const Size(72, 48),
-                            painter: PeintreSupport(support),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
+          const ListeSupports(),
           if (reglages.styletConnu)
             SwitchListTile(
               title: Text(l10n.ecrireAuDoigt),
@@ -254,6 +222,50 @@ class _SectionAPropos extends StatelessWidget {
             ),
             child: Text(l10n.aProposLicences),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Le choix du fond, avec son aperçu : dans les Réglages et sur la Feuille.
+class ListeSupports extends StatelessWidget {
+  const new({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final reglages = PorteeReglages.de(context);
+    final l10n = context.l10n;
+    return RadioGroup<SupportEcriture>(
+      groupValue: reglages.support,
+      onChanged: (valeur) {
+        if (valeur != null) reglages.support = valeur;
+      },
+      child: Column(
+        children: [
+          for (final support in SupportEcriture.values)
+            RadioListTile<SupportEcriture>(
+              value: support,
+              title: Text(support.libelle(l10n)),
+              secondary: ExcludeSemantics(
+                child: DecoratedBox(
+                  position: DecorationPosition.foreground,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: CustomPaint(
+                      size: const Size(72, 48),
+                      painter: PeintreSupport(support),
+                    ),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );

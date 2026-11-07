@@ -50,6 +50,11 @@ ObjetLu? lireObjet(String latex) {
         (m) => m[1]!,
       )
       .replaceAll(RegExp(r'\s'), '');
+  // `\\binom{1}{3}` : une colonne lue comme un coefficient binomial.
+  s = s.replaceAllMapped(
+    RegExp(r'\\binom\{([^{}]*)\}\{([^{}]*)\}'),
+    (m) => '(${m[1]};${m[2]})',
+  );
   // Une colonne : le vecteur s'écrit debout.
   final colonne = _colonne.firstMatch(s);
   final enColonne = colonne != null;

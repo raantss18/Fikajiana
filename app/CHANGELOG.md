@@ -4,6 +4,9 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Le bouton Fond, sur la Feuille, change le papier, le cahier ou le tableau sans passer par les Réglages. / The Background button on the sheet changes the paper, notebook or blackboard without going to Settings.
+- Toucher sous une ligne montre toujours ce qui a été lu, même si elle n'affiche rien. / Tapping under a line always shows what was read, even if it displays nothing.
+
 - Quand une lecture étonne, Fikajiana en cherche d'autres, garde la plus sensée et propose les autres d'un toucher. / When a reading looks odd, Fikajiana looks for others, keeps the most sensible one and offers the rest with one tap.
 
 - Deux espaces, toujours en vue : Feuille pour écrire et calculer, Figure pour les courbes et la géométrie, réunies sur les mêmes axes. Tracer et Placer y mènent. / Two spaces, always in sight: Sheet to write and calculate, Figure for curves and geometry, together on the same axes. Plot and Place lead there.

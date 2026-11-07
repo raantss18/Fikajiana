@@ -99,6 +99,8 @@ class _DeuxEspaces extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    // Sur un téléphone, le nom suffit : la place reste à l'écriture.
+    final etroit = MediaQuery.sizeOf(context).width < 600;
     return SegmentedButton<Destination>(
       showSelectedIcon: false,
       style: SegmentedButton.styleFrom(
@@ -109,7 +111,7 @@ class _DeuxEspaces extends StatelessWidget {
         for (final d in [Destination.feuille, Destination.figure])
           ButtonSegment(
             value: d,
-            icon: Icon(d.icone),
+            icon: etroit ? null : Icon(d.icone),
             label: Text(d.libelle(l10n)),
           ),
       ],

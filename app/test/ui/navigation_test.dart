@@ -81,6 +81,25 @@ void main() {
     });
   });
 
+  group('fond', () {
+    testWidgets('se choisit depuis la Feuille, sans les Réglages', (t) async {
+      await t.pumpFikajiana();
+      expect(find.byType(EcranFeuille), findsOneWidget);
+      await t.tap(find.text('Fond'));
+      await t.pumpAndSettle();
+      expect(find.text('Tableau noir'), findsOneWidget);
+      await t.tap(find.text('Tableau noir'));
+      await t.pumpAndSettle();
+      expect(find.byType(EcranFeuille), findsOneWidget);
+    });
+
+    testWidgets('n’est pas sur la Figure', (t) async {
+      await t.pumpFikajiana();
+      await _aller(t, 'Figure');
+      expect(find.text('Fond'), findsNothing);
+    });
+  });
+
   group('marque', () {
     testWidgets('le π est sur la Feuille, décoratif et sans libellé', (
       t,

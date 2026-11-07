@@ -360,5 +360,6 @@
     "voirDansFigure": "Voir dans la Figure",
     "placerDansFigure": "Placer dans la Figure",
     "blocAutresLectures": "Ou peut-être :",
-    "blocChoisirLecture": "Choisir cette lecture"
+    "blocChoisirLecture": "Choisir cette lecture",
+    "choisirFond": "Fond"
 }

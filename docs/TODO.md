@@ -14,13 +14,14 @@
 3. 🔄 **Deux espaces** : fusionné (ADR 0027), non publié. Reste : essai au stylet sur le Pad 7 et sur le Poco.
 4. 🔄 **Lien Feuille ↔ Figure** : Tracer et Placer vont au même endroit (fait). Reste : accrocher les constructions aux courbes ; un objet garde sa ligne d'origine.
 5. ⏳ **`a=2`** définit `a` ; `cercle(A;2)` et commandes géométriques depuis la Feuille.
-6. ⏳ **Essai réseau coupé sur le Pad 7** : manque pour 0.7.1 et 0.7.2 (mode avion à activer par Antsa).
+6. 🔄 **Bouton Fond** sur la Feuille (demande d'Antsa), fait, à essayer.
+7. ⏳ **Essai réseau coupé sur le Pad 7** : manque pour 0.7.1 et 0.7.2 (mode avion à activer par Antsa).
 
 Déjà livré ce jour : rature et stylet (0.6.1), lueur et trait ondulé (0.7.1), main qui défile (0.7.2). Fusionné, pas encore publié : saisie naturelle, mémoire de la feuille, `det`, points et vecteurs, calcul formel de la PR 29 (0.8.0).
 
 ## 0. Erreurs signalées
 
-- 🔄 2026-11-07 : « rien ne va » sur le Pad 7 (Antsa) : `f` lu `1/4`, `f'` lu `f^1`, `g(x)` lu `g^((x))`, `5e^x` lu `50^x`, deux lignes lues dans une `matrix`, `S=∅` écrit sur la ligne suivante. Causes : lignes collées au regroupement, confusions du modèle jamais corrigées, placement aveugle du résultat. `_separerLignes`, `redresserLecture` (lectures réelles en tests), `dessousLibre` (ADR 0026). Reste : réécrire les lignes au stylet.
+- 🔄 2026-11-07 : « rien ne va » sur le Pad 7 (Antsa) : `f` lu `1/4`, `f'` lu `f^1`, `g(x)` lu `g^((x))`, `5e^x` lu `50^x`, deux lignes lues dans une `matrix`, `S=∅` écrit sur la ligne suivante. Causes : lignes collées au regroupement, confusions du modèle jamais corrigées, placement aveugle du résultat. `_separerLignes`, `redresserLecture` (lectures réelles en tests), `dessousLibre` (ADR 0026). Deuxième essai d'Antsa : `f(x)`, `f'(x)=` et `f(x)=0` bien lus ; `A(1;2)` lu `A(1/2)` et `det` lu `\alpha+\binom`, corrigés. Reste : le vecteur et ces deux lignes au stylet.
 - ✅ 2026-11-05 : « Fikajiana keeps stopping » sur téléphone (essai.1). Cause : `SMARTPTR64` de Giac tronque les étiquettes de
   pointeurs arm64. Corrigé par `correctifs/0002`. Protection : essai obligatoire sur arm64 réel, l'émulateur ne le voit pas.
 - ✅ 2026-11-05 : écran d'essai `0×0 dp`, taille lue trop tôt en release, puis perdue à une réécriture. Corrigé en attendant une
