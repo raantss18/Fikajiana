@@ -111,4 +111,11 @@ void main() {
     );
     expect(equation.type, TypeExpression.equation);
   });
+
+  group('relevées sur le téléphone d’Antsa (2026-11-07)', () {
+    test('le 1 lu Λ', () {
+      expect(redresserLecture(r'\varLambda + \varLambda'), '1+ 1');
+      expect(redresserLecture(r'\Lambda 0 \times 3'), r'10 \times 3');
+    });
+  });
 }

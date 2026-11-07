@@ -283,6 +283,10 @@ class BlocCalcul {
     if (estSaisie || etat != EtatBloc.fait || note != null || lu == null) {
       return null;
     }
+    // Seulement ce qui est sûrement compris : une lecture douteuse ou qui ne
+    // donne rien ne cache jamais l'écriture (téléphone d'Antsa : `A(3;-1)`
+    // remplacé par `+(3i-1)`).
+    if (!_compris) return null;
     final cle = '$lu|$cadre';
     if (_proprePour != cle) {
       _proprePour = cle;
@@ -292,6 +296,20 @@ class BlocCalcul {
       );
     }
     return _propre;
+  }
+
+  bool get _compris {
+    if (autresLectures.isNotEmpty || lueParMorceaux) return false;
+    final resultatMontre =
+        verite != null || (montreResultat && resultat != null && !inchange);
+    final declaration =
+        objet != null ||
+        commande != null ||
+        seTrace ||
+        inconnueMatrice != null ||
+        type == TypeExpression.matrice ||
+        type == TypeExpression.suite;
+    return resultatMontre || declaration;
   }
 
   /// Le résultat tracé à la main, ou `null` s'il se montre autrement.
@@ -614,7 +632,8 @@ class CalculFeuille extends ChangeNotifier {
     for (final groupe in grouperTraits(nouveaux)) {
       final cadre = cadreDuGroupe(groupe);
       final hote = _blocs.values.where((b) => !b.estSaisie).where((b) {
-        return prolonge(b.cadre, cadre, ferme: b.finitParEgal);
+        return prolonge(b.cadre, cadre, ferme: b.finitParEgal) ||
+            estDenominateur(b.cadre, groupe);
       }).firstOrNull;
       final bloc =
           hote ??

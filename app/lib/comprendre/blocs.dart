@@ -164,3 +164,32 @@ bool prolonge(Rect bloc, Rect groupe, {required bool ferme}) {
   final ecart = groupe.left - bloc.right;
   return memeLigne && ecart >= 0 && ecart <= 1.5 * hauteur;
 }
+
+/// Une barre de fraction et son dénominateur, écrits sous un calcul déjà lu :
+/// `1 - 1/(-2)` puis, dessous, `—` et `4` (téléphone d'Antsa). Ils le
+/// prolongent : la barre est longue, juste sous le bloc, et tout le reste du
+/// groupe, s'il y en a, est sous elle.
+bool estDenominateur(Rect bloc, List<Trait> groupe) {
+  final cadres = groupe.map(_cadre).toList();
+  final barre = cadres.reduce((a, b) => a.top <= b.top ? a : b);
+  final hauteur = math.max(bloc.height, _hauteurMinimale);
+  if (barre.height > 0.25 * barre.width) return false;
+  if (barre.width < 0.5 * bloc.width) return false;
+  final commun =
+      math.min(barre.right, bloc.right) - math.max(barre.left, bloc.left);
+  if (commun < 0.5 * barre.width) return false;
+  if (barre.top < bloc.bottom - 0.4 * hauteur ||
+      barre.top > bloc.bottom + 0.6 * hauteur) {
+    return false;
+  }
+  final reste = [
+    for (final c in cadres)
+      if (!identical(c, barre)) c,
+  ];
+  // La barre seule, le dénominateur viendra : elle rejoint déjà le calcul.
+  return reste.every(
+    (c) =>
+        c.center.dy > barre.bottom &&
+        c.overlaps(Rect.fromLTRB(barre.left, barre.top, barre.right, c.bottom)),
+  );
+}
