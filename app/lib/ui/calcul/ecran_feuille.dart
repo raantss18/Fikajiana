@@ -9,6 +9,7 @@ import 'package:fikajiana/encre/encre.dart';
 import 'package:fikajiana/encre/feuille_encre.dart';
 import 'package:fikajiana/encre/vue_feuille.dart';
 import 'package:fikajiana/export/capture.dart';
+import 'package:fikajiana/guide/essai.dart';
 import 'package:fikajiana/l10n/l10n.dart';
 import 'package:fikajiana/reconnaissance/modele.dart';
 import 'package:fikajiana/reglages/reglages.dart';
@@ -71,6 +72,7 @@ class _EcranFeuilleState extends State<EcranFeuille> {
   bool get _degresVus => _degres ?? false;
   late final CalculFeuille _calcul;
   late final ModeleOcr _modele;
+  late final EssaiGuide _essais;
   StockageFeuille? _stockage;
 
   @override
@@ -81,6 +83,7 @@ class _EcranFeuilleState extends State<EcranFeuille> {
         .services;
     _stockage = services.carnet.stockage;
     _modele = services.modele..addListener(_surModele);
+    _essais = services.essais..addListener(_lancerEssai);
     _calcul = CalculFeuille(
       encre: _encre,
       lecteur: services.lecteur,
@@ -92,7 +95,13 @@ class _EcranFeuilleState extends State<EcranFeuille> {
       _encre.chargerDocument(document['traits'] as List<dynamic>? ?? const []);
       _calcul.chargerDocument(document['blocs'] as List<dynamic>? ?? const []);
     }
+    // Une demande du Guide faite avant que cette feuille soit là.
+    if (_essais.enAttente) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _lancerEssai());
+    }
   }
+
+  void _lancerEssai() => unawaited(_surEssai());
 
   @override
   void didChangeDependencies() {
@@ -154,6 +163,7 @@ class _EcranFeuilleState extends State<EcranFeuille> {
   void dispose() {
     _stockage?.enregistrer();
     _modele.removeListener(_surModele);
+    _essais.removeListener(_lancerEssai);
     _calcul.dispose();
     _vue.dispose();
     super.dispose();
@@ -175,8 +185,25 @@ class _EcranFeuilleState extends State<EcranFeuille> {
       analyser: _calcul.analyserEnBas,
     );
     if (latex == null || latex.trim().isEmpty || !mounted) return;
-    // Sous tout ce qui est écrit : la ligne voit les fonctions et les points
-    // de la feuille, et ne recouvre rien.
+    await _poser(latex);
+    if (mounted) _apresSaisie(latex);
+  }
+
+  /// Le Guide demande de poser son exemple : ligne après ligne, comme au
+  /// clavier, puis la dernière fait ce qu'elle ferait au clavier (ADR 0036).
+  Future<void> _surEssai() async {
+    final lignes = _essais.prendre();
+    if (lignes == null || !mounted) return;
+    for (final latex in lignes) {
+      await _poser(latex);
+      if (!mounted) return;
+    }
+    _apresSaisie(lignes.last);
+  }
+
+  /// Pose [latex] sous tout ce qui est écrit : la ligne voit les fonctions et
+  /// les points de la feuille, et ne recouvre rien.
+  Future<void> _poser(String latex) async {
     final ecran = MediaQuery.sizeOf(context);
     final depart = _vue.versPage(ecran.center(Offset.zero) / 2);
     final zones = _zonesEcrites(PorteeReglages.de(context)).toList();
@@ -193,8 +220,11 @@ class _EcranFeuilleState extends State<EcranFeuille> {
     final y = position.dy * _vue.zoom + _vue.decalage.dy;
     if (y > ecran.height * 0.7) _vue.glisser(Offset(0, ecran.height / 2 - y));
     await _calcul.saisir(latex, position);
-    if (!mounted) return;
-    setState(() {});
+    if (mounted) setState(() {});
+  }
+
+  /// Une construction, un point ou une courbe : la Figure s'ouvre avec eux.
+  void _apresSaisie(String latex) {
     final services = PorteeServices.de(context);
     // Une construction : la ligne se pose, puis la Figure s'ouvre avec elle.
     if (lireCommande(latex) != null) {

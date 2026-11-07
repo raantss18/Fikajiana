@@ -95,7 +95,8 @@ extension LibellesOutil on OutilGeo {
   };
 }
 
-String _titreGroupe(GroupeOutils groupe, AppLocalizations l10n) =>
+/// Le nom d'une famille d'outils, repris par le Guide.
+String titreGroupe(GroupeOutils groupe, AppLocalizations l10n) =>
     switch (groupe) {
       GroupeOutils.base => l10n.groupeBase,
       GroupeOutils.points => l10n.groupePoints,
@@ -158,7 +159,7 @@ class PanneauOutils extends StatelessWidget {
         children: [
           ...enTete,
           for (final groupe in GroupeOutils.values) ...[
-            titre(_titreGroupe(groupe, l10n)),
+            titre(titreGroupe(groupe, l10n)),
             LayoutBuilder(
               builder: (context, contraintes) {
                 // Autant de colonnes que possible, et toute la largeur prise :
