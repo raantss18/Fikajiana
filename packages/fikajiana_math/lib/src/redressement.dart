@@ -11,6 +11,8 @@ String redresserLecture(String latex, {Set<String> fonctions = const {}}) {
   s = _lambdaEnUn(s);
   s = _primes(s);
   s = _parentheseEnExposant(s);
+  // Après les exposants : `g^{(x)}` est redevenu `g(x)`.
+  s = _gEnNeuf(s, fonctions);
   s = _tete(s, fonctions);
   s = _baseE(s);
   s = _matriceEnBinome(s);
@@ -24,6 +26,17 @@ String redresserLecture(String latex, {Set<String> fonctions = const {}}) {
 /// lycée ; s'il était voulu, la lecture reste corrigeable.
 String _lambdaEnUn(String s) =>
     s.replaceAll(RegExp(r'\\(?:var)?Lambda(?![a-zA-Z])\s*'), '1');
+
+/// `\frac{1}{g}`, `g^{2}` : le `9` d'Antsa, lu `g` (Pad 7). Sans fonction g
+/// sur la feuille et sans parenthèse derrière, un `g` seul entre des chiffres
+/// et des signes est un 9.
+String _gEnNeuf(String s, Set<String> fonctions) {
+  if (fonctions.contains('g')) return s;
+  return s.replaceAllMapped(
+    RegExp(r'(?<![a-zA-Z\\])g(?!\s*[a-zA-Z(])'),
+    (m) => '9',
+  );
+}
 
 /// Les nombres d'une ligne : `2 5` donne 2 et 5, `- 1 - 3` donne -1 et -3.
 List<String>? _nombres(String ligne) {

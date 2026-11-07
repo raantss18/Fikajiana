@@ -113,6 +113,17 @@ void main() {
   });
 
   group('relevées sur le téléphone d’Antsa (2026-11-07)', () {
+    test('le 9 lu g (Pad 7)', () {
+      expect(
+        redresserLecture(r'3+\frac{1}{3}+\frac{1}{g}'),
+        r'3+\frac{1}{3}+\frac{1}{9}',
+      );
+      expect(redresserLecture('g^{2}'), '9^{2}');
+      expect(redresserLecture('g^{2}', fonctions: {'g'}), 'g^{2}');
+      expect(redresserLecture('g(x)=3x'), 'g(x)=3x');
+      expect(redresserLecture(r'\log(2)'), r'\log(2)');
+    });
+
     test('le 1 lu Λ', () {
       expect(redresserLecture(r'\varLambda + \varLambda'), '1+ 1');
       expect(redresserLecture(r'\Lambda 0 \times 3'), r'10 \times 3');

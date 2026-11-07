@@ -4,6 +4,10 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Une somme Σ écrite avec ses bornes (`5` dessus, `n = 0` dessous) se lit et se calcule. / A Σ sum written with its bounds (`5` above, `n = 0` below) is read and computed.
+- « Relire la feuille » regroupe tout ce qui n'a pas été corrigé à la main. / "Read the sheet again" regroups everything not corrected by hand.
+- Un `9` lu `g` redevient `9` s'il n'y a pas de fonction g. / A `9` read as `g` becomes `9` again when there is no function g.
+- Les bornes d'une limite ou d'une somme (`x → 0` sous `lim`, `n = 0` et `5` autour d'un Σ) vont avec leur signe. / The bounds of a limit or a sum (`x → 0` under `lim`, `n = 0` and `5` around a Σ) go with their sign.
 ## [1.0.3] — 2026-11-07
 
 ### Message fr
