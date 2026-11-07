@@ -4,6 +4,18 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+## [0.7.2] — 2026-11-07
+
+### Message fr
+
+Au stylet, ta main peut se poser tranquillement : elle n'écrit plus rien et ne bouge plus la feuille. Pour faire défiler, glisse simplement un doigt. Si tu veux aussi écrire au doigt, un réglage le permet.
+
+### Message en
+
+With a stylus, your hand can rest on the screen: it no longer writes or shifts the sheet. To scroll, just slide a finger. A setting lets you write with a finger too.
+
+### Changements
+
 - Une fois le stylet utilisé, la main ne fait plus que déplacer la page, et ne bouge plus la feuille pendant l'écriture. Un réglage permet d'écrire aussi au doigt. / Once the stylus has been used, your hand only moves the page, and no longer shifts the sheet while you write. A setting lets you write with a finger too.
 
 ## [0.7.1] — 2026-11-07
