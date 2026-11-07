@@ -15,6 +15,7 @@ import 'package:fikajiana/ui/graphe/tableau_valeurs.dart';
 import 'package:fikajiana/ui/services.dart';
 import 'package:fikajiana_math/fikajiana_math.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../helpers/helpers.dart';
@@ -327,17 +328,99 @@ void main() {
       await t.pumpAndSettle();
       await t.tap(find.byTooltip('Outils'));
       await t.pump();
-      await t.tap(find.byTooltip('Saisir au clavier'));
+      await t.tap(find.text('Saisir au clavier'));
       await t.pumpAndSettle();
       await t.enterText(find.byType(TextField), 'g(x)=x+1');
       await t.tap(find.widgetWithText(FilledButton, 'Calculer'));
       await t.pump();
       await t.pump();
       await t.pumpAndSettle();
-      await t.tap(find.byTooltip('Tracer'));
+      await t.tap(find.widgetWithText(FilledButton, 'Tracer'));
       await t.pumpAndSettle();
       expect(find.byType(EcranGraphe), findsOneWidget);
       expect(find.text('1'), findsOneWidget);
+    });
+
+    testWidgets('une équation en x et y se trace sans passer par Giac', (
+      t,
+    ) async {
+      t.view.physicalSize = const Size(400, 800);
+      t.view.devicePixelRatio = 1;
+      t.platformDispatcher.localesTestValue = [const Locale('fr')];
+      addTearDown(t.view.reset);
+      addTearDown(t.platformDispatcher.clearAllTestValues);
+      final modele = ModeleOcr(dossier: null);
+      final courbes = Courbes();
+      await t.pumpWidget(
+        App(
+          services: Services(
+            modele: modele,
+            lecteur: LecteurPix2Text(modele),
+            moteur: _Moteur(),
+            courbes: courbes,
+            atelier: Atelier(),
+            carnet: Carnet(),
+            graphes: Classeur(),
+            figures: Classeur(),
+          ),
+        ),
+      );
+      await t.pumpAndSettle();
+      await t.tap(find.byTooltip('Outils'));
+      await t.pump();
+      await t.tap(find.text('Saisir au clavier'));
+      await t.pumpAndSettle();
+      await t.enterText(find.byType(TextField), 'x^2+y^2=9');
+      await t.tap(find.widgetWithText(FilledButton, 'Calculer'));
+      await t.pump();
+      await t.pump();
+      await t.pumpAndSettle();
+      // Le nom se lit : ce n'est pas qu'un dessin de courbe.
+      await t.tap(find.widgetWithText(FilledButton, 'Tracer'));
+      await t.pumpAndSettle();
+      expect(find.byType(EcranGraphe), findsOneWidget);
+      expect(courbes.liste.single.genre, GenreCourbe.implicite);
+    });
+
+    testWidgets('exporter en PNG passe la vraie image à Android', (t) async {
+      await ouvrir(t);
+      await ajouter(t, 'y=x');
+      MethodCall? recu;
+      t.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        const MethodChannel('fikajiana/systeme'),
+        (appel) async {
+          recu = appel;
+          return true;
+        },
+      );
+      await t.tap(find.text('Outils'));
+      await t.pumpAndSettle();
+      await t.ensureVisible(find.text('Exporter en image (PNG)'));
+      await t.pumpAndSettle();
+      await t.tap(find.text('Exporter en image (PNG)'));
+      // Capture et encodage sont de vrais travaux asynchrones.
+      for (var i = 0; i < 20 && recu == null; i++) {
+        await t.pump(const Duration(milliseconds: 16));
+        await t.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 20)),
+        );
+      }
+      final arguments = recu!.arguments as Map<Object?, Object?>;
+      expect(recu!.method, 'enregistrer');
+      expect(arguments['type'], 'image/png');
+      expect(
+        arguments['nom'],
+        matches(r'^fikajiana-graphe-\d{4}-\d\d-\d\d\.png$'),
+      );
+      // La signature du format PNG.
+      expect((arguments['octets']! as Uint8List).sublist(0, 4), [
+        0x89,
+        0x50,
+        0x4E,
+        0x47,
+      ]);
+      await t.pumpAndSettle();
+      expect(find.text('Enregistré'), findsOneWidget);
     });
 
     testWidgets('une expression non traçable est dite', (t) async {

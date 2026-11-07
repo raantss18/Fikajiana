@@ -20,7 +20,7 @@
 - ✅ 2026-11-06 : en paysage, le bandeau et le rail bloquent la feuille (Antsa, Poco). Plein écran, un bouton Menu et un bouton Outils (ADR 0018) ; test sur trois tailles.
 - ✅ 2026-11-06 : `x+3=4 = {1}` est faux, et la solution n'était pas manuscrite (Antsa, Poco). La solution s'écrit à la main sous l'équation : `x = 1`, `x = -2 ou x = 2`, `S = ∅`.
   Même classe : `sin(x)=0` ne rendait que 0 et π ; Giac donne maintenant toute la famille. Tests dans `solutions_test.dart`.
-- ✅ 2026-11-06 : Géométrie « pas claire et incomplète », le `=` ne dit pas « parallèle » (Antsa, Poco). Cause : des icônes génériques sans nom. Chaque outil porte son nom et un dessin propre (ADR 0019). Même classe : le Graphe est corrigé en 0.5.0 ; les Outils de la Feuille restent à revoir (P5.1).
+- ✅ 2026-11-06 : Géométrie « pas claire et incomplète », le `=` ne dit pas « parallèle » (Antsa, Poco). Cause : des icônes génériques sans nom. Chaque outil porte son nom et un dessin propre (ADR 0019). Même classe : le Graphe est corrigé en 0.5.0, les Outils de la Feuille en 0.7.0 (ADR 0022).
 - ✅ 2026-11-06 : créer une nouvelle feuille, un graphe ou une figure n'est pas évident (Antsa). Les trois sont en tête du Menu ; graphes et figures gardés dans l'Historique. Test dans `classeur_test.dart`.
 - 🔄 2026-11-06 : l'écriture manque de vie : pas de rature, pas d'animation (Antsa). Rature, fractions redressées, résultat animé et trait au doigt ajoutés (ADR 0021). Vu sur émulateur avec le vrai modèle (`1 / 3 =` lu, redressé). Reste : essai au vrai stylet sur le Pad 7 et au doigt sur le Poco.
 - 🔄 2026-11-07 : au vrai stylet (Pad 7), 3 ratures sur 5 n'effacent rien. Cause : seuils réglés sur des zigzags de synthèse ; une vraie rature avance, son rapport tombe à 2,5 (1,9 sur une expression), et elle est parfois plus basse que le texte. Nouveaux seuils (ADR 0021) ; traits réels dans `rature_test.dart`. Seuils rejoués sur les 2 relevés du Pad 7 : aucune écriture effacée. Reste : le doigt sur le Poco, et d'autres mains.
@@ -80,7 +80,7 @@
 ## P4 — Graphique et géométrie
 
 1. 🔄 Traceur Dart : ✅ fonctions `y=f(x)`, échantillonnage adaptatif, coupures, glisser, zoom, lecture d'un point. ✅ implicites par carrés marchants (ADR 0020). Reste : budget d'une image mesuré sur un appareil réel, avec cache si besoin
-2. 🔄 ✅ Courbes paramétrées, polaires, implicites ; tableau de valeurs (ADR 0020). Reste : écran partagé sur tablette, tracer une équation depuis la Feuille
+2. 🔄 ✅ Courbes paramétrées, polaires, implicites ; tableau de valeurs (ADR 0020). ✅ Tracer une équation depuis la Feuille (ADR 0022). Reste : écran partagé sur tablette
 3. ⏳ Fiabilité des implicites : intervalles façon Tupper, à comparer à `graphest` (MIT)
 4. ⏳ `FragmentProgram` en option pour aperçus et fonds denses, avec repli CPU ; pas de `flutter_gpu` en préversion
 5. 🔄 Géométrie dynamique (ADR 0019) : ✅ 40 outils, points sur objet, arcs, polygones, coniques, transformations, mesures, curseurs animés, lieux, relations, liste et propriétés des objets, annuler et refaire, aimant. Reste : texte libre, trace d'un point, fonctions dans la figure, saisie d'équations, formes dessinées reconnues, tangence entre coniques
@@ -94,7 +94,7 @@
 2. ⏳ Choix de la langue dans les réglages, malgré la langue de l'appareil ; revue fr/en de tous les textes
 3. ⏳ Historique : feuilles enregistrées, renommer, supprimer avec annulation
 4. ⏳ TalkBack réel, grands textes, animations coupées (dont l'indicateur de la barre du bas)
-5. ⏳ **Exporter une feuille en PDF ou PNG** (demande d'Antsa, pas urgent)
+5. 🔄 ✅ **Exporter en PDF ou PNG** Feuille, Graphe, Figure (ADR 0022), sur émulateur. Reste : essai sur appareil arm64 réel ; partager vers une autre app si Antsa le demande
 6. ⏳ Essais du script sur chaque support : `tool/essai_appareil.sh` bascule encore le mode de l'appareil (ADR 0012)
 7. ⏳ Budgets de `CLAUDE.md` mesurés à chaque version ; alléger l'APK
 

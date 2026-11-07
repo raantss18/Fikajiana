@@ -16,6 +16,8 @@ import java.io.File
 class MainActivity : FlutterActivity() {
     private var evenementsStylet = 0
     private var pointsStylet = 0
+    private var aEnregistrer: ByteArray? = null
+    private var reponseEnregistrer: MethodChannel.Result? = null
 
     // Pour le spike : ce qu'Android livre, historique compris, à comparer à ce que Flutter reçoit.
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
@@ -54,6 +56,20 @@ class MainActivity : FlutterActivity() {
                             resultat.success(true)
                         }
                     }
+                    // Android demande où mettre le fichier : aucune autorisation (ADR 0022).
+                    "enregistrer" -> {
+                        aEnregistrer = appel.argument<ByteArray>("octets")
+                        reponseEnregistrer = resultat
+                        @Suppress("DEPRECATION")
+                        startActivityForResult(
+                            Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                                addCategory(Intent.CATEGORY_OPENABLE)
+                                type = appel.argument<String>("type")
+                                putExtra(Intent.EXTRA_TITLE, appel.argument<String>("nom"))
+                            },
+                            CODE_ENREGISTRER,
+                        )
+                    }
                     else -> resultat.notImplemented()
                 }
             }
@@ -73,11 +89,44 @@ class MainActivity : FlutterActivity() {
             }
     }
 
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        @Suppress("DEPRECATION")
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode != CODE_ENREGISTRER) return
+        val octets = aEnregistrer
+        val reponse = reponseEnregistrer
+        aEnregistrer = null
+        reponseEnregistrer = null
+        val destination = data?.data
+        if (resultCode != RESULT_OK || destination == null || octets == null) {
+            reponse?.success(false)
+            return
+        }
+        // Hors du fil principal : un fournisseur de documents peut être lent.
+        Thread {
+            val erreur = try {
+                contentResolver.openOutputStream(destination)!!.use { it.write(octets) }
+                null
+            } catch (e: Exception) {
+                e.message ?: "écriture impossible"
+            }
+            runOnUiThread {
+                if (erreur == null) reponse?.success(true)
+                else reponse?.error("enregistrer", erreur, null)
+            }
+        }.start()
+    }
+
     private fun derniersArrets(): List<String> {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return emptyList()
         val gestionnaire = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         return gestionnaire.getHistoricalProcessExitReasons(packageName, 0, 3).map {
             "raison ${it.reason}, signal ${it.status}, ${it.description ?: "sans description"}"
         }
+    }
+
+    private companion object {
+        const val CODE_ENREGISTRER = 4242
     }
 }

@@ -114,6 +114,25 @@ Courbe? lireCourbe(String latex) {
   }
 }
 
+/// Ce qui n'a de sens que tracé : `x^2+y^2=9`, `(\cos(t),\sin(t))`,
+/// `r=1+\cos(\theta)`. `x^2=2`, `2y=4` ou `r=2` restent des équations à résoudre.
+bool estCourbeSeule(String latex) {
+  final Courbe? courbe;
+  try {
+    courbe = lireCourbe(latex);
+  } on Object {
+    return false;
+  }
+  if (courbe == null) return false;
+  bool contient(String nom) => RegExp('\\b$nom\\b').hasMatch(courbe!.corps);
+  return switch (courbe.genre) {
+    GenreCourbe.fonction => false,
+    GenreCourbe.parametree => true,
+    GenreCourbe.polaire => contient('theta') || contient('t'),
+    GenreCourbe.implicite => contient('x') && contient('y'),
+  };
+}
+
 Courbe? _lire(String latex) {
   var texte = latex.trim();
   double? debut;
