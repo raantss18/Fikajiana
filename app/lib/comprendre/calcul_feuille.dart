@@ -87,6 +87,7 @@ class BlocCalcul {
       ..verite = json['verite'] as bool?
       ..resultat = json['resultat'] as String?
       ..corrige = json['co'] as bool? ?? false
+      ..sansLimite = json['sl'] as bool? ?? false
       ..approche = json['approche'] as String?
       ..inchange = json['inchange'] as bool? ?? false
       ..hauteurLigne = (json['hl'] as num?)?.toDouble()
@@ -188,7 +189,11 @@ class BlocCalcul {
   /// Une expression sans `=` ne demande rien.
   bool get montreResultat {
     if (etat != EtatBloc.fait || verite != null || courbeSeule) return false;
-    return estSaisie || finitParEgal || estResolution || demandeResultat;
+    return estSaisie ||
+        finitParEgal ||
+        estResolution ||
+        demandeResultat ||
+        sansLimite;
   }
 
   /// Rien d'écrit juste dessous : une solution peut s'y poser.
@@ -199,6 +204,9 @@ class BlocCalcul {
 
   /// Corrigé à la main : « Relire la feuille » ne le regroupe pas.
   bool corrige = false;
+
+  /// Une limite demandée qui n'existe pas : la réponse est « pas de limite ».
+  bool sansLimite = false;
 
   /// `f'(x)`, `det(…)` sans `=` : l'app l'écrit devant la valeur. Une
   /// équation se résout dessous, sans `=` (« x+3=4 = {1} » serait faux).
@@ -235,6 +243,9 @@ class BlocCalcul {
 
   /// Ce qu'il faut afficher selon le mode, en LaTeX.
   String? texte({required bool approcheVoulue, required bool virgule}) {
+    if (sansLimite) {
+      return virgule ? r'\mathrm{pas\,de\,limite}' : r'\mathrm{no\,limit}';
+    }
     final exact = resultat;
     // Une valeur que Giac n'a trouvée que numériquement est déjà approchée.
     final choisie = _approcheChoisie(approcheVoulue: approcheVoulue);
@@ -375,6 +386,7 @@ class BlocCalcul {
       zone.right > _bordDroit || _voisins.any(zone.deflate(1).overlaps);
 
   void _oublierResultat() {
+    sansLimite = false;
     verite = null;
     resultat = null;
     approche = null;
@@ -400,6 +412,7 @@ class BlocCalcul {
     'resultat': resultat,
     'approche': approche,
     'co': corrige,
+    'sl': sansLimite,
     'inchange': inchange,
     'points': _points,
     'hl': ?hauteurLigne,
@@ -1148,6 +1161,14 @@ class CalculFeuille extends ChangeNotifier {
     final exact = reponse.exact.trim();
     if (reponse.arrete) {
       bloc.etat = EtatBloc.arrete;
+    } else if (reponse.erreur == null &&
+        analyse.giac.startsWith('limit(') &&
+        const {'undef', 'infinity'}.contains(exact)) {
+      // Une limite qui n'existe pas (infini sans signe, ou rien) est une
+      // réponse, pas une erreur (Pad 7 d'Antsa : `lim (x²−3)/(x−3)` en 3).
+      bloc
+        ..sansLimite = true
+        ..etat = EtatBloc.fait;
     } else if (reponse.erreur != null ||
         // `infinity` sans signe : 1/0 n'a pas de valeur, ce n'est pas un résultat.
         const {'undef', 'infinity', ''}.contains(exact)) {

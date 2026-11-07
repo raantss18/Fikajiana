@@ -291,6 +291,43 @@ void main() {
       expect(calcul.blocs.single.estApproche(approcheVoulue: true), isFalse);
     });
 
+    test('une limite qui n’existe pas s’écrit « pas de limite »', () async {
+      lecteur.reponse = r'\lim_{x \to 3} \frac{x^{2}-3}{x-3}=';
+      moteur.reponse = const ReponseGiac(
+        exact: 'infinity',
+        latex: r'\infty',
+        approche: '',
+      );
+      _trait(encre, 0, 0);
+      calcul.encreChangee();
+      await _attendre();
+      final bloc = calcul.blocs.single;
+      expect(bloc.etat, EtatBloc.fait);
+      expect(bloc.sansLimite, isTrue);
+      expect(
+        bloc.texte(approcheVoulue: false, virgule: true),
+        r'\mathrm{pas\,de\,limite}',
+      );
+      expect(
+        bloc.texte(approcheVoulue: false, virgule: false),
+        r'\mathrm{no\,limit}',
+      );
+      expect(bloc.ecriture(approcheVoulue: false, virgule: true), isNotNull);
+    });
+
+    test('1/0 reste sans résultat', () async {
+      lecteur.reponse = r'\frac{1}{0}=';
+      moteur.reponse = const ReponseGiac(
+        exact: 'infinity',
+        latex: r'\infty',
+        approche: '',
+      );
+      _trait(encre, 0, 0);
+      calcul.encreChangee();
+      await _attendre();
+      expect(calcul.blocs.single.etat, EtatBloc.sansResultat);
+    });
+
     test('ce que Giac rend tel quel se montre approché', () async {
       lecteur.reponse = r'\ln(5)=';
       moteur.reponse = const ReponseGiac(

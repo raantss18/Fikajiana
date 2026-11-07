@@ -4,6 +4,7 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Une limite qui n'existe pas s'écrit « pas de limite » au lieu d'une erreur. / A limit that does not exist is written "no limit" instead of an error.
 ### Changements
 
 - La lecture au tracé lit aussi les minuscules usuelles (x, y, n, t, e, f…), π, `f'`, les fractions, les racines et les nombres à virgule ; dans le doute, le modèle lit toujours la ligne. / Stroke reading now also reads common lowercase letters (x, y, n, t, e, f…), π, `f'`, fractions, square roots and decimal numbers; when in doubt, the model still reads the line.
