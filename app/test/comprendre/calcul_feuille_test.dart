@@ -260,6 +260,37 @@ void main() {
       expect(moteur.entrees, hasLength(1));
     });
 
+    test('une valeur approchée se marque ≈, une décimale exacte non', () async {
+      moteur.reponse = const ReponseGiac(
+        exact: '1/3',
+        latex: r'\frac{1}{3}',
+        approche: '0.333333333333',
+      );
+      _trait(encre, 0, 0);
+      calcul.encreChangee();
+      await _attendre();
+      final tiers = calcul.blocs.single;
+      expect(tiers.estApproche(approcheVoulue: false), isFalse);
+      expect(tiers.estApproche(approcheVoulue: true), isTrue);
+      calcul.dispose();
+      encre = Encre();
+      calcul = CalculFeuille(
+        encre: encre,
+        lecteur: lecteur,
+        moteur: moteur,
+        pause: Duration.zero,
+      );
+      moteur.reponse = const ReponseGiac(
+        exact: '1/4',
+        latex: r'\frac{1}{4}',
+        approche: '0.25',
+      );
+      _trait(encre, 0, 0);
+      calcul.encreChangee();
+      await _attendre();
+      expect(calcul.blocs.single.estApproche(approcheVoulue: true), isFalse);
+    });
+
     test('ce que Giac rend tel quel se montre approché', () async {
       lecteur.reponse = r'\ln(5)=';
       moteur.reponse = const ReponseGiac(
@@ -646,8 +677,8 @@ void main() {
       );
       final simple = await lire('2+3=', 0, 0);
       expect(simple.egalAjoute, isFalse);
-      // Les deux traits du « = ».
-      expect(ecrit(simple)!.contours.length, avecEgal - 2);
+      // Le « = » ajouté se voit : il manque à la ligne qui l'a déjà.
+      expect(ecrit(simple)!.contours.length, lessThan(avecEgal));
     });
 
     test('une équation garde sa solution dessous, sans =', () async {

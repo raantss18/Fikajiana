@@ -32,6 +32,11 @@ dev_dependencies:
 flutter:
   generate: true
   uses-material-design: true
+  # Les licences OFL voyagent avec les polices (Nunito, et les tracés de
+  # Caveat dans `glyphes_caveat.dart`) : page des licences de l'app.
+  assets:
+    - assets/polices/OFL-Nunito.txt
+    - assets/polices/OFL-Caveat.txt
   fonts:
     - family: Nunito
       fonts:

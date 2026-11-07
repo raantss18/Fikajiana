@@ -353,6 +353,9 @@ Analyse? _equationMatricielle(
   final matrice = sansParentheses(aGauche ? produit[1]! : produit[2]!);
   if (matrice == null) return null;
   var second = droite.trim();
+  // `(([[5],[6]]))` d'une matrice déclarée : la matrice seule.
+  final seule = RegExp(r'^\(+(\[\[[^()]*\]\])\)+$').firstMatch(second);
+  if (seule != null) second = seule[1]!;
   final vecteur = vecteurs[second];
   if (vecteur != null) {
     second = '[[${_nombreGiac(vecteur.$1)}],[${_nombreGiac(vecteur.$2)}]]';

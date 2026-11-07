@@ -339,8 +339,29 @@ class RepereBloc extends StatelessWidget {
             approcheVoulue: reglages.approche,
             virgule: virgule,
           );
-          if (!bloc.montreResultat || valeur == null) {
-            if (enExport || bloc.estSaisie) return const SizedBox.shrink();
+          final sansResultat = !bloc.montreResultat || valeur == null;
+          if (sansResultat && bloc.estSaisie) {
+            // `A=[1,2;3,4]` tapée déclare A : rien à calculer, mais la ligne
+            // s'écrit comme les autres (vu sur le Pad 7, elle disparaissait).
+            final latex = bloc.latex;
+            if (latex == null || latex.isEmpty) return const SizedBox.shrink();
+            return Positioned(
+              left: dessous.dx,
+              top: dessous.dy,
+              child: TraverseEcriture(
+                child: InkWell(
+                  onTap: () => unawaited(_corriger(context)),
+                  child: _Formule(
+                    latex: latex,
+                    couleur: encre,
+                    manuscrite: true,
+                  ),
+                ),
+              ),
+            );
+          }
+          if (sansResultat) {
+            if (enExport) return const SizedBox.shrink();
             // Rien à afficher, mais on doit pouvoir voir ce qui a été lu.
             return _AVerifier(
               bloc: bloc,
@@ -355,12 +376,16 @@ class RepereBloc extends StatelessWidget {
               ? dessous
               : droite + const Offset(AppEspacement.sm, -14);
           final ecrit = _sansEgalFinal(bloc.latex ?? '');
+          // Une valeur approchée se marque `≈` (repris de Mikajy).
+          final egal = bloc.estApproche(approcheVoulue: reglages.approche)
+              ? r'\approx'
+              : '=';
           final reponse = bloc.egalAjoute
-              ? '= $valeur'
+              ? '$egal $valeur'
               : !bloc.estSaisie
               ? valeur
               : !bloc.estResolution
-              ? '= $valeur'
+              ? '$egal $valeur'
               // `x+3=4 = {1}` serait faux : deux écritures équivalentes.
               : valeur.startsWith('S=')
               ? valeur

@@ -151,6 +151,9 @@ ObjetLu? lireObjet(String latex) {
     RegExp(r'\\binom\{([^{}]*)\}\{([^{}]*)\}'),
     (m) => '(${m[1]};${m[2]})',
   );
+  // `B=[5;6]` au clavier : une matrice déclarée pour `AX=B`, pas un
+  // vecteur à placer (vu sur le Pad 7).
+  if (RegExp(r'^[A-Z]=\\begin\{[pb]?matrix\}').hasMatch(s)) return null;
   // Une colonne : le vecteur s'écrit debout.
   final colonne = _colonne.firstMatch(s);
   final enColonne = colonne != null;

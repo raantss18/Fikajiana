@@ -33,14 +33,14 @@ void main() {
     for (final ecrit in ['AX=B', r'A\cdot X=B', r'A\times X=B']) {
       final r = analyserLatex(ecrit, valeurs: valeurs);
       expect(r.inconnueMatrice, 'X', reason: ecrit);
-      expect(r.giac, 'inv([[1,2],[3,4]])*(([[5],[6]]))', reason: ecrit);
+      expect(r.giac, 'inv([[1,2],[3,4]])*([[5],[6]])', reason: ecrit);
     }
   });
 
   test('XA=B : X = BA⁻¹', () {
     final r = analyserLatex('XA=C', valeurs: {...valeurs, 'C': '[[1,0]]'});
     expect(r.inconnueMatrice, 'X');
-    expect(r.giac, '(([[1,0]]))*inv([[1,2],[3,4]])');
+    expect(r.giac, '([[1,0]])*inv([[1,2],[3,4]])');
   });
 
   test('AX=B avec un vecteur B déclaré par ses coordonnées', () {

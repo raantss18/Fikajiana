@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui';
 
+import 'package:fikajiana/comprendre/glyphes_caveat.dart';
 import 'package:perfect_freehand/perfect_freehand.dart';
 
 /// Écrit un résultat comme un trait de stylet, juste après le signe `=`.
@@ -539,7 +540,12 @@ class _Compositeur {
     return _element();
   }
 
+  /// Dans `\mathbb{R}`, les lettres sont les ensembles tracés (ℝ, ℤ).
+  var _ensemble = false;
+
   _Boite _lettre(String c) {
+    final police = _ensemble ? null : _lettreCaveat(c == '-' ? '−' : c);
+    if (police != null) return police;
     final g = _glyphes[c];
     if (g == null) throw const _NonPrisEnCharge();
     return _Boite(
@@ -579,11 +585,13 @@ class _Compositeur {
     final nom = _s.substring(debut, _i);
     return switch (nom) {
       'sin' || 'cos' || 'tan' || 'ln' || 'log' || 'exp' => _mot(nom),
-      'mathrm' || 'operatorname' || 'mathbb' || 'text' => _groupe(),
+      'mathbb' => _dansEnsemble(),
+      'mathrm' || 'operatorname' || 'text' => _groupe(),
       'iff' || 'Leftrightarrow' => _lettre('⇔'),
       'quad' || 'qquad' => const _Boite(0.8, 0, 0, []),
       'in' => _lettre('∈'),
       'leq' => _lettre('≤'),
+      'approx' => _lettre('≈'),
       'geq' => _lettre('≥'),
       'emptyset' => _lettre('∅'),
       'frac' => _fraction(),
@@ -601,6 +609,15 @@ class _Compositeur {
   }
 
   /// Le nom d'une fonction : ses lettres, l'une après l'autre.
+  _Boite _dansEnsemble() {
+    _ensemble = true;
+    try {
+      return _groupe();
+    } finally {
+      _ensemble = false;
+    }
+  }
+
   _Boite _mot(String nom) =>
       _rangee([for (final c in nom.split('')) _lettre(c)]);
 
@@ -734,13 +751,15 @@ class EcritureResultat {
   /// finis, puis le début du trait en cours.
   List<Path> ecrit(double avancee) {
     if (avancee >= 1 || traces.length != contours.length) return contours;
-    final total = traces.fold(0, (s, t) => s + t.length);
+    // Une lettre de la police compte comme un trait de 24 points.
+    int poids(List<PointVector> t) => t.isEmpty ? 24 : t.length;
+    final total = traces.fold(0, (s, t) => s + poids(t));
     var reste = (avancee.clamp(0.0, 1.0) * total).round();
     final faits = <Path>[];
     for (var k = 0; k < traces.length && reste > 0; k++) {
-      if (reste >= traces[k].length) {
+      if (reste >= poids(traces[k]) || traces[k].isEmpty) {
         faits.add(contours[k]);
-        reste -= traces[k].length;
+        reste -= math.min(reste, poids(traces[k]));
       } else {
         final partiel = _contour(
           traces[k].sublist(0, reste),
@@ -846,7 +865,10 @@ EcritureResultat? ecrireResultat(
   // Une fraction redressée double la hauteur, pas la taille de l'écriture.
   final hauteur = hauteurLigne ?? ecriture.height;
   final reference = dessous ? math.min(hauteur, 70) : hauteur;
-  final echelle = ((reference * 0.8) / total).clamp(
+  // Une matrice garde des chiffres de la taille de l'écriture : elle déborde
+  // la ligne plutôt que de rapetisser (vu sur le Pad 7, illisible).
+  final mesure = latex.contains(r'\begin{') ? math.min(total, 1.6) : total;
+  final echelle = ((reference * 0.8) / mesure).clamp(
     _hauteurMin / total,
     _hauteurMax,
   );
@@ -863,8 +885,16 @@ EcritureResultat? ecrireResultat(
 EcritureResultat? _tracer(_Boite boite, double echelle, Offset origine) {
   final contours = <Path>[];
   final traces = <List<PointVector>>[];
-  final taille = math.max(3.2, echelle * 0.075);
+  // Proportionnelle, comme le trait de Caveat : à petite taille, un
+  // minimum fixe empâtait `⇔` et les crochets (Pad 7).
+  final taille = math.max(1.4, echelle * 0.075);
   for (var k = 0; k < boite.traces.length; k++) {
+    // Une lettre de Caveat : son contour se remplit, il ne se trace pas.
+    if (_estPlein(boite.traces[k])) {
+      contours.add(_remplir(boite.traces[k], echelle, origine));
+      traces.add(const []);
+      continue;
+    }
     if (boite.traces[k].length < 2) continue;
     final points = _densifier(boite.traces[k]);
     final vecteurs = <PointVector>[];
@@ -885,4 +915,106 @@ EcritureResultat? _tracer(_Boite boite, double echelle, Offset origine) {
       .map((c) => c.getBounds())
       .reduce((a, b) => a.expandToInclude(b));
   return EcritureResultat(contours, cadre, traces: traces, taille: taille);
+}
+
+// Les lettres de Caveat (ADR 0034) : contours aplatis, en unités de lettre,
+// ligne de base en y = 0. Le premier point, infini, marque un contour plein ;
+// un point d'abscisse infinie sépare ses sous-contours.
+const Offset _plein = Offset.infinite;
+const Offset _coupure = Offset(double.infinity, 0);
+
+bool _estPlein(_Trace t) =>
+    t.isNotEmpty && t.first.dx.isInfinite && t.first.dy.isInfinite;
+
+final Map<String, (double, _Trace, double, double)?> _caveat = {};
+
+/// La lettre [c] dans Caveat, ou `null` si la police ne l'a pas.
+_Boite? _lettreCaveat(String c) {
+  final lu = _caveat.putIfAbsent(c, () {
+    final g = glyphesCaveat[c];
+    if (g == null) return null;
+    final (_, chemin) = g;
+    final brut = _aplatir(chemin);
+    final finis = [
+      for (final p in brut)
+        if (p.dx.isFinite) p,
+    ];
+    if (finis.isEmpty) return null;
+    // Calée sur son encre, comme les lettres tracées : l'espace entre deux
+    // lettres est celui de la rangée, pas la marge de la police.
+    final gauche = finis.map((p) => p.dx).reduce(math.min);
+    final droite = finis.map((p) => p.dx).reduce(math.max);
+    final decale = Offset(gauche, 0);
+    final points = [
+      for (final p in brut)
+        if (p.dx.isFinite) p - decale else p,
+    ];
+    final ys = finis.map((p) => p.dy);
+    return (droite - gauche, points, -ys.reduce(math.min), ys.reduce(math.max));
+  });
+  if (lu == null) return null;
+  final (largeur, points, haut, bas) = lu;
+  return _Boite(largeur, math.max(haut, 0.3), math.max(bas, 0), [points]);
+}
+
+/// `M x y L x y Q cx cy x y Z` en points, les courbes en petits segments.
+_Trace _aplatir(String chemin) {
+  final t = chemin.split(' ');
+  final sortie = <Offset>[_plein];
+  var i = 0;
+  var courant = Offset.zero;
+  Offset lire() {
+    final p = Offset(double.parse(t[i]), double.parse(t[i + 1]) - 1);
+    i += 2;
+    return p;
+  }
+
+  while (i < t.length) {
+    final op = t[i++];
+    switch (op) {
+      case 'M':
+        if (sortie.length > 1) sortie.add(_coupure);
+        courant = lire();
+        sortie.add(courant);
+      case 'L':
+        courant = lire();
+        sortie.add(courant);
+      case 'Q':
+        final ctrl = lire();
+        final fin = lire();
+        for (var k = 1; k <= 4; k++) {
+          final u = k / 4;
+          sortie.add(
+            courant * ((1 - u) * (1 - u)) +
+                ctrl * (2 * u * (1 - u)) +
+                fin * (u * u),
+          );
+        }
+        courant = fin;
+      case 'Z':
+        break;
+    }
+  }
+  return sortie;
+}
+
+/// Le contour plein, mis en place sur la page.
+Path _remplir(_Trace t, double echelle, Offset origine) {
+  final chemin = Path();
+  var debut = true;
+  for (final p in t.skip(1)) {
+    if (p.dx.isInfinite) {
+      chemin.close();
+      debut = true;
+      continue;
+    }
+    final q = p * echelle + origine;
+    if (debut) {
+      chemin.moveTo(q.dx, q.dy);
+      debut = false;
+    } else {
+      chemin.lineTo(q.dx, q.dy);
+    }
+  }
+  return chemin..close();
 }

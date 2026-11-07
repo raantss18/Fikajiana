@@ -113,6 +113,11 @@ void main() {
     point('A(1,5;2)', 'A', 1.5, 2);
     point(r'B(\frac{1}{2};-3)', 'B', 0.5, -3);
     vecteur(r'\overrightarrow{AB}\begin{pmatrix}1\\3\end{pmatrix}', 'AB', 1, 3);
+
+    test('B=[5;6] tapé déclare une matrice : rien à placer', () {
+      expect(lireObjet(lireSaisie('B=[5;6]').latex!), isNull);
+      expect(lireObjet(r'A=\begin{pmatrix}1&2\\3&4\end{pmatrix}'), isNull);
+    });
     vecteur(
       r'\overrightarrow { A B } \left( \begin{array} { c } 1 \\ 3 \end{array} \right)',
       'AB',
