@@ -155,7 +155,9 @@ class BlocCalcul {
 
   /// Une équation ou un système : le résultat n'est pas une valeur à égaler.
   bool get estResolution =>
-      type == TypeExpression.equation || type == TypeExpression.systeme;
+      type == TypeExpression.equation ||
+      type == TypeExpression.systeme ||
+      type == TypeExpression.suite;
 
   /// Ce qu'il faut afficher selon le mode, en LaTeX.
   String? texte({required bool approcheVoulue, required bool virgule}) {

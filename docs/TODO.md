@@ -45,6 +45,7 @@ Déjà livré ce jour : rature et stylet (0.6.1), lueur et trait ondulé (0.7.1)
 - 🔄 2026-11-07 : un trait commencé sur un résultat ou un `?` disparaît, donc on ne rature pas un résultat en partant de lui (Pad 7, stylet simulé). Cause : ces zones captent le pointeur. Elles le partagent avec la feuille (`TraverseEcriture`) ; même classe : boutons Arrêter, Tracer et cartes. Tests dans `traverse_ecriture_test.dart`. Vu sur le Pad 7 au stylet simulé : rature partie du résultat, Annuler, correction.
 - 🔄 2026-11-07 : `√29` se lit `(29` dans un résultat (Pad 7). Cause : signe de racine trop serré. Signe élargi, vu sur le Pad 7 ; test dans `ecriture_resultat_test.dart`.
 - ✅ 2026-11-07 : résultats faux sans avertissement, trouvés par inventaire (ADR 0025) : bornes d'intégrale perdues sans accolades, déterminant rendu comme une matrice, `\frac{d}{dx}` et `\operatorname{ppcm}` lus comme des produits, `u_{n+1}` lu `u_n+1`, `x=x>2` pour une inéquation. Même classe cherchée sur 131 cas ; protégés par `analyse_test.dart` et le banc SymPy. Reste : banc sur arm64 réel.
+- 🔄 2026-11-07 : un calcul peut figer le moteur : `rsolve` d'ordre 2 ne rend pas la main, même arrêté à 15 s (banc). Évité pour les suites (ADR 0027). Reste : comprendre l'arrêt de Giac, et ne plus bloquer la file si un calcul ne s'arrête pas.
 - ✅ 2026-11-06 : « la page est trop petite » (Antsa, Poco). Page sans bord, glisser et zoomer (ADR 0014).
 
 ## P0 — Une app qui calcule ce qu'on écrit (prioritaire)
@@ -90,8 +91,8 @@ Déjà livré ce jour : rature et stylet (0.6.1), lueur et trait ondulé (0.7.1)
 ## P3 — Calcul formel complet
 
 1. ⏳ Types devinés : calcul, équation, système, fonction, matrice, suite ; actions proposées (résoudre, dériver, intégrer, tracer)
-2. 🔄 ✅ Dérivées, primitives et intégrales, limites, séries, matrices, équations, systèmes, inéquations (ADR 0025). Reste : suites avec `rsolve`, équations différentielles, développer et factoriser
-3. 🔄 ✅ Banc croisé avec SymPy, 131 cas sur émulateur (`tool/banc/`, ADR 0025). Reste : sur arm64 réel ; effet de `DOUBLEVAL` et du retrait de pthread
+2. 🔄 ✅ Dérivées, primitives et intégrales, limites, séries, matrices, équations, systèmes, inéquations (ADR 0025). ✅ Suites `u_{n+1}=a·u_n+b` (ADR 0027). Reste : suites d'ordre 2 et non affines, équations différentielles, développer et factoriser
+3. 🔄 ✅ Banc croisé avec SymPy, 140 cas sur émulateur (`tool/banc/`, ADR 0025). Reste : sur arm64 réel ; effet de `DOUBLEVAL` et du retrait de pthread
 4. ⏳ Liste publique et honnête de ce que l'app sait faire ou non ; manques comblés par règles ciblées
 5. ⏳ Signaler à Giac le dépassement de tampon (action publique : à valider par Antsa)
 6. ❌ Écarté : SageMath, Maxima (lourds), Symbolica (licence), calcul formel sur GPU (aucune preuve d'intérêt)

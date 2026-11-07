@@ -4,6 +4,7 @@
 import 'dart:convert';
 
 import 'package:fikajiana/moteur/giac.dart';
+import 'package:fikajiana/moteur/moteur.dart';
 import 'package:fikajiana_math/fikajiana_math.dart';
 import 'package:flutter/widgets.dart';
 
@@ -106,12 +107,15 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final liste = (jsonDecode(referencesJson) as List<dynamic>)
       .cast<Map<String, dynamic>>();
+  // Le même délai que dans l'app : un calcul trop long est un écart.
+  final moteur = MoteurGiac();
   final bons = <String, int>{};
   final totaux = <String, int>{};
   for (final cas in liste) {
     final famille = cas['f'] as String;
     final latex = cas['l'] as String;
     totaux[famille] = (totaux[famille] ?? 0) + 1;
+    print('BANC CAS $latex');
     var ecart = '';
     try {
       final definition = cas['d'] as String?;
@@ -122,8 +126,10 @@ Future<void> main() async {
             ? const {}
             : {avant.nomFonction!: avant.definition!},
       );
-      final reponse = await calculerGiac(analyse.giac);
-      ecart = reponse.erreur != null
+      final reponse = await moteur.calculer(analyse.giac);
+      ecart = reponse.arrete
+          ? 'arrêté après le délai de l’app (${analyse.giac})'
+          : reponse.erreur != null
           ? 'erreur Giac : ${reponse.erreur} (${analyse.giac})'
           : await _verifier(cas, reponse);
     } on Object catch (e) {

@@ -17,10 +17,20 @@ adb shell am force-stop "$paquet"
 ecran=$(adb shell dumpsys display | sed -n 's/.*mDisplayId=\([1-9][0-9]*\).*/\1/p' | head -1)
 depart=$(adb shell date '+%m-%d\ %H:%M:%S.000')
 adb shell am start ${ecran:+--display "$ecran"} -n "$paquet/mg.fikajiana.app.MainActivity" > /dev/null
-lire() { adb logcat -d -T "$depart" -v raw -s flutter:I | grep 'BANC' || true; }
-for _ in $(seq 1 250); do
-  if lire | grep -q 'BANC FIN'; then break; fi
-  sleep 2
+lire() { adb logcat -d -T "$depart" -v raw -s flutter:I | command grep -a 'BANC' || true; }
+# Un cas qui ne rend pas la main se voit : plus rien ne s'écrit pendant 60 s.
+avant=-1
+immobile=0
+while [ "$immobile" -lt 30 ]; do
+  sortie=$(lire)
+  if printf '%s' "$sortie" | command grep -aq 'BANC FIN'; then break; fi
+  nombre=$(printf '%s' "$sortie" | wc -l)
+  if [ "$nombre" = "$avant" ]; then immobile=$((immobile + 1)); else immobile=0; fi
+  avant=$nombre
+  python3 -c 'import time; time.sleep(2)'
 done
-lire
+lire | command grep -av 'BANC CAS' || true
+if [ "$immobile" -ge 30 ]; then
+  echo "BANC BLOQUE sur : $(lire | tail -1)"
+fi
 adb shell am force-stop "$paquet"

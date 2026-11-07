@@ -15,23 +15,26 @@ Une ligne par changement, en français et en anglais.
 
 ### Message fr
 
-Le calcul formel est plus sûr et plus complet. Dérive avec `f'(2)` ou `\frac{d}{dx}`, résous `x^2<4`, calcule un déterminant, un pgcd, une limite à droite. Corrige aussi des résultats faux : une intégrale écrite `\int_0^1` sans accolades perdait ses bornes. Chaque famille de calcul est vérifiée face à un second logiciel. Au clavier, tape comme tu écris : `x²`, `sin 2x`, `racine de 2`.
+Le calcul formel est plus sûr et plus complet. Dérive avec `f'(2)` ou `\frac{d}{dx}`, résous `x^2<4`, calcule un déterminant, un pgcd, une limite à droite, le terme général d'une suite. Corrige aussi des résultats faux : une intégrale écrite `\int_0^1` sans accolades perdait ses bornes. Chaque famille de calcul est vérifiée face à un second logiciel. Au clavier, tape comme tu écris : `x²`, `sin 2x`, `racine de 2`.
 
 ### Message en
 
-Symbolic calculation is safer and more complete. Differentiate with `f'(2)` or `\frac{d}{dx}`, solve `x^2<4`, compute a determinant, a gcd, a one-sided limit. Also fixes wrong results: an integral written `\int_0^1` without braces lost its bounds. Every family of calculation is checked against a second program. On the keyboard, type as you write: `x²`, `sin 2x`, `sqrt 2`.
+Symbolic calculation is safer and more complete. Differentiate with `f'(2)` or `\frac{d}{dx}`, solve `x^2<4`, compute a determinant, a gcd, a one-sided limit, the general term of a sequence. Also fixes wrong results: an integral written `\int_0^1` without braces lost its bounds. Every family of calculation is checked against a second program. On the keyboard, type as you write: `x²`, `sin 2x`, `sqrt 2`.
 
 ### Changements
 
+- Suites : `u_{n+1}=2u_n+1` avec `u_0=0` donne le terme général. / Sequences: `u_{n+1}=2u_n+1` with `u_0=0` gives the general term.
 - Corrige des résultats faux : bornes d'intégrale sans accolades, déterminant écrit entre barres, noms de fonctions lus comme des produits de lettres. Ce qui n'est pas compris est refusé. / Fixes wrong results: integral bounds without braces, determinants written between bars, function names read as products of letters. What is not understood is refused.
 - Dérivées, inéquations, limites à droite et à gauche, pgcd, ppcm, modulo, combinaisons, partie entière, logarithme de base b, transposée, conjugué, argument, pourcentage. / Derivatives, inequalities, one-sided limits, gcd, lcm, modulo, combinations, floor and ceiling, base-b logarithm, transpose, conjugate, argument, percent.
 - `y=2x+1` laisse `y` libre pour la suite. / `y=2x+1` leaves `y` free for later.
 - La feuille retient ce que vous définissez : après `f(x)=x+5`, `f'(x)` donne la dérivée, `f(2)` la valeur, et `f(x)=0` se résout. / The sheet remembers what you define: after `f(x)=x+5`, `f'(x)` gives the derivative, `f(2)` the value, and `f(x)=0` is solved.
 - Le déterminant se calcule : `det` devant une matrice, ou une matrice entre barres. / Determinants are calculated: `det` before a matrix, or a matrix between bars.
 - `A(1;2)` et un vecteur `AB` ou `u` avec ses coordonnées se placent en Géométrie d'un toucher. / `A(1;2)` and a vector `AB` or `u` with its coordinates can be placed in Geometry with one tap.
-
 - Au clavier, tapez comme vous écrivez : `x^2+3x-5=0`, `x²`, `sin 2x`, `racine de 2`, `3,5` ou du LaTeX. L'aperçu montre ce qui est compris, et le bouton dit ce qui va se passer : Calculer, Résoudre en x ou Tracer. / On the keyboard, type as you write: `x^2+3x-5=0`, `x²`, `sin 2x`, `sqrt 2`, `3,5` or LaTeX. The preview shows what is understood, and the button says what will happen: Calculate, Solve for x or Plot.
 - `sin 2x` écrit à la main est maintenant `sin(2x)`, et une intégrale `∫_0^1` garde ses bornes. / Handwritten `sin 2x` now means `sin(2x)`, and an integral `∫_0^1` keeps its bounds.
+- Deux lignes écrites serrées ne se lisent plus comme une seule, et un résultat ne s'écrit plus sur la ligne d'en dessous. / Two lines written close together are no longer read as one, and a result no longer lands on the line below.
+- La lecture comprend mieux une écriture réelle : un `f` ou un `g` à la main, l'apostrophe de `f'`, un `(x)` écrit haut, le `e` de `e^x`. / Reading understands real handwriting better: a handwritten `f` or `g`, the prime in `f'`, a raised `(x)`, the `e` in `e^x`.
+- Deux espaces, toujours en vue : Feuille pour écrire et calculer, Figure pour les courbes et la géométrie, réunies sur les mêmes axes. Tracer et Placer y mènent. / Two spaces, always in sight: Sheet to write and calculate, Figure for curves and geometry, together on the same axes. Plot and Place lead there.
 
 ## [0.7.2] — 2026-11-07
 

@@ -1234,6 +1234,132 @@ const String referencesJson = r'''
 "d": "f(x)=x^2+1"
 },
 {
+"f": "suites",
+"l": "\\begin{cases}u_{n+1}=2u_n\\\\u_0=1\\end{cases}",
+"g": "fonction",
+"v": "n",
+"p": [
+2,
+5
+],
+"a": [
+4.0,
+32.0
+]
+},
+{
+"f": "suites",
+"l": "\\begin{cases}u_{n+1}=u_n+3\\\\u_0=1\\end{cases}",
+"g": "fonction",
+"v": "n",
+"p": [
+2,
+5
+],
+"a": [
+7.0,
+16.0
+]
+},
+{
+"f": "suites",
+"l": "\\begin{cases}u_{n+1}=2u_n+1\\\\u_0=0\\end{cases}",
+"g": "fonction",
+"v": "n",
+"p": [
+2,
+5
+],
+"a": [
+3.0,
+31.0
+]
+},
+{
+"f": "suites",
+"l": "\\begin{cases}v_{n+1}=\\frac{1}{2}v_n\\\\v_0=8\\end{cases}",
+"g": "fonction",
+"v": "n",
+"p": [
+2,
+5
+],
+"a": [
+2.0,
+0.25
+]
+},
+{
+"f": "suites",
+"l": "\\begin{cases}u_{n+1}=-u_n+2\\\\u_0=5\\end{cases}",
+"g": "fonction",
+"v": "n",
+"p": [
+2,
+5
+],
+"a": [
+5.0,
+-3.0
+]
+},
+{
+"f": "suites",
+"l": "\\begin{cases}u_{n+1}=0{,}5u_n+1\\\\u_0=4\\end{cases}",
+"g": "fonction",
+"v": "n",
+"p": [
+2,
+5
+],
+"a": [
+2.5,
+2.0625
+]
+},
+{
+"f": "suites",
+"l": "\\begin{cases}u_{n+1}=u_n\\\\u_0=7\\end{cases}",
+"g": "fonction",
+"v": "n",
+"p": [
+2,
+5
+],
+"a": [
+7.0,
+7.0
+]
+},
+{
+"f": "suites",
+"l": "\\begin{cases}u_{n+1}=3u_n-2\\\\u_1=2\\end{cases}",
+"g": "fonction",
+"v": "n",
+"p": [
+2,
+5
+],
+"a": [
+4.0,
+82.0
+]
+},
+{
+"f": "suites",
+"l": "\\begin{cases}u_n=2u_{n-1}\\\\u_0=3\\end{cases}",
+"g": "fonction",
+"v": "n",
+"p": [
+2,
+5
+],
+"a": [
+12.0,
+96.0
+]
+},
+{
 "f": "verite",
 "l": "2+2=5",
 "g": "verite",
