@@ -193,3 +193,29 @@ bool estDenominateur(Rect bloc, List<Trait> groupe) {
         c.overlaps(Rect.fromLTRB(barre.left, barre.top, barre.right, c.bottom)),
   );
 }
+
+/// Les bornes d'un grand signe : `x → 0` sous `lim`, `5` au-dessus d'un Σ et
+/// `n = 0` dessous (Pad 7 d'Antsa : lues à part, soulignées, et la limite
+/// jamais appliquée). Un groupe étroit, collé au-dessus ou au-dessous du
+/// bloc, à la hauteur d'un de ses grands traits, va avec lui.
+bool estBorne(Rect bloc, List<Trait> traitsDuBloc, List<Trait> groupe) {
+  final g = cadreDuGroupe(groupe);
+  final hauteur = math.max(bloc.height, _hauteurMinimale);
+  // Quelques signes, pas une ligne : `x → 0` est plus large que `lim`.
+  if (g.width > 2.5 * hauteur) return false;
+  // Mesuré au grand trait lui-même (un Σ, le `l` de lim, un ∫), pas au bloc
+  // entier : la fraction écrite à côté descend plus bas que le signe.
+  for (final t in traitsDuBloc) {
+    final c = _cadre(t);
+    if (c.height < 0.55 * hauteur) continue;
+    if (c.right < g.left - 0.3 * hauteur || c.left > g.right + 0.3 * hauteur) {
+      continue;
+    }
+    final dessus = g.bottom <= c.top + 0.15 * hauteur;
+    final dessous = g.top >= c.bottom - 0.15 * hauteur;
+    if (!dessus && !dessous) continue;
+    final ecart = dessus ? c.top - g.bottom : g.top - c.bottom;
+    if (ecart <= 0.6 * hauteur) return true;
+  }
+  return false;
+}
