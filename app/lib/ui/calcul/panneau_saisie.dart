@@ -28,8 +28,14 @@ class VerbeTracer extends Verbe {
   const new();
 }
 
+/// `A(1;2)`, `\\vec{u}(1;3)`.
+class VerbePlacer extends Verbe {
+  const new();
+}
+
 /// Ce que fera ce LaTeX ; `null` s'il ne se comprend pas.
 Verbe? verbeDe(String latex) {
+  if (lireObjet(latex) != null) return const VerbePlacer();
   if (estCourbeSeule(latex)) return const VerbeTracer();
   final Analyse analyse;
   try {
@@ -72,6 +78,7 @@ Future<String?> ouvrirPanneauSaisie(
 /// Les touches qu'un clavier de téléphone cache.
 const _touches = <(String, String, int)>[
   ('√', 'sqrt()', 1),
+  (';', ';', 0),
   ('^', '^', 0),
   ('π', 'π', 0),
   ('/', '/', 0),
@@ -148,6 +155,7 @@ class _PanneauSaisieState extends State<PanneauSaisie> {
         switch (verbe) {
           VerbeResoudre(:final inconnue) => l10n.saisieResoudre(inconnue),
           VerbeTracer() => l10n.grapheTracer,
+          VerbePlacer() => l10n.placerEnGeometrie,
           VerbeCalculer() || null => l10n.saisieCalculer,
         };
   }

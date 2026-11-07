@@ -37,6 +37,7 @@ class Terme {
     this.symboles = const {},
     this.estMatrice = false,
     this.definitionDeFonction,
+    this.fonctionDefinie = false,
   });
 
   /// Texte Giac.
@@ -50,6 +51,9 @@ class Terme {
 
   /// `f(x)` si ce morceau a la forme d'un début de définition.
   final String? definitionDeFonction;
+
+  /// `f(x)` où `f` est déjà définie : déjà remplacée par son corps.
+  final bool fonctionDefinie;
 }
 
 const _ignores = {
@@ -80,6 +84,7 @@ const _ignores = {
 };
 
 const _fonctions = {
+  'det': 'det',
   'sin': 'sin',
   'cos': 'cos',
   'tan': 'tan',
@@ -109,6 +114,7 @@ const _nomsEnLettres = [
   'exp',
   'log',
   'lim',
+  'det',
   'ln',
 ];
 
@@ -142,6 +148,9 @@ class _Jeton {
 }
 
 /// `\operatorname{sin}` et `\mathrm { l n }` valent le nom seul.
+/// `f^{\prime}(x)`, ce que le modèle écrit pour `f'(x)`.
+final _primes = RegExp(r"\^\s*\{?((?:\s*(?:\\prime|')\s*)+)\}?");
+
 final _nomEnveloppe = RegExp(
   r'\\(?:operatorname\*?|mathrm|mathit|rm)\s*\{([^{}]*)\}',
 );
@@ -149,6 +158,10 @@ final _nomEnveloppe = RegExp(
 List<_Jeton> _decouper(String texte) {
   final latex = texte
       .replaceAllMapped(_nomEnveloppe, (m) => ' ${m[1]} ')
+      .replaceAllMapped(
+        _primes,
+        (m) => "'" * RegExp(r"\\prime|'").allMatches(m[1]!).length,
+      )
       .replaceAll('°', r'^{\circ}');
   final jetons = <_Jeton>[];
   var i = 0;
@@ -261,7 +274,14 @@ List<_Jeton> _rassemblerNoms(List<_Jeton> jetons) {
 /// Lecteur à descente récursive d'un sous-ensemble du LaTeX mathématique.
 class LecteurLatex {
   /// Prépare la lecture de [latex].
-  new(String latex, {this.degres = false}) : _jetons = _decouper(latex);
+  new(String latex, {this.degres = false, this.definitions = const {}})
+    : _jetons = _decouper(latex);
+
+  /// Les fonctions déjà définies sur la feuille.
+  final Map<String, DefinitionFonction> definitions;
+
+  /// Une écriture qui demande une réponse sans `=` : `f'(x)`, `det(…)`.
+  bool demandeResultat = false;
 
   /// Les angles sont en degrés.
   final bool degres;
@@ -552,25 +572,40 @@ class LecteurLatex {
       final complet = '${nom}_${indice.giac}';
       return Terme(complet, symboles: _libre(complet));
     }
-    final prime = _prendre("'");
+    var primes = 0;
+    while (_prendre("'")) {
+      primes++;
+    }
+    final definie = definitions[nom];
     final fonction =
-        prime || _nomsDeFonctionsLibres.contains(nom) || _enTeteDeDefinition;
+        primes > 0 ||
+        _nomsDeFonctionsLibres.contains(nom) ||
+        definie != null ||
+        _enTeteDeDefinition;
     if (fonction && _courant.est('(')) {
       _i++;
       final argument = _somme();
       _attendre(')');
-      final appel = prime
-          ? "$nom'(${argument.giac})"
-          : '$nom(${argument.giac})';
       final variableSeule =
-          !prime && RegExp(r'^[a-z]$').hasMatch(argument.giac);
+          primes == 0 && RegExp(r'^[a-z]$').hasMatch(argument.giac);
+      final ecrit = "$nom${"'" * primes}(${argument.giac})";
+      if (definie != null) {
+        demandeResultat = true;
+        return Terme(
+          definie.appel(argument.giac, primes: primes),
+          symboles: {...argument.symboles, ...definie.symboles}
+            ..remove(argument.symboles.isEmpty ? definie.variable : ''),
+          definitionDeFonction: variableSeule ? ecrit : null,
+          fonctionDefinie: true,
+        );
+      }
       return Terme(
-        appel,
+        ecrit,
         symboles: argument.symboles,
-        definitionDeFonction: variableSeule ? appel : null,
+        definitionDeFonction: variableSeule ? ecrit : null,
       );
     }
-    if (prime) throw const ErreurLatex('prime sans parenthèses');
+    if (primes > 0) throw const ErreurLatex('prime sans parenthèses');
     if (nom == 'e' || nom == 'i') return Terme(nom);
     return Terme(nom, symboles: _libre(nom));
   }
@@ -592,7 +627,10 @@ class LecteurLatex {
     _i++;
     if (_constantes.containsKey(nom)) return Terme(_constantes[nom]!);
     if (_grecques.contains(nom)) return Terme(nom, symboles: _libre(nom));
-    if (_fonctions.containsKey(nom)) return _appel(_fonctions[nom]!);
+    if (_fonctions.containsKey(nom)) {
+      if (nom == 'det') demandeResultat = true;
+      return _appel(_fonctions[nom]!);
+    }
     switch (nom) {
       case 'frac' || 'dfrac' || 'tfrac':
         final numerateur = _groupeOuAtome();
@@ -613,17 +651,19 @@ class LecteurLatex {
         return _serie('product');
       case 'begin':
         _i--;
+        final determinant = _nomEnvironnement(0) == 'vmatrix';
         final lignes = _environnement();
         final rangs = lignes
             .map((l) => '[${l.map((c) => c.giac).join(',')}]')
             .join(',');
+        if (determinant) demandeResultat = true;
         return Terme(
-          '[$rangs]',
+          determinant ? 'det([$rangs])' : '[$rangs]',
           symboles: {
             for (final l in lignes)
               for (final c in l) ...c.symboles,
           },
-          estMatrice: true,
+          estMatrice: !determinant,
         );
       default:
         throw ErreurLatex('commande non prise en charge : \\$nom');

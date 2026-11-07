@@ -5,6 +5,8 @@
 /// silence : un mot inconnu est refusé, une lecture ambiguë propose l'autre.
 library;
 
+import 'package:fikajiana_math/src/objets.dart';
+
 /// Pourquoi une saisie ne se lit pas.
 enum ProblemeSaisie {
   /// Un mot que l'on ne connaît pas, dans [Saisie.detail].
@@ -48,6 +50,8 @@ Saisie lireSaisie(String texte) {
   final propre = texte.trim();
   if (propre.isEmpty) return const Saisie.refusee(ProblemeSaisie.incomplet);
   if (propre.contains(r'\') || propre.contains('{')) return Saisie(propre);
+  // `A(1;2)`, `AB(1;3)` : un point ou un vecteur, tel quel.
+  if (lireObjet(propre) != null) return Saisie(propre);
   try {
     final jetons = _decouper(propre);
     final latex = _Traducteur(jetons).traduire();
@@ -209,6 +213,7 @@ const _fonctions = {
   'cos': r'\cos',
   'tan': r'\tan',
   'exp': r'\exp',
+  'det': r'\det',
   'log': r'\log',
   'ln': r'\ln',
 };
