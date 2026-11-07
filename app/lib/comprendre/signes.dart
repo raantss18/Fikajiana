@@ -70,6 +70,14 @@ const Map<String, List<_Dessin>> _chiffres = {
     [
       [(.1, .45), (.6, 0), (.6, 1)],
     ],
+    // Le `1` d'Antsa sur téléphone : le trait monte de tout en bas, en
+    // biais, puis redescend droit ; le modèle y lit `Λ`.
+    [
+      [(0, 1), (.5, .5), (.75, 0), (.73, .5), (.7, 1)],
+    ],
+    [
+      [(0, 1), (.4, .5), (.6, 0), (.66, .5), (.75, 1)],
+    ],
   ],
   '2': [
     [

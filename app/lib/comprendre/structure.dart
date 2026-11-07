@@ -171,7 +171,35 @@ int _parenthese(Trait t, double hauteur) {
   // beaucoup de points en haut.
   if (c.left < math.min(s.first.dx, s.last.dx) - 0.1 * c.height) return 1;
   if (c.right > math.max(s.first.dx, s.last.dx) + 0.1 * c.height) return -1;
-  return 0;
+  // Sinon, mesuré à la corde des deux bouts : une grande parenthèse peu
+  // bombée, écrite penchée, en est une (téléphone d'Antsa : 7 % de sa
+  // hauteur).
+  final (a, b) = (s.first, s.last);
+  final corde = b - a;
+  final longueur = corde.distance;
+  // Une parenthèse descend : un `A` d'un seul trait a ses bouts côte à côte.
+  if (corde.dy.abs() < 0.8 * c.height) return 0;
+  // Écart signé à la corde, positif à droite quand on descend.
+  final ecarts = [
+    for (final p in s)
+      ((p.dx - a.dx) * corde.dy - (p.dy - a.dy) * corde.dx) /
+          longueur *
+          corde.dy.sign,
+  ];
+  var k = 0;
+  for (var i = 1; i < ecarts.length; i++) {
+    if (ecarts[i].abs() > ecarts[k].abs()) k = i;
+  }
+  final ventre = ecarts[k];
+  if (ventre.abs() < 0.05 * c.height) return 0;
+  // Un arc : le ventre vers le milieu, et déjà là aux quarts. Un trait droit
+  // qui tremble (le dos d'un `B`) n'en est pas un.
+  final n = ecarts.length - 1;
+  if (k < 0.25 * n || k > 0.75 * n) return 0;
+  for (final q in [ecarts[n ~/ 4], ecarts[3 * n ~/ 4]]) {
+    if (q * ventre.sign < 0.3 * ventre.abs()) return 0;
+  }
+  return ventre < 0 ? 1 : -1;
 }
 
 /// `A(8;-1)` : une lettre, `(`, deux nombres séparés par `;` ou `,`, `)`.
@@ -227,10 +255,24 @@ StructurePoint? _point(List<Trait> traits) {
   ];
   if (separateurs.length != 1) return null;
   final k = separateurs.single;
+  // Le point d'un `;` écrit à part, juste au-dessus de sa queue : il va avec
+  // elle, pas avec le nombre d'à côté (téléphone d'Antsa).
+  final queueDuSigne = cadreDuGroupe(glyphes[k]);
+  bool point(int i) {
+    if (i < 0 || i >= glyphes.length || i == k) return false;
+    final c = cadreDuGroupe(glyphes[i]);
+    return math.max(c.width, c.height) <= 0.35 * haut &&
+        c.bottom <= queueDuSigne.top + 0.2 * haut &&
+        c.center.dx >= queueDuSigne.left - 0.4 * haut &&
+        c.center.dx <= queueDuSigne.right + 0.4 * haut;
+  }
+
+  final avant = point(k - 1) ? k - 1 : k;
+  final apres = point(k + 1) ? k + 2 : k + 1;
   return StructurePoint(
     nom,
-    [for (final g in glyphes.take(k)) ...g],
-    [for (final g in glyphes.skip(k + 1)) ...g],
+    [for (final g in glyphes.take(avant)) ...g],
+    [for (final g in glyphes.skip(apres)) ...g],
     queue,
   );
 }

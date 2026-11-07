@@ -8,6 +8,7 @@ String redresserLecture(String latex, {Set<String> fonctions = const {}}) {
       .replaceAll(RegExp(r'\\right\s*\.'), '')
       .replaceAll(RegExp(r'\\(?:left|right)\b'), '')
       .trim();
+  s = _lambdaEnUn(s);
   s = _primes(s);
   s = _parentheseEnExposant(s);
   s = _tete(s, fonctions);
@@ -17,6 +18,12 @@ String redresserLecture(String latex, {Set<String> fonctions = const {}}) {
   s = _pointEnFraction(s);
   return s;
 }
+
+/// `\varLambda + \varLambda` : le `1` qui monte de tout en bas puis
+/// redescend (téléphone d'Antsa). Un Λ majuscule n'a pas d'usage courant au
+/// lycée ; s'il était voulu, la lecture reste corrigeable.
+String _lambdaEnUn(String s) =>
+    s.replaceAll(RegExp(r'\\(?:var)?Lambda(?![a-zA-Z])\s*'), '1');
 
 /// Les nombres d'une ligne : `2 5` donne 2 et 5, `- 1 - 3` donne -1 et -3.
 List<String>? _nombres(String ligne) {

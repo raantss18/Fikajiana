@@ -74,4 +74,26 @@ void main() {
       expect(prolonge(bloc, suite, ferme: false), isTrue);
     });
   });
+
+  group('un dénominateur écrit sous un calcul lu (téléphone d’Antsa)', () {
+    const bloc = Rect.fromLTWH(0, 0, 300, 60);
+    test('la barre et le 4 dessous le prolongent', () {
+      trait(10, 80, 260, 2);
+      trait(120, 100, 20, 50);
+      expect(estDenominateur(bloc, encre.traits), isTrue);
+    });
+    test('la barre seule aussi, le dénominateur viendra', () {
+      trait(10, 80, 260, 2);
+      expect(estDenominateur(bloc, encre.traits), isTrue);
+    });
+    test('un moins court sur la ligne suivante, non', () {
+      trait(0, 120, 30, 2);
+      trait(50, 100, 30, 45);
+      expect(estDenominateur(bloc, encre.traits), isFalse);
+    });
+    test('la ligne suivante, plus bas, non', () {
+      trait(10, 160, 260, 2);
+      expect(estDenominateur(bloc, encre.traits), isFalse);
+    });
+  });
 }

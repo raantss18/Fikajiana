@@ -4,6 +4,8 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Mieux lu à la main : un `1` qui monte de tout en bas, les grandes parenthèses peu bombées, un `;` au point détaché ; une barre et un dénominateur ajoutés sous un calcul le prolongent. / Better read by hand: a `1` that starts from the very bottom, tall flat parentheses, a `;` with a detached dot; a bar and a denominator added under a calculation extend it.
+- Une lecture douteuse ne remplace plus l'écriture au propre. / A doubtful reading no longer replaces the handwriting with a neat version.
 ## [1.0.1] — 2026-11-07
 
 ### Message fr
