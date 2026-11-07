@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 
@@ -19,9 +21,32 @@ class VueFeuille extends ChangeNotifier {
 
   Offset versPage(Offset ecran) => (ecran - _decalage) / _zoom;
 
+  /// La page s'arrête à gauche, comme une feuille de cahier, et loin à
+  /// droite : trois écrans de large (demande d'Antsa). En hauteur, elle ne
+  /// s'arrête pas.
+  static const double pagesDeLarge = 3;
+
+  double _largeurEcran = double.infinity;
+
+  /// La largeur de l'écran borne la page ; sans elle, rien n'est borné.
+  void borner(double largeurEcran) {
+    if (largeurEcran == _largeurEcran) return;
+    _largeurEcran = largeurEcran;
+    _decalage = _dansLaPage(_decalage);
+  }
+
+  Offset _dansLaPage(Offset decalage) {
+    if (!_largeurEcran.isFinite) return decalage;
+    final largeurPage = pagesDeLarge * _largeurEcran * _zoom;
+    final gauche = math.min(0, _largeurEcran - largeurPage).toDouble();
+    return Offset(decalage.dx.clamp(gauche, 0), decalage.dy);
+  }
+
   void glisser(Offset delta) {
     if (delta == Offset.zero) return;
-    _decalage += delta;
+    final borne = _dansLaPage(_decalage + delta);
+    if (borne == _decalage) return;
+    _decalage = borne;
     notifyListeners();
   }
 
@@ -31,7 +56,7 @@ class VueFeuille extends ChangeNotifier {
     if (nouveau == _zoom) return;
     final page = versPage(centre);
     _zoom = nouveau;
-    _decalage = centre - page * nouveau;
+    _decalage = _dansLaPage(centre - page * nouveau);
     notifyListeners();
   }
 
