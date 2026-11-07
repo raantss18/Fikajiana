@@ -311,6 +311,123 @@ final Map<String, _Glyphe> _glyphes = {
   '·': _Glyphe(0.22, [
     _l([0.11, 0.58, 0.11, 0.61]),
   ]),
+  // Capitales : les noms des points et des courbes (`A(1;2)`, `C : …`).
+  'A': _Glyphe(0.66, [
+    _l([0.04, 1, 0.33, 0, 0.62, 1]),
+    _l([0.15, 0.64, 0.51, 0.64]),
+  ]),
+  'B': _Glyphe(0.58, [
+    [
+      ..._l([0.08, 1, 0.08, 0, 0.32, 0]),
+      ..._arc(0.32, 0.24, 0.22, 0.24, -_pi / 2, _pi / 2),
+      ..._l([0.08, 0.48, 0.34, 0.48]),
+      ..._arc(0.34, 0.74, 0.24, 0.26, -_pi / 2, _pi / 2),
+      ..._l([0.34, 1, 0.08, 1]),
+    ],
+  ]),
+  'C': _Glyphe(0.6, [_arc(0.34, 0.5, 0.3, 0.5, -0.7, -2 * _pi + 0.7)]),
+  'D': _Glyphe(0.62, [
+    [
+      ..._l([0.08, 0, 0.08, 1]),
+      ..._arc(0.12, 0.5, 0.46, 0.5, _pi / 2, -_pi / 2),
+    ],
+  ]),
+  'E': _Glyphe(0.54, [
+    _l([0.5, 0, 0.08, 0, 0.08, 1, 0.5, 1]),
+    _l([0.08, 0.5, 0.42, 0.5]),
+  ]),
+  'F': _Glyphe(0.5, [
+    _l([0.48, 0, 0.08, 0, 0.08, 1]),
+    _l([0.08, 0.48, 0.4, 0.48]),
+  ]),
+  'G': _Glyphe(0.64, [
+    [
+      ..._arc(0.34, 0.5, 0.3, 0.5, -0.7, -2 * _pi + 0.5),
+      ..._l([0.6, 0.6, 0.38, 0.6]),
+    ],
+  ]),
+  'H': _Glyphe(0.64, [
+    _l([0.08, 0, 0.08, 1]),
+    _l([0.56, 0, 0.56, 1]),
+    _l([0.08, 0.5, 0.56, 0.5]),
+  ]),
+  'I': _Glyphe(0.24, [
+    _l([0.12, 0, 0.12, 1]),
+  ]),
+  'J': _Glyphe(0.46, [
+    [
+      ..._l([0.38, 0, 0.38, 0.74]),
+      ..._arc(0.22, 0.74, 0.16, 0.26, 0, _pi),
+    ],
+  ]),
+  'K': _Glyphe(0.58, [
+    _l([0.08, 0, 0.08, 1]),
+    _l([0.52, 0, 0.08, 0.56]),
+    _l([0.22, 0.42, 0.54, 1]),
+  ]),
+  'L': _Glyphe(0.5, [
+    _l([0.08, 0, 0.08, 1, 0.46, 1]),
+  ]),
+  'M': _Glyphe(0.78, [
+    _l([0.06, 1, 0.1, 0, 0.39, 0.7, 0.68, 0, 0.72, 1]),
+  ]),
+  'N': _Glyphe(0.64, [
+    _l([0.08, 1, 0.08, 0, 0.56, 1, 0.56, 0]),
+  ]),
+  'O': _Glyphe(0.7, [_arc(0.35, 0.5, 0.31, 0.5, 0, 2 * _pi, n: 24)]),
+  'P': _Glyphe(0.56, [
+    [
+      ..._l([0.08, 1, 0.08, 0, 0.3, 0]),
+      ..._arc(0.3, 0.26, 0.22, 0.26, -_pi / 2, _pi / 2),
+      ..._l([0.3, 0.52, 0.08, 0.52]),
+    ],
+  ]),
+  'Q': _Glyphe(0.72, [
+    _arc(0.35, 0.5, 0.31, 0.5, 0, 2 * _pi, n: 24),
+    _l([0.44, 0.74, 0.68, 1.04]),
+  ]),
+  'T': _Glyphe(0.58, [
+    _l([0.04, 0, 0.54, 0]),
+    _l([0.29, 0, 0.29, 1]),
+  ]),
+  'U': _Glyphe(0.62, [
+    [
+      ..._l([0.08, 0, 0.08, 0.7]),
+      ..._arc(0.31, 0.7, 0.23, 0.3, _pi, 0),
+      ..._l([0.54, 0.7, 0.54, 0]),
+    ],
+  ]),
+  'V': _Glyphe(0.62, [
+    _l([0.04, 0, 0.31, 1, 0.58, 0]),
+  ]),
+  'W': _Glyphe(0.86, [
+    _l([0.04, 0, 0.22, 1, 0.43, 0.3, 0.64, 1, 0.82, 0]),
+  ]),
+  'X': _Glyphe(0.6, [
+    _l([0.06, 0, 0.54, 1]),
+    _l([0.54, 0, 0.06, 1]),
+  ]),
+  'Y': _Glyphe(0.6, [
+    _l([0.04, 0, 0.3, 0.5, 0.56, 0]),
+    _l([0.3, 0.5, 0.3, 1]),
+  ]),
+  ':': _Glyphe(0.22, [
+    _l([0.11, 0.42, 0.11, 0.45]),
+    _l([0.11, 0.94, 0.11, 0.97]),
+  ]),
+  '×': _Glyphe(0.5, [
+    _l([0.08, 0.42, 0.42, 0.86]),
+    _l([0.42, 0.42, 0.08, 0.86]),
+  ]),
+  '/': _Glyphe(0.4, [
+    _l([0.36, 0, 0.04, 1.08]),
+  ]),
+  "'": _Glyphe(0.18, [
+    _l([0.12, -0.02, 0.06, 0.24]),
+  ]),
+  '|': _Glyphe(0.22, [
+    _l([0.11, -0.04, 0.11, 1.12]),
+  ]),
 };
 
 /// Une boîte de traits : `y` croît vers le bas, 0 sur la ligne d'écriture.
@@ -475,6 +592,9 @@ class _Compositeur {
       'pi' => _lettre('π'),
       'infty' => _lettre('∞'),
       'cdot' => _lettre('·'),
+      'times' => _lettre('×'),
+      'prime' => _lettre("'"),
+      'det' => _mot('det'),
       'left' || 'right' => const _Boite(0, 0, 0, []),
       _ => throw const _NonPrisEnCharge(),
     };
@@ -672,6 +792,29 @@ _Trace _densifier(_Trace trace) {
 const double _hauteurMin = 22;
 const double _hauteurMax = 90;
 
+/// [latex] écrit au propre à la place de [ecriture] : même début, même
+/// hauteur, jamais plus large (la ligne d'à côté reste libre). `null` si la
+/// main ne sait pas l'écrire.
+EcritureResultat? ecrireALaPlace(String latex, Rect ecriture) {
+  final _Boite boite;
+  try {
+    boite = _Compositeur(_matricesSimples(latex)).composer();
+  } on _NonPrisEnCharge {
+    return null;
+  }
+  if (boite.traces.isEmpty || boite.largeur <= 0) return null;
+  final total = boite.haut + boite.bas;
+  final echelle = math.min(
+    ecriture.height * 0.85 / total,
+    ecriture.width / boite.largeur,
+  );
+  final origine = Offset(
+    ecriture.left,
+    ecriture.center.dy + (boite.haut - boite.bas) / 2 * echelle,
+  );
+  return _tracer(boite, echelle, origine);
+}
+
 /// Giac écrit une matrice `\left(\begin{array}{cc}…\end{array}\right)`.
 String _matricesSimples(String latex) => latex
     .replaceAll(
@@ -714,6 +857,10 @@ EcritureResultat? ecrireResultat(
           ecriture.center.dy + (boite.haut - boite.bas) / 2 * echelle,
         );
 
+  return _tracer(boite, echelle, origine);
+}
+
+EcritureResultat? _tracer(_Boite boite, double echelle, Offset origine) {
   final contours = <Path>[];
   final traces = <List<PointVector>>[];
   final taille = math.max(3.2, echelle * 0.075);

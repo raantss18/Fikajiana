@@ -32,6 +32,7 @@ class FeuilleEncre extends StatefulWidget {
     this.ciblesRature,
     this.doigtDefile = false,
     this.surStylet,
+    this.masques = const {},
     super.key,
   });
 
@@ -56,6 +57,9 @@ class FeuilleEncre extends StatefulWidget {
 
   /// Un stylet vient de toucher ou de survoler la feuille.
   final VoidCallback? surStylet;
+
+  /// Les traits qui ne se dessinent pas : ils sont écrits au propre.
+  final Set<int> masques;
 
   @override
   State<FeuilleEncre> createState() => _FeuilleEncreState();
@@ -344,7 +348,10 @@ class _FeuilleEncreState extends State<FeuilleEncre>
                   animation: _animation,
                   builder: (context, _) => CustomPaint(
                     painter: _PeintreEncre(
-                      traits: widget.encre.traits,
+                      traits: [
+                        for (final t in widget.encre.traits)
+                          if (!widget.masques.contains(t.id)) t,
+                      ],
                       support: widget.support,
                       zoom: _vue.zoom,
                       decalage: _vue.decalage,

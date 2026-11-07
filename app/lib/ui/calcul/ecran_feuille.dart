@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:fikajiana/comprendre/calcul_feuille.dart';
+import 'package:fikajiana/comprendre/ecriture_resultat.dart';
 import 'package:fikajiana/comprendre/stockage_feuille.dart';
 import 'package:fikajiana/encre/encre.dart';
 import 'package:fikajiana/encre/feuille_encre.dart';
@@ -219,6 +220,21 @@ class _EcranFeuilleState extends State<EcranFeuille> {
     }
   }
 
+  /// Les traits écrits au propre : l'encre ne les dessine plus.
+  Set<int> _masques() => {
+    for (final b in _calcul.blocs)
+      if (b.auPropre() != null) ...b.traits,
+  };
+
+  /// La couleur de l'encre de la ligne : celle de son premier trait.
+  Color _couleurDe(BlocCalcul bloc, Reglages reglages) {
+    final premier = _encre.traits
+        .where((t) => bloc.traits.contains(t.id))
+        .firstOrNull;
+    final stylos = reglages.support.stylos;
+    return stylos[(premier?.stylo ?? 0).clamp(0, stylos.length - 1)];
+  }
+
   /// Où se trouve ce qui est écrit, résultats compris.
   Iterable<Rect> _zonesEcrites(Reglages reglages) sync* {
     final virgule = Localizations.localeOf(context).languageCode == 'fr';
@@ -289,7 +305,9 @@ class _EcranFeuilleState extends State<EcranFeuille> {
     final reglages = PorteeReglages.de(context);
     final l10n = context.l10n;
     // La largeur de l'écran borne les résultats, à la vue de départ.
-    _calcul.bordDroit = MediaQuery.sizeOf(context).width - AppEspacement.sm;
+    _calcul
+      ..bordDroit = MediaQuery.sizeOf(context).width - AppEspacement.sm
+      ..auPropre = reglages.auPropre;
     _vue.borner(MediaQuery.sizeOf(context).width, coin: _coin);
     return Stack(
       fit: StackFit.expand,
@@ -300,23 +318,46 @@ class _EcranFeuilleState extends State<EcranFeuille> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              FeuilleEncre(
-                encre: _encre,
-                vue: _vue,
-                libelle: l10n.zoneEcriture,
-                support: reglages.support,
-                stylo: reglages.indiceStylo,
-                gomme: _gomme,
-                surChangement: _surEncre,
-                surRature: _surRature,
-                doigtDefile: reglages.doigtDefile,
-                surStylet: reglages.noterStylet,
-                ciblesRature: (zone) => _calcul.traitsDuResultatSous(
-                  zone,
-                  approcheVoulue: reglages.approche,
-                  virgule: Localizations.localeOf(context).languageCode == 'fr',
+              ListenableBuilder(
+                listenable: _calcul,
+                builder: (context, _) => FeuilleEncre(
+                  masques: reglages.auPropre ? _masques() : const {},
+                  encre: _encre,
+                  vue: _vue,
+                  libelle: l10n.zoneEcriture,
+                  support: reglages.support,
+                  stylo: reglages.indiceStylo,
+                  gomme: _gomme,
+                  surChangement: _surEncre,
+                  surRature: _surRature,
+                  doigtDefile: reglages.doigtDefile,
+                  surStylet: reglages.noterStylet,
+                  ciblesRature: (zone) => _calcul.traitsDuResultatSous(
+                    zone,
+                    approcheVoulue: reglages.approche,
+                    virgule:
+                        Localizations.localeOf(context).languageCode == 'fr',
+                  ),
                 ),
               ),
+              if (reglages.auPropre)
+                IgnorePointer(
+                  child: ListenableBuilder(
+                    listenable: Listenable.merge([_calcul, _vue]),
+                    builder: (context, _) => CustomPaint(
+                      size: Size.infinite,
+                      painter: _PeintrePropre(
+                        lignes: [
+                          for (final b in _calcul.blocs)
+                            if (b.auPropre() case final propre?)
+                              (propre, _couleurDe(b, reglages)),
+                        ],
+                        zoom: _vue.zoom,
+                        decalage: _vue.decalage,
+                      ),
+                    ),
+                  ),
+                ),
               ListenableBuilder(
                 listenable: Listenable.merge([_calcul, _vue]),
                 builder: (context, _) => Stack(
@@ -752,4 +793,30 @@ class _BoutonStylo extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Ce qui a été lu, écrit au propre à la place de l'encre (Antsa).
+class _PeintrePropre extends CustomPainter {
+  const new({required this.lignes, required this.zoom, required this.decalage});
+
+  final List<(EcritureResultat, Color)> lignes;
+  final double zoom;
+  final Offset decalage;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas
+      ..translate(decalage.dx, decalage.dy)
+      ..scale(zoom);
+    final encre = Paint();
+    for (final (ecrit, couleur) in lignes) {
+      encre.color = couleur;
+      for (final contour in ecrit.contours) {
+        canvas.drawPath(contour, encre);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_PeintrePropre ancien) => true;
 }

@@ -6,6 +6,23 @@ import 'package:fikajiana_math/fikajiana_math.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  // Antsa : ce qui est lu s'écrit au propre, à la place de l'encre.
+  test('au propre : même début, dans la largeur de l’écriture', () {
+    const ecriture = Rect.fromLTWH(100, 200, 300, 60);
+    for (final latex in [
+      'C : x^{2}+y^{3}=0',
+      'A(8;-1)',
+      r'3 0 \times 8 =',
+      r'\det\begin{pmatrix}8&-1\\8&4\end{pmatrix}=',
+    ]) {
+      final propre = ecrireALaPlace(latex, ecriture);
+      expect(propre, isNotNull, reason: latex);
+      expect(propre!.cadre.left, closeTo(100, 8), reason: latex);
+      expect(propre.cadre.right, lessThanOrEqualTo(ecriture.right + 8));
+    }
+    expect(ecrireALaPlace(r'\overrightarrow{AB}', ecriture), isNull);
+  });
+
   // Antsa : la matrice inverse s'imprimait toute petite (Pad 7).
   test('une matrice de Giac s’écrit à la main', () {
     const inverse =
@@ -81,7 +98,7 @@ void main() {
       r'\mbox{false}',
       // Une matrice sans fin : pas d'à-peu-près.
       r'\left(\begin{array}{cc}1&2\\3&4',
-      'Q',
+      'Ω',
       r'\frac{1}{2',
       '',
     ]) {

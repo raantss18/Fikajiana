@@ -245,6 +245,29 @@ class BlocCalcul {
   String? _ecritPour;
   EcritureResultat? _ecrit;
 
+  bool _auPropreActif = false;
+  String? _proprePour;
+  EcritureResultat? _propre;
+
+  /// Ce qui a été lu, écrit au propre à la place de l'encre (Antsa) : une
+  /// ligne comprise seulement, que la main sait écrire. Sinon `null`, et
+  /// l'encre reste.
+  EcritureResultat? auPropre() {
+    final lu = latex;
+    if (estSaisie || etat != EtatBloc.fait || note != null || lu == null) {
+      return null;
+    }
+    final cle = '$lu|$cadre';
+    if (_proprePour != cle) {
+      _proprePour = cle;
+      _propre = ecrireALaPlace(
+        lu.replaceAll(RegExp(r'\\(left|right)'), ''),
+        cadre,
+      );
+    }
+    return _propre;
+  }
+
   /// Le résultat tracé à la main, ou `null` s'il se montre autrement.
   EcritureResultat? ecriture({
     required bool approcheVoulue,
@@ -276,7 +299,13 @@ class BlocCalcul {
               (finitParEgal && dessous)
           ? '=$valeur'
           : valeur,
-      cadre,
+      // Au propre, l'écriture est plus courte : le résultat la suit.
+      (_auPropreActif
+              ? auPropre()?.cadre.expandToInclude(
+                  Rect.fromLTWH(cadre.left, cadre.top, 0, cadre.height),
+                )
+              : null) ??
+          cadre,
       dessous: dessous,
       hauteurLigne: hauteurLigne,
     );
@@ -384,6 +413,21 @@ class CalculFeuille extends ChangeNotifier {
 
   double get bordDroit => _bordDroit;
 
+  bool _auPropre = false;
+
+  bool get auPropre => _auPropre;
+
+  /// L'écriture lue est montrée au propre : les résultats la suivent.
+  set auPropre(bool actif) {
+    if (actif == _auPropre) return;
+    _auPropre = actif;
+    for (final bloc in _blocs.values) {
+      bloc
+        .._auPropreActif = actif
+        .._ecritPour = null;
+    }
+  }
+
   set bordDroit(double bord) {
     if (bord == _bordDroit) return;
     _bordDroit = bord;
@@ -397,6 +441,11 @@ class CalculFeuille extends ChangeNotifier {
   /// Un résultat ne s'écrit pas sur la ligne d'en dessous.
   void _placerResultats() {
     for (final bloc in _blocs.values) {
+      if (bloc._auPropreActif != _auPropre) {
+        bloc
+          .._auPropreActif = _auPropre
+          .._ecritPour = null;
+      }
       final dessous = Rect.fromLTWH(
         bloc.cadre.left,
         bloc.cadre.bottom,

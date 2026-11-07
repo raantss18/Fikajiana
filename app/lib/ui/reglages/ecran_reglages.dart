@@ -46,6 +46,12 @@ class EcranReglages extends StatelessWidget {
               value: reglages.ecrireAuDoigt,
               onChanged: (valeur) => reglages.ecrireAuDoigt = valeur,
             ),
+          SwitchListTile(
+            title: Text(l10n.auPropre),
+            subtitle: Text(l10n.auPropreDetail),
+            value: reglages.auPropre,
+            onChanged: (valeur) => reglages.auPropre = valeur,
+          ),
           const Divider(),
           const _SectionModele(),
           const Divider(),
