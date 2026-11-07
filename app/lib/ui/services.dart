@@ -4,6 +4,7 @@ import 'package:fikajiana/comprendre/carnet.dart';
 import 'package:fikajiana/comprendre/classeur.dart';
 import 'package:fikajiana/geometrie/atelier.dart';
 import 'package:fikajiana/graphe/courbes.dart';
+import 'package:fikajiana/guide/essai.dart';
 import 'package:fikajiana/moteur/moteur.dart';
 import 'package:fikajiana/reconnaissance/lecteur.dart';
 import 'package:fikajiana/reconnaissance/modele.dart';
@@ -87,6 +88,9 @@ class Services {
   final Carnet carnet;
   final Classeur graphes;
   final Classeur figures;
+
+  /// Ce que le Guide demande de poser sur la Feuille.
+  final essais = EssaiGuide();
 }
 
 class PorteeServices extends InheritedWidget {
