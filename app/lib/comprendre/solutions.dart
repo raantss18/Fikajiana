@@ -15,6 +15,8 @@ String ecrireSolutions(
   final propre = latex.replaceAll(RegExp(r'\\mathrm\{n\\_\d+\}'), 'n');
   final suite = propre == latex ? '' : r',\,n \in \mathbb{Z}';
   final texte = propre.trim();
+  // Le terme général, déjà écrit : il suffit de le nommer.
+  if (type == TypeExpression.suite) return '${inconnues.first}=$texte';
   if (texte == '[]' || texte == '' || texte == r'\{\}') return r'S=\emptyset';
 
   final ou =

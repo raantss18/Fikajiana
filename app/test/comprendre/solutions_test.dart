@@ -30,6 +30,18 @@ void main() {
       expect(_equation(r'\{\frac{1}{f(a,b)}\}'), r'x=\frac{1}{f(a,b)}');
     });
 
+    test('une suite : son terme général, nommé', () {
+      expect(
+        ecrireSolutions(
+          '2^{n}',
+          type: TypeExpression.suite,
+          inconnues: const ['u_n'],
+          francais: true,
+        ),
+        'u_n=2^{n}',
+      );
+    });
+
     group('inéquations, sorties réelles de Giac', () {
       test('une relation reste telle quelle', () {
         expect(_equation(r'\{x>2\}'), 'x>2');

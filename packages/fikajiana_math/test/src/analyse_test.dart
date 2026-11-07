@@ -217,6 +217,53 @@ void main() {
     giac(r'\lim_{x\to1}x', 'limit(x,x,1)');
   });
 
+  group('suites : la formule d’une suite arithmético-géométrique', () {
+    const geo =
+        'normal((diff(2*(w),w))^(n-0)*((1)-(subst(2*(w),w=0))/'
+        '(1-(diff(2*(w),w))))+(subst(2*(w),w=0))/(1-(diff(2*(w),w))))';
+
+    giac(
+      r'\begin{cases}u_{n+1}=2u_n\\u_0=1\end{cases}',
+      geo,
+      TypeExpression.suite,
+    );
+    giac(
+      r'\begin{cases}u_{n+1}=u_n+3\\u_1=2\end{cases}',
+      'normal((2)+(subst((w)+3,w=0))*(n-1))',
+      TypeExpression.suite,
+    );
+
+    test('la suite se nomme dans le résultat', () {
+      expect(analyserLatex('v_{k+1}=v_k+1').inconnues, ['v_k']);
+    });
+
+    test('u_n=2u_{n-1} s’écrit aussi', () {
+      expect(analyserLatex('u_n=u_{n-1}+3').type, TypeExpression.suite);
+    });
+
+    test('sans premier terme, il reste nommé', () {
+      expect(analyserLatex('u_{n+1}=u_n+3').giac, contains('u_0'));
+    });
+
+    for (final latex in [
+      // Ordre 2 : Giac ne rend pas la main sur certaines.
+      r'\begin{cases}u_{n+2}=3u_{n+1}-2u_n\\u_0=0\\u_1=1\end{cases}',
+      'u_{n+1}=u_n+u_{n-1}',
+      // Pas de cette forme : aucune formule n'est garantie.
+      'u_{n+1}=u_n^2',
+      r'u_{n+1}=\frac{1}{u_n}',
+      'u_{n+1}=u_n+n',
+      'u_{n+1}=a u_n',
+      // Deux premiers termes, deux récurrences.
+      r'\begin{cases}u_{n+1}=u_n\\u_0=0\\u_1=1\end{cases}',
+      r'\begin{cases}u_{n+1}=u_n\\u_{n+2}=u_n\end{cases}',
+    ]) {
+      test('refus : $latex', () {
+        expect(() => analyserLatex(latex), throwsA(isA<ErreurLatex>()));
+      });
+    }
+  });
+
   group('inéquations', () {
     giac('x>2', 'solve(x>2,x)', TypeExpression.equation);
     giac(r'2x+1\geq3', 'solve(2*x+1>=3,x)', TypeExpression.equation);
@@ -237,8 +284,10 @@ void main() {
       r'\mathrm{Foo}(x)',
       // y n'est pas défini : ce serait 0 sans rien dire.
       r'\frac{dy}{dx}',
-      // `u_{n+1}` n'est pas la variable `u_n` plus 1.
-      'u_{n+1}=2u_n',
+      // Ce n'est pas la variable `u_n` multipliée : pas assez clair.
+      'u_{2n}=1',
+      // Deux récurrences.
+      r'\begin{cases}u_{n+1}=u_n\\u_{n+2}=u_n\end{cases}',
 
       '',
       '2+',

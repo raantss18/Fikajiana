@@ -1,3 +1,4 @@
+import 'package:fikajiana_math/src/evaluateur.dart';
 import 'package:fikajiana_math/src/lecteur_latex.dart';
 
 /// Ce que l'écriture semble être.
@@ -16,6 +17,9 @@ enum TypeExpression {
 
   /// Une matrice.
   matrice,
+
+  /// Une suite définie par récurrence : `u_{n+1}=2u_n`.
+  suite,
 }
 
 /// Résultat de l'analyse d'un LaTeX : son type et l'entrée à donner à Giac.
@@ -119,6 +123,8 @@ Analyse analyserLatex(
 }) {
   final lecteur = LecteurLatex(latex, degres: degres, definitions: definitions);
   final lecture = lecteur.lire();
+  final suite = lecteur.suite;
+  if (suite != null) return _analyserSuite(lecture, suite);
   final demande = lecteur.demandeResultat;
 
   if (lecture is LectureSysteme) {
@@ -209,6 +215,81 @@ Analyse analyserLatex(
     inconnues: [variable],
     membres: (expression.gauche.giac, droite.giac),
   );
+}
+
+/// `u_{n+1}=a·u_n+b`, avec ou sans `u_0=1` dans un système : le terme général
+/// s'écrit directement. Pas de `rsolve` : sur `u_{n+2}=3u_{n+1}-2u_n`, Giac ne
+/// rend jamais la main, même arrêté (banc, ADR 0026). Le reste est refusé.
+Analyse _analyserSuite(Lecture lecture, String nom) {
+  final relations = switch (lecture) {
+    LectureSysteme(:final relations) => [for (final r in relations) r.giac],
+    LectureExpression(:final gauche, :final droite?, ordre: null) => [
+      '${gauche.giac}=${droite.giac}',
+    ],
+    _ => throw const ErreurLatex('suite sans égalité'),
+  };
+  final terme = RegExp('\\b${nom}_([a-zA-Z0-9]+)\\b');
+  final claires = [
+    for (final r in relations)
+      r.replaceAllMapped(terme, (m) => '$nom(${m[1]})'),
+  ];
+  final depart = RegExp('^$nom\\((\\d+)\\)=(.*)\$');
+  final departs = claires.map(depart.firstMatch).nonNulls.toList();
+  final recurrences = claires.where((r) => !depart.hasMatch(r)).toList();
+  if (recurrences.length != 1 || departs.length > 1) {
+    throw const ErreurLatex('une récurrence et un premier terme');
+  }
+  final avancee = RegExp('^$nom\\(([a-z])\\+1\\)=(.*)\$')
+      .firstMatch(recurrences.single);
+  final reculee = RegExp('^$nom\\(([a-z])\\)=(.*)\$')
+      .firstMatch(recurrences.single);
+  final egalite = avancee ?? reculee;
+  if (egalite == null) throw const ErreurLatex('récurrence non reconnue');
+  final rang = egalite[1]!;
+  final precedent = RegExp(
+    avancee != null ? '\\b$nom\\($rang\\)' : '\\b$nom\\($rang-1\\)',
+  );
+  final corps = egalite[2]!.replaceAll(precedent, '(w)');
+  // Un autre terme, `u_{n-2}` : la suite n'est pas d'ordre 1.
+  if (RegExp('\\b$nom\\(').hasMatch(corps)) {
+    throw const ErreurLatex('suite d’ordre supérieur à 1');
+  }
+  final (a, unite) = _coefficient(corps, rang);
+  final b = 'subst($corps,w=0)';
+  final premier = departs.isEmpty ? '0' : departs.single[1]!;
+  final valeur = departs.isEmpty ? '${nom}_$premier' : '(${departs.single[2]})';
+  final ecart = '($rang-$premier)';
+  return Analyse(
+    TypeExpression.suite,
+    unite
+        ? 'normal($valeur+($b)*$ecart)'
+        : 'normal(($a)^$ecart*($valeur-($b)/(1-($a)))+($b)/(1-($a)))',
+    inconnues: ['${nom}_$rang'],
+  );
+}
+
+/// Le coefficient `a` de `a·w+b`, et s'il vaut 1. Vérifie à l'évaluation que
+/// [corps] est bien de cette forme, sans le rang : sinon, pas de formule.
+(String, bool) _coefficient(String corps, String rang) {
+  final FonctionDeuxVariables f;
+  try {
+    f = compilerFonctionXY(
+      corps
+          .replaceAll(RegExp(r'\bw\b'), 'x')
+          .replaceAll(RegExp('\\b$rang\\b'), 'y'),
+    );
+    const y1 = 1.3;
+    const y2 = 2.7;
+    final a = f(1, y1) - f(0, y1);
+    final proche = (a - (f(3, y1) - f(2, y1))).abs() < 1e-9;
+    final sansRang = (f(1, y1) - f(1, y2)).abs() < 1e-9;
+    if (!a.isFinite || !proche || !sansRang) {
+      throw const ErreurLatex('suite non affine');
+    }
+    return ('diff($corps,w)', (a - 1).abs() < 1e-12);
+  } on ErreurEvaluation {
+    throw const ErreurLatex('suite avec une lettre inconnue');
+  }
 }
 
 /// Inconnues usuelles d'abord : x, y, z, t, puis l'ordre alphabétique.
