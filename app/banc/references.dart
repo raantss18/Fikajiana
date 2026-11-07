@@ -1360,6 +1360,202 @@ const String referencesJson = r'''
 ]
 },
 {
+"f": "commandes",
+"l": "\\operatorname{developper}\\left((x+1)^{2}\\right)",
+"g": "fonction",
+"v": "x",
+"p": [
+1.37,
+0.61
+],
+"a": [
+5.6169,
+2.5921000000000003
+]
+},
+{
+"f": "commandes",
+"l": "\\mathrm{factoriser}(x^{2}-1)",
+"g": "fonction",
+"v": "x",
+"p": [
+1.37,
+0.61
+],
+"a": [
+0.8769000000000003,
+-0.6279
+]
+},
+{
+"f": "commandes",
+"l": "simplifier(\\frac{x^{2}-1}{x-1})",
+"g": "fonction",
+"v": "x",
+"p": [
+1.37,
+0.61
+],
+"a": [
+2.37,
+1.6099999999999999
+]
+},
+{
+"f": "commandes",
+"l": "decomposer(360)",
+"g": "valeur",
+"a": [
+360.0,
+0.0
+]
+},
+{
+"f": "commandes",
+"l": "premier(97)",
+"g": "verite",
+"a": true
+},
+{
+"f": "commandes",
+"l": "premier(91)",
+"g": "verite",
+"a": false
+},
+{
+"f": "commandes",
+"l": "moyenne(2;4;9)",
+"g": "valeur",
+"a": [
+5.0,
+0.0
+]
+},
+{
+"f": "commandes",
+"l": "moyenne(2,4,9)",
+"g": "valeur",
+"a": [
+5.0,
+0.0
+]
+},
+{
+"f": "commandes",
+"l": "\\operatorname{mediane}(3;1;2)",
+"g": "valeur",
+"a": [
+2.0,
+0.0
+]
+},
+{
+"f": "commandes",
+"l": "mediane(1;2;3;4)",
+"g": "valeur",
+"a": [
+2.5,
+0.0
+]
+},
+{
+"f": "commandes",
+"l": "variance(1;2;3;4)",
+"g": "valeur",
+"a": [
+1.25,
+0.0
+]
+},
+{
+"f": "commandes",
+"l": "\\operatorname{ecarttype}(2;4)",
+"g": "valeur",
+"a": [
+1.0,
+0.0
+]
+},
+{
+"f": "commandes",
+"l": "arrondi(3{,}14159;2)",
+"g": "valeur",
+"a": [
+3.14,
+0.0
+]
+},
+{
+"f": "commandes",
+"l": "arrondi(\\frac{2}{3};2)",
+"g": "valeur",
+"a": [
+0.67,
+0.0
+]
+},
+{
+"f": "commandes",
+"l": "discriminant(x^{2}-3x+2)",
+"g": "valeur",
+"a": [
+1.0,
+0.0
+]
+},
+{
+"f": "commandes",
+"l": "discriminant(2x^{2}+x+5)",
+"g": "valeur",
+"a": [
+-39.0,
+0.0
+]
+},
+{
+"f": "commandes",
+"l": "\\operatorname{pgcd}(12;18)",
+"g": "valeur",
+"a": [
+6.0,
+0.0
+]
+},
+{
+"f": "commandes",
+"l": "tangente(f;2)",
+"g": "fonction",
+"v": "x",
+"p": [
+1.37,
+0.61
+],
+"a": [
+2.4800000000000004,
+-0.56
+],
+"d": "f(x)=x^2+1"
+},
+{
+"f": "commandes",
+"l": "\\vec{u}\\cdot\\vec{v}",
+"g": "valeur",
+"vec": {
+"u": [
+1,
+2
+],
+"v": [
+3,
+-4
+]
+},
+"a": [
+-5.0,
+0.0
+]
+},
+{
 "f": "verite",
 "l": "2+2=5",
 "g": "verite",

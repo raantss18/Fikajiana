@@ -4,21 +4,27 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
-- Construire depuis la Feuille : `cercle(A;2)`, `cercle(A;B)`, `(AB)`, `[AB]`, `[AB)`, `I=milieu(A;B)`, `médiatrice(A;B)` se placent dans la Figure d'un toucher. / Build from the sheet: `cercle(A;2)`, `cercle(A;B)`, `(AB)`, `[AB]`, `[AB)`, `I=milieu(A;B)`, `médiatrice(A;B)` are placed in the Figure with one tap.
+## [0.9.0] — 2026-11-07
 
+### Message fr
+
+Écris `det` d'une matrice, `moyenne(2;4;9)`, `factoriser(x^2-1)` ou `tangente(f;2)` : Fikajiana calcule et ajoute le `=` si tu l'as oublié, sans écrire sur ta feuille. Les points, vecteurs, matrices et normes se lisent mieux à la main, et `cercle(A;2)` ou `(AB)` se construisent dans la Figure d'un toucher. Le choix du fond est sur la Feuille.
+
+### Message en
+
+Write `det` of a matrix, `moyenne(2;4;9)`, `factoriser(x^2-1)` or `tangente(f;2)`: Fikajiana calculates and adds the `=` if you forgot it, without writing over your sheet. Points, vectors, matrices and norms are read better by hand, and `cercle(A;2)` or `(AB)` are built in the Figure with one tap. The background choice is on the Sheet.
+
+### Changements
+
+- Le `=` oublié s'écrit tout seul : `f'(x)` ou `det(…)` donne « = … » à droite, et un résultat ne se pose plus sur une autre écriture. / A forgotten `=` is written for you: `f'(x)` or `det(…)` gives “= …” on the right, and a result no longer lands on other writing.
+- Nouvelles commandes, à la main ou au clavier : `développer`, `factoriser`, `simplifier`, `décomposer`, `premier`, `moyenne`, `médiane`, `variance`, `écart-type`, `arrondi(x;n)`, `pgcd`, `discriminant`, `tangente(f;a)` et le produit scalaire de deux vecteurs. / New commands, handwritten or typed: expand, factor, simplify, prime factors, primality, mean, median, variance, standard deviation, rounding, gcd, discriminant, tangent `tangente(f;a)` and the dot product of two vectors.
+- Construire depuis la Feuille : `cercle(A;2)`, `cercle(A;B)`, `(AB)`, `[AB]`, `[AB)`, `I=milieu(A;B)`, `médiatrice(A;B)` se placent dans la Figure d'un toucher. / Build from the sheet: `cercle(A;2)`, `cercle(A;B)`, `(AB)`, `[AB]`, `[AB)`, `I=milieu(A;B)`, `médiatrice(A;B)` are placed in the Figure with one tap.
 - Les matrices, les flèches de vecteur et les normes se lisent à partir de vos traits, case par case : `det` d'une matrice 3×3 écrite à la main se calcule. / Matrices, vector arrows and norms are read from your strokes, cell by cell: the `det` of a handwritten 3×3 matrix is calculated.
 - La feuille retient vos points et vos valeurs : après `A(1;2)` et `B(5;-4)`, le vecteur `AB`, sa norme et la distance `AB` se calculent ; `a=2` définit `a`. / The sheet remembers your points and values: after `A(1;2)` and `B(5;-4)`, the vector `AB`, its norm and the distance `AB` are calculated; `a=2` defines `a`.
 - Relire une ligne depuis son panneau. / Read a line again from its panel.
-
 - Le bouton Fond, sur la Feuille, change le papier, le cahier ou le tableau sans passer par les Réglages. / The Background button on the sheet changes the paper, notebook or blackboard without going to Settings.
 - Toucher sous une ligne montre toujours ce qui a été lu, même si elle n'affiche rien. / Tapping under a line always shows what was read, even if it displays nothing.
-
 - Quand une lecture étonne, Fikajiana en cherche d'autres, garde la plus sensée et propose les autres d'un toucher. / When a reading looks odd, Fikajiana looks for others, keeps the most sensible one and offers the rest with one tap.
-
-- Deux espaces, toujours en vue : Feuille pour écrire et calculer, Figure pour les courbes et la géométrie, réunies sur les mêmes axes. Tracer et Placer y mènent. / Two spaces, always in sight: Sheet to write and calculate, Figure for curves and geometry, together on the same axes. Plot and Place lead there.
-
-- Deux lignes écrites serrées ne se lisent plus comme une seule, et un résultat ne s'écrit plus sur la ligne d'en dessous. / Two lines written close together are no longer read as one, and a result no longer lands on the line below.
-- La lecture comprend mieux une écriture réelle : un `f` ou un `g` à la main, l'apostrophe de `f'`, un `(x)` écrit haut, le `e` de `e^x`. / Reading understands real handwriting better: a handwritten `f` or `g`, the prime in `f'`, a raised `(x)`, the `e` in `e^x`.
 
 ## [0.8.0] — 2026-11-07
 

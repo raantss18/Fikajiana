@@ -129,14 +129,63 @@ const _fonctionsADeux = {
   'pgcd': 'gcd',
   'lcm': 'lcm',
   'ppcm': 'lcm',
+  'arrondi': 'round',
+  'round': 'round',
 };
+
+/// Ce qu'on demande à Giac de faire d'une expression ; la réponse s'affiche
+/// sans `=`.
+const _transformations = {
+  'developper': 'expand',
+  'expand': 'expand',
+  'factoriser': 'factor',
+  'factor': 'factor',
+  'simplifier': 'simplify',
+  'simplify': 'simplify',
+  'decomposer': 'ifactor',
+  'ifactor': 'ifactor',
+  'premier': 'isprime',
+  'isprime': 'isprime',
+};
+
+/// Sur une liste de nombres : `moyenne(2;4;9)`. La variance est celle de la
+/// population (division par n), comme au lycée.
+const _statistiques = {
+  'moyenne': 'mean',
+  'mean': 'mean',
+  'mediane': 'median',
+  'median': 'median',
+  'variance': 'variance',
+  'ecarttype': 'stddev',
+  'stddev': 'stddev',
+};
+
+/// Les commandes de calcul en toutes lettres, sans accent ni tiret.
+final Set<String> nomsDeCalcul = {
+  ..._transformations.keys,
+  ..._statistiques.keys,
+  ..._fonctionsADeux.keys,
+  'discriminant',
+  'tangente',
+};
+
+/// `Développer`, `écart-type` : le nom tel que le lecteur le connaît.
+String normaliserNom(String nom) => nom
+    .toLowerCase()
+    .replaceAll(RegExp('[éèêë]'), 'e')
+    .replaceAll(RegExp('[àâ]'), 'a')
+    .replaceAll(RegExp('[îï]'), 'i')
+    .replaceAll(RegExp('[ôö]'), 'o')
+    .replaceAll(RegExp('[ùûü]'), 'u')
+    .replaceAll(RegExp(r'[\s_-]'), '');
 
 /// Noms à un argument, hors de la liste des fonctions réelles.
 const _autresFonctions = {'det': 'det', 'arg': 'arg', 'Re': 're', 'Im': 'im'};
 
 /// Écrits lettre après lettre, ils ne valent un nom que devant `(` : `det`
 /// peut aussi être le produit de trois lettres.
-const _nomsDevantParenthese = ['pgcd', 'ppcm', 'gcd', 'lcm', 'arg', 'Re', 'Im'];
+final List<String> _nomsDevantParenthese = [...nomsDeCalcul, 'arg', 'Re', 'Im']
+  ..sort((a, b) => b.length - a.length);
 
 /// Noms que l'écriture sans barre oblique peut donner, lettre après lettre.
 const _nomsEnLettres = [
@@ -200,15 +249,28 @@ final _nomEnveloppe = RegExp(
 /// est une différentielle ; un nom inconnu sera refusé comme toute commande.
 String _nomEnClair(String enveloppe) {
   final nom = enveloppe.replaceAll(RegExp(r'\s'), '');
+  if (nomsDeCalcul.contains(normaliserNom(nom))) {
+    return ' \\${normaliserNom(nom)} ';
+  }
   if (nom.length <= 1) return ' $nom ';
   if (RegExp(r'^d[a-z]$').hasMatch(nom)) return ' d ${nom[1]} ';
   return ' \\$nom ';
 }
 
+/// Une liste de nombres sans `;` : ses virgules séparent, `moyenne(2,4,9)`.
+final _listeStatistique = RegExp(
+  '(moyenne|mean|m[ée]diane|median|variance|[ée]cart-?type|stddev)'
+  r'(\}?\s*(?:\\left)?\s*\()([^();]*)\)',
+);
+
 List<_Jeton> _decouper(String texte) {
   final latex = texte
       // `1{,}5` : c'est ainsi que l'app écrit elle-même une virgule décimale.
       .replaceAll(RegExp(r'\{\s*,\s*\}'), ',')
+      .replaceAllMapped(
+        _listeStatistique,
+        (m) => '${m[1]}${m[2]}${m[3]!.replaceAll(',', ';')})',
+      )
       .replaceAllMapped(_nomEnveloppe, (m) => _nomEnClair(m[1]!))
       .replaceAllMapped(
         _primes,
@@ -322,7 +384,16 @@ List<_Jeton> _rassemblerNoms(List<_Jeton> jetons) {
       return true;
     }
 
-    var trouve = _nomsEnLettres.where(suit).firstOrNull;
+    // Avant `exp` et `tan` : `expand(`, `tangente(`.
+    var trouve = _nomsDevantParenthese
+        .where(
+          (nom) =>
+              suit(nom) &&
+              i + nom.length < jetons.length &&
+              jetons[i + nom.length].est('('),
+        )
+        .firstOrNull;
+    trouve ??= _nomsEnLettres.where(suit).firstOrNull;
     // `d e t` devant une matrice ou une parenthèse, sinon trois lettres.
     if (trouve == null && suit('det') && i + 3 < jetons.length) {
       final apres = jetons[i + 3];
@@ -593,7 +664,10 @@ class LecteurLatex {
           _courant.commande('times')) {
         _i++;
         final droite = _unaire();
-        gauche = _fusion('${gauche.giac}*${droite.giac}', [gauche, droite]);
+        // Deux vecteurs : leur produit scalaire.
+        gauche = gauche.composantes != null && droite.composantes != null
+            ? Terme('dot(${gauche.giac},${droite.giac})')
+            : _fusion('${gauche.giac}*${droite.giac}', [gauche, droite]);
       } else if (_courant.est('/') || _courant.commande('div')) {
         _i++;
         final droite = _unaire();
@@ -938,8 +1012,32 @@ class LecteurLatex {
       return _appel(_autresFonctions[nom]!);
     }
     if (_fonctionsADeux.containsKey(nom)) {
+      demandeResultat = true;
       return _appelADeux(_fonctionsADeux[nom]!);
     }
+    if (_transformations.containsKey(nom)) {
+      demandeResultat = true;
+      _attendre('(');
+      final t = _somme();
+      _attendre(')');
+      return Terme('${_transformations[nom]}(${t.giac})', symboles: t.symboles);
+    }
+    if (_statistiques.containsKey(nom)) {
+      demandeResultat = true;
+      final valeurs = _liste();
+      final liste = '[${valeurs.join(',')}]';
+      if (_statistiques[nom] == 'median') {
+        // Giac rend la plus petite des deux valeurs centrales (banc, Pad 7) ;
+        // au lycée, c'est leur moyenne.
+        final n = valeurs.length;
+        return Terme(
+          '(sort($liste)[${(n - 1) ~/ 2}]+sort($liste)[${n ~/ 2}])/2',
+        );
+      }
+      return Terme('${_statistiques[nom]}($liste)');
+    }
+    if (nom == 'discriminant') return _discriminant();
+    if (nom == 'tangente') return _tangente();
     switch (nom) {
       case 'frac' || 'dfrac' || 'tfrac':
         final derivee = _essayerDerivee();
@@ -1103,12 +1201,78 @@ class LecteurLatex {
     );
   }
 
+  /// `(2;4;9)`, ou `(2,4,9)` sans point-virgule : des nombres seulement.
+  List<String> _liste() {
+    _attendre('(');
+    final j = _courant;
+    final parties = j.parties;
+    // `2,4,9` lu comme un seul nombre : la lecture n'a pas su séparer.
+    if (j.genre == _Genre.nombre && parties != null) {
+      throw const ErreurLatex('liste ambiguë : écrire 2;4;9');
+    }
+    final valeurs = <String>[];
+    do {
+      final t = _somme();
+      if (t.symboles.isNotEmpty) throw const ErreurLatex('liste de nombres');
+      valeurs.add(t.giac);
+    } while (_prendre(';') || _prendre(','));
+    _attendre(')');
+    if (valeurs.isEmpty) throw const ErreurLatex('liste vide');
+    return valeurs;
+  }
+
+  /// `discriminant(x^2-3x+2)` : b²-4ac, pour un trinôme de la variable.
+  Terme _discriminant() {
+    demandeResultat = true;
+    _attendre('(');
+    final p = _somme();
+    _attendre(')');
+    final variables = p.symboles;
+    if (variables.length != 1) {
+      throw const ErreurLatex('discriminant d’un trinôme à une variable');
+    }
+    final v = variables.single;
+    final q = '(${p.giac})';
+    return Terme('normal(coeff($q,$v,1)^2-4*coeff($q,$v,2)*coeff($q,$v,0))');
+  }
+
+  /// `tangente(f;2)` : la tangente à la courbe de f, définie plus haut, en 2.
+  Terme _tangente() {
+    demandeResultat = true;
+    _attendre('(');
+    final nom = _courant.texte;
+    final definition = definitions[nom];
+    if (_courant.genre != _Genre.lettre || definition == null) {
+      throw ErreurLatex('tangente : fonction inconnue $nom');
+    }
+    _i++;
+    if (!_prendre(';') && !_prendre(',')) {
+      throw const ErreurLatex('tangente(f;a)');
+    }
+    final a = _somme();
+    _attendre(')');
+    final v = definition.variable;
+    return Terme(
+      'normal(${definition.appel(a.giac)}'
+      '+${definition.appel(a.giac, primes: 1)}*($v-(${a.giac})))',
+      symboles: {v},
+    );
+  }
+
   /// `\gcd(12,18)` : ici la virgule sépare, elle n'est plus décimale.
   Terme _appelADeux(String nom) {
     _attendre('(');
     final j = _courant;
     final parties = j.parties;
-    if (j.genre == _Genre.nombre && parties != null && parties.length == 1) {
+    // `arrondi(3,14;2)` : avec un `;`, la virgule reste décimale.
+    final pointVirgule = _jetons
+        .skip(_i)
+        .takeWhile((t) => !t.est(')'))
+        .any((t) => t.est(';'));
+    if (j.genre == _Genre.nombre &&
+        parties != null &&
+        parties.length == 1 &&
+        !pointVirgule) {
       final reste = j.texte.substring(parties.single.length + 1);
       _jetons.replaceRange(_i, _i + 1, [
         _Jeton(_Genre.nombre, parties.single),

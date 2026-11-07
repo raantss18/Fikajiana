@@ -180,7 +180,15 @@ class BlocCalcul {
   /// Rien d'écrit juste dessous : une solution peut s'y poser.
   bool dessousLibre = true;
 
-  bool get _sousLEcriture => !finitParEgal && dessousLibre;
+  /// Ce qui est écrit autour : un résultat ne s'y pose pas.
+  List<Rect> _voisins = const [];
+
+  /// `f'(x)`, `det(…)` sans `=` : l'app l'écrit devant la valeur. Une
+  /// équation se résout dessous, sans `=` (« x+3=4 = {1} » serait faux).
+  bool get egalAjoute => !finitParEgal && !estResolution && !estSaisie;
+
+  /// Le résultat se pose sous l'écriture : une équation, si la place est libre.
+  bool get resultatDessous => estResolution && dessousLibre;
 
   /// Une équation ou un système : le résultat n'est pas une valeur à égaler.
   bool get estResolution =>
@@ -228,15 +236,29 @@ class BlocCalcul {
     if (valeur == null) return null;
     if (_ecritPour != valeur) {
       _ecritPour = valeur;
-      _ecrit = ecrireResultat(
-        valeur,
-        cadre,
-        dessous: _sousLEcriture,
-        hauteurLigne: hauteurLigne,
-      );
+      _ecrit = _placer(valeur);
     }
     return _ecrit;
   }
+
+  /// À droite après un `=`, dessous pour une équation ; de l'autre côté si la
+  /// place est prise, et à la place voulue si les deux le sont.
+  EcritureResultat? _placer(String valeur) {
+    EcritureResultat? essai({required bool dessous}) => ecrireResultat(
+      // Sous l'écriture, la valeur seule ne dirait pas ce qu'elle égale.
+      egalAjoute || (finitParEgal && dessous) ? '=$valeur' : valeur,
+      cadre,
+      dessous: dessous,
+      hauteurLigne: hauteurLigne,
+    );
+    final dessous = resultatDessous;
+    final voulu = essai(dessous: dessous);
+    if (voulu == null || !_gene(voulu.cadre)) return voulu;
+    final autre = essai(dessous: !dessous);
+    return autre != null && !_gene(autre.cadre) ? autre : voulu;
+  }
+
+  bool _gene(Rect zone) => _voisins.any(zone.deflate(1).overlaps);
 
   void _oublierResultat() {
     verite = null;
@@ -337,9 +359,14 @@ class CalculFeuille extends ChangeNotifier {
             !autre.estSaisie &&
             autre.cadre.overlaps(dessous),
       );
-      if (libre != bloc.dessousLibre) {
+      final voisins = [
+        for (final autre in _blocs.values)
+          if (!identical(autre, bloc) && !autre.estSaisie) autre.cadre,
+      ];
+      if (libre != bloc.dessousLibre || !listEquals(voisins, bloc._voisins)) {
         bloc
           ..dessousLibre = libre
+          .._voisins = voisins
           .._ecritPour = null;
       }
     }
@@ -573,6 +600,15 @@ class CalculFeuille extends ChangeNotifier {
   }
 
   /// Ce qui est défini au-dessus de [bloc] : le plus proche l'emporte.
+  /// [latex] compris comme s'il était écrit à la place de [bloc].
+  Analyse analyserPour(BlocCalcul bloc, String latex) =>
+      _contextePour(bloc).analyser(latex);
+
+  /// [latex] compris sous tout ce qui est écrit : une ligne tapée.
+  Analyse analyserEnBas(String latex) => _contextePour(
+    BlocCalcul(cle: '', cadre: const Rect.fromLTWH(0, 1000000000, 0, 0)),
+  ).analyser(latex);
+
   _Contexte _contextePour(BlocCalcul bloc) {
     final contexte = _Contexte();
     final dessus =

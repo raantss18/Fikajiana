@@ -5,6 +5,8 @@
 /// silence : un mot inconnu est refusé, une lecture ambiguë propose l'autre.
 library;
 
+import 'package:fikajiana_math/src/lecteur_latex.dart'
+    show nomsDeCalcul, normaliserNom;
 import 'package:fikajiana_math/src/objets.dart';
 
 /// Pourquoi une saisie ne se lit pas.
@@ -55,6 +57,8 @@ Saisie lireSaisie(String texte) {
     return Saisie(propre);
   }
   try {
+    final commande = _commandeDeCalcul(propre);
+    if (commande != null) return Saisie(commande);
     final jetons = _decouper(propre);
     final latex = _Traducteur(jetons).traduire();
     final autre = _Traducteur(jetons, denominateurLong: true).traduire();
@@ -62,6 +66,56 @@ Saisie lireSaisie(String texte) {
   } on _Refus catch (refus) {
     return Saisie.refusee(refus.probleme, detail: refus.detail);
   }
+}
+
+/// `développer((x+1)^2)`, `moyenne(2;4;9)`, `tangente(f;2)` sur toute la
+/// ligne : le nom pour le lecteur, chaque argument traduit à part.
+String? _commandeDeCalcul(String texte) {
+  final m = RegExp(r'^([A-Za-zÀ-ÿ_-]+)\s*\((.*)\)\s*(=?)\s*$')
+      .firstMatch(texte);
+  if (m == null) return null;
+  final nom = normaliserNom(m[1]!);
+  if (!nomsDeCalcul.contains(nom)) return null;
+  final dedans = m[2]!;
+  final unSeul =
+      !RegExp(
+        r'^(moyenne|mean|mediane|median|variance|ecarttype|stddev|tangente)$',
+      ).hasMatch(nom) &&
+      !const {'arrondi', 'round', 'pgcd', 'ppcm', 'gcd', 'lcm'}.contains(nom);
+  var morceaux = unSeul ? [dedans] : _separer(dedans, ';');
+  if (!unSeul && morceaux.length == 1) morceaux = _separer(dedans, ',');
+  if (nom == 'tangente') {
+    // `tangente(x)` reste la fonction tangente.
+    if (morceaux.length != 2 ||
+        !RegExp(r'^\s*[a-zA-Z]\s*$').hasMatch(morceaux.first)) {
+      return null;
+    }
+    final a = _Traducteur(_decouper(morceaux.last)).traduire();
+    return '\\text{tangente}\\left(${morceaux.first.trim()};$a'
+        '\\right)${m[3]}';
+  }
+  final traduits = [
+    for (final morceau in morceaux) _Traducteur(_decouper(morceau)).traduire(),
+  ];
+  // `\\text` : l'affichage garde les accents ; le lecteur les ôte.
+  return '\\text{${m[1]}}\\left(${traduits.join(';')}\\right)${m[3]}';
+}
+
+/// Coupe [texte] à chaque [signe] hors des parenthèses.
+List<String> _separer(String texte, String signe) {
+  final morceaux = <String>[];
+  var profondeur = 0;
+  var debut = 0;
+  for (var i = 0; i < texte.length; i++) {
+    final c = texte[i];
+    if (c == '(') profondeur++;
+    if (c == ')') profondeur--;
+    if (c == signe && profondeur == 0) {
+      morceaux.add(texte.substring(debut, i));
+      debut = i + 1;
+    }
+  }
+  return morceaux..add(texte.substring(debut));
 }
 
 /// Le LaTeX lu à la main, en texte à corriger : `\frac{x}{2}` donne `x/2`.
@@ -73,6 +127,10 @@ String texteDepuisLatex(String latex) {
     return '${_groupe(a[0])}/${_groupe(a[1])}';
   });
   s = _remplacerCommande(s, 'sqrt', 1, (a) => 'sqrt(${a[0]})');
+  // `\text{moyenne}`, `\operatorname{pgcd}` : le nom tel quel.
+  for (final nom in ['text', 'operatorname', 'mathrm']) {
+    s = _remplacerCommande(s, nom, 1, (a) => a[0]);
+  }
   s = _sansExposantsGroupes(s);
   const simples = {
     r'\left': '',

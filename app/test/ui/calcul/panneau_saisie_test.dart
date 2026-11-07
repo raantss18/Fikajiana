@@ -1,10 +1,37 @@
 import 'package:fikajiana/graphe/courbes.dart';
 import 'package:fikajiana/l10n/gen/app_localizations.dart';
 import 'package:fikajiana/ui/calcul/panneau_saisie.dart';
+import 'package:fikajiana_math/fikajiana_math.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  group('le panneau sait ce que sait la feuille', () {
+    // Vu sur le Pad 7 : `tangente(f;0)` refusé alors que f était définie.
+    Analyse avecF(String latex) => analyserLatex(
+      latex,
+      definitions: {
+        'f': const DefinitionFonction(variable: 'x', corps: 'exp(x)+2'),
+      },
+    );
+
+    test('tangente(f;0) se calcule si f est sur la feuille', () {
+      final latex = lireSaisie('tangente(f;0)').latex!;
+      expect(verbeDe(latex), isNull);
+      expect(verbeDe(latex, analyser: avecF), isA<VerbeCalculer>());
+    });
+
+    test('les commandes tapées se calculent', () {
+      for (final texte in [
+        'moyenne(2;4;9)',
+        'écart-type(2;4)',
+        'pgcd(12;18)',
+      ]) {
+        expect(verbeDe(lireSaisie(texte).latex!), isA<VerbeCalculer>());
+      }
+    });
+  });
+
   group('le verbe dit ce qui va se passer', () {
     test('calculer, résoudre, tracer', () {
       expect(verbeDe('2+3'), isA<VerbeCalculer>());

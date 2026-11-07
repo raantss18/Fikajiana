@@ -8,6 +8,7 @@ import 'package:fikajiana/l10n/l10n.dart';
 import 'package:fikajiana/reglages/reglages.dart';
 import 'package:fikajiana/ui/calcul/marques_bloc.dart';
 import 'package:fikajiana/ui/calcul/panneau_saisie.dart';
+import 'package:fikajiana/ui/formule_affichee.dart';
 import 'package:fikajiana/ui/navigation/destination.dart';
 import 'package:fikajiana/ui/navigation/page_destination.dart';
 import 'package:fikajiana/ui/services.dart';
@@ -48,6 +49,7 @@ class RepereBloc extends StatelessWidget {
       context,
       bloc.latex ?? '',
       surRetirer: bloc.estSaisie ? () => calcul.retirer(bloc) : null,
+      analyser: (latex) => calcul.analyserPour(bloc, latex),
     );
     if (latex != null && latex.trim().isNotEmpty) {
       unawaited(calcul.corriger(bloc, latex));
@@ -103,7 +105,7 @@ class RepereBloc extends StatelessWidget {
       // Ce qui a été compris, à vérifier d'un coup d'œil : un chiffre mal lu
       // fausserait le résultat sans le dire.
       // Sous la ligne si le résultat va à droite, à droite s'il va dessous.
-      final ou = bloc.finitParEgal || !bloc.dessousLibre
+      final ou = !bloc.resultatDessous
           ? bloc.cadre.bottomLeft * vue.zoom +
                 vue.decalage +
                 const Offset(0, AppEspacement.xxs)
@@ -342,12 +344,29 @@ class RepereBloc extends StatelessWidget {
         }
         final verite = bloc.verite;
         if (verite != null) {
-          position = droite + const Offset(AppEspacement.sm, -14);
-          contenu = Text(
+          final mot = Text(
             verite ? l10n.blocVrai : l10n.blocFaux,
             style: Theme.of(context).textTheme.titleMedium
                 ?.copyWith(color: accent),
           );
+          // Tapée, la ligne n'a pas d'encre : sans sa formule, « Vrai » seul ne
+          // dirait pas de quoi (vu sur le Pad 7 avec `premier(97)`).
+          position = bloc.estSaisie
+              ? dessous
+              : droite + const Offset(AppEspacement.sm, -14);
+          contenu = bloc.estSaisie
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _Formule(
+                      latex: '${_sansEgalFinal(bloc.latex ?? '')} :',
+                      couleur: accent,
+                    ),
+                    const SizedBox(width: AppEspacement.sm),
+                    mot,
+                  ],
+                )
+              : mot;
         } else {
           final valeur = bloc.texte(
             approcheVoulue: reglages.approche,
@@ -365,12 +384,14 @@ class RepereBloc extends StatelessWidget {
               surOuvrir: (_) => unawaited(_corriger(context)),
             );
           }
-          position = bloc.estSaisie || !bloc.finitParEgal
+          position = bloc.estSaisie || bloc.resultatDessous
               ? dessous
               : droite + const Offset(AppEspacement.sm, -14);
           final ecrit = _sansEgalFinal(bloc.latex ?? '');
           contenu = _Formule(
-            latex: !bloc.estSaisie
+            latex: bloc.egalAjoute
+                ? '= $valeur'
+                : !bloc.estSaisie
                 ? valeur
                 : !bloc.estResolution
                 ? '$ecrit = $valeur'
@@ -636,7 +657,7 @@ class _Formule extends StatelessWidget {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Math.tex(
-        latex,
+        pourAffichage(latex),
         textStyle: style,
         onErrorFallback: (_) => Text(latex, style: style),
       ),
@@ -651,10 +672,12 @@ Future<String?> demanderLatex(
   VoidCallback? surRetirer,
   String? aide,
   String? action,
+  Analyseur analyser = analyserLatex,
 }) => ouvrirPanneauSaisie(
   context,
   initial,
   surRetirer: surRetirer,
   aide: aide,
   action: action,
+  analyser: analyser,
 );

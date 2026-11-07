@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:fikajiana/comprendre/blocs.dart';
 import 'package:fikajiana/comprendre/calcul_feuille.dart';
+import 'package:fikajiana/comprendre/ecriture_resultat.dart';
 import 'package:fikajiana/comprendre/stockage_feuille.dart';
 import 'package:fikajiana/encre/encre.dart';
 import 'package:fikajiana/moteur/giac.dart';
@@ -595,6 +596,69 @@ void main() {
     await _attendre();
     expect(calcul.blocs, hasLength(2));
     expect(haut.dessousLibre, isFalse);
+  });
+
+  group('le = oublié', () {
+    void barre(double x, double y) {
+      encre.commencer(PointEncre(x, y, 0.1));
+      for (var i = 1; i <= 5; i++) {
+        encre.prolonger(PointEncre(x + i * 10.0, y + i * 10.0, 0.1));
+      }
+      encre.terminer();
+    }
+
+    const det = r'\det\begin{pmatrix}1&2\\3&4\end{pmatrix}';
+
+    Future<BlocCalcul> lire(String latex, double x, double y) async {
+      barre(x, y);
+      lecteur.reponse = latex;
+      calcul.encreChangee();
+      await _attendre();
+      return calcul.blocs.last;
+    }
+
+    EcritureResultat? ecrit(BlocCalcul b) =>
+        b.ecriture(approcheVoulue: false, virgule: true);
+
+    test('det sans = : l’app écrit « = 5 » à droite', () async {
+      final b = await lire(det, 0, 0);
+      expect(b.egalAjoute, isTrue);
+      final e = ecrit(b)!;
+      expect(e.cadre.left, greaterThan(b.cadre.right));
+      final avecEgal = e.contours.length;
+      calcul.dispose();
+      encre = Encre();
+      calcul = CalculFeuille(
+        encre: encre,
+        lecteur: lecteur,
+        moteur: moteur,
+        pause: Duration.zero,
+      );
+      final simple = await lire('2+3=', 0, 0);
+      expect(simple.egalAjoute, isFalse);
+      // Les deux traits du « = ».
+      expect(ecrit(simple)!.contours.length, avecEgal - 2);
+    });
+
+    test('une équation garde sa solution dessous, sans =', () async {
+      moteur.reponse = const ReponseGiac(
+        exact: '[1]',
+        latex: '1',
+        approche: '[1.0]',
+      );
+      final b = await lire('x+1=2', 0, 0);
+      expect(b.egalAjoute, isFalse);
+      expect(ecrit(b)!.cadre.top, greaterThan(b.cadre.bottom));
+    });
+
+    test('la place à droite est prise : le résultat va dessous', () async {
+      final b = await lire(det, 0, 0);
+      await lire('7', 80, 40);
+      expect(calcul.blocs, hasLength(2));
+      final e = ecrit(b)!;
+      expect(calcul.blocs.last.cadre.overlaps(e.cadre), isFalse);
+      expect(e.cadre.top, greaterThan(b.cadre.bottom));
+    });
   });
 
   group('une lecture douteuse en demande d’autres', () {
