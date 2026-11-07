@@ -771,7 +771,9 @@ class Atelier extends ChangeNotifier {
   }
 
   /// Construit dans la Figure ce que commande la Feuille : `cercle(A;2)`,
-  /// `(AB)`… Les points doivent y être ; rend `false` sinon. S'annule d'un coup.
+        id = _ajouter(
+          Construite(GenreConstruction.cercleRayon, [...parents, r]),
+        );
   bool construire(CommandeGeo commande) {
     final ids = [for (final n in commande.points) _pointExistant(n)];
     if (ids.contains(null)) return false;
