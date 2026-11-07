@@ -86,6 +86,7 @@ class BlocCalcul {
       ..inchange = json['inchange'] as bool? ?? false
       ..hauteurLigne = (json['hl'] as num?)?.toDouble()
       ..demandeResultat = json['dr'] as bool? ?? false
+      ..lueParMorceaux = json['lm'] as bool? ?? false
       .._points = json['points'] as int? ?? 0;
   }
 
@@ -147,6 +148,10 @@ class BlocCalcul {
     }
     return _objet;
   }
+
+  /// Lue par morceaux : ce qui a été compris se montre, un chiffre peut être
+  /// faux et le résultat avec lui.
+  bool lueParMorceaux = false;
 
   /// Un vecteur calculé peut aussi se placer dans la Figure.
   List<ObjetLu> aPlacer = const [];
@@ -259,6 +264,7 @@ class BlocCalcul {
     'points': _points,
     'hl': ?hauteurLigne,
     if (demandeResultat) 'dr': true,
+    if (lueParMorceaux) 'lm': true,
   };
 }
 
@@ -499,10 +505,13 @@ class CalculFeuille extends ChangeNotifier {
         ];
         latex = choix;
       }
-      bloc.latex = _redresser(
-        bloc,
-        redresserLecture(latex, fonctions: fonctions),
-      );
+      bloc
+        ..latex = _redresser(
+          bloc,
+          redresserLecture(latex, fonctions: fonctions),
+        )
+        // Un nom se vérifie à l'œil ; les chiffres d'une matrice, moins.
+        ..lueParMorceaux = structuree?.contains('matrix') ?? false;
       await _calculer(bloc);
     } on ModeleAbsent {
       bloc.etat = EtatBloc.sansModele;
@@ -715,7 +724,9 @@ class CalculFeuille extends ChangeNotifier {
         ..approche = reponse.approche.isEmpty || num.tryParse(exact) != null
             ? null
             : reponse.approche
-        ..inchange = sansEspaces(exact) == sansEspaces(analyse.giac)
+        ..inchange =
+            !analyse.demandeResultat &&
+            sansEspaces(exact) == sansEspaces(analyse.giac)
         ..etat = EtatBloc.fait;
     }
   }
