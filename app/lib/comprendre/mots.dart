@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:fikajiana/comprendre/blocs.dart';
+import 'package:fikajiana/comprendre/structure.dart';
 import 'package:fikajiana/encre/encre.dart';
 
 /// Les mots de commande écrits à la main : `développer(…)`, `premier(17)`.
@@ -22,6 +23,8 @@ class MotEcrit {
 
 /// Les commandes qu'on écrit à la main, telles qu'elles s'affichent.
 const motsDeCommande = [
+  'tracer',
+  'plot',
   'développer',
   'factoriser',
   'simplifier',
@@ -37,6 +40,54 @@ const motsDeCommande = [
   'discriminant',
   'tangente',
 ];
+
+/// Les mots écrits seuls à côté d'une ligne : un ordre (`⇒ plot`) ou une
+/// note (`longueur`), jamais un calcul (Pad 7).
+const motsSeuls = [
+  'plot',
+  'tracer',
+  'trace',
+  'longueur',
+  'distance',
+  'aire',
+  'norme',
+  'donc',
+  'solution',
+];
+
+/// Les mots qui demandent de tracer la ligne d'à côté.
+const motsTracer = {'plot', 'tracer', 'trace'};
+
+/// Un mot seul, sans parenthèse, une flèche `⇒` devant ou non ; `null` si ce
+/// n'est pas un mot de [motsSeuls] sans doute possible.
+String? reconnaitreMotSeul(List<Trait> traits) {
+  if (traits.isEmpty) return null;
+  final cadre = cadreDuGroupe(traits);
+  final tries = traits.toList()
+    ..sort(
+      (a, b) => cadreDuGroupe([a]).left.compareTo(cadreDuGroupe([b]).left),
+    );
+  // `⇒` devant : des traits bas et courts, avant la première lettre.
+  final fleche = tries.takeWhile((t) {
+    final c = cadreDuGroupe([t]);
+    return c.height <= 0.55 * cadre.height &&
+        c.bottom < cadre.bottom - 0.1 * cadre.height;
+  }).toList();
+  final reste = fleche.length >= 2
+      ? [
+          for (final t in tries)
+            if (!fleche.contains(t)) t,
+        ]
+      : tries;
+  if (reste.isEmpty) return null;
+  final mot = cadreDuGroupe(reste);
+  // Un mot est plus large que haut ; et sans `=` ni `-`, sinon
+  // c'est un calcul mal lu, à ne pas cacher sous une note.
+  if (mot.width < mot.height || signesPlats(reste).isNotEmpty) {
+    return null;
+  }
+  return motSur(classerMots(reste, lexique: motsSeuls), seuil: 2, avance: 0.6);
+}
 
 Rect _c(List<Offset> s) => s
     .skip(1)
@@ -235,10 +286,13 @@ double _ecart(List<_Repere> vus, List<_Repere> attendus) {
 String _sansTiret(String mot) => mot.replaceAll('-', '');
 
 /// Les commandes, de la plus ressemblante à la moins : nom et écart.
-List<(String, double)> classerMots(List<Trait> mot) {
+List<(String, double)> classerMots(
+  List<Trait> mot, {
+  List<String> lexique = motsDeCommande,
+}) {
   final (vus, largeur) = _silhouette(mot);
   return [
-    for (final nom in motsDeCommande)
+    for (final nom in lexique)
       () {
         final (attendus, lettres) = _attendu(_sansTiret(nom));
         final ecart = _ecart(vus, attendus);
@@ -250,9 +304,15 @@ List<(String, double)> classerMots(List<Trait> mot) {
 
 /// Le mot, s'il ne fait pas de doute : assez ressemblant, et nettement plus
 /// que le suivant. Sinon `null`, et la feuille propose les premiers.
-String? motSur(List<(String, double)> classes) {
+/// Un mot seul, court (`plot`), ressemble moins : on accepte plus loin, mais
+/// avec une avance plus nette sur le suivant.
+String? motSur(
+  List<(String, double)> classes, {
+  double seuil = 1.2,
+  double avance = 0.4,
+}) {
   if (classes.length < 2) return null;
   final (premier, second) = (classes[0], classes[1]);
-  if (premier.$2 > 1.2 || second.$2 - premier.$2 < 0.4) return null;
+  if (premier.$2 > seuil || second.$2 - premier.$2 < avance) return null;
   return premier.$1;
 }

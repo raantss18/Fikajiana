@@ -4,6 +4,25 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+## [1.0.0] — 2026-11-07
+
+### Message fr
+
+Fikajiana 1.0 : chaque feuille a maintenant sa propre Figure, et une nouvelle feuille part d'une Figure vide. L'écriture se lit mieux : points `A(8;-1)`, déterminants, inverse d'une matrice, `e^x = 7`, et des mots comme « plot » ou « longueur ». Les résultats et les actions s'écrivent à la main ; la page s'arrête en haut et à gauche, comme un cahier.
+
+### Message en
+
+Fikajiana 1.0: each sheet now has its own Figure, and a new sheet starts with an empty Figure. Handwriting is read better: points `A(8;-1)`, determinants, matrix inverses, `e^x = 7`, and words such as "plot" or "longueur". Results and actions are written by hand; the page stops at the top and on the left, like a notebook.
+
+### Changements
+
+- Un document, c'est une feuille et sa Figure : nouvelle feuille, nouvelle Figure ; l'Historique n'a plus qu'une liste. Les figures d'avant rejoignent la feuille dont elles viennent. / A document is a sheet and its Figure: new sheet, new Figure; the History has a single list. Earlier figures join the sheet they came from.
+- Mieux lus à la main : `A(8;-1)` et `B(5;8)`, `det` d'une matrice 2×2, `(…)^{-1}`, `e^x = 7` (le `=` n'est plus pris pour un `-`). `30×8` donne `= 240`. / Better read by hand: `A(8;-1)` and `B(5;8)`, `det` of a 2×2 matrix, `(…)^{-1}`, `e^x = 7` (the `=` is no longer taken for a `-`). `30×8` gives `= 240`.
+- `⇒ plot` à côté d'une ligne propose de la tracer ; un mot comme « longueur » reste une note, sans être signalé. / `⇒ plot` next to a line offers to plot it; a word such as "longueur" stays a note, without being flagged.
+- Tracer, Placer et Corriger s'écrivent à la main sur la Feuille, et les matrices aussi. / Plot, Place and Correct are handwritten on the Sheet, and so are matrices.
+- Une seule création, « Nouveau document » : la feuille et sa Figure ensemble. `∫f(x)dx` se simplifie : `x³+x`, pas `3x³/3+x`. `plot(f(x))` écrit à la main se trace. / A single creation entry, "New document": the sheet and its Figure together. `∫f(x)dx` is simplified: `x³+x`, not `3x³/3+x`. Handwritten `plot(f(x))` can be plotted.
+- La page s'arrête en haut ; l'export PNG et PDF part de son coin. / The page stops at the top; PNG and PDF export start from its corner.
+
 ## [0.9.1] — 2026-11-07
 
 ### Message fr

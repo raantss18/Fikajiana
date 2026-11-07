@@ -6,6 +6,21 @@ import 'package:fikajiana_math/fikajiana_math.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  // Antsa : la matrice inverse s'imprimait toute petite (Pad 7).
+  test('une matrice de Giac s’écrit à la main', () {
+    const inverse =
+        r'\left(\begin{array}{cc}'
+        '\n'
+        r'\frac{7}{15} & \frac{-8}{15} \\'
+        '\n'
+        r'\frac{1}{15} & \frac{1}{15}\end{array}\right)';
+    final ligne = ecrireResultat('7', const Rect.fromLTWH(0, 0, 40, 40));
+    final matrice = ecrireResultat(inverse, const Rect.fromLTWH(0, 0, 40, 40));
+    expect(matrice, isNotNull);
+    expect(matrice!.contours.length, greaterThan(10));
+    expect(matrice.cadre.height, greaterThan(ligne!.cadre.height));
+  });
+
   const ecriture = Rect.fromLTWH(100, 200, 300, 60);
 
   EcritureResultat? ecrit(BlocCalcul b) =>
@@ -51,6 +66,7 @@ void main() {
       r'S=\emptyset',
       r'S=\mathbb{R}',
       r'x=n\cdot \pi,\,n \in \mathbb{Z}',
+      r'\left(\begin{array}{cc}1&2\\3&4\end{array}\right)',
     ]) {
       test(latex, () {
         final ecrit = ecrireResultat(latex, ecriture);
@@ -63,7 +79,8 @@ void main() {
   group('laisse à la carte ce qu’il ne sait pas écrire', () {
     for (final latex in [
       r'\mbox{false}',
-      r'\left(\begin{array}{cc}1&2\\3&4\end{array}\right)',
+      // Une matrice sans fin : pas d'à-peu-près.
+      r'\left(\begin{array}{cc}1&2\\3&4',
       'Q',
       r'\frac{1}{2',
       '',

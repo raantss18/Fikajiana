@@ -24,6 +24,14 @@ class Services {
   }) {
     graphes.addListener(() => courbes.changerDeFichier(graphes.fichier));
     figures.addListener(() => atelier.changerDeFichier(figures.fichier));
+    // La Figure suit la feuille : un document, c'est les deux (ADR 0032).
+    void suivre() {
+      graphes.ouvrir(carnet.courante);
+      figures.ouvrir(carnet.courante);
+    }
+
+    carnet.addListener(suivre);
+    suivre();
   }
 
   /// Sans stockage ni modèle.
@@ -44,6 +52,7 @@ class Services {
   /// Pour l'application : stockage et modèle dans le dossier de l'app.
   static Future<Services> charger() async {
     final dossier = await getApplicationSupportDirectory();
+    const annexes = ['graphes', 'figures'];
     final modele = ModeleOcr(dossier: '${dossier.path}/modele');
     final graphes = Classeur(
       dossier: Directory('${dossier.path}/graphes'),
@@ -53,13 +62,15 @@ class Services {
       dossier: Directory('${dossier.path}/figures'),
       ancien: File('${dossier.path}/figure.json'),
     );
+    final carnet = Carnet(dossier: dossier, annexes: annexes);
+    rattacherFiguresAuxFeuilles(dossier, annexes);
     return Services(
       modele: modele,
       lecteur: LecteurPix2Text(modele),
       moteur: MoteurGiac(),
       courbes: Courbes(fichier: graphes.fichier),
       atelier: Atelier(fichier: figures.fichier),
-      carnet: Carnet(dossier: dossier),
+      carnet: carnet,
       graphes: graphes,
       figures: figures,
     );

@@ -88,7 +88,7 @@ void main() {
   });
 
   group('analyse des grandes opérations', () {
-    giac(r'\int x\,dx', 'integrate(x,x)');
+    giac(r'\int x\,dx', 'normal(integrate(x,x))');
     giac(r'\int_{0}^{1}x^{2}\,dx', 'integrate((x)^(2),x,0,1)');
     giac(r'\int _ { 0 } ^ { \pi } \sin ( x ) d x', 'integrate(sin(x),x,0,pi)');
     giac(r'\int_{1}^{e}\frac{1}{x}\,dx', 'integrate((1)/(x),x,1,e)');

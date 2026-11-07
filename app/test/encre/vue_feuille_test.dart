@@ -23,8 +23,8 @@ void main() {
     test('on ne va pas à gauche de la page', () {
       final vue = VueFeuille()
         ..borner(1000)
-        ..glisser(const Offset(300, 50));
-      expect(vue.decalage, const Offset(0, 50));
+        ..glisser(const Offset(300, -50));
+      expect(vue.decalage, const Offset(0, -50));
     });
 
     test('à droite, la page fait trois écrans de large', () {
@@ -42,6 +42,21 @@ void main() {
         ..zoomer(0.5, const Offset(900, 0));
       expect(vue.decalage.dx, lessThanOrEqualTo(0));
       expect(vue.versPage(Offset.zero).dx, greaterThanOrEqualTo(0));
+    });
+
+    test('en haut aussi, la page s’arrête', () {
+      final vue = VueFeuille()
+        ..borner(1000)
+        ..glisser(const Offset(0, 400));
+      expect(vue.decalage.dy, 0);
+      expect(vue.versPage(Offset.zero).dy, 0);
+    });
+
+    test('une feuille d’avant, écrite plus haut, reste atteignable', () {
+      final vue = VueFeuille()
+        ..borner(1000, coin: const Offset(-50, -300))
+        ..glisser(const Offset(500, 500));
+      expect(vue.versPage(Offset.zero), const Offset(-50, -300));
     });
 
     test('vers le bas, rien ne s’arrête', () {

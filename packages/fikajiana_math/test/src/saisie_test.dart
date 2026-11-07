@@ -113,7 +113,10 @@ void main() {
       expect(analyserLatex(r'\sin 2x').giac, 'sin(2*x)');
       expect(analyserLatex(r'\sin 2\pi x').giac, 'sin(2*pi*x)');
       expect(analyserLatex(r'\sin x \cos x').giac, 'sin(x)*cos(x)');
-      expect(analyserLatex(r'\int \sin x dx').giac, 'integrate(sin(x),x)');
+      expect(
+        analyserLatex(r'\int \sin x dx').giac,
+        'normal(integrate(sin(x),x))',
+      );
       expect(
         analyserLatex(r'\int_0^1 \sin 2x dx').giac,
         'integrate(sin(2*x),x,0,1)',

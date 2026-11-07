@@ -147,7 +147,6 @@
             }
         }
     },
-    "historiqueNouvelle": "Nouvelle feuille",
     "historiqueSupprimer": "Supprimer",
     "historiqueSupprimerTitre": "Supprimer cette feuille ?",
     "historiqueSupprimerTexte": "Elle sera effacée de l'appareil, sans retour possible.",
@@ -294,14 +293,12 @@
         }
     },
     "relationIciSeulement": "Vrai dans cette position seulement : cela cesse quand on déforme la figure.",
-    "nouvelleFeuille": "Nouvelle feuille",
-    "nouvelleFigure": "Nouvelle figure",
-    "historiqueSectionFeuilles": "Feuilles",
+    "historiqueSectionFeuilles": "Documents",
     "historiqueSectionGraphes": "Graphes",
     "historiqueSectionFigures": "Figures",
     "historiqueSupprimerAutre": "Supprimer ?",
     "historiqueGrapheVide": "Graphe vide",
-    "historiqueObjets": "{n} objets",
+    "historiqueObjets": "{n, plural, =1{1 objet} other{{n} objets}}",
     "@historiqueObjets": {
         "description": "historiqueObjets",
         "placeholders": {
@@ -364,5 +361,11 @@
     "choisirFond": "Fond",
     "blocRelire": "Relire",
     "saisieDefinir": "Définir {nom}",
-    "relireFeuille": "Relire la feuille"
+    "relireFeuille": "Relire la feuille",
+    "historiqueFigure": "Figure : {contenu}",
+    "motTracer": "tracer",
+    "motVoir": "voir",
+    "motPlacer": "placer",
+    "historiqueCourbes": "{n, plural, =1{1 courbe} other{{n} courbes}}",
+    "nouveauDocument": "Nouveau document"
 }
