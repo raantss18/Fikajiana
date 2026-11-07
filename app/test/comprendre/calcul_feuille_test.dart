@@ -76,6 +76,23 @@ void main() {
 
   tearDown(() => calcul.dispose());
 
+  group('les fonctions de la feuille', () {
+    test('une définition ne va pas à Giac', () async {
+      await calcul.saisir('y=2x+1', Offset.zero);
+      await calcul.saisir('f(x)=x^2', Offset.zero);
+      expect(moteur.entrees, isEmpty);
+      expect(calcul.blocs.every((b) => b.seTrace), isTrue);
+    });
+  });
+
+  group('ce qui ne fait que se tracer', () {
+    test('x^2+y^2=9 ne va pas à Giac', () async {
+      await calcul.saisir('x^2+y^2=9', Offset.zero);
+      expect(moteur.entrees, isEmpty);
+      expect(calcul.blocs.single.seTrace, isTrue);
+    });
+  });
+
   test('traits proches : une expression ; éloignés : deux', () {
     _trait(encre, 0, 0);
     _trait(encre, 30, 0);

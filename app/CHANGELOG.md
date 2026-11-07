@@ -4,6 +4,21 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+## [0.8.0] — 2026-11-07
+
+### Message fr
+
+Le calcul formel est plus sûr et plus complet. Dérive avec `f'(2)` ou `\frac{d}{dx}`, résous `x^2<4`, calcule un déterminant, un pgcd, une limite à droite. Corrige aussi des résultats faux : une intégrale écrite `\int_0^1` sans accolades perdait ses bornes. Chaque famille de calcul est vérifiée face à un second logiciel. Au clavier, tape comme tu écris : `x²`, `sin 2x`, `racine de 2`.
+
+### Message en
+
+Symbolic calculation is safer and more complete. Differentiate with `f'(2)` or `\frac{d}{dx}`, solve `x^2<4`, compute a determinant, a gcd, a one-sided limit. Also fixes wrong results: an integral written `\int_0^1` without braces lost its bounds. Every family of calculation is checked against a second program. On the keyboard, type as you write: `x²`, `sin 2x`, `sqrt 2`.
+
+### Changements
+
+- Corrige des résultats faux : bornes d'intégrale sans accolades, déterminant écrit entre barres, noms de fonctions lus comme des produits de lettres. Ce qui n'est pas compris est refusé. / Fixes wrong results: integral bounds without braces, determinants written between bars, function names read as products of letters. What is not understood is refused.
+- Dérivées, inéquations, limites à droite et à gauche, pgcd, ppcm, modulo, combinaisons, partie entière, logarithme de base b, transposée, conjugué, argument, pourcentage. / Derivatives, inequalities, one-sided limits, gcd, lcm, modulo, combinations, floor and ceiling, base-b logarithm, transpose, conjugate, argument, percent.
+- `y=2x+1` laisse `y` libre pour la suite. / `y=2x+1` leaves `y` free for later.
 - La feuille retient ce que vous définissez : après `f(x)=x+5`, `f'(x)` donne la dérivée, `f(2)` la valeur, et `f(x)=0` se résout. / The sheet remembers what you define: after `f(x)=x+5`, `f'(x)` gives the derivative, `f(2)` the value, and `f(x)=0` is solved.
 - Le déterminant se calcule : `det` devant une matrice, ou une matrice entre barres. / Determinants are calculated: `det` before a matrix, or a matrix between bars.
 - `A(1;2)` et un vecteur `AB` ou `u` avec ses coordonnées se placent en Géométrie d'un toucher. / `A(1;2)` and a vector `AB` or `u` with its coordinates can be placed in Geometry with one tap.

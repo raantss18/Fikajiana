@@ -148,8 +148,98 @@ void main() {
     giac('x(x+1)', 'x*(x+1)');
   });
 
+  group('bornes sans accolades : un seul signe, comme en LaTeX', () {
+    giac(r'\int_0^1 x^2 dx', 'integrate((x)^(2),x,0,1)');
+    giac(r'\int_0^{+\infty} e^{-x} dx', 'integrate((e)^((-x)),x,0,inf)');
+    giac(r'\sum_{k=1}^n k', 'sum(k,k,1,n)');
+    giac('x_1^2', '(x_1)^(2)');
+    giac(r'\frac12', '(1)/(2)');
+    giac(r'\sin(x)=\frac12', 'solve(sin(x)=(1)/(2),x)');
+    giac(r'\log_2 8', 'simplify(ln(8)/ln(2))');
+  });
+
+  group('dérivées', () {
+    giac(r'\frac{d}{dx}(x^2)', 'diff(((x)^(2)),x)');
+    giac(r'\frac{d}{dx}x^3', 'diff((x)^(3),x)');
+    giac(r'\frac{d^2}{dx^2}x^3', 'diff((x)^(3),x,2)');
+    giac(r'\frac{d(x^2)}{dx}', 'diff(((x)^(2)),x)');
+    giac(r'\frac{\mathrm{d}}{\mathrm{d}x}x', 'diff(x,x)');
+    giac(r'\frac{\partial}{\partial x}(x y)', 'diff((x*y),x)');
+    giac(r'\frac{df}{dx}', 'diff(f(x),x)');
+    giac("(x^2)'", 'diff(((x)^(2)),x)');
+    giac(r"(\sin(x))''", 'diff((sin(x)),x,2)');
+    giac("f'(x)", "f'(x)");
+    giac("f''(2)", "f''(2)");
+    giac(r'f^{\prime}(x)', "f'(x)");
+    giac(r'f^\prime(2)', "f'(2)");
+    giac(r'\frac{d}{e}', '(d)/(e)');
+    giac(r'\frac{2}{dx}', '(2)/(d*x)');
+  });
+
+  group('fonctions usuelles et nommées', () {
+    giac(r'\binom{5}{2}', 'comb(5,2)');
+    giac('C_5^2', 'comb(5,2)');
+    giac('A_5^2', 'perm(5,2)');
+    giac(r'\gcd(12,18)', 'gcd(12,18)');
+    giac(r'\operatorname{pgcd}(12;18)', 'gcd(12,18)');
+    giac(r'\text{ppcm}(4,6)', 'lcm(4,6)');
+    giac('p g c d ( 1 2 , 1 8 )', 'gcd(12,18)');
+    giac(r'17 \bmod 5', '((17)-(5)*floor((17)/(5)))');
+    giac(r'\lfloor x \rfloor', 'floor(x)');
+    giac(r'\lceil x \rceil', 'ceil(x)');
+    giac(r'\overline{1+i}', 'conj(1+i)');
+    giac(r'\arg(1+i)', 'arg(1+i)');
+    giac(r'\mathrm{Re}(z)', 're(z)');
+    giac(r'30\%', '(30)/100');
+    giac('1{,}5', '1.5');
+    giac(r'\sum_{i=1}^{3}i', 'sum(ii,ii,1,3)');
+    // Sans parenthèse, ce sont bien des lettres.
+    giac('d e t', 'd*e*t');
+  });
+
+  group('matrices : déterminant et transposée', () {
+    const m = r'\begin{pmatrix}1&2\\3&4\end{pmatrix}';
+    giac('\\det$m', 'det([[1,2],[3,4]])', TypeExpression.calcul);
+    giac(
+      r'\begin{vmatrix}1&2\\3&4\end{vmatrix}',
+      'det([[1,2],[3,4]])',
+      TypeExpression.calcul,
+    );
+    giac('\\left|$m\\right|', 'det([[1,2],[3,4]])');
+    giac('$m^T', 'transpose([[1,2],[3,4]])', TypeExpression.matrice);
+    giac('$m^{T}', 'transpose([[1,2],[3,4]])', TypeExpression.matrice);
+  });
+
+  group('limites à droite et à gauche', () {
+    giac(r'\lim_{x\to0^+}\frac{1}{x}', 'limit((1)/(x),x,0,1)');
+    giac(r'\lim_{x\to0^{-}}\frac{1}{x}', 'limit((1)/(x),x,0,-1)');
+    giac(r'\lim_{x\to0+}\frac{1}{x}', 'limit((1)/(x),x,0,1)');
+    giac(r'\lim_{x\to1}x', 'limit(x,x,1)');
+  });
+
+  group('inéquations', () {
+    giac('x>2', 'solve(x>2,x)', TypeExpression.equation);
+    giac(r'2x+1\geq3', 'solve(2*x+1>=3,x)', TypeExpression.equation);
+    giac(r'x\leq1', 'solve(x<=1,x)', TypeExpression.equation);
+    giac('2<3', '2<3', TypeExpression.calcul);
+
+    test('elles ne sont pas des courbes', () {
+      expect(analyserLatex('x>2').membres, isNull);
+    });
+  });
+
   group('refus : jamais de résultat deviné', () {
     for (final latex in [
+      // Une seule borne : la perdre rendrait une primitive.
+      r'\int_0 x dx',
+      // Un nom inconnu n'est pas le produit de ses lettres.
+      r'\operatorname{foo}(x)',
+      r'\mathrm{Foo}(x)',
+      // y n'est pas défini : ce serait 0 sans rien dire.
+      r'\frac{dy}{dx}',
+      // `u_{n+1}` n'est pas la variable `u_n` plus 1.
+      'u_{n+1}=2u_n',
+
       '',
       '2+',
       r'\frac{1}',

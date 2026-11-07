@@ -8,7 +8,10 @@ sealed class Lecture {
 /// Une expression, éventuellement suivie de `=` et d'une seconde expression.
 class LectureExpression extends Lecture {
   /// Crée la lecture.
-  const new(this.gauche, {required this.aEgal, this.droite});
+  const new(this.gauche, {required this.aEgal, this.droite, this.ordre});
+
+  /// `<`, `<=`, `>` ou `>=` à la place de `=`.
+  final String? ordre;
 
   /// Partie avant `=`.
   final Terme gauche;
@@ -100,6 +103,37 @@ const _fonctions = {
   'exp': 'exp',
 };
 
+/// Signes d'ordre, avec ce qu'ils valent pour Giac.
+const _ordres = {
+  '<': '<',
+  '>': '>',
+  '≤': '<=',
+  '≥': '>=',
+  'le': '<=',
+  'leq': '<=',
+  'leqslant': '<=',
+  'ge': '>=',
+  'geq': '>=',
+  'geqslant': '>=',
+  'lt': '<',
+  'gt': '>',
+};
+
+/// Noms à deux arguments, séparés par une virgule ou un point-virgule.
+const _fonctionsADeux = {
+  'gcd': 'gcd',
+  'pgcd': 'gcd',
+  'lcm': 'lcm',
+  'ppcm': 'lcm',
+};
+
+/// Noms à un argument, hors de la liste des fonctions réelles.
+const _autresFonctions = {'det': 'det', 'arg': 'arg', 'Re': 're', 'Im': 'im'};
+
+/// Écrits lettre après lettre, ils ne valent un nom que devant `(` : `det`
+/// peut aussi être le produit de trois lettres.
+const _nomsDevantParenthese = ['pgcd', 'ppcm', 'gcd', 'lcm', 'arg', 'Re', 'Im'];
+
 /// Noms que l'écriture sans barre oblique peut donner, lettre après lettre.
 const _nomsEnLettres = [
   'arcsin',
@@ -114,7 +148,7 @@ const _nomsEnLettres = [
   'exp',
   'log',
   'lim',
-  'det',
+  'mod',
   'ln',
 ];
 
@@ -138,10 +172,13 @@ const _grecques = {
 enum _Genre { nombre, lettre, commande, symbole, fin }
 
 class _Jeton {
-  const new(this.genre, this.texte);
+  const new(this.genre, this.texte, {this.parties});
 
   final _Genre genre;
   final String texte;
+
+  /// `12,18` est lu 12,18 ; dans `pgcd(12,18)`, ce sont deux nombres.
+  final List<String>? parties;
 
   bool est(String s) => genre != _Genre.fin && texte == s;
   bool commande(String s) => genre == _Genre.commande && texte == s;
@@ -152,12 +189,23 @@ class _Jeton {
 final _primes = RegExp(r"\^\s*\{?((?:\s*(?:\\prime|')\s*)+)\}?");
 
 final _nomEnveloppe = RegExp(
-  r'\\(?:operatorname\*?|mathrm|mathit|rm)\s*\{([^{}]*)\}',
+  r'\\(?:operatorname\*?|mathrm|mathit|rm|text|textrm|textit)\s*\{([^{}]*)\}',
 );
+
+/// Un nom enveloppé reste un nom : jamais le produit de ses lettres. `\mathrm{dx}`
+/// est une différentielle ; un nom inconnu sera refusé comme toute commande.
+String _nomEnClair(String enveloppe) {
+  final nom = enveloppe.replaceAll(RegExp(r'\s'), '');
+  if (nom.length <= 1) return ' $nom ';
+  if (RegExp(r'^d[a-z]$').hasMatch(nom)) return ' d ${nom[1]} ';
+  return ' \\$nom ';
+}
 
 List<_Jeton> _decouper(String texte) {
   final latex = texte
-      .replaceAllMapped(_nomEnveloppe, (m) => ' ${m[1]} ')
+      // `1{,}5` : c'est ainsi que l'app écrit elle-même une virgule décimale.
+      .replaceAll(RegExp(r'\{\s*,\s*\}'), ',')
+      .replaceAllMapped(_nomEnveloppe, (m) => _nomEnClair(m[1]!))
       .replaceAllMapped(
         _primes,
         (m) => "'" * RegExp(r"\\prime|'").allMatches(m[1]!).length,
@@ -198,6 +246,8 @@ List<_Jeton> _decouper(String texte) {
           jetons.add(const _Jeton(_Genre.symbole, r'\\'));
         } else if (suivant == '{' || suivant == '}') {
           jetons.add(_Jeton(_Genre.symbole, '\\$suivant'));
+        } else if (suivant == '%') {
+          jetons.add(const _Jeton(_Genre.symbole, '%'));
         } else if (!_ignores.contains(suivant)) {
           throw ErreurLatex('commande inconnue : \\$suivant');
         }
@@ -205,6 +255,7 @@ List<_Jeton> _decouper(String texte) {
     } else if (chiffre(c)) {
       // Les espaces ne comptent pas en LaTeX ; le lecteur écrit `1 0` pour 10.
       final nombre = StringBuffer(c);
+      final parties = <String>[];
       var j = i + 1;
       while (true) {
         var k = j;
@@ -221,6 +272,9 @@ List<_Jeton> _decouper(String texte) {
             m++;
           }
           if (m >= latex.length || !chiffre(latex[m])) break;
+          if (latex[k] == ',') {
+            parties.add(nombre.toString().replaceAll('.', ''));
+          }
           nombre
             ..write('.')
             ..write(latex[m]);
@@ -229,7 +283,13 @@ List<_Jeton> _decouper(String texte) {
           break;
         }
       }
-      jetons.add(_Jeton(_Genre.nombre, nombre.toString()));
+      jetons.add(
+        _Jeton(
+          _Genre.nombre,
+          nombre.toString(),
+          parties: parties.isEmpty ? null : parties,
+        ),
+      );
       i = j;
     } else if (lettre(c)) {
       jetons.add(_Jeton(_Genre.lettre, c));
@@ -247,19 +307,31 @@ List<_Jeton> _rassemblerNoms(List<_Jeton> jetons) {
   final sortie = <_Jeton>[];
   var i = 0;
   while (i < jetons.length) {
-    String? trouve;
-    for (final nom in _nomsEnLettres) {
-      if (i + nom.length > jetons.length) continue;
-      var ok = true;
+    bool suit(String nom) {
+      if (i + nom.length > jetons.length) return false;
       for (var k = 0; k < nom.length; k++) {
         final j = jetons[i + k];
-        if (j.genre != _Genre.lettre || j.texte != nom[k]) ok = false;
+        if (j.genre != _Genre.lettre || j.texte != nom[k]) return false;
       }
-      if (ok) {
-        trouve = nom;
-        break;
+      return true;
+    }
+
+    var trouve = _nomsEnLettres.where(suit).firstOrNull;
+    // `d e t` devant une matrice ou une parenthèse, sinon trois lettres.
+    if (trouve == null && suit('det') && i + 3 < jetons.length) {
+      final apres = jetons[i + 3];
+      if (apres.est('(') || apres.commande('begin') || apres.commande('left')) {
+        trouve = 'det';
       }
     }
+    trouve ??= _nomsDevantParenthese
+        .where(
+          (nom) =>
+              suit(nom) &&
+              i + nom.length < jetons.length &&
+              jetons[i + nom.length].est('('),
+        )
+        .firstOrNull;
     if (trouve != null) {
       sortie.add(_Jeton(_Genre.commande, trouve));
       i += trouve.length;
@@ -295,6 +367,23 @@ class LecteurLatex {
   /// Variables liées (intégrales, sommes, limites), absentes du résultat.
   final List<String> _liees = [];
 
+  /// Dans la cible d'une limite : `0^+` et `0+` y disent un côté.
+  var _dansCible = false;
+
+  /// Le `+` ou le `-` final de `x \to 0+`.
+  bool get _signeDeCote =>
+      _dansCible &&
+      (_courant.est('+') || _courant.est('-')) &&
+      _voir(1).est('}');
+
+  /// `^+`, `^{-}` en fin de cible de limite.
+  bool get _exposantDeCote {
+    if (!_dansCible || !_courant.est('^')) return false;
+    bool signe(_Jeton j) => j.est('+') || j.est('-');
+    return (signe(_voir(1)) && _voir(2).est('}')) ||
+        (_voir(1).est('{') && signe(_voir(2)) && _voir(3).est('}'));
+  }
+
   static const _fin = _Jeton(_Genre.fin, '');
 
   _Jeton get _courant => _i < _jetons.length ? _jetons[_i] : _fin;
@@ -322,6 +411,18 @@ class LecteurLatex {
     if (systeme != null) return systeme;
 
     final gauche = _somme();
+    final ordre = _ordres[_courant.texte];
+    if (ordre != null && _courant.genre != _Genre.nombre) {
+      _i++;
+      final droite = _somme();
+      _verifierFin();
+      return LectureExpression(
+        gauche,
+        aEgal: true,
+        droite: droite,
+        ordre: ordre,
+      );
+    }
     if (_prendre('=')) {
       if (_courant.genre == _Genre.fin) {
         return LectureExpression(gauche, aEgal: true);
@@ -422,7 +523,7 @@ class LecteurLatex {
 
   Terme _somme() {
     var gauche = _produit();
-    while (_courant.est('+') || _courant.est('-')) {
+    while ((_courant.est('+') || _courant.est('-')) && !_signeDeCote) {
       final signe = _courant.texte;
       _i++;
       final droite = _produit();
@@ -445,7 +546,16 @@ class LecteurLatex {
     return switch (j.genre) {
       _Genre.nombre || _Genre.lettre => true,
       _Genre.commande =>
-        !j.commande('end') && !j.commande('to') && !j.commande('rightarrow'),
+        !const {
+              'end',
+              'to',
+              'rightarrow',
+              'rfloor',
+              'rceil',
+              'bmod',
+              'mod',
+            }.contains(j.texte) &&
+            !_ordres.containsKey(j.texte),
       _Genre.symbole => j.est('(') || j.est('[') || j.est('{'),
       _Genre.fin => false,
     };
@@ -464,6 +574,12 @@ class LecteurLatex {
         _i++;
         final droite = _unaire();
         gauche = _fusion('${gauche.giac}/(${droite.giac})', [gauche, droite]);
+      } else if (_courant.commande('bmod') || _courant.commande('mod')) {
+        _i++;
+        final droite = _unaire();
+        // Le reste de la division euclidienne : -7 mod 3 vaut 2, jamais -1.
+        final (a, b) = (gauche.giac, droite.giac);
+        gauche = _fusion('(($a)-($b)*floor(($a)/($b)))', [gauche, droite]);
       } else if (_peutSuivre) {
         final droite = _puissance();
         gauche = _fusion('${gauche.giac}*${droite.giac}', [gauche, droite]);
@@ -484,13 +600,49 @@ class LecteurLatex {
 
   Terme _puissance() {
     final base = _postfixe();
-    if (!_prendre('^')) return base;
+    if (_exposantDeCote || !_prendre('^')) return base;
     if (_estDegre) return _degres(base);
+    if (base.estMatrice && _estTransposee) {
+      _i += _courant.est('{') ? 3 : 1;
+      return Terme(
+        'transpose(${base.giac})',
+        symboles: base.symboles,
+        estMatrice: true,
+      );
+    }
     final exposant = _groupeOuAtome();
     return Terme(
       '(${base.giac})^(${exposant.giac})',
       symboles: {...base.symboles, ...exposant.symboles},
     );
+  }
+
+  /// `^T`, `^t`, `^{T}`, `^\top` après une matrice.
+  bool get _estTransposee {
+    bool signe(_Jeton j) => j.est('T') || j.est('t') || j.commande('top');
+    return signe(_courant) ||
+        (_courant.est('{') && signe(_voir(1)) && _voir(2).est('}'));
+  }
+
+  /// `'`, `''`, `^{\prime}`, `^\prime` : combien de dérivations.
+  int _primes() {
+    var n = 0;
+    while (true) {
+      if (_prendre("'")) {
+        n++;
+      } else if (_courant.est('^') && _voir(1).commande('prime')) {
+        _i += 2;
+        n++;
+      } else if (_courant.est('^') &&
+          _voir(1).est('{') &&
+          _voir(2).commande('prime') &&
+          _voir(3).est('}')) {
+        _i += 4;
+        n++;
+      } else {
+        return n;
+      }
+    }
   }
 
   /// `^\circ` ou `^{\circ}`, le signe degré.
@@ -507,10 +659,46 @@ class LecteurLatex {
 
   Terme _postfixe() {
     var t = _atome();
-    while (_prendre('!')) {
-      t = Terme('factorial(${t.giac})', symboles: t.symboles);
+    while (true) {
+      if (_prendre('!')) {
+        t = Terme('factorial(${t.giac})', symboles: t.symboles);
+      } else if (_prendre('%')) {
+        t = Terme('(${t.giac})/100', symboles: t.symboles);
+      } else {
+        final primes = _primes();
+        if (primes == 0) return t;
+        t = _deriver(t, _variableDe(t), primes);
+      }
     }
-    return t;
+  }
+
+  /// La variable d'une dérivée sans `dx` : x s'il est là, sinon la seule.
+  String _variableDe(Terme t) {
+    if (t.symboles.contains('x')) return 'x';
+    if (t.symboles.length == 1) return t.symboles.single;
+    throw const ErreurLatex('dérivée sans variable claire');
+  }
+
+  Terme _deriver(Terme t, String variable, int ordre) => Terme(
+    ordre == 1
+        ? 'diff(${t.giac},$variable)'
+        : 'diff(${t.giac},$variable,$ordre)',
+    symboles: {...t.symboles, variable},
+  );
+
+  /// Un seul signe, comme en LaTeX : dans `_0^1`, la borne est 0, pas `0^1`.
+  Terme _borne() {
+    if (_prendre('{')) {
+      final t = _somme();
+      _attendre('}');
+      return t;
+    }
+    if (_prendre('-')) {
+      final t = _borne();
+      return Terme('(-${t.giac})', symboles: t.symboles);
+    }
+    _prendre('+');
+    return _atome();
   }
 
   Terme _groupeOuAtome() {
@@ -551,7 +739,11 @@ class LecteurLatex {
         if (_prendre('|')) {
           final t = _somme();
           _attendre('|');
-          return Terme('abs(${t.giac})', symboles: t.symboles);
+          // Entre barres, une matrice dit son déterminant.
+          return Terme(
+            t.estMatrice ? 'det(${t.giac})' : 'abs(${t.giac})',
+            symboles: t.symboles,
+          );
         }
         throw ErreurLatex('signe inattendu : « ${j.texte} »');
       case _Genre.fin:
@@ -568,14 +760,26 @@ class LecteurLatex {
     }
     _i++;
     if (_prendre('_')) {
-      final indice = _groupeOuAtome();
+      final indice = _borne();
+      // `C_5^2` et `A_5^2`, la notation française, avec des nombres seulement.
+      final combinaison = const {'C': 'comb', 'A': 'perm'}[nom];
+      if (combinaison != null &&
+          _estEntier(indice.giac) &&
+          _courant.est('^') &&
+          _voir(1).genre == _Genre.nombre &&
+          _estEntier(_voir(1).texte)) {
+        final haut = _voir(1).texte;
+        _i += 2;
+        return Terme('$combinaison(${indice.giac},$haut)');
+      }
+      // `u_{n+1}` n'est pas la variable `u_n` plus 1 : mieux vaut refuser.
+      if (!RegExp(r'^[A-Za-z0-9]+$').hasMatch(indice.giac)) {
+        throw ErreurLatex('indice non pris en charge : ${indice.giac}');
+      }
       final complet = '${nom}_${indice.giac}';
       return Terme(complet, symboles: _libre(complet));
     }
-    var primes = 0;
-    while (_prendre("'")) {
-      primes++;
-    }
+    final primes = _primes();
     final definie = definitions[nom];
     final fonction =
         primes > 0 ||
@@ -606,9 +810,15 @@ class LecteurLatex {
       );
     }
     if (primes > 0) throw const ErreurLatex('prime sans parenthèses');
+    // Giac réserve `i` : un indice de somme change de nom pour lui.
+    if (nom == 'i' && _liees.contains(_indiceI)) return const Terme(_indiceI);
     if (nom == 'e' || nom == 'i') return Terme(nom);
     return Terme(nom, symboles: _libre(nom));
   }
+
+  static const _indiceI = 'ii';
+
+  bool _estEntier(String texte) => RegExp(r'^\d+$').hasMatch(texte);
 
   /// `k(x)=` tout au début : une définition, quelle que soit la lettre. La
   /// lettre vient d'être lue. `x(x)=` ou `y(x)=` n'en sont pas.
@@ -627,18 +837,46 @@ class LecteurLatex {
     _i++;
     if (_constantes.containsKey(nom)) return Terme(_constantes[nom]!);
     if (_grecques.contains(nom)) return Terme(nom, symboles: _libre(nom));
+    if (nom == 'log' && _prendre('_')) return _logarithme();
     if (_fonctions.containsKey(nom)) {
       if (nom == 'det') demandeResultat = true;
       return _appel(_fonctions[nom]!);
     }
+    if (_autresFonctions.containsKey(nom)) {
+      return _appel(_autresFonctions[nom]!);
+    }
+    if (_fonctionsADeux.containsKey(nom)) {
+      return _appelADeux(_fonctionsADeux[nom]!);
+    }
     switch (nom) {
       case 'frac' || 'dfrac' || 'tfrac':
-        final numerateur = _groupeOuAtome();
-        final denominateur = _groupeOuAtome();
+        final derivee = _essayerDerivee();
+        if (derivee != null) return derivee;
+        final (numerateur, denominateur) = _deuxArguments();
         return Terme(
           '(${numerateur.giac})/(${denominateur.giac})',
           symboles: {...numerateur.symboles, ...denominateur.symboles},
         );
+      case 'binom' || 'dbinom' || 'tbinom':
+        final n = _groupeOuAtome();
+        final k = _groupeOuAtome();
+        return Terme(
+          'comb(${n.giac},${k.giac})',
+          symboles: {...n.symboles, ...k.symboles},
+        );
+      case 'overline':
+        final t = _groupeOuAtome();
+        return Terme('conj(${t.giac})', symboles: t.symboles);
+      case 'lfloor':
+        final t = _somme();
+        if (!_courant.commande('rfloor')) throw const ErreurLatex(r'\rfloor');
+        _i++;
+        return Terme('floor(${t.giac})', symboles: t.symboles);
+      case 'lceil':
+        final t = _somme();
+        if (!_courant.commande('rceil')) throw const ErreurLatex(r'\rceil');
+        _i++;
+        return Terme('ceil(${t.giac})', symboles: t.symboles);
       case 'sqrt':
         return _racine();
       case 'int':
@@ -668,6 +906,132 @@ class LecteurLatex {
       default:
         throw ErreurLatex('commande non prise en charge : \\$nom');
     }
+  }
+
+  /// Les deux arguments de `\frac` : `\frac12` vaut un demi, comme en LaTeX.
+  (Terme, Terme) _deuxArguments() {
+    final j = _courant;
+    if (j.genre == _Genre.nombre && j.texte.length > 1 && j.parties == null) {
+      if (!j.texte.contains('.')) {
+        _i++;
+        return (Terme(j.texte[0]), Terme(j.texte.substring(1)));
+      }
+    }
+    final numerateur = _groupeOuAtome();
+    return (numerateur, _groupeOuAtome());
+  }
+
+  /// `\frac{d}{dx}(…)`, `\frac{d^2}{dx^2}…`, `\frac{d(…)}{dx}`, avec `d` ou
+  /// `\partial`. Autrement : `null`, c'est une fraction comme une autre.
+  Terme? _essayerDerivee() {
+    if (!_courant.est('{')) return null;
+    bool marque(_Jeton j) => j.est('d') || j.commande('partial');
+    if (!marque(_voir(1))) return null;
+    var profondeur = 0;
+    var fin = 0;
+    while (true) {
+      final j = _voir(fin);
+      if (j.genre == _Genre.fin) return null;
+      if (j.est('{')) profondeur++;
+      if (j.est('}') && --profondeur == 0) {
+        break;
+      }
+      fin++;
+    }
+    final (ordre, longueur) = _ordreDe(2);
+    // Le dénominateur : `{`, `d`, la variable, son ordre, `}`.
+    if (!_voir(fin + 1).est('{') ||
+        !marque(_voir(fin + 2)) ||
+        _voir(fin + 3).genre != _Genre.lettre) {
+      return null;
+    }
+    final (ordreBas, longueurBas) = _ordreDe(fin + 4);
+    if (!_voir(fin + 4 + longueurBas).est('}') || ordre != ordreBas) {
+      return null;
+    }
+
+    final variable = _voir(fin + 3).texte;
+    final corpsVide = 2 + longueur == fin;
+    final suite = fin + 5 + longueurBas;
+    if (corpsVide) {
+      _i += suite;
+      return _deriver(_produit(), variable, ordre);
+    }
+    final debut = _i + 2 + longueur;
+    final fermeture = _i + fin;
+    // `\frac{dy}{dx}` ne dit pas ce qu'est y : ce serait 0 sans rien dire.
+    if (fermeture - debut == 1 && _jetons[debut].genre == _Genre.lettre) {
+      final nom = _jetons[debut].texte;
+      if (!_nomsDeFonctionsLibres.contains(nom)) {
+        throw ErreurLatex('dérivée de $nom sans expression');
+      }
+      _i += suite;
+      return _deriver(
+        Terme('$nom($variable)', symboles: {variable}),
+        variable,
+        ordre,
+      );
+    }
+    _i = debut;
+    final corps = _somme();
+    if (_i != fermeture) throw const ErreurLatex('dérivée');
+    _i = fermeture + suite - fin;
+    return _deriver(corps, variable, ordre);
+  }
+
+  /// L'ordre écrit à partir du jeton [k] : `^2`, `^{2}`, ou rien ; et sa
+  /// longueur en jetons.
+  (int, int) _ordreDe(int k) {
+    if (!_voir(k).est('^')) return (1, 0);
+    final accolade = _voir(k + 1).est('{');
+    final j = _voir(accolade ? k + 2 : k + 1);
+    final ordre = j.genre == _Genre.nombre ? int.tryParse(j.texte) : null;
+    if (ordre == null || (accolade && !_voir(k + 3).est('}'))) return (1, 0);
+    return (ordre, accolade ? 4 : 2);
+  }
+
+  /// `\log_{2}(8)`.
+  Terme _logarithme() {
+    // `\log_2 8` : le découpage a lu 28, mais l'indice ne prend qu'un signe.
+    final j = _courant;
+    if (j.genre == _Genre.nombre && _estEntier(j.texte) && j.texte.length > 1) {
+      _jetons.replaceRange(_i, _i + 1, [
+        _Jeton(_Genre.nombre, j.texte[0]),
+        _Jeton(_Genre.nombre, j.texte.substring(1)),
+      ]);
+    }
+    final base = _borne();
+    final argument = _appel('ln');
+    // Sans `simplify`, Giac rend ln(8)/ln(2) au lieu de 3.
+    return Terme(
+      'simplify(${argument.giac}/ln(${base.giac}))',
+      symboles: {...argument.symboles, ...base.symboles},
+    );
+  }
+
+  /// `\gcd(12,18)` : ici la virgule sépare, elle n'est plus décimale.
+  Terme _appelADeux(String nom) {
+    _attendre('(');
+    final j = _courant;
+    final parties = j.parties;
+    if (j.genre == _Genre.nombre && parties != null && parties.length == 1) {
+      final reste = j.texte.substring(parties.single.length + 1);
+      _jetons.replaceRange(_i, _i + 1, [
+        _Jeton(_Genre.nombre, parties.single),
+        const _Jeton(_Genre.symbole, ','),
+        _Jeton(_Genre.nombre, reste),
+      ]);
+    }
+    final a = _somme();
+    if (!_prendre(',') && !_prendre(';')) {
+      throw ErreurLatex('$nom attend deux nombres');
+    }
+    final b = _somme();
+    _attendre(')');
+    return Terme(
+      '$nom(${a.giac},${b.giac})',
+      symboles: {...a.symboles, ...b.symboles},
+    );
   }
 
   /// `\sin x`, `\sin(x)`, `\sin^2 x`.
@@ -730,18 +1094,9 @@ class LecteurLatex {
         haut = _borne();
       }
     }
+    // Une seule borne ne dit rien : la perdre rendrait une primitive.
+    if ((bas == null) != (haut == null)) throw const ErreurLatex('borne seule');
     return (bas, haut);
-  }
-
-  /// Une borne sans accolades s'arrête au premier signe : dans `_0^1`, le `^`
-  /// commence l'autre borne, pas une puissance de 0.
-  Terme _borne() {
-    if (_courant.est('{')) return _groupeOuAtome();
-    if (_prendre('-')) {
-      final t = _atome();
-      return Terme('(-${t.giac})', symboles: t.symboles);
-    }
-    return _atome();
   }
 
   Terme _integrale() {
@@ -798,15 +1153,38 @@ class LecteurLatex {
       throw const ErreurLatex('limite sans flèche');
     }
     _i++;
+    _dansCible = true;
     final cible = _somme();
+    _dansCible = false;
+    final cote = _coteDeLimite();
     _attendre('}');
     _liees.add(variable);
     final corps = _somme();
     _liees.removeLast();
     return Terme(
-      'limit(${corps.giac},$variable,${cible.giac})',
+      'limit(${corps.giac},$variable,${cible.giac}$cote)',
       symboles: {...corps.symboles, ...cible.symboles},
     );
+  }
+
+  /// Pour Giac : `,1` à droite, `,-1` à gauche, rien des deux côtés.
+  String _coteDeLimite() {
+    var signe = '';
+    if (_courant.est('^')) {
+      _i++;
+      final accolade = _prendre('{');
+      signe = _courant.texte;
+      _i++;
+      if (accolade) _attendre('}');
+    } else if (_courant.est('+') || _courant.est('-')) {
+      signe = _courant.texte;
+      _i++;
+    }
+    return switch (signe) {
+      '+' => ',1',
+      '-' => ',-1',
+      _ => '',
+    };
   }
 
   /// `\sum_{k=a}^{b}`, avec un corps limité au produit qui suit.
@@ -814,13 +1192,13 @@ class LecteurLatex {
     _attendre('_');
     _attendre('{');
     if (_courant.genre != _Genre.lettre) throw const ErreurLatex('indice');
-    final variable = _courant.texte;
+    final variable = _courant.texte == 'i' ? _indiceI : _courant.texte;
     _i++;
     _attendre('=');
     final debut = _somme();
     _attendre('}');
     _attendre('^');
-    final fin = _groupeOuAtome();
+    final fin = _borne();
     _liees.add(variable);
     final corps = _produit();
     _liees.removeLast();

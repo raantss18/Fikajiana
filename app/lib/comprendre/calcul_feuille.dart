@@ -537,11 +537,17 @@ class CalculFeuille extends ChangeNotifier {
     bloc
       ..type = analyse.type
       ..inconnues = analyse.inconnues
-      ..demandeResultat = analyse.demandeResultat
-      ..etat = EtatBloc.calcul;
+      ..demandeResultat = analyse.demandeResultat;
     if (propager && analyse.nomFonction != null) {
       unawaited(_recalculerCeuxQuiUtilisent(bloc));
     }
+    // Une définition n'a rien à rendre : elle reste sur la feuille. Envoyée à
+    // Giac telle quelle, `y=2x+1` empêcherait ensuite de résoudre en y.
+    if (analyse.type == TypeExpression.fonction) {
+      bloc.etat = EtatBloc.fait;
+      return;
+    }
+    bloc.etat = EtatBloc.calcul;
     notifyListeners();
     final ReponseGiac reponse;
     try {

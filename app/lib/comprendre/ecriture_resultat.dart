@@ -262,6 +262,20 @@ final Map<String, _Glyphe> _glyphes = {
     _l([0.04, 0.48, 0.56, 0.48]),
     _l([0.04, 0.72, 0.56, 0.72]),
   ]),
+  '<': _Glyphe(0.6, [
+    _l([0.52, 0.36, 0.08, 0.6, 0.52, 0.84]),
+  ]),
+  '>': _Glyphe(0.6, [
+    _l([0.08, 0.36, 0.52, 0.6, 0.08, 0.84]),
+  ]),
+  '≤': _Glyphe(0.6, [
+    _l([0.52, 0.28, 0.08, 0.5, 0.52, 0.72]),
+    _l([0.08, 0.88, 0.52, 0.88]),
+  ]),
+  '≥': _Glyphe(0.6, [
+    _l([0.08, 0.28, 0.52, 0.5, 0.08, 0.72]),
+    _l([0.08, 0.88, 0.52, 0.88]),
+  ]),
   '.': _Glyphe(0.18, [
     _l([0.09, 0.96, 0.09, 0.99]),
   ]),
@@ -403,7 +417,7 @@ class _Compositeur {
     if (g == null) throw const _NonPrisEnCharge();
     return _Boite(
       g.largeur,
-      'acegmnopqrsuvwxyz∈'.contains(c) ? 0.58 : 1,
+      'acegmnopqrsuvwxyz∈<>≤≥'.contains(c) ? 0.58 : 1,
       'gjpqy,'.contains(c) ? 0.24 : 0,
       [
         for (final t in g.traces) [for (final p in t) p - const Offset(0, 1)],
@@ -440,6 +454,8 @@ class _Compositeur {
       'sin' || 'cos' || 'tan' || 'ln' || 'log' || 'exp' => _mot(nom),
       'mathrm' || 'operatorname' || 'mathbb' => _groupe(),
       'in' => _lettre('∈'),
+      'leq' => _lettre('≤'),
+      'geq' => _lettre('≥'),
       'emptyset' => _lettre('∅'),
       'frac' => _fraction(),
       'sqrt' => _racine(),

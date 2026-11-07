@@ -30,6 +30,32 @@ void main() {
       expect(_equation(r'\{\frac{1}{f(a,b)}\}'), r'x=\frac{1}{f(a,b)}');
     });
 
+    group('inéquations, sorties réelles de Giac', () {
+      test('une relation reste telle quelle', () {
+        expect(_equation(r'\{x>2\}'), 'x>2');
+        expect(_equation(r'\{x\geq 1\}'), r'x\geq 1');
+      });
+
+      test('deux bornes s’écrivent en une seule ligne', () {
+        expect(_equation(r'\{(x>\mathrm{-2})\mbox{ and }(x<2)\}'), '-2<x<2');
+        expect(
+          _equation(r'\{(x\geq \mathrm{-1})\mbox{ and }(x\leq 1)\}'),
+          r'-1\leq x\leq 1',
+        );
+      });
+
+      test('deux intervalles se disent avec « ou »', () {
+        expect(
+          _equation(r'\{x\leq \mathrm{-1},x\geq 1\}'),
+          r'x\leq -1\,\mathrm{ou}\,x\geq 1',
+        );
+      });
+
+      test('sans solution', () {
+        expect(_equation('[]'), r'S=\emptyset');
+      });
+    });
+
     test('aucune solution', () {
       expect(_equation('[]'), r'S=\emptyset');
     });
