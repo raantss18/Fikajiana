@@ -361,10 +361,18 @@ String titreObjet(Atelier atelier, int id, {required bool francais}) {
 
 /// La liste des objets : tout ce qui est dessiné, en toutes lettres.
 class PanneauObjets extends StatelessWidget {
-  const new({required this.atelier, required this.surObjet, super.key});
+  const new({
+    required this.atelier,
+    required this.surObjet,
+    this.courbes = const [],
+    super.key,
+  });
 
   final Atelier atelier;
   final ValueChanged<int> surObjet;
+
+  /// Les courbes de la Figure, en tête : numéro et formule, à toucher.
+  final List<Widget> courbes;
 
   @override
   Widget build(BuildContext context) {
@@ -374,13 +382,22 @@ class PanneauObjets extends StatelessWidget {
       listenable: atelier,
       builder: (context, _) {
         final objets = atelier.figure.objets.toList();
-        if (objets.isEmpty) {
+        if (objets.isEmpty && courbes.isEmpty) {
           return Center(child: Text(l10n.objetsVide));
         }
+        final enTete = courbes.isEmpty ? 0 : 1;
         return ListView.builder(
-          itemCount: objets.length,
+          itemCount: objets.length + enTete,
           itemBuilder: (context, i) {
-            final id = objets[i];
+            if (i < enTete) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppEspacement.md,
+                ),
+                child: Wrap(children: courbes),
+              );
+            }
+            final id = objets[i - enTete];
             final visible = atelier.figure.apparence(id).visible;
             return ListTile(
               title: Text(titreObjet(atelier, id, francais: francais)),

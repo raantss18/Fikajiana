@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 
 import 'package:fikajiana/export/capture.dart';
 import 'package:fikajiana/geometrie/atelier.dart';
@@ -36,6 +37,21 @@ class EcranGeometrie extends StatefulWidget {
 
 class _EcranGeometrieState extends State<EcranGeometrie> {
   final GlobalKey _image = GlobalKey();
+
+  /// Pendant un export : la légende des courbes entre dans l'image. À
+  /// l'écran, les courbes sont dans la liste des objets (Antsa).
+  var _enExport = false;
+
+  Future<ui.Image> _capturerAvecLegende() async {
+    setState(() => _enExport = true);
+    await WidgetsBinding.instance.endOfFrame;
+    try {
+      return await capturerCadre(_image);
+    } finally {
+      if (mounted) setState(() => _enExport = false);
+    }
+  }
+
   final _vue = VueGraphe();
   Size _taille = Size.zero;
   Offset _dernierFocal = Offset.zero;
@@ -380,7 +396,7 @@ class _EcranGeometrieState extends State<EcranGeometrie> {
               context,
               nom: 'figure',
               format: format,
-              capture: () => capturerCadre(_image),
+              capture: _capturerAvecLegende,
             ),
           );
         },
@@ -403,6 +419,21 @@ class _EcranGeometrieState extends State<EcranGeometrie> {
   Future<void> _ouvrirObjets() => _feuille(
     (contexte) => PanneauObjets(
       atelier: _atelier,
+      // Les courbes sont des objets de la Figure : elles ouvrent la liste.
+      courbes: [
+        for (var i = 0; i < _courbes.liste.length; i++)
+          LegendeCourbe(
+            numero: i + 1,
+            latex: _courbes.liste[i].latex,
+            couleur: PorteeReglages.de(context)
+                .support
+                .stylos[i % PorteeReglages.de(context).support.stylos.length],
+            surToucher: () {
+              Navigator.of(contexte).pop();
+              unawaited(_modifierCourbe(i));
+            },
+          ),
+      ],
       surObjet: (id) {
         Navigator.of(contexte).pop();
         unawaited(_ouvrirProprietes(id));
@@ -525,7 +556,7 @@ class _EcranGeometrieState extends State<EcranGeometrie> {
                   ),
                   // Dans l'image aussi : numéro et formule, jamais la couleur
                   // seule.
-                  if (courbes.isNotEmpty)
+                  if (courbes.isNotEmpty && _enExport)
                     Positioned(
                       left: AppEspacement.sm,
                       right: AppEspacement.sm,
@@ -571,7 +602,7 @@ class _EcranGeometrieState extends State<EcranGeometrie> {
             Positioned(
               left: AppEspacement.sm,
               right: AppEspacement.sm,
-              top: courbes.isEmpty ? 64 : 120,
+              top: 64,
               child: SafeArea(
                 bottom: false,
                 child: Column(
@@ -658,7 +689,9 @@ class _EcranGeometrieState extends State<EcranGeometrie> {
                         ),
                         icon: const Icon(Icons.format_list_bulleted),
                         label: Text(
-                          l10n.objetsPresents(atelier.figure.objets.length),
+                          l10n.objetsPresents(
+                            atelier.figure.objets.length + courbes.length,
+                          ),
                         ),
                         onPressed: () => unawaited(_ouvrirObjets()),
                       ),

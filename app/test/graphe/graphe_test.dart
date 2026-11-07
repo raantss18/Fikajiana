@@ -296,6 +296,9 @@ void main() {
       expect(find.textContaining('Touche Outils'), findsOneWidget);
       await ajouter(t, 'y=x^2');
       expect(find.textContaining('Touche Outils'), findsNothing);
+      // La courbe est un objet de la Figure : comptée, et dans la liste.
+      await t.tap(find.text('1 objet'));
+      await t.pumpAndSettle();
       expect(find.text('1'), findsOneWidget);
 
       await t.tap(find.text('1'));
@@ -335,7 +338,7 @@ void main() {
       await t.tap(find.widgetWithText(FilledButton, 'Tracer'));
       await t.pumpAndSettle();
       expect(find.byType(EcranGeometrie), findsOneWidget);
-      expect(find.text('1'), findsOneWidget);
+      expect(find.text('1 objet'), findsOneWidget);
     });
 
     testWidgets('une équation en x et y se trace sans passer par Giac', (
@@ -449,7 +452,7 @@ void main() {
         await ajouter(t, latex);
       }
       expect(t.takeException(), isNull);
-      expect(find.text('4'), findsOneWidget);
+      expect(find.text('4 objets'), findsOneWidget);
       // Sur le cercle de rayon 2 : 80 pixels à droite du centre (200 ; 400).
       await t.tapAt(const Offset(280, 400));
       await t.pump();
