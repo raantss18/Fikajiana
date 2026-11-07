@@ -2,6 +2,7 @@ import 'package:fikajiana/l10n/l10n.dart';
 import 'package:fikajiana/reglages/reglages.dart';
 import 'package:fikajiana/ui/calcul/ecran_feuille.dart';
 import 'package:fikajiana/ui/geometrie/ecran_geometrie.dart';
+import 'package:fikajiana/ui/guide/ecran_guide.dart';
 import 'package:fikajiana/ui/historique/ecran_historique.dart';
 import 'package:fikajiana/ui/navigation/destination.dart';
 import 'package:fikajiana/ui/reglages/ecran_reglages.dart';
@@ -181,6 +182,16 @@ class _Menu extends StatelessWidget {
             contentPadding: EdgeInsets.zero,
             leading: Icon(Destination.historique.icone),
             title: Text(Destination.historique.libelle(l10n)),
+          ),
+        ),
+        // Le Guide : tout ce que l'app sait faire (ADR 0036).
+        PopupMenuItem(
+          onTap: () =>
+              Navigator.of(context).push(RouteEcran((_) => const EcranGuide())),
+          child: ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.menu_book_outlined),
+            title: Text(l10n.guide),
           ),
         ),
         const PopupMenuDivider(),
