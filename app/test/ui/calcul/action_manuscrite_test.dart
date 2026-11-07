@@ -4,7 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   Future<void> monter(WidgetTester t, Widget enfant) => t.pumpWidget(
-    MaterialApp(home: Scaffold(body: Center(child: enfant))),
+    MaterialApp(
+      home: Scaffold(body: Center(child: enfant)),
+    ),
   );
 
   // Antsa : pas de pastille imprimée sur la Feuille ; un mot écrit à la main,

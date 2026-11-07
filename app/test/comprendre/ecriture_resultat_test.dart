@@ -9,8 +9,10 @@ void main() {
   // Antsa : la matrice inverse s'imprimait toute petite (Pad 7).
   test('une matrice de Giac s’écrit à la main', () {
     const inverse =
-        r'\left(\begin{array}{cc}' '\n'
-        r'\frac{7}{15} & \frac{-8}{15} \\' '\n'
+        r'\left(\begin{array}{cc}'
+        '\n'
+        r'\frac{7}{15} & \frac{-8}{15} \\'
+        '\n'
         r'\frac{1}{15} & \frac{1}{15}\end{array}\right)';
     final ligne = ecrireResultat('7', const Rect.fromLTWH(0, 0, 40, 40));
     final matrice = ecrireResultat(inverse, const Rect.fromLTWH(0, 0, 40, 40));
