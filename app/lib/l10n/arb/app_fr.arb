@@ -296,7 +296,7 @@
     "relationIciSeulement": "Vrai dans cette position seulement : cela cesse quand on déforme la figure.",
     "nouvelleFeuille": "Nouvelle feuille",
     "nouvelleFigure": "Nouvelle figure",
-    "historiqueSectionFeuilles": "Feuilles",
+    "historiqueSectionFeuilles": "Documents",
     "historiqueSectionGraphes": "Graphes",
     "historiqueSectionFigures": "Figures",
     "historiqueSupprimerAutre": "Supprimer ?",
@@ -364,5 +364,6 @@
     "choisirFond": "Fond",
     "blocRelire": "Relire",
     "saisieDefinir": "Définir {nom}",
-    "relireFeuille": "Relire la feuille"
+    "relireFeuille": "Relire la feuille",
+    "historiqueFigure": "Figure : {courbes} courbes, {objets} objets"
 }

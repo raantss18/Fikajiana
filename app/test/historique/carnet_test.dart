@@ -94,6 +94,75 @@ void main() {
     expect(carnet.courante, isNot(premiere));
   });
 
+  group('un document : sa feuille et sa Figure (ADR 0032)', () {
+    const annexes = ['graphes', 'figures'];
+    File figureDe(String id) =>
+        File('${dossier.path}/figures/$id.json')
+          ..parent.createSync(recursive: true);
+    File grapheDe(String id) =>
+        File('${dossier.path}/graphes/$id.json')
+          ..parent.createSync(recursive: true);
+
+    test('la Figure compte dans le document, et dans l’Historique', () {
+      final carnet = Carnet(dossier: dossier, annexes: annexes);
+      _ecrire(carnet);
+      figureDe(carnet.courante).writeAsStringSync(
+        jsonEncode({
+          'objets': [
+            {'id': 0},
+            {'id': 1},
+          ],
+        }),
+      );
+      grapheDe(carnet.courante).writeAsStringSync(jsonEncode(['y=x']));
+      final apercu = carnet.apercus().single;
+      expect(apercu.objets, 2);
+      expect(apercu.courbes, ['y=x']);
+    });
+
+    test('une Figure seule fait un document : la nouvelle part de zéro', () {
+      final carnet = Carnet(dossier: dossier, annexes: annexes);
+      final premier = carnet.courante;
+      figureDe(premier).writeAsStringSync(jsonEncode({'objets': <Object>[]}));
+      // La feuille est vide, mais pas la Figure : c'est un vrai document.
+      carnet.nouvelle();
+      expect(carnet.courante, isNot(premier));
+      expect(carnet.apercus().map((a) => a.id), contains(premier));
+    });
+
+    test('supprimer un document efface aussi sa Figure', () {
+      final carnet = Carnet(dossier: dossier, annexes: annexes);
+      _ecrire(carnet);
+      final id = carnet.courante;
+      figureDe(id).writeAsStringSync('{}');
+      grapheDe(id).writeAsStringSync('[]');
+      carnet.supprimer(id);
+      expect(figureDe(id).existsSync(), isFalse);
+      expect(grapheDe(id).existsSync(), isFalse);
+    });
+
+    test('la Figure en cours d’avant est rattachée à la feuille en cours', () {
+      // Avant : une feuille 100, une figure 200, chacune « courante ».
+      File('${dossier.path}/courante.txt').writeAsStringSync('100');
+      File('${dossier.path}/feuilles/100.json')
+        ..parent.createSync(recursive: true)
+        ..writeAsStringSync('{"traits":[],"blocs":[]}');
+      figureDe('200').writeAsStringSync('{"objets":[{"id":0}]}');
+      File('${dossier.path}/figures/courant.txt').writeAsStringSync('200');
+      figureDe('300').writeAsStringSync('{"objets":[]}');
+      rattacherFiguresAuxFeuilles(dossier, annexes);
+      expect(figureDe('100').existsSync(), isTrue);
+      expect(figureDe('200').existsSync(), isFalse);
+      // Une autre figure reste un document à part : rien ne se perd.
+      final carnet = Carnet(dossier: dossier, annexes: annexes);
+      expect(carnet.apercus().map((a) => a.id), containsAll(['100', '300']));
+      // Une seule fois.
+      figureDe('200').writeAsStringSync('{"objets":[]}');
+      rattacherFiguresAuxFeuilles(dossier, annexes);
+      expect(figureDe('200').existsSync(), isTrue);
+    });
+  });
+
   group('écran', () {
     testWidgets('sans feuille : le dit ; nouvelle feuille revient', (t) async {
       await t.pumpFikajiana();

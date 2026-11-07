@@ -30,16 +30,11 @@ class PageDestination extends StatelessWidget {
           key: ValueKey(PorteeServices.de(context).carnet.courante),
         ),
       ),
+      // La Figure du document en cours : elle change avec la feuille.
       Destination.figure => ListenableBuilder(
-        listenable: Listenable.merge([
-          PorteeServices.de(context).figures,
-          PorteeServices.de(context).graphes,
-        ]),
+        listenable: PorteeServices.de(context).carnet,
         builder: (context, _) => EcranGeometrie(
-          key: ValueKey(
-            '${PorteeServices.de(context).figures.courant}'
-            '/${PorteeServices.de(context).graphes.courant}',
-          ),
+          key: ValueKey(PorteeServices.de(context).carnet.courante),
         ),
       ),
       Destination.historique => const EcranHistorique(),
@@ -170,9 +165,9 @@ class _Menu extends StatelessWidget {
           services.carnet.nouvelle();
           _aller(context, Destination.feuille);
         }),
+        // Un document neuf : feuille et Figure vides, ensemble.
         _nouveau(Icons.add_box_outlined, l10n.nouvelleFigure, () {
-          services.graphes.nouveau();
-          services.figures.nouveau();
+          services.carnet.nouvelle();
           _aller(context, Destination.figure);
         }),
         const PopupMenuDivider(),

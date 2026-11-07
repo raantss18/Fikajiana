@@ -489,7 +489,7 @@
     "relationIciSeulement": "True in this position only: it stops when the figure is deformed.",
     "nouvelleFeuille": "New sheet",
     "nouvelleFigure": "New figure",
-    "historiqueSectionFeuilles": "Sheets",
+    "historiqueSectionFeuilles": "Documents",
     "historiqueSectionGraphes": "Graphs",
     "historiqueSectionFigures": "Figures",
     "historiqueSupprimerAutre": "Delete?",
@@ -557,5 +557,17 @@
     "choisirFond": "Background",
     "blocRelire": "Read again",
     "saisieDefinir": "Define {nom}",
-    "relireFeuille": "Read the sheet again"
+    "relireFeuille": "Read the sheet again",
+    "historiqueFigure": "Figure: {courbes} curves, {objets} objects",
+    "@historiqueFigure": {
+        "description": "What a document's Figure holds, in the History.",
+        "placeholders": {
+            "courbes": {
+                "type": "int"
+            },
+            "objets": {
+                "type": "int"
+            }
+        }
+    }
 }
