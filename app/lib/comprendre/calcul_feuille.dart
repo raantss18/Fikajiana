@@ -144,7 +144,10 @@ class BlocCalcul {
     return estSaisie || finitParEgal || estResolution || demandeResultat;
   }
 
-  bool get _sousLEcriture => !finitParEgal;
+  /// Rien d'écrit juste dessous : une solution peut s'y poser.
+  bool dessousLibre = true;
+
+  bool get _sousLEcriture => !finitParEgal && dessousLibre;
 
   /// Une équation ou un système : le résultat n'est pas une valeur à égaler.
   bool get estResolution =>
@@ -282,6 +285,36 @@ class CalculFeuille extends ChangeNotifier {
   var _compteur = 0;
 
   List<BlocCalcul> get blocs => _blocs.values.toList();
+
+  /// Un résultat ne s'écrit pas sur la ligne d'en dessous.
+  void _placerResultats() {
+    for (final bloc in _blocs.values) {
+      final dessous = Rect.fromLTWH(
+        bloc.cadre.left,
+        bloc.cadre.bottom,
+        bloc.cadre.width,
+        bloc.cadre.height,
+      );
+      final libre = !_blocs.values.any(
+        (autre) =>
+            !identical(autre, bloc) &&
+            !autre.estSaisie &&
+            autre.cadre.overlaps(dessous),
+      );
+      if (libre != bloc.dessousLibre) {
+        bloc
+          ..dessousLibre = libre
+          .._ecritPour = null;
+      }
+    }
+  }
+
+  @override
+  void notifyListeners() {
+    _placerResultats();
+    super.notifyListeners();
+  }
+
   bool get modeleManquant =>
       _blocs.values.any((b) => b.etat == EtatBloc.sansModele);
 
@@ -413,7 +446,10 @@ class CalculFeuille extends ChangeNotifier {
       if (bloc._version != version || !identical(_blocs[bloc.cle], bloc)) {
         return;
       }
-      bloc.latex = _redresser(bloc, latex);
+      bloc.latex = _redresser(
+        bloc,
+        redresserLecture(latex, fonctions: _definitionsPour(bloc).keys.toSet()),
+      );
       await _calculer(bloc);
     } on ModeleAbsent {
       bloc.etat = EtatBloc.sansModele;

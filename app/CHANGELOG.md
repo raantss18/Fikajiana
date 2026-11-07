@@ -4,6 +4,9 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Deux lignes écrites serrées ne se lisent plus comme une seule, et un résultat ne s'écrit plus sur la ligne d'en dessous. / Two lines written close together are no longer read as one, and a result no longer lands on the line below.
+- La lecture comprend mieux une écriture réelle : un `f` ou un `g` à la main, l'apostrophe de `f'`, un `(x)` écrit haut, le `e` de `e^x`. / Reading understands real handwriting better: a handwritten `f` or `g`, the prime in `f'`, a raised `(x)`, the `e` in `e^x`.
+
 ## [0.8.0] — 2026-11-07
 
 ### Message fr
