@@ -528,7 +528,9 @@ void main() {
         ..toucher(1, 3, _t)
         ..outil = OutilGeo.deplacer;
       await t.pump();
-      await t.tap(find.byTooltip('Objets'));
+      // Le bouton se nomme et compte : A, B et la droite (Antsa).
+      expect(find.text('3 objets'), findsOneWidget);
+      await t.tap(find.text('3 objets'));
       await t.pumpAndSettle();
       expect(find.text('(AB) : y = 2x + 1'), findsOneWidget);
       expect(find.text('Droite : A, B'), findsOneWidget);

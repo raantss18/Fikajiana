@@ -588,5 +588,14 @@
     "nouveauDocument": "New document",
     "@nouveauDocument": {
         "description": "The single creation entry: a new sheet with its own empty Figure."
+    },
+    "objetsPresents": "{n, plural, =0{Objects} =1{1 object} other{{n} objects}}",
+    "@objetsPresents": {
+        "description": "The Figure's objects button, with how many objects it holds.",
+        "placeholders": {
+            "n": {
+                "type": "int"
+            }
+        }
     }
 }

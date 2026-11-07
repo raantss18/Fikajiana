@@ -646,10 +646,20 @@ class _EcranGeometrieState extends State<EcranGeometrie> {
                             ? atelier.retablir
                             : null,
                       ),
-                      IconButton(
-                        style: _flottant,
+                      // Discret mais visible : nommé, avec le nombre d'objets
+                      // présents (Antsa : la seule icône passait inaperçue).
+                      FilledButton.tonalIcon(
+                        style: FilledButton.styleFrom(
+                          backgroundColor:
+                              theme.colorScheme.surfaceContainerHigh,
+                          foregroundColor: theme.colorScheme.onSurface,
+                          elevation: 2,
+                          minimumSize: const Size(48, 48),
+                        ),
                         icon: const Icon(Icons.format_list_bulleted),
-                        tooltip: l10n.objets,
+                        label: Text(
+                          l10n.objetsPresents(atelier.figure.objets.length),
+                        ),
                         onPressed: () => unawaited(_ouvrirObjets()),
                       ),
                       const SizedBox(width: AppEspacement.xxs),
