@@ -638,7 +638,8 @@ List<String> signesPlats(List<Trait> traits) {
           final ecart = (q.center.dy - p.center.dy).abs();
           return commun > 0.5 * math.min(p.width, q.width) &&
               ecart > 2 &&
-              ecart < 0.9 * math.max(p.width, q.width);
+              // Un `=` écrit vite a ses traits écartés (Pad 7, stylet).
+              ecart < 1.2 * math.max(p.width, q.width);
         })
         .firstOrNull;
     if (jumeau != null) {
@@ -665,4 +666,38 @@ String redresserEgal(List<Trait> traits, String latex) {
   final rang = signes.indexOf('=');
   final m = moins[rang];
   return latex.replaceRange(m.start, m.end, '=');
+}
+
+/// `AB =` : deux capitales seules, que le modèle lit `λ·β` (Pad 7). Si les
+/// deux se reconnaissent à leur tracé et sont des points de la feuille, c'est
+/// leur nom, avec le `=` s'il y est ; sinon `null`.
+String? lireNomDePoints(List<Trait> traits, Set<String> points) {
+  if (points.length < 2) return null;
+  final cadres = traits.map(_c).toList();
+  final ligne = cadreDuGroupe(traits).height;
+  final debout = cadres.where((c) => !_plat(c)).toList();
+  // La barre du `A` reste au `A` : seuls les signes, libres, s'en vont.
+  final plats = [
+    for (final t in traits)
+      if (_plat(_c(t)) &&
+          _c(t).height <= 0.25 * ligne &&
+          !debout.any(_c(t).deflate(1).overlaps))
+        t,
+  ];
+  final lettres = [
+    for (final t in traits)
+      if (!plats.contains(t)) t,
+  ];
+  if (lettres.isEmpty || cadres.isEmpty) return null;
+  final glyphes = _glyphes(lettres);
+  if (glyphes.length != 2) return null;
+  final noms = <String>[];
+  for (final g in glyphes) {
+    final (lettre, ecart) = essayerCapitale(_dessin(g));
+    if (ecart > 1.6 || !points.contains(lettre)) return null;
+    noms.add(lettre);
+  }
+  final egal = signesPlats(traits);
+  if (egal.any((s) => s != '=')) return null;
+  return '${noms.join()}${egal.isEmpty ? '' : '='}';
 }
