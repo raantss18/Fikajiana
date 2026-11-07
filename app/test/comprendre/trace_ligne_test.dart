@@ -34,9 +34,12 @@ void main() {
       expect(lireAuTrace(_traits('pad7', 'trente_fois_8')), r'30\times8');
     });
 
+    test("f'(x)= du Pad 7 : le f, l'apostrophe, le x en deux arcs", () {
+      expect(lireAuTrace(_traits('pad7', 'derivee_f')), "f'(x)=");
+    });
+
     test('ce qui doute va au modèle', () {
       expect(lireAuTrace(_traits('pad7', 'developper')), isNull);
-      expect(lireAuTrace(_traits('pad7', 'derivee_f')), isNull);
       expect(lireAuTrace(_traits('telephone', 'limite')), isNull);
     });
   });
