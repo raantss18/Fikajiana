@@ -269,6 +269,7 @@ class _EcranFeuilleState extends State<EcranFeuille> {
     final l10n = context.l10n;
     // La largeur de l'écran borne les résultats, à la vue de départ.
     _calcul.bordDroit = MediaQuery.sizeOf(context).width - AppEspacement.sm;
+    _vue.borner(MediaQuery.sizeOf(context).width);
     return Stack(
       fit: StackFit.expand,
       children: [

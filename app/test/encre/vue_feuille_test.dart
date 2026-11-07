@@ -18,6 +18,40 @@ Future<(Encre, VueFeuille)> _monter(WidgetTester t) async {
 }
 
 void main() {
+  group('la page s’arrête à gauche, et loin à droite', () {
+    // Demande d'Antsa : une feuille de cahier, pas un tableau sans bord.
+    test('on ne va pas à gauche de la page', () {
+      final vue = VueFeuille()
+        ..borner(1000)
+        ..glisser(const Offset(300, 50));
+      expect(vue.decalage, const Offset(0, 50));
+    });
+
+    test('à droite, la page fait trois écrans de large', () {
+      final vue = VueFeuille()
+        ..borner(1000)
+        ..glisser(const Offset(-5000, 0));
+      expect(vue.decalage.dx, -2000);
+      // Le bord droit de la page tombe sur le bord de l'écran.
+      expect(vue.versPage(const Offset(1000, 0)).dx, 3000);
+    });
+
+    test('zoomer près du bord garde la page dans l’écran', () {
+      final vue = VueFeuille()
+        ..borner(1000)
+        ..zoomer(0.5, const Offset(900, 0));
+      expect(vue.decalage.dx, lessThanOrEqualTo(0));
+      expect(vue.versPage(Offset.zero).dx, greaterThanOrEqualTo(0));
+    });
+
+    test('vers le bas, rien ne s’arrête', () {
+      final vue = VueFeuille()
+        ..borner(1000)
+        ..glisser(const Offset(0, -100000));
+      expect(vue.decalage.dy, -100000);
+    });
+  });
+
   group('VueFeuille', () {
     test('page et écran se correspondent', () {
       final vue = VueFeuille()

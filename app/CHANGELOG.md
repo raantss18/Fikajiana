@@ -4,6 +4,8 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- La Feuille s'arrête à gauche, comme un cahier, et va loin à droite : trois écrans de large ; vers le bas, elle ne s'arrête pas. / The Sheet stops on the left, like a notebook, and goes far to the right: three screens wide; downwards it never ends.
+
 - Les commandes écrites à la main se comprennent : `premier(17)`, `développer((2x-1)(x-4))`, `factoriser(…)`… Dans le doute, Fikajiana propose les mots proches au lieu de deviner. / Handwritten commands are understood: `premier(17)`, `développer((2x-1)(x-4))`, `factoriser(…)`… When unsure, Fikajiana offers the closest words instead of guessing.
 - `74×10^{-4}+85×10^8` donne `8 500 000 000,0074`, pas une fraction ; `premier(17) = vrai` s'écrit à la main ; un résultat ne sort plus de l'écran, et ce qui a été lu ne se réécrit plus sur la feuille. / `74×10^{-4}+85×10^8` gives `8 500 000 000.0074`, not a fraction; `premier(17) = true` is handwritten; a result no longer runs off the screen, and what was read is no longer rewritten on the sheet.
 
