@@ -551,5 +551,6 @@
     "saisieLectureDeux": "Read as 1/(2x) instead of (1/2)x",
     "saisieLectureUne": "Back to the first reading",
     "saisieAide": "Type as you write, or in LaTeX",
-    "saisieOuvrir": "Type a calculation"
+    "saisieOuvrir": "Type a calculation",
+    "placerEnGeometrie": "Place in Geometry"
 }

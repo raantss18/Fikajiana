@@ -219,6 +219,18 @@ matrice("systemes", r"\begin{cases}x+y=1\\x-y=3\end{cases}", [2, -1])
 matrice("systemes", r"\begin{cases}x+y+z=6\\x-y=1\\z=1\end{cases}", [3, 2, 1])
 matrice("systemes", r"\begin{cases}2x+3y=7\\x-y=1\end{cases}", [2, 1])
 
+# La mémoire de la feuille : une définition, puis ce qui s'en sert.
+F = x**2 + 1
+AVANT = len(cas)
+valeur("memoire", "f(2)", F.subs(x, 2))
+fonction("memoire", "f'(x)", sp.diff(F, x))
+valeur("memoire", "f'(3)", sp.diff(F, x).subs(x, 3))
+valeur("memoire", "f''(3)", sp.diff(F, x, 2).subs(x, 3))
+solutions("memoire", "f(x)=5", sp.solveset(F - 5, x, sp.S.Reals))
+fonction("memoire", "f(x)+1", F + 1)
+for c in cas[AVANT:]:
+    c["d"] = "f(x)=x^2+1"
+
 # Vrai ou faux
 verite("verite", "2+2=5", False)
 verite("verite", r"\frac{1}{2}+\frac{1}{3}=\frac{5}{6}", True)

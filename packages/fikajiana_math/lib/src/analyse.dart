@@ -27,6 +27,8 @@ class Analyse {
     this.inconnues = const [],
     this.corps,
     this.membres,
+    this.nomFonction,
+    this.demandeResultat = false,
   });
 
   /// Type deviné.
@@ -44,6 +46,50 @@ class Analyse {
 
   /// Les deux membres d'une équation, traduits pour Giac.
   final (String, String)? membres;
+
+  /// `f` pour `f(x)=x^2`, à retenir pour les lignes suivantes.
+  final String? nomFonction;
+
+  /// La réponse s'affiche même sans `=` : `f'(x)`, `det(…)`.
+  final bool demandeResultat;
+
+  /// Pour les lignes suivantes, si c'est une définition.
+  DefinitionFonction? get definition => nomFonction == null
+      ? null
+      : DefinitionFonction(variable: inconnues.single, corps: corps!);
+}
+
+/// Une fonction définie plus haut sur la feuille : `f(x)=x+5`.
+class DefinitionFonction {
+  /// Crée la définition.
+  const new({
+    required this.variable,
+    required this.corps,
+    this.symboles = const {},
+  });
+
+  /// Sa variable, `x`.
+  final String variable;
+
+  /// Son corps, traduit pour Giac.
+  final String corps;
+
+  /// Les lettres de son corps.
+  final Set<String> symboles;
+
+  /// `f(2)`, ou `f'(2)` pour [primes] à 1, traduit pour Giac.
+  String appel(String argument, {int primes = 0}) {
+    if (primes == 0) {
+      if (argument == variable) return '($corps)';
+      return '(${corps.replaceAll(RegExp('\\b$variable\\b'), '($argument)')})';
+    }
+    final derivee = primes == 1
+        ? 'diff($corps,$variable)'
+        : 'diff($corps,$variable,$primes)';
+    return argument == variable
+        ? derivee
+        : 'subst($derivee,$variable=$argument)';
+  }
 }
 
 /// Le LaTeX n'a pas pu être compris.
@@ -63,8 +109,17 @@ class ErreurLatex implements Exception {
 /// [degres] : Giac compte en degrés ; `30°` reste donc `30`.
 ///
 /// Lève [ErreurLatex] si le texte n'est pas compris : aucun résultat deviné.
-Analyse analyserLatex(String latex, {bool degres = false}) {
-  final lecture = LecteurLatex(latex, degres: degres).lire();
+///
+/// [definitions] : les fonctions écrites plus haut sur la feuille. `f'(x)` est
+/// alors sa dérivée, et `f(x)=0` une équation.
+Analyse analyserLatex(
+  String latex, {
+  bool degres = false,
+  Map<String, DefinitionFonction> definitions = const {},
+}) {
+  final lecteur = LecteurLatex(latex, degres: degres, definitions: definitions);
+  final lecture = lecteur.lire();
+  final demande = lecteur.demandeResultat;
 
   if (lecture is LectureSysteme) {
     final inconnues = <String>{};
@@ -88,14 +143,22 @@ Analyse analyserLatex(String latex, {bool degres = false}) {
           ? TypeExpression.matrice
           : TypeExpression.calcul,
       expression.gauche.giac,
+      demandeResultat: demande,
     );
   }
   if (droite == null) {
-    return Analyse(TypeExpression.calcul, expression.gauche.giac);
+    return Analyse(
+      TypeExpression.calcul,
+      expression.gauche.giac,
+      demandeResultat: demande,
+    );
   }
 
   final definition = expression.gauche.definitionDeFonction;
-  if (definition != null) {
+  // `f` est déjà définie : `f(x)=0` est une équation, `f(x)=2x` la redéfinit.
+  final estEquation =
+      expression.gauche.fonctionDefinie && droite.symboles.isEmpty;
+  if (definition != null && !estEquation) {
     final variable = definition.substring(
       definition.indexOf('(') + 1,
       definition.length - 1,
@@ -105,6 +168,7 @@ Analyse analyserLatex(String latex, {bool degres = false}) {
       '$definition:=${droite.giac}',
       inconnues: [variable],
       corps: droite.giac,
+      nomFonction: definition.substring(0, definition.indexOf('(')),
     );
   }
   // `y=2x+1` : une courbe à tracer, pas une équation d'inconnue x.
@@ -117,6 +181,7 @@ Analyse analyserLatex(String latex, {bool degres = false}) {
       'y($variable):=${droite.giac}',
       inconnues: [variable],
       corps: droite.giac,
+      nomFonction: 'y',
     );
   }
   final symboles = {...expression.gauche.symboles, ...droite.symboles};

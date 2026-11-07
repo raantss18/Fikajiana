@@ -18,7 +18,11 @@ Symbolic calculation is safer and more complete. Differentiate with `f'(2)` or `
 
 - Corrige des résultats faux : bornes d'intégrale sans accolades, déterminant écrit entre barres, noms de fonctions lus comme des produits de lettres. Ce qui n'est pas compris est refusé. / Fixes wrong results: integral bounds without braces, determinants written between bars, function names read as products of letters. What is not understood is refused.
 - Dérivées, inéquations, limites à droite et à gauche, pgcd, ppcm, modulo, combinaisons, partie entière, logarithme de base b, transposée, conjugué, argument, pourcentage. / Derivatives, inequalities, one-sided limits, gcd, lcm, modulo, combinations, floor and ceiling, base-b logarithm, transpose, conjugate, argument, percent.
-- `f(3)` n'utilise que les fonctions de la feuille ouverte, et `y=2x+1` laisse `y` libre pour la suite. / `f(3)` only uses the functions of the open sheet, and `y=2x+1` leaves `y` free for later.
+- `y=2x+1` laisse `y` libre pour la suite. / `y=2x+1` leaves `y` free for later.
+- La feuille retient ce que vous définissez : après `f(x)=x+5`, `f'(x)` donne la dérivée, `f(2)` la valeur, et `f(x)=0` se résout. / The sheet remembers what you define: after `f(x)=x+5`, `f'(x)` gives the derivative, `f(2)` the value, and `f(x)=0` is solved.
+- Le déterminant se calcule : `det` devant une matrice, ou une matrice entre barres. / Determinants are calculated: `det` before a matrix, or a matrix between bars.
+- `A(1;2)` et un vecteur `AB` ou `u` avec ses coordonnées se placent en Géométrie d'un toucher. / `A(1;2)` and a vector `AB` or `u` with its coordinates can be placed in Geometry with one tap.
+
 - Au clavier, tapez comme vous écrivez : `x^2+3x-5=0`, `x²`, `sin 2x`, `racine de 2`, `3,5` ou du LaTeX. L'aperçu montre ce qui est compris, et le bouton dit ce qui va se passer : Calculer, Résoudre en x ou Tracer. / On the keyboard, type as you write: `x^2+3x-5=0`, `x²`, `sin 2x`, `sqrt 2`, `3,5` or LaTeX. The preview shows what is understood, and the button says what will happen: Calculate, Solve for x or Plot.
 - `sin 2x` écrit à la main est maintenant `sin(2x)`, et une intégrale `∫_0^1` garde ses bornes. / Handwritten `sin 2x` now means `sin(2x)`, and an integral `∫_0^1` keeps its bounds.
 

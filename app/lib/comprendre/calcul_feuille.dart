@@ -66,6 +66,7 @@ class BlocCalcul {
       ..approche = json['approche'] as String?
       ..inchange = json['inchange'] as bool? ?? false
       ..hauteurLigne = (json['hl'] as num?)?.toDouble()
+      ..demandeResultat = json['dr'] as bool? ?? false
       .._points = json['points'] as int? ?? 0;
   }
 
@@ -114,6 +115,23 @@ class BlocCalcul {
     return _courbeSeule;
   }
 
+  String? _objetLu;
+  ObjetLu? _objet;
+
+  /// Un point ou un vecteur déclaré : `A(1;2)`. Il se place en Géométrie.
+  ObjetLu? get objet {
+    final lu = latex;
+    if (lu == null) return null;
+    if (_objetLu != lu) {
+      _objetLu = lu;
+      _objet = lireObjet(lu);
+    }
+    return _objet;
+  }
+
+  /// `f'(x)` ou `det(…)` : la réponse s'affiche même sans `=`.
+  bool demandeResultat = false;
+
   /// La feuille propose de la tracer.
   bool get seTrace => courbeSeule || type == TypeExpression.fonction;
 
@@ -123,7 +141,7 @@ class BlocCalcul {
   /// Une expression sans `=` ne demande rien.
   bool get montreResultat {
     if (etat != EtatBloc.fait || verite != null || courbeSeule) return false;
-    return estSaisie || finitParEgal || estResolution;
+    return estSaisie || finitParEgal || estResolution || demandeResultat;
   }
 
   bool get _sousLEcriture => !finitParEgal;
@@ -210,6 +228,7 @@ class BlocCalcul {
     'inchange': inchange,
     'points': _points,
     'hl': ?hauteurLigne,
+    if (demandeResultat) 'dr': true,
   };
 }
 
@@ -241,9 +260,6 @@ String abregerApproche(String approche) {
 /// **Un bloc lu reste stable** : seul un trait qui le touche, ou un trait écrit
 /// juste à sa droite sur la même ligne avant son `=`, le modifie. Un nouveau
 /// calcul, même proche, ne l'efface donc jamais.
-final _appelFonction = RegExp(r"\b[fgh]'*\(");
-final _definitionLibre = RegExp(r'^[fgh]\(');
-
 class CalculFeuille extends ChangeNotifier {
   new({
     required this.encre,
@@ -455,22 +471,76 @@ class CalculFeuille extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _calculer(BlocCalcul bloc) async {
-    if (bloc.courbeSeule) {
+  /// Les fonctions définies au-dessus de [bloc] : la plus proche l'emporte.
+  Map<String, DefinitionFonction> _definitionsPour(BlocCalcul bloc) {
+    final definitions = <String, DefinitionFonction>{};
+    final dessus =
+        _blocs.values
+            .where((b) => !identical(b, bloc) && b.latex != null)
+            .where((b) => b.cadre.top <= bloc.cadre.top)
+            .toList()
+          ..sort((a, b) => a.cadre.top.compareTo(b.cadre.top));
+    for (final b in dessus) {
+      try {
+        final a = analyserLatex(b.latex!, definitions: definitions);
+        final definition = a.definition;
+        if (definition != null) definitions[a.nomFonction!] = definition;
+      } on ErreurLatex {
+        continue;
+      }
+    }
+    return definitions;
+  }
+
+  /// [bloc] (re)définit une fonction : les lignes en dessous qui s'en servent
+  /// se recalculent.
+  Future<void> _recalculerCeuxQuiUtilisent(BlocCalcul bloc) async {
+    final String? nom;
+    try {
+      nom = analyserLatex(bloc.latex ?? '').nomFonction;
+    } on ErreurLatex {
+      return;
+    }
+    if (nom == null) return;
+    final usage = RegExp(
+      r'(^|[^a-zA-Z\\])'
+      '$nom'
+      r"\s*(\(|'|\^)",
+    );
+    for (final autre in blocs) {
+      if (identical(autre, bloc) || autre.latex == null) continue;
+      if (autre.cadre.top < bloc.cadre.top) continue;
+      if (!usage.hasMatch(autre.latex!)) continue;
+      autre._oublierResultat();
+      await _calculer(autre, propager: false);
+      if (_ferme) return;
+    }
+  }
+
+  Future<void> _calculer(BlocCalcul bloc, {bool propager = true}) async {
+    if (bloc.objet != null || bloc.courbeSeule) {
       bloc.etat = EtatBloc.fait;
       return;
     }
     final Analyse analyse;
     final enDegres = degres();
     try {
-      analyse = analyserLatex(bloc.latex ?? '', degres: enDegres);
+      analyse = analyserLatex(
+        bloc.latex ?? '',
+        degres: enDegres,
+        definitions: _definitionsPour(bloc),
+      );
     } on ErreurLatex {
       bloc.etat = EtatBloc.nonCompris;
       return;
     }
     bloc
       ..type = analyse.type
-      ..inconnues = analyse.inconnues;
+      ..inconnues = analyse.inconnues
+      ..demandeResultat = analyse.demandeResultat;
+    if (propager && analyse.nomFonction != null) {
+      unawaited(_recalculerCeuxQuiUtilisent(bloc));
+    }
     // Une définition n'a rien à rendre : elle reste sur la feuille. Envoyée à
     // Giac telle quelle, `y=2x+1` empêcherait ensuite de résoudre en y.
     if (analyse.type == TypeExpression.fonction) {
@@ -481,9 +551,6 @@ class CalculFeuille extends ChangeNotifier {
     notifyListeners();
     final ReponseGiac reponse;
     try {
-      if (_appelFonction.hasMatch(analyse.giac)) {
-        await _rappelerFonctions(enDegres);
-      }
       reponse = await moteur.calculer(analyse.giac, degres: enDegres);
     } on Object {
       bloc.etat = EtatBloc.erreur;
@@ -510,25 +577,6 @@ class CalculFeuille extends ChangeNotifier {
             : reponse.approche
         ..inchange = sansEspaces(exact) == sansEspaces(analyse.giac)
         ..etat = EtatBloc.fait;
-    }
-  }
-
-  /// `f(3)` ou `g'(x)` : Giac ne doit voir que les fonctions de cette feuille,
-  /// pas celles d'une autre, ni une fonction effacée depuis.
-  Future<void> _rappelerFonctions(bool enDegres) async {
-    await moteur.calculer('purge(f,g,h)', degres: enDegres);
-    for (final bloc in _blocs.values) {
-      final latex = bloc.latex;
-      if (bloc.type != TypeExpression.fonction || latex == null) continue;
-      final Analyse definition;
-      try {
-        definition = analyserLatex(latex, degres: enDegres);
-      } on ErreurLatex {
-        continue;
-      }
-      if (_definitionLibre.hasMatch(definition.giac)) {
-        await moteur.calculer(definition.giac, degres: enDegres);
-      }
     }
   }
 

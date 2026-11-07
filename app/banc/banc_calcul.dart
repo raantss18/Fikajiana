@@ -114,7 +114,14 @@ Future<void> main() async {
     totaux[famille] = (totaux[famille] ?? 0) + 1;
     var ecart = '';
     try {
-      final analyse = analyserLatex(latex);
+      final definition = cas['d'] as String?;
+      final avant = definition == null ? null : analyserLatex(definition);
+      final analyse = analyserLatex(
+        latex,
+        definitions: avant == null
+            ? const {}
+            : {avant.nomFonction!: avant.definition!},
+      );
       final reponse = await calculerGiac(analyse.giac);
       ecart = reponse.erreur != null
           ? 'erreur Giac : ${reponse.erreur} (${analyse.giac})'

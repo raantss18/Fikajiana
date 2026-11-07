@@ -83,26 +83,6 @@ void main() {
       expect(moteur.entrees, isEmpty);
       expect(calcul.blocs.every((b) => b.seTrace), isTrue);
     });
-
-    test('un appel les rappelle, sans celles d’une autre feuille', () async {
-      await calcul.saisir('f(x)=x^2', Offset.zero);
-      await calcul.saisir('y=2x+1', Offset.zero);
-      await calcul.saisir('f(3)=', Offset.zero);
-      // `y` reste libre : `2y=4` doit pouvoir se résoudre ensuite.
-      expect(moteur.entrees, ['purge(f,g,h)', 'f(x):=(x)^(2)', 'f(3)']);
-    });
-
-    test('une dérivée aussi', () async {
-      await calcul.saisir('g(t)=t+1', Offset.zero);
-      await calcul.saisir("g'(1)=", Offset.zero);
-      expect(moteur.entrees.last, "g'(1)");
-      expect(moteur.entrees, contains('g(t):=t+1'));
-    });
-
-    test('un calcul sans fonction ne purge rien', () async {
-      await calcul.saisir('2+3=', Offset.zero);
-      expect(moteur.entrees, ['2+3']);
-    });
   });
 
   group('ce qui ne fait que se tracer', () {
@@ -537,6 +517,50 @@ void main() {
       expect(StockageFeuille(fichier).charger(), isNull);
       StockageFeuille(fichier).enregistrer();
       expect(fichier.existsSync(), isFalse);
+    });
+  });
+
+  group('la feuille retient ce qui est défini', () {
+    Future<BlocCalcul> taper(String latex, double y) async {
+      await calcul.saisir(latex, Offset(0, y));
+      return calcul.blocs.last;
+    }
+
+    test("f'(x) calcule la dérivée de la ligne au-dessus", () async {
+      await taper('f(x)=x+5', 0);
+      await taper(r'f^{\prime}(x)', 100);
+      expect(moteur.entrees.last, 'diff(x+5,x)');
+      expect(calcul.blocs.last.demandeResultat, isTrue);
+    });
+
+    test('f(x)=0 se résout, et donne une solution', () async {
+      await taper('f(x)=x+5', 0);
+      final b = await taper('f(x)=0', 100);
+      expect(moteur.entrees.last, 'solve((x+5)=0,x)');
+      expect(b.type, TypeExpression.equation);
+    });
+
+    test('une définition plus bas ne compte pas', () async {
+      await taper('f(x)=x+5', 500);
+      final b = await taper('f(x)=0', 100);
+      expect(b.type, TypeExpression.fonction);
+    });
+
+    test('changer la définition recalcule la ligne dessous', () async {
+      final def = await taper('f(x)=x+5', 0);
+      await taper('f(2)', 100);
+      moteur.entrees.clear();
+      await calcul.corriger(def, 'f(x)=x+7');
+      await _attendre();
+      expect(moteur.entrees, contains('((2)+7)'));
+    });
+
+    test('un point ne va pas à Giac', () async {
+      moteur.entrees.clear();
+      final b = await taper('A(1;2)', 0);
+      expect(b.objet, isA<PointLu>());
+      expect(b.etat, EtatBloc.fait);
+      expect(moteur.entrees, isEmpty);
     });
   });
 }

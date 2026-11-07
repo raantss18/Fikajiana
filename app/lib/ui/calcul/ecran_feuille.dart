@@ -21,6 +21,7 @@ import 'package:fikajiana/ui/reglages/ecran_reglages.dart';
 import 'package:fikajiana/ui/services.dart';
 import 'package:fikajiana/ui/theme/espacement.dart';
 import 'package:fikajiana/ui/theme/marque.dart';
+import 'package:fikajiana_math/fikajiana_math.dart';
 import 'package:flutter/material.dart';
 
 const double _ecartSaisies = 64;
@@ -141,9 +142,15 @@ class _EcranFeuilleState extends State<EcranFeuille> {
     final position = depart + Offset(0, saisies * _ecartSaisies);
     unawaited(_calcul.saisir(latex, _vue.versPage(position)));
     setState(() {});
+    final services = PorteeServices.de(context);
+    final objet = lireObjet(latex);
+    if (objet != null) {
+      services.atelier.placerObjet(objet);
+      Navigator.of(context).push(RouteDestination(Destination.geometrie));
+      return;
+    }
     // Le bouton a dit Tracer : la ligne se pose, et le graphique s'ouvre.
-    if (verbeDe(latex) is VerbeTracer &&
-        PorteeServices.de(context).courbes.ajouter(latex)) {
+    if (verbeDe(latex) is VerbeTracer && services.courbes.ajouter(latex)) {
       Navigator.of(context).push(RouteDestination(Destination.graphe));
     }
   }
