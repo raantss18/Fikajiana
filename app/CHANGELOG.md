@@ -4,6 +4,8 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Construire depuis la Feuille : `cercle(A;2)`, `cercle(A;B)`, `(AB)`, `[AB]`, `[AB)`, `I=milieu(A;B)`, `médiatrice(A;B)` se placent dans la Figure d'un toucher. / Build from the sheet: `cercle(A;2)`, `cercle(A;B)`, `(AB)`, `[AB]`, `[AB)`, `I=milieu(A;B)`, `médiatrice(A;B)` are placed in the Figure with one tap.
+
 - Les matrices, les flèches de vecteur et les normes se lisent à partir de vos traits, case par case : `det` d'une matrice 3×3 écrite à la main se calcule. / Matrices, vector arrows and norms are read from your strokes, cell by cell: the `det` of a handwritten 3×3 matrix is calculated.
 - La feuille retient vos points et vos valeurs : après `A(1;2)` et `B(5;-4)`, le vecteur `AB`, sa norme et la distance `AB` se calculent ; `a=2` définit `a`. / The sheet remembers your points and values: after `A(1;2)` and `B(5;-4)`, the vector `AB`, its norm and the distance `AB` are calculated; `a=2` defines `a`.
 - Relire une ligne depuis son panneau. / Read a line again from its panel.

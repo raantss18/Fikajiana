@@ -41,7 +41,9 @@ class VerbeDefinir extends Verbe {
 
 /// Ce que fera ce LaTeX ; `null` s'il ne se comprend pas.
 Verbe? verbeDe(String latex) {
-  if (lireObjet(latex) != null) return const VerbePlacer();
+  if (lireObjet(latex) != null || lireCommande(latex) != null) {
+    return const VerbePlacer();
+  }
   if (estCourbeSeule(latex)) return const VerbeTracer();
   final Analyse analyse;
   try {

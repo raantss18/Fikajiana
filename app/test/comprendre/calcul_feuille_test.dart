@@ -622,4 +622,20 @@ void main() {
       expect(b.autresLectures, ['x+4=2']);
     });
   });
+
+  test('cercle(A;2) sous A se place, sans Giac', () async {
+    await calcul.saisir('A(1;2)', Offset.zero);
+    moteur.entrees.clear();
+    await calcul.saisir('cercle(A;2)', const Offset(0, 100));
+    final b = calcul.blocs.last;
+    expect(b.etat, EtatBloc.fait);
+    expect(b.commande?.genre, GenreCommande.cercleRayon);
+    expect(b.aPlacer.single, isA<PointLu>());
+    expect(moteur.entrees, isEmpty);
+  });
+
+  test('une commande sans ses points ne se devine pas', () async {
+    await calcul.saisir('(AB)', Offset.zero);
+    expect(calcul.blocs.last.etat, EtatBloc.nonCompris);
+  });
 }

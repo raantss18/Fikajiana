@@ -51,7 +51,9 @@ Saisie lireSaisie(String texte) {
   if (propre.isEmpty) return const Saisie.refusee(ProblemeSaisie.incomplet);
   if (propre.contains(r'\') || propre.contains('{')) return Saisie(propre);
   // `A(1;2)`, `AB(1;3)` : un point ou un vecteur, tel quel.
-  if (lireObjet(propre) != null) return Saisie(propre);
+  if (lireObjet(propre) != null || lireCommande(propre) != null) {
+    return Saisie(propre);
+  }
   try {
     final jetons = _decouper(propre);
     final latex = _Traducteur(jetons).traduire();
