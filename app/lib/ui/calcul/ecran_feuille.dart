@@ -207,6 +207,8 @@ class _EcranFeuilleState extends State<EcranFeuille> {
                 gomme: _gomme,
                 surChangement: _surEncre,
                 surRature: _surRature,
+                doigtDefile: reglages.doigtDefile,
+                surStylet: reglages.noterStylet,
                 ciblesRature: (zone) => _calcul.traitsDuResultatSous(
                   zone,
                   approcheVoulue: reglages.approche,

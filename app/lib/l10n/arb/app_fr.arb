@@ -346,5 +346,7 @@
     "blocPanneauArrete": "Calcul arrêté : il durait trop longtemps",
     "blocPanneauErreur": "Le calcul a échoué",
     "blocEffacer": "Effacer",
-    "blocEfface": "Écriture effacée"
+    "blocEfface": "Écriture effacée",
+    "ecrireAuDoigt": "Écrire aussi au doigt",
+    "ecrireAuDoigtDetail": "Avec un stylet, la main fait seulement défiler la page. Activez ceci pour écrire aussi au doigt."
 }

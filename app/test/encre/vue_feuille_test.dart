@@ -83,7 +83,13 @@ void main() {
       await stylet.up();
       expect(encre.traits, hasLength(1));
 
-      await t.dragFrom(const Offset(200, 200), const Offset(0, -80));
+      // Juste après le stylet, c'est la main qui se lève : on attend un peu.
+      final doigt = await t.startGesture(const Offset(200, 200), pointer: 9);
+      await doigt.moveBy(
+        const Offset(0, -80),
+        timeStamp: const Duration(seconds: 1),
+      );
+      await doigt.up();
       expect(encre.traits, hasLength(1));
       expect(vue.decalage.dy, lessThan(0));
     });

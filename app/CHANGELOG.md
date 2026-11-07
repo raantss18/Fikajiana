@@ -4,6 +4,8 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Une fois le stylet utilisé, la main ne fait plus que déplacer la page, et ne bouge plus la feuille pendant l'écriture. Un réglage permet d'écrire aussi au doigt. / Once the stylus has been used, your hand only moves the page, and no longer shifts the sheet while you write. A setting lets you write with a finger too.
+
 ## [0.7.1] — 2026-11-07
 
 ### Message fr
