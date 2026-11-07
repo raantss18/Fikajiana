@@ -156,7 +156,7 @@ class _PanneauSaisieState extends State<PanneauSaisie> {
         switch (verbe) {
           VerbeResoudre(:final inconnue) => l10n.saisieResoudre(inconnue),
           VerbeTracer() => l10n.grapheTracer,
-          VerbePlacer() => l10n.placerEnGeometrie,
+          VerbePlacer() => l10n.placerDansFigure,
           VerbeCalculer() || null => l10n.saisieCalculer,
         };
   }

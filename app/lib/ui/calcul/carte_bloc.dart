@@ -169,12 +169,12 @@ class RepereBloc extends StatelessWidget {
                     _Formule(latex: bloc.latex ?? '', couleur: accent),
                   FilledButton.tonalIcon(
                     icon: const Icon(Icons.place_outlined),
-                    label: Text(l10n.placerEnGeometrie),
+                    label: Text(l10n.placerDansFigure),
                     onPressed: () {
                       surTouche();
                       PorteeServices.de(context).atelier.placerObjet(objet);
                       Navigator.of(context)
-                          .push(RouteDestination(Destination.geometrie));
+                          .push(RouteDestination(Destination.figure));
                     },
                   ),
                   IconButton(
@@ -204,13 +204,22 @@ class RepereBloc extends StatelessWidget {
                         if (bloc.estSaisie) formule,
                         FilledButton.tonalIcon(
                           icon: const Icon(Icons.show_chart),
-                          label: Text(l10n.grapheTracer),
+                          label: Text(
+                            PorteeServices.de(context).courbes.liste
+                                    .any((c) => c.latex == bloc.latex)
+                                ? l10n.voirDansFigure
+                                : l10n.grapheTracer,
+                          ),
                           onPressed: () {
                             surTouche();
                             final services = PorteeServices.de(context);
-                            if (services.courbes.ajouter(bloc.latex ?? '')) {
+                            final deja = services.courbes.liste.any(
+                              (c) => c.latex == bloc.latex,
+                            );
+                            if (deja ||
+                                services.courbes.ajouter(bloc.latex ?? '')) {
                               Navigator.of(context)
-                                  .push(RouteDestination(Destination.graphe));
+                                  .push(RouteDestination(Destination.figure));
                             }
                           },
                         ),

@@ -10,7 +10,7 @@ import 'package:fikajiana/moteur/moteur.dart';
 import 'package:fikajiana/reconnaissance/lecteur.dart';
 import 'package:fikajiana/reconnaissance/modele.dart';
 import 'package:fikajiana/ui/app.dart';
-import 'package:fikajiana/ui/graphe/ecran_graphe.dart';
+import 'package:fikajiana/ui/geometrie/ecran_geometrie.dart';
 import 'package:fikajiana/ui/graphe/tableau_valeurs.dart';
 import 'package:fikajiana/ui/services.dart';
 import 'package:fikajiana_math/fikajiana_math.dart';
@@ -275,9 +275,9 @@ void main() {
       await t.pumpFikajiana(taille: taille);
       await t.tap(find.byTooltip('Menu'));
       await t.pumpAndSettle();
-      await t.tap(find.text('Graphe'));
+      await t.tap(find.text('Figure').last);
       await t.pumpAndSettle();
-      expect(find.byType(EcranGraphe), findsOneWidget);
+      expect(find.byType(EcranGeometrie), findsOneWidget);
     }
 
     Future<void> ajouter(WidgetTester t, String latex) async {
@@ -293,16 +293,16 @@ void main() {
 
     testWidgets('ajouter, voir la légende, retirer', (t) async {
       await ouvrir(t);
-      expect(find.textContaining('Aucune courbe'), findsOneWidget);
+      expect(find.textContaining('Touche Outils'), findsOneWidget);
       await ajouter(t, 'y=x^2');
-      expect(find.textContaining('Aucune courbe'), findsNothing);
+      expect(find.textContaining('Touche Outils'), findsNothing);
       expect(find.text('1'), findsOneWidget);
 
       await t.tap(find.text('1'));
       await t.pumpAndSettle();
       await t.tap(find.text('Retirer'));
       await t.pumpAndSettle();
-      expect(find.textContaining('Aucune courbe'), findsOneWidget);
+      expect(find.textContaining('Touche Outils'), findsOneWidget);
     });
 
     testWidgets('une fonction de la feuille se trace d’un toucher', (t) async {
@@ -334,7 +334,7 @@ void main() {
       // Le bouton a dit Tracer : le graphique s'ouvre d'un coup.
       await t.tap(find.widgetWithText(FilledButton, 'Tracer'));
       await t.pumpAndSettle();
-      expect(find.byType(EcranGraphe), findsOneWidget);
+      expect(find.byType(EcranGeometrie), findsOneWidget);
       expect(find.text('1'), findsOneWidget);
     });
 
@@ -370,7 +370,7 @@ void main() {
       // Le nom se lit : ce n'est pas qu'un dessin de courbe.
       await t.tap(find.widgetWithText(FilledButton, 'Tracer'));
       await t.pumpAndSettle();
-      expect(find.byType(EcranGraphe), findsOneWidget);
+      expect(find.byType(EcranGeometrie), findsOneWidget);
       expect(courbes.liste.single.genre, GenreCourbe.implicite);
     });
 
@@ -387,7 +387,11 @@ void main() {
       );
       await t.tap(find.text('Outils'));
       await t.pumpAndSettle();
-      await t.ensureVisible(find.text('Exporter en image (PNG)'));
+      await t.dragUntilVisible(
+        find.text('Exporter en image (PNG)'),
+        find.byType(ListView),
+        const Offset(0, -200),
+      );
       await t.pumpAndSettle();
       await t.tap(find.text('Exporter en image (PNG)'));
       // Capture et encodage sont de vrais travaux asynchrones.
@@ -402,7 +406,7 @@ void main() {
       expect(arguments['type'], 'image/png');
       expect(
         arguments['nom'],
-        matches(r'^fikajiana-graphe-\d{4}-\d\d-\d\d\.png$'),
+        matches(r'^fikajiana-figure-\d{4}-\d\d-\d\d\.png$'),
       );
       // La signature du format PNG.
       expect((arguments['octets']! as Uint8List).sublist(0, 4), [
@@ -457,6 +461,11 @@ void main() {
       await ajouter(t, r'\frac{1}{x}');
       await t.tap(find.text('Outils'));
       await t.pumpAndSettle();
+      await t.dragUntilVisible(
+        find.text('Tableau de valeurs'),
+        find.byType(ListView),
+        const Offset(0, -100),
+      );
       await t.tap(find.text('Tableau de valeurs'));
       await t.pumpAndSettle();
       expect(find.text('−5'), findsOneWidget);
@@ -476,6 +485,11 @@ void main() {
       await ajouter(t, 'x^2+y^2=4');
       await t.tap(find.text('Outils'));
       await t.pumpAndSettle();
+      await t.dragUntilVisible(
+        find.text('Tableau de valeurs'),
+        find.byType(ListView),
+        const Offset(0, -100),
+      );
       await t.tap(find.text('Tableau de valeurs'));
       await t.pumpAndSettle();
       expect(

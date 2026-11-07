@@ -27,6 +27,7 @@ Symbolic calculation is safer and more complete. Differentiate with `f'(2)` or `
 - `sin 2x` écrit à la main est maintenant `sin(2x)`, et une intégrale `∫_0^1` garde ses bornes. / Handwritten `sin 2x` now means `sin(2x)`, and an integral `∫_0^1` keeps its bounds.
 - Deux lignes écrites serrées ne se lisent plus comme une seule, et un résultat ne s'écrit plus sur la ligne d'en dessous. / Two lines written close together are no longer read as one, and a result no longer lands on the line below.
 - La lecture comprend mieux une écriture réelle : un `f` ou un `g` à la main, l'apostrophe de `f'`, un `(x)` écrit haut, le `e` de `e^x`. / Reading understands real handwriting better: a handwritten `f` or `g`, the prime in `f'`, a raised `(x)`, the `e` in `e^x`.
+- Deux espaces, toujours en vue : Feuille pour écrire et calculer, Figure pour les courbes et la géométrie, réunies sur les mêmes axes. Tracer et Placer y mènent. / Two spaces, always in sight: Sheet to write and calculate, Figure for curves and geometry, together on the same axes. Plot and Place lead there.
 
 ## [0.7.2] — 2026-11-07
 

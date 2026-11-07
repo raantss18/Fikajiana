@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:fikajiana/comprendre/classeur.dart';
 import 'package:fikajiana/ui/geometrie/ecran_geometrie.dart';
-import 'package:fikajiana/ui/graphe/ecran_graphe.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../helpers/helpers.dart';
@@ -72,15 +71,12 @@ void main() {
       await t.pumpAndSettle();
     }
 
-    testWidgets('propose les trois créations, et y mène', (t) async {
+    testWidgets('propose les deux créations, et y mène', (t) async {
       await t.pumpFikajiana();
       await menu(t, 'Nouvelle figure');
       expect(find.byType(EcranGeometrie), findsOneWidget);
-      await menu(t, 'Nouveau graphe');
-      expect(find.byType(EcranGraphe), findsOneWidget);
       await menu(t, 'Nouvelle feuille');
       expect(find.byType(EcranGeometrie), findsNothing);
-      expect(find.byType(EcranGraphe), findsNothing);
     });
   });
 }

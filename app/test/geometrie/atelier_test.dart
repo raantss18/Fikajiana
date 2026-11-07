@@ -444,7 +444,7 @@ void main() {
       await t.pumpFikajiana(taille: taille);
       await t.tap(find.byTooltip('Menu'));
       await t.pumpAndSettle();
-      await t.tap(find.text('Géométrie'));
+      await t.tap(find.text('Figure').last);
       await t.pumpAndSettle();
       expect(find.byType(EcranGeometrie), findsOneWidget);
     }
@@ -452,7 +452,18 @@ void main() {
     Future<void> choisir(WidgetTester t, String nom) async {
       await t.tap(find.text('Outils'));
       await t.pumpAndSettle();
-      await t.scrollUntilVisible(find.text(nom), 200);
+      await t.scrollUntilVisible(
+        find.text(nom),
+        200,
+        scrollable: find
+            .descendant(
+              of: find.byType(ListView),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      await t.ensureVisible(find.text(nom));
+      await t.pumpAndSettle();
       await t.tap(find.text(nom));
       await t.pumpAndSettle();
     }
