@@ -4,6 +4,13 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Quand une lecture étonne, Fikajiana en cherche d'autres, garde la plus sensée et propose les autres d'un toucher. / When a reading looks odd, Fikajiana looks for others, keeps the most sensible one and offers the rest with one tap.
+
+- Deux espaces, toujours en vue : Feuille pour écrire et calculer, Figure pour les courbes et la géométrie, réunies sur les mêmes axes. Tracer et Placer y mènent. / Two spaces, always in sight: Sheet to write and calculate, Figure for curves and geometry, together on the same axes. Plot and Place lead there.
+
+- Deux lignes écrites serrées ne se lisent plus comme une seule, et un résultat ne s'écrit plus sur la ligne d'en dessous. / Two lines written close together are no longer read as one, and a result no longer lands on the line below.
+- La lecture comprend mieux une écriture réelle : un `f` ou un `g` à la main, l'apostrophe de `f'`, un `(x)` écrit haut, le `e` de `e^x`. / Reading understands real handwriting better: a handwritten `f` or `g`, the prime in `f'`, a raised `(x)`, the `e` in `e^x`.
+
 ## [0.8.0] — 2026-11-07
 
 ### Message fr

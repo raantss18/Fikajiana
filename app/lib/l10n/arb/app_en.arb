@@ -551,5 +551,7 @@
     "saisieOuvrir": "Type a calculation",
     "destinationFigure": "Figure",
     "voirDansFigure": "See in Figure",
-    "placerDansFigure": "Place in Figure"
+    "placerDansFigure": "Place in Figure",
+    "blocAutresLectures": "Or perhaps:",
+    "blocChoisirLecture": "Choose this reading"
 }

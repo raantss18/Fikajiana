@@ -68,6 +68,17 @@ class RepereBloc extends StatelessWidget {
       },
       lecture: latex.isEmpty ? null : _Formule(latex: latex),
       effacer: bloc.estSaisie ? l10n.retirer : l10n.blocEffacer,
+      autres: [
+        for (final autre in bloc.autresLectures)
+          ActionChip(
+            label: _Formule(latex: autre),
+            tooltip: l10n.blocChoisirLecture,
+            onPressed: () {
+              Navigator.of(context, rootNavigator: true).pop();
+              unawaited(calcul.corriger(bloc, autre));
+            },
+          ),
+      ],
     );
     if (!context.mounted) return;
     switch (choix) {

@@ -26,7 +26,7 @@ Rect cadre(Trait t) => t.points
     .map((p) => Rect.fromLTWH(p.x, p.y, 0, 0))
     .reduce((a, b) => a.expandToInclude(b));
 
-class _Lecteur implements Lecteur {
+class _Lecteur extends Lecteur {
   new(this.reponse);
 
   final String reponse;
