@@ -5,6 +5,7 @@ import 'package:fikajiana/comprendre/blocs.dart';
 import 'package:fikajiana/comprendre/ecriture_resultat.dart';
 import 'package:fikajiana/comprendre/fraction_ecrite.dart';
 import 'package:fikajiana/comprendre/solutions.dart';
+import 'package:fikajiana/comprendre/structure.dart';
 import 'package:fikajiana/encre/encre.dart';
 import 'package:fikajiana/graphe/courbes.dart';
 import 'package:fikajiana/moteur/giac.dart';
@@ -27,6 +28,23 @@ enum EtatBloc {
   arrete,
   sansModele,
   erreur,
+}
+
+/// Ce que la feuille sait au-dessus d'une ligne.
+class _Contexte {
+  final definitions = <String, DefinitionFonction>{};
+  final points = <String, (double, double)>{};
+  final vecteurs = <String, (double, double)>{};
+  final valeurs = <String, String>{};
+
+  Analyse analyser(String latex, {bool degres = false}) => analyserLatex(
+    latex,
+    degres: degres,
+    definitions: definitions,
+    points: points,
+    vecteurs: vecteurs,
+    valeurs: valeurs,
+  );
 }
 
 /// Une expression de la feuille : ses traits, ce qui est compris, son résultat.
@@ -68,6 +86,7 @@ class BlocCalcul {
       ..inchange = json['inchange'] as bool? ?? false
       ..hauteurLigne = (json['hl'] as num?)?.toDouble()
       ..demandeResultat = json['dr'] as bool? ?? false
+      ..lueParMorceaux = json['lm'] as bool? ?? false
       .._points = json['points'] as int? ?? 0;
   }
 
@@ -129,6 +148,13 @@ class BlocCalcul {
     }
     return _objet;
   }
+
+  /// Lue par morceaux : ce qui a été compris se montre, un chiffre peut être
+  /// faux et le résultat avec lui.
+  bool lueParMorceaux = false;
+
+  /// Un vecteur calculé peut aussi se placer dans la Figure.
+  List<ObjetLu> aPlacer = const [];
 
   /// Ce que le modèle a aussi pu lire, à proposer à la correction.
   List<String> autresLectures = const [];
@@ -238,6 +264,7 @@ class BlocCalcul {
     'points': _points,
     'hl': ?hauteurLigne,
     if (demandeResultat) 'dr': true,
+    if (lueParMorceaux) 'lm': true,
   };
 }
 
@@ -448,7 +475,9 @@ class CalculFeuille extends ChangeNotifier {
       .._oublierResultat();
     notifyListeners();
     try {
-      var latex = await lecteur.lire(traits);
+      // Ce qui sort d'une seule ligne se lit par morceaux (ADR 0029).
+      final structuree = await lireStructure(lecteur, traits);
+      var latex = structuree ?? await lecteur.lire(traits);
       if (bloc._version != version || !identical(_blocs[bloc.cle], bloc)) {
         return;
       }
@@ -456,7 +485,7 @@ class CalculFeuille extends ChangeNotifier {
       bloc.autresLectures = const [];
       // Une lecture qui étonne : on en demande d'autres (ADR 0028). Ce coût
       // n'est payé que dans le doute.
-      if (plausibilite(latex, fonctions: fonctions) < 0) {
+      if (structuree == null && plausibilite(latex, fonctions: fonctions) < 0) {
         final lectures = await lecteur.lirePlusieurs(traits);
         if (bloc._version != version || !identical(_blocs[bloc.cle], bloc)) {
           return;
@@ -476,10 +505,13 @@ class CalculFeuille extends ChangeNotifier {
         ];
         latex = choix;
       }
-      bloc.latex = _redresser(
-        bloc,
-        redresserLecture(latex, fonctions: fonctions),
-      );
+      bloc
+        ..latex = _redresser(
+          bloc,
+          redresserLecture(latex, fonctions: fonctions),
+        )
+        // Un nom se vérifie à l'œil ; les chiffres d'une matrice, moins.
+        ..lueParMorceaux = structuree?.contains('matrix') ?? false;
       await _calculer(bloc);
     } on ModeleAbsent {
       bloc.etat = EtatBloc.sansModele;
@@ -537,9 +569,9 @@ class CalculFeuille extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Les fonctions définies au-dessus de [bloc] : la plus proche l'emporte.
-  Map<String, DefinitionFonction> _definitionsPour(BlocCalcul bloc) {
-    final definitions = <String, DefinitionFonction>{};
+  /// Ce qui est défini au-dessus de [bloc] : le plus proche l'emporte.
+  _Contexte _contextePour(BlocCalcul bloc) {
+    final contexte = _Contexte();
     final dessus =
         _blocs.values
             .where((b) => !identical(b, bloc) && b.latex != null)
@@ -547,23 +579,41 @@ class CalculFeuille extends ChangeNotifier {
             .toList()
           ..sort((a, b) => a.cadre.top.compareTo(b.cadre.top));
     for (final b in dessus) {
+      switch (b.objet) {
+        case PointLu(:final nom, :final x, :final y):
+          contexte.points[nom] = (x, y);
+          continue;
+        case VecteurLu(:final nom, :final x, :final y):
+          contexte.vecteurs[nom] = (x, y);
+          continue;
+        case null:
+          break;
+      }
       try {
-        final a = analyserLatex(b.latex!, definitions: definitions);
+        final a = contexte.analyser(b.latex!);
         final definition = a.definition;
-        if (definition != null) definitions[a.nomFonction!] = definition;
+        if (definition != null) {
+          contexte.definitions[a.nomFonction!] = definition;
+        }
+        final valeur = a.nomValeur;
+        if (valeur != null) contexte.valeurs[valeur] = a.giac;
       } on ErreurLatex {
         continue;
       }
     }
-    return definitions;
+    return contexte;
   }
+
+  Map<String, DefinitionFonction> _definitionsPour(BlocCalcul bloc) =>
+      _contextePour(bloc).definitions;
 
   /// [bloc] (re)définit une fonction : les lignes en dessous qui s'en servent
   /// se recalculent.
   Future<void> _recalculerCeuxQuiUtilisent(BlocCalcul bloc) async {
     final String? nom;
     try {
-      nom = analyserLatex(bloc.latex ?? '').nomFonction;
+      final a = analyserLatex(bloc.latex ?? '');
+      nom = a.nomFonction ?? a.nomValeur;
     } on ErreurLatex {
       return;
     }
@@ -571,7 +621,7 @@ class CalculFeuille extends ChangeNotifier {
     final usage = RegExp(
       r'(^|[^a-zA-Z\\])'
       '$nom'
-      r"\s*(\(|'|\^)",
+      '(?![a-zA-Z])',
     );
     for (final autre in blocs) {
       if (identical(autre, bloc) || autre.latex == null) continue;
@@ -583,6 +633,36 @@ class CalculFeuille extends ChangeNotifier {
     }
   }
 
+  /// `\\vec{AB}` entre deux points de la feuille : ce qu'il faut en Figure.
+  List<ObjetLu> _aPlacer(BlocCalcul bloc) {
+    final m = RegExp(
+      r'^\s*\\(?:overrightarrow|vec)\s*\{\s*([A-Z])\s*([A-Z])\s*\}\s*=?\s*$',
+    ).firstMatch(bloc.latex ?? '');
+    if (m == null) return const [];
+    final points = _contextePour(bloc).points;
+    final (a, b) = (points[m[1]], points[m[2]]);
+    if (a == null || b == null) return const [];
+    return [
+      PointLu(m[1]!, a.$1, a.$2),
+      PointLu(m[2]!, b.$1, b.$2),
+      VecteurLu('${m[1]}${m[2]}', b.$1 - a.$1, b.$2 - a.$2),
+    ];
+  }
+
+  /// Relit toute la feuille : après une mise à jour, tout peut mieux se lire.
+  void relireTout() {
+    for (final bloc in _blocs.values) {
+      if (!bloc.estSaisie) bloc._points = -1;
+    }
+    unawaited(_lireLesNouveaux());
+  }
+
+  /// Relit une ligne : son écriture n'a pas changé, sa lecture peut changer.
+  void relire(BlocCalcul bloc) {
+    bloc._points = -1;
+    unawaited(_lireLesNouveaux());
+  }
+
   Future<void> _calculer(BlocCalcul bloc, {bool propager = true}) async {
     if (bloc.objet != null || bloc.courbeSeule) {
       bloc.etat = EtatBloc.fait;
@@ -591,11 +671,8 @@ class CalculFeuille extends ChangeNotifier {
     final Analyse analyse;
     final enDegres = degres();
     try {
-      analyse = analyserLatex(
-        bloc.latex ?? '',
-        degres: enDegres,
-        definitions: _definitionsPour(bloc),
-      );
+      analyse = _contextePour(bloc)
+          .analyser(bloc.latex ?? '', degres: enDegres);
     } on ErreurLatex {
       bloc.etat = EtatBloc.nonCompris;
       return;
@@ -603,7 +680,13 @@ class CalculFeuille extends ChangeNotifier {
     bloc
       ..type = analyse.type
       ..inconnues = analyse.inconnues
-      ..demandeResultat = analyse.demandeResultat;
+      ..demandeResultat = analyse.demandeResultat
+      ..aPlacer = _aPlacer(bloc);
+    if (analyse.nomValeur != null) {
+      bloc.etat = EtatBloc.fait;
+      if (propager) unawaited(_recalculerCeuxQuiUtilisent(bloc));
+      return;
+    }
     if (propager && analyse.nomFonction != null) {
       unawaited(_recalculerCeuxQuiUtilisent(bloc));
     }
@@ -641,7 +724,9 @@ class CalculFeuille extends ChangeNotifier {
         ..approche = reponse.approche.isEmpty || num.tryParse(exact) != null
             ? null
             : reponse.approche
-        ..inchange = sansEspaces(exact) == sansEspaces(analyse.giac)
+        ..inchange =
+            !analyse.demandeResultat &&
+            sansEspaces(exact) == sansEspaces(analyse.giac)
         ..etat = EtatBloc.fait;
     }
   }

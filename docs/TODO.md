@@ -13,7 +13,7 @@
 2. 🔄 **Meilleur modèle** : étude faite (`docs/recherche/modele-manuscrit.md`) : aucun modèle à remplacer tel quel. Choix d'Antsa : plusieurs lectures dans le doute (ADR 0028, fait, à mesurer sur le Pad 7), poids non commerciaux refusés. ⏳ Corpus de 200 lignes publiques en CC0, puis mesure.
 3. 🔄 **Deux espaces** : fusionné (ADR 0027), non publié. Reste : essai au stylet sur le Pad 7 et sur le Poco.
 4. 🔄 **Lien Feuille ↔ Figure** : Tracer et Placer vont au même endroit (fait). Reste : accrocher les constructions aux courbes ; un objet garde sa ligne d'origine.
-5. ⏳ **`a=2`** définit `a` ; `cercle(A;2)` et commandes géométriques depuis la Feuille.
+5. 🔄 **`a=2`** définit `a`, fait (ADR 0029). ⏳ `cercle(A;2)`, `droite(A;B)`, `milieu(A;B)` depuis la Feuille.
 6. 🔄 **Bouton Fond** sur la Feuille (demande d'Antsa), fait, à essayer.
 7. ⏳ **Essai réseau coupé sur le Pad 7** : manque pour 0.7.1 et 0.7.2 (mode avion à activer par Antsa).
 
@@ -21,6 +21,7 @@ Déjà livré ce jour : rature et stylet (0.6.1), lueur et trait ondulé (0.7.1)
 
 ## 0. Erreurs signalées
 
+- 🔄 2026-11-07 : `\vec{AB}`, `\|\vec{AB}\|` et `det` de matrices ne se comprennent pas (Antsa, Pad 7). Cause : le modèle perd ce qui sort d'une ligne, et la feuille ignorait ses points. Lecture par structures depuis les traits, signes isolés reconnus sur leur tracé, contexte de points et de valeurs (ADR 0029) ; tests dans `structure_test.dart` et `signes_test.dart`. Vu sur le Pad 7 avec les traits d'Antsa : `det` 2×2 et 3×3 (−1, 8, 364), `\vec{AB}`=[4,−6], `‖AB‖`=2√13 justes. Reste : d'autres mains, et un vecteur calculé écrit en caractères d'imprimerie se pose encore sous la ligne suivante.
 - 🔄 2026-11-07 : « rien ne va » sur le Pad 7 (Antsa) : `f` lu `1/4`, `f'` lu `f^1`, `g(x)` lu `g^((x))`, `5e^x` lu `50^x`, deux lignes lues dans une `matrix`, `S=∅` écrit sur la ligne suivante. Causes : lignes collées au regroupement, confusions du modèle jamais corrigées, placement aveugle du résultat. `_separerLignes`, `redresserLecture` (lectures réelles en tests), `dessousLibre` (ADR 0026). Deuxième essai d'Antsa : `f(x)`, `f'(x)=` et `f(x)=0` bien lus ; `A(1;2)` lu `A(1/2)` et `det` lu `\alpha+\binom`, corrigés. Reste : le vecteur et ces deux lignes au stylet.
 - ✅ 2026-11-05 : « Fikajiana keeps stopping » sur téléphone (essai.1). Cause : `SMARTPTR64` de Giac tronque les étiquettes de
   pointeurs arm64. Corrigé par `correctifs/0002`. Protection : essai obligatoire sur arm64 réel, l'émulateur ne le voit pas.

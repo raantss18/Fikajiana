@@ -1,4 +1,5 @@
 import 'package:fikajiana_math/src/analyse.dart';
+import 'package:fikajiana_math/src/objets.dart';
 import 'package:fikajiana_math/src/redressement.dart';
 
 /// Lettres qu'on rencontre tout le temps : les autres sont souvent mal lues.
@@ -9,7 +10,9 @@ const _lettresUsuelles = 'abcdefghknrstuvxyz';
 ///
 /// Ce score départage des lectures ; il ne dit pas qu'une lecture est juste.
 int plausibilite(String latex, {Set<String> fonctions = const {}}) {
-  final redresse = redresserLecture(latex, fonctions: fonctions);
+  final redresse = redresserLecture(latex, fonctions: fonctions)
+      // Un nom de vecteur ou de point n'étonne pas.
+      .replaceAll(RegExp(r'\\(?:overrightarrow|vec)\s*\{[^{}]*\}'), r'\pi');
   var score = 0;
   // Deux lignes lues comme une matrice : un `=` dans une cellule.
   final matrice = RegExp(
@@ -18,6 +21,7 @@ int plausibilite(String latex, {Set<String> fonctions = const {}}) {
   ).firstMatch(redresse);
   if (matrice != null && matrice[1]!.contains('=')) score -= 50;
 
+  if (lireObjet(redresse) != null) return score;
   final Analyse analyse;
   try {
     analyse = analyserLatex(

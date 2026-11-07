@@ -353,6 +353,10 @@ class _EcranFeuilleState extends State<EcranFeuille> {
                   _outilsOuverts = false;
                 }),
                 surChangement: _surEncre,
+                surRelire: () {
+                  setState(() => _outilsOuverts = false);
+                  _calcul.relireTout();
+                },
                 peutExporter: !_encre.estVide || _calcul.blocs.isNotEmpty,
                 surExporter: (format) => unawaited(
                   exporter(
@@ -430,6 +434,7 @@ class _Outils extends StatelessWidget {
     required this.surBasculer,
     required this.surGomme,
     required this.surChangement,
+    required this.surRelire,
     required this.peutExporter,
     required this.surExporter,
   });
@@ -444,6 +449,7 @@ class _Outils extends StatelessWidget {
   final VoidCallback surBasculer;
   final ValueChanged<bool> surGomme;
   final VoidCallback surChangement;
+  final VoidCallback surRelire;
 
   Offset _centre(BuildContext context) {
     final taille = MediaQuery.sizeOf(context);
@@ -493,6 +499,7 @@ class _Outils extends StatelessWidget {
         selected: gomme,
         onTap: () => surGomme(!gomme),
       ),
+      ligne(Icons.refresh, l10n.relireFeuille, surRelire),
       ligne(
         Icons.undo,
         l10n.annuler,

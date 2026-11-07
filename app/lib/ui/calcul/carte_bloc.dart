@@ -12,6 +12,7 @@ import 'package:fikajiana/ui/navigation/destination.dart';
 import 'package:fikajiana/ui/navigation/page_destination.dart';
 import 'package:fikajiana/ui/services.dart';
 import 'package:fikajiana/ui/theme/espacement.dart';
+import 'package:fikajiana_math/fikajiana_math.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
 
@@ -86,6 +87,8 @@ class RepereBloc extends StatelessWidget {
         await _corriger(context);
       case ChoixBloc.effacer:
         surEffacer();
+      case ChoixBloc.relire:
+        calcul.relire(bloc);
       case null:
         break;
     }
@@ -93,6 +96,79 @@ class RepereBloc extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final contenu = _contenu(context);
+    final objets = bloc.aPlacer;
+    if (bloc.lueParMorceaux && !enExport && bloc.etat == EtatBloc.fait) {
+      // Ce qui a été compris, à vérifier d'un coup d'œil : un chiffre mal lu
+      // fausserait le résultat sans le dire.
+      // Sous la ligne si le résultat va à droite, à droite s'il va dessous.
+      final ou = bloc.finitParEgal || !bloc.dessousLibre
+          ? bloc.cadre.bottomLeft * vue.zoom +
+                vue.decalage +
+                const Offset(0, AppEspacement.xxs)
+          : bloc.cadre.topRight * vue.zoom +
+                vue.decalage +
+                const Offset(AppEspacement.sm, 0);
+      return Positioned.fill(
+        child: Stack(
+          children: [
+            contenu,
+            Positioned(
+              left: ou.dx,
+              top: ou.dy,
+              child: TraverseEcriture(
+                child: InkWell(
+                  onTap: () => unawaited(_corriger(context)),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      minHeight: 48,
+                      maxWidth: 480,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(child: _Formule(latex: bloc.latex ?? '')),
+                        const Icon(Icons.edit_outlined, size: 18),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            if (objets.isNotEmpty)
+              Positioned(
+                left: bloc.cadre.right * vue.zoom + vue.decalage.dx + 8,
+                top: bloc.cadre.top * vue.zoom + vue.decalage.dy,
+                child: TraverseEcriture(
+                  child: _BoutonPlacer(objets: objets, surTouche: surTouche),
+                ),
+              ),
+          ],
+        ),
+      );
+    }
+    if (objets.isEmpty || enExport || bloc.etat != EtatBloc.fait) {
+      return contenu;
+    }
+    // Un vecteur calculé : son résultat, et de quoi le placer.
+    final haut = bloc.cadre.topRight * vue.zoom + vue.decalage;
+    return Positioned.fill(
+      child: Stack(
+        children: [
+          contenu,
+          Positioned(
+            left: haut.dx + AppEspacement.sm,
+            top: haut.dy,
+            child: TraverseEcriture(
+              child: _BoutonPlacer(objets: objets, surTouche: surTouche),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _contenu(BuildContext context) {
     final reglages = PorteeReglages.de(context);
     final virgule = Localizations.localeOf(context).languageCode == 'fr';
     final accent = Theme.of(context).colorScheme.tertiary;
@@ -301,6 +377,26 @@ class RepereBloc extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Place dans la Figure ce qu'une ligne a calculé : un vecteur et ses points.
+class _BoutonPlacer extends StatelessWidget {
+  const new({required this.objets, required this.surTouche});
+
+  final List<ObjetLu> objets;
+  final VoidCallback surTouche;
+
+  @override
+  Widget build(BuildContext context) => FilledButton.tonalIcon(
+    icon: const Icon(Icons.place_outlined),
+    label: Text(context.l10n.placerDansFigure),
+    onPressed: () {
+      surTouche();
+      final atelier = PorteeServices.de(context).atelier;
+      objets.forEach(atelier.placerObjet);
+      Navigator.of(context).push(RouteDestination(Destination.figure));
+    },
+  );
 }
 
 /// « Arrêter » n'apparaît que si le calcul dure : un calcul court ne montre

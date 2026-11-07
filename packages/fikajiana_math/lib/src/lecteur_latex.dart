@@ -41,7 +41,11 @@ class Terme {
     this.estMatrice = false,
     this.definitionDeFonction,
     this.fonctionDefinie = false,
+    this.composantes,
   });
+
+  /// Les coordonnées d'un vecteur, pour sa norme.
+  final (String, String)? composantes;
 
   /// Texte Giac.
   final String giac;
@@ -244,6 +248,8 @@ List<_Jeton> _decouper(String texte) {
         i += 2;
         if (suivant == r'\') {
           jetons.add(const _Jeton(_Genre.symbole, r'\\'));
+        } else if (suivant == '|') {
+          jetons.add(const _Jeton(_Genre.symbole, r'\|'));
         } else if (suivant == '{' || suivant == '}') {
           jetons.add(_Jeton(_Genre.symbole, '\\$suivant'));
         } else if (suivant == '%') {
@@ -346,11 +352,26 @@ List<_Jeton> _rassemblerNoms(List<_Jeton> jetons) {
 /// Lecteur à descente récursive d'un sous-ensemble du LaTeX mathématique.
 class LecteurLatex {
   /// Prépare la lecture de [latex].
-  new(String latex, {this.degres = false, this.definitions = const {}})
-    : _jetons = _decouper(latex);
+  new(
+    String latex, {
+    this.degres = false,
+    this.definitions = const {},
+    this.points = const {},
+    this.vecteurs = const {},
+    this.valeurs = const {},
+  }) : _jetons = _decouper(latex);
 
   /// Les fonctions déjà définies sur la feuille.
   final Map<String, DefinitionFonction> definitions;
+
+  /// Les points déclarés sur la feuille : `A(1;2)`.
+  final Map<String, (double, double)> points;
+
+  /// Les vecteurs déclarés sur la feuille : `\vec{u}(1;3)`.
+  final Map<String, (double, double)> vecteurs;
+
+  /// Les valeurs définies sur la feuille : `a=2`.
+  final Map<String, String> valeurs;
 
   /// Une écriture qui demande une réponse sans `=` : `f'(x)`, `det(…)`.
   bool demandeResultat = false;
@@ -739,6 +760,16 @@ class LecteurLatex {
           _attendre('}');
           return t;
         }
+        if (_prendre(r'\|')) {
+          final t = _somme();
+          _attendre(r'\|');
+          demandeResultat = true;
+          final c = t.composantes;
+          return Terme(
+            c == null ? 'abs(${t.giac})' : 'sqrt((${c.$1})^2+(${c.$2})^2)',
+            symboles: t.symboles,
+          );
+        }
         if (_prendre('|')) {
           final t = _somme();
           _attendre('|');
@@ -754,6 +785,47 @@ class LecteurLatex {
     }
   }
 
+  (double, double) _ecart(String a, String b) {
+    final (p, q) = (points[a]!, points[b]!);
+    return (q.$1 - p.$1, q.$2 - p.$2);
+  }
+
+  static String _nombre(double v) =>
+      v == v.roundToDouble() ? v.toInt().toString() : v.toString();
+
+  /// `\overrightarrow{AB}` ou `\vec{u}`, qu'on sait calculer si la feuille les
+  /// a déclarés.
+  Terme _vecteur() {
+    final nom = StringBuffer();
+    if (_prendre('{')) {
+      while (!_prendre('}')) {
+        if (_courant.genre != _Genre.lettre) {
+          throw const ErreurLatex('nom de vecteur');
+        }
+        nom.write(_courant.texte);
+        _i++;
+      }
+    } else if (_courant.genre == _Genre.lettre) {
+      nom.write(_courant.texte);
+      _i++;
+    }
+    final n = nom.toString();
+    final declare = vecteurs[n];
+    final (double, double) c;
+    if (declare != null) {
+      c = declare;
+    } else if (n.length == 2 &&
+        points.containsKey(n[0]) &&
+        points.containsKey(n[1])) {
+      c = _ecart(n[0], n[1]);
+    } else {
+      throw ErreurLatex('vecteur inconnu : $n');
+    }
+    demandeResultat = true;
+    final (x, y) = (_nombre(c.$1), _nombre(c.$2));
+    return Terme('[$x,$y]', composantes: (x, y));
+  }
+
   Terme _lettre() {
     final nom = _courant.texte;
     // Un l manuscrit se lit souvent I : `In(5)` veut dire ln(5).
@@ -762,6 +834,18 @@ class LecteurLatex {
       return _appel('ln');
     }
     _i++;
+    // `AB` entre deux points déclarés : leur distance.
+    final suivante = _courant;
+    if (points.containsKey(nom) &&
+        suivante.genre == _Genre.lettre &&
+        points.containsKey(suivante.texte) &&
+        !_voir(1).est('(')) {
+      _i++;
+      demandeResultat = true;
+      final (dx, dy) = _ecart(nom, suivante.texte);
+      return Terme('sqrt((${_nombre(dx)})^2+(${_nombre(dy)})^2)');
+    }
+    if (valeurs.containsKey(nom)) return Terme('(${valeurs[nom]})');
     if (_prendre('_')) {
       final indice = _borne();
       // `C_5^2` et `A_5^2`, la notation française, avec des nombres seulement.
@@ -885,6 +969,8 @@ class LecteurLatex {
         if (!_courant.commande('rceil')) throw const ErreurLatex(r'\rceil');
         _i++;
         return Terme('ceil(${t.giac})', symboles: t.symboles);
+      case 'overrightarrow' || 'vec':
+        return _vecteur();
       case 'sqrt':
         return _racine();
       case 'int':

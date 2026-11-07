@@ -361,5 +361,8 @@
     "placerDansFigure": "Placer dans la Figure",
     "blocAutresLectures": "Ou peut-être :",
     "blocChoisirLecture": "Choisir cette lecture",
-    "choisirFond": "Fond"
+    "choisirFond": "Fond",
+    "blocRelire": "Relire",
+    "saisieDefinir": "Définir {nom}",
+    "relireFeuille": "Relire la feuille"
 }

@@ -34,8 +34,8 @@ String _matriceEnBinome(String s) =>
       final (haut, bas) = (_nombres(m[1]!), _nombres(m[2]!));
       if (haut == null || bas == null) return m[0]!;
       if (haut.length != bas.length || haut.length < 2) return m[0]!;
-      return '\\begin{pmatrix}${haut.join('&')}\\\\${bas.join('&')}'
-          '\\end{pmatrix}';
+      final lignes = [haut.join('&'), bas.join('&')].join(r'\\');
+      return [r'\begin{pmatrix}', lignes, r'\end{pmatrix}'].join();
     });
 
 /// `det` écrit à la main, lu `\alpha +`, `d e t` ou `d e t`, devant une matrice.

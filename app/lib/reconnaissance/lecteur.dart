@@ -12,6 +12,9 @@ class ModeleAbsent implements Exception {
 abstract class Lecteur {
   Future<String> lire(List<Trait> traits);
 
+  /// Lit un petit morceau : une case de matrice, un nombre seul.
+  Future<String> lireCourt(List<Trait> traits) => lire(traits);
+
   /// Plusieurs lectures, la plus probable d'abord, pour une lecture douteuse.
   Future<List<String>> lirePlusieurs(List<Trait> traits) async => [
     await lire(traits),
@@ -32,6 +35,22 @@ class LecteurPix2Text extends Lecteur {
     }
     final pix2text = _ouvert ??= await Pix2Text.ouvrir(dossier);
     final image = await rasteriserTraits(traits);
+    if (image == null) return '';
+    try {
+      return (await pix2text.lire(await versTenseur(image))).latex;
+    } finally {
+      image.dispose();
+    }
+  }
+
+  @override
+  Future<String> lireCourt(List<Trait> traits) async {
+    final dossier = modele.dossier;
+    if (dossier == null || modele.etat != EtatModele.present) {
+      throw const ModeleAbsent();
+    }
+    final pix2text = _ouvert ??= await Pix2Text.ouvrir(dossier);
+    final image = await rasteriserTraits(traits, elargir: true);
     if (image == null) return '';
     try {
       return (await pix2text.lire(await versTenseur(image))).latex;
