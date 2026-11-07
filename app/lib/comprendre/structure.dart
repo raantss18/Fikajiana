@@ -16,9 +16,12 @@ sealed class Structure {
 
 /// `det (a b ; c d) =` : ce qui précède, les cases, ce qui suit.
 class StructureMatrice extends Structure {
-  const new(this.tete, this.cases, this.queue);
+  const new(this.tete, this.cases, this.queue, {this.exposant = const []});
   final List<Trait> tete;
   final List<List<List<Trait>>> cases;
+
+  /// Écrit en haut, juste après : `⁻¹` pour l'inverse.
+  final List<Trait> exposant;
   final List<Trait> queue;
 }
 
@@ -26,6 +29,15 @@ class StructureMatrice extends Structure {
 class StructureFleche extends Structure {
   const new(this.nom, this.queue);
   final List<Trait> nom;
+  final List<Trait> queue;
+}
+
+/// `A(8;-1)` : le nom, le premier nombre, le second, et ce qui suit.
+class StructurePoint extends Structure {
+  const new(this.nom, this.premier, this.second, this.queue);
+  final List<Trait> nom;
+  final List<Trait> premier;
+  final List<Trait> second;
   final List<Trait> queue;
 }
 
@@ -54,7 +66,7 @@ Structure? trouverStructure(List<Trait> traits) {
     return c.width >= 5 || c.height >= 5;
   }).toList();
   if (nets.length < 3) return null;
-  return _norme(nets) ?? _fleche(nets) ?? _matrice(nets);
+  return _norme(nets) ?? _fleche(nets) ?? _point(nets) ?? _matrice(nets);
 }
 
 /// Un trait sans ventre : une barre. `((` et `))` ne sont pas `‖` (vu sur
@@ -148,6 +160,81 @@ StructureFleche? _fleche(List<Trait> traits) {
   return null;
 }
 
+/// Une parenthèse : haute, étroite, le ventre d'un côté. `1` s'ouvre vers la
+/// droite pour `(`, vers la gauche pour `)`.
+int _parenthese(Trait t, double hauteur) {
+  final s = [for (final p in t.points) p.position];
+  if (s.length < 3) return 0;
+  final c = _c(t);
+  if (c.height < 0.5 * hauteur || c.width > 0.6 * c.height) return 0;
+  // Le ventre, pas le milieu des points : un trait commencé lentement a
+  // beaucoup de points en haut.
+  if (c.left < math.min(s.first.dx, s.last.dx) - 0.1 * c.height) return 1;
+  if (c.right > math.max(s.first.dx, s.last.dx) + 0.1 * c.height) return -1;
+  return 0;
+}
+
+/// `A(8;-1)` : une lettre, `(`, deux nombres séparés par `;` ou `,`, `)`.
+/// Le modèle y lit `A(8i-1)` ou `β(5,0)` (Pad 7) : le `;` se voit au trait
+/// qui descend sous les chiffres, et chaque nombre se lit comme une case.
+StructurePoint? _point(List<Trait> traits) {
+  final hauteur = cadreDuGroupe(traits).height;
+  final tries = traits.toList()
+    ..sort((a, b) => _c(a).left.compareTo(_c(b).left));
+  final ouvrante = tries.where((t) => _parenthese(t, hauteur) == 1).firstOrNull;
+  if (ouvrante == null) return null;
+  final fermante = tries
+      .where((t) => _parenthese(t, hauteur) == -1)
+      .where((t) => _c(t).left > _c(ouvrante).right)
+      // La dernière : un `5` a le ventre d'une `)` (Pad 7).
+      .lastOrNull;
+  if (fermante == null) return null;
+  final (o, f) = (_c(ouvrante), _c(fermante));
+  final nom = [
+    for (final t in tries)
+      if (_c(t).center.dx < o.left) t,
+  ];
+  // Un seul signe devant : une lettre, pas `f` de `f(2;3)` ni un mot.
+  if (nom.isEmpty || _glyphes(nom).length != 1) return null;
+  if (cadreDuGroupe(nom).height < 0.5 * o.height) return null;
+  final dedans = [
+    for (final t in tries)
+      if (!identical(t, ouvrante) &&
+          !identical(t, fermante) &&
+          _c(t).center.dx > o.right &&
+          _c(t).center.dx < f.left)
+        t,
+  ];
+  final queue = [
+    for (final t in tries)
+      if (_c(t).center.dx > f.right) t,
+  ];
+  if (dedans.length < 2) return null;
+  // Le séparateur : un signe étroit qui descend sous les chiffres.
+  final bas = _mediane(
+    dedans.map(_c).where((c) => !_plat(c)).map((c) => c.bottom),
+  );
+  final haut = _mediane(
+    dedans.map(_c).where((c) => !_plat(c)).map((c) => c.height),
+  );
+  final glyphes = _glyphes(dedans);
+  final separateurs = [
+    for (var i = 1; i < glyphes.length - 1; i++)
+      if (cadreDuGroupe(glyphes[i]).width <= 0.45 * haut &&
+          cadreDuGroupe(glyphes[i]).bottom > bas + 0.2 * haut &&
+          cadreDuGroupe(glyphes[i]).height <= 1.4 * haut)
+        i,
+  ];
+  if (separateurs.length != 1) return null;
+  final k = separateurs.single;
+  return StructurePoint(
+    nom,
+    [for (final g in glyphes.take(k)) ...g],
+    [for (final g in glyphes.skip(k + 1)) ...g],
+    queue,
+  );
+}
+
 /// Deux grands traits qui se font face, et des lignes de cases entre eux.
 StructureMatrice? _matrice(List<Trait> traits) {
   final haut = cadreDuGroupe(traits).height;
@@ -203,7 +290,17 @@ StructureMatrice? _matrice(List<Trait> traits) {
     if (l.length < colonnes) return null;
     cases.add(_fondre(l, colonnes));
   }
-  return StructureMatrice(tete, cases, queue);
+  // `⁻¹` écrit haut après la parenthèse : un exposant, pas `- 1` (Pad 7).
+  final haute =
+      math.min(cg.top, cd.top) + 0.35 * math.max(cg.height, cd.height);
+  final exposant = [
+    for (final t in queue)
+      if (_c(t).bottom < haute) t,
+  ];
+  return StructureMatrice(tete, cases, [
+    for (final t in queue)
+      if (!exposant.contains(t)) t,
+  ], exposant: exposant);
 }
 
 /// Les cases d'une ligne : un écart net les sépare. Un signe moins, plat, va
@@ -296,6 +393,20 @@ Future<String?> lireStructure(Lecteur lecteur, List<Trait> traits) async {
       final interieur = await morceau(dedans);
       if (interieur.isEmpty) return null;
       return '\\|$interieur\\|${await morceau(queue)}';
+    case StructurePoint(
+      :final nom,
+      :final premier,
+      :final second,
+      :final queue,
+    ):
+      final (lettre, ecart) = essayerCapitale(_dessin(nom));
+      final lu = ecart < 1.5
+          ? lettre
+          : _lettreLue(await lecteur.lireCourt(nom));
+      if (lu == null) return null;
+      final nombres = await _lireLigne(lecteur, [premier, second]);
+      if (nombres == null) return null;
+      return '$lu(${nombres.join(';')})${await morceau(queue)}';
     case StructureFleche(:final nom, :final queue):
       final lettres = [
         for (final g in _glyphes(nom)) reconnaitreCapitale(_dessin(g)),
@@ -307,7 +418,12 @@ Future<String?> lireStructure(Lecteur lecteur, List<Trait> traits) async {
           : (await morceau(nom)).replaceAll(RegExp(r'\s'), '');
       if (!RegExp(r'^[A-Za-z]{1,2}$').hasMatch(lu)) return null;
       return '\\overrightarrow{$lu}${await morceau(queue)}';
-    case StructureMatrice(:final tete, :final cases, :final queue):
+    case StructureMatrice(
+      :final tete,
+      :final cases,
+      :final queue,
+      :final exposant,
+    ):
       final lignes = <String>[];
       for (final ligne in cases) {
         final valeurs = await _lireLigne(lecteur, ligne);
@@ -317,10 +433,22 @@ Future<String?> lireStructure(Lecteur lecteur, List<Trait> traits) async {
       final matrice = '\\begin{pmatrix}${lignes.join(r'\\')}\\end{pmatrix}';
       // Le nom devant : jamais une structure, le `e` de `det` a une barre.
       final avant = tete.isEmpty ? '' : (await lecteur.lire(tete)).trim();
-      final apres = await morceau(queue);
+      final puissance = exposant.isEmpty
+          ? ''
+          : '^{${(await morceau(exposant)).replaceAll(' ', '')}}';
+      final apres = '$puissance${await morceau(queue)}';
       final nom = ressembleADet(avant) ? r'\det ' : avant;
       return '$nom$matrice$apres';
   }
+}
+
+/// Une capitale lue par le modèle : `β` est un `B` mal lu.
+String? _lettreLue(String lu) {
+  const proches = {r'\beta': 'B', r'\alpha': 'A', r'\Delta': 'A'};
+  final propre = lu.replaceAll(RegExp(r'[\s{}]'), '');
+  final proche = proches[propre];
+  if (proche != null) return proche;
+  return RegExp(r'^[A-Z]$').hasMatch(propre) ? propre : null;
 }
 
 Future<String> _lireMorceau(Lecteur lecteur, List<Trait> traits) async =>
@@ -399,12 +527,18 @@ Future<List<String>?> _lireLigne(
   if (parTrace.length == corps.length) return parTrace;
 
   final attendus = [for (final c in corps) _signes(c)];
-  final lu = await lecteur.lire([for (final c in corps) ...c]);
-  final signes = RegExp('[0-9a-zA-Z]')
-      .allMatches(lu.replaceAll(RegExp(r'\\[a-zA-Z]+'), ' '))
-      .map((m) => m[0]!)
-      .toList();
-  if (signes.length == attendus.fold(0, (s, n) => s + n)) {
+  final total = attendus.fold(0, (s, n) => s + n);
+  List<String> signesDe(String lu) =>
+      RegExp('[0-9a-zA-Z]')
+          .allMatches(lu.replaceAll(RegExp(r'\\[a-zA-Z]+'), ' '))
+          .map((m) => m[0]!)
+          .toList();
+  var signes = signesDe(await lecteur.lire([for (final c in corps) ...c]));
+  // Sans ses moins, `8 1` peut se lire `8` (Pad 7) ; avec eux, `8 - 1`.
+  if (signes.length != total && moins.any((m) => m.isNotEmpty)) {
+    signes = signesDe(await lecteur.lire([for (final k in ligne) ...k]));
+  }
+  if (signes.length == total) {
     final valeurs = <String>[];
     var k = 0;
     for (var i = 0; i < ligne.length; i++) {
@@ -414,6 +548,19 @@ Future<List<String>?> _lireLigne(
     }
     return valeurs;
   }
+  // Le tracé hésite, mais reste proche pour chaque signe : mieux qu'une
+  // case lue seule, que le modèle ne sait pas lire (`8` lu `\overbrace`).
+  final proches = <String>[];
+  for (var i = 0; i < corps.length; i++) {
+    final essais = [
+      for (final g in _glyphes(corps[i])) essayerChiffre(_dessin(g)),
+    ];
+    if (essais.isEmpty || essais.any((e) => e.$2 > 1.3)) break;
+    proches.add(
+      '${moins[i].isEmpty ? '' : '-'}${essais.map((e) => e.$1).join()}',
+    );
+  }
+  if (proches.length == corps.length) return proches;
   // Sinon, case par case, sur une image large.
   final valeurs = <String>[];
   for (final kase in ligne) {
@@ -447,4 +594,70 @@ Future<String> lireAuMieux(Lecteur lecteur, List<Trait> traits) async {
   final structuree = await lireStructure(lecteur, traits);
   if (structuree != null && plausibilite(structuree) > -50) return structuree;
   return await lecteur.lire(traits);
+}
+
+/// Les signes plats d'une ligne, de gauche à droite : `=` (deux traits
+/// plats l'un sur l'autre) ou `-`. Une barre de fraction, avec de l'encre
+/// dessus et dessous, n'en est pas un.
+List<String> signesPlats(List<Trait> traits) {
+  final cadres = traits.map(_c).toList();
+  // La barre d'un `t` ou d'un `7` est plate, mais croise un autre trait.
+  // Et un signe est fin : un mot cursif, `longueur`, est plat mais épais.
+  final ligne = cadreDuGroupe(traits).height;
+  final debout = cadres.where((c) => !_plat(c)).toList();
+  final plats = [
+    for (final c in cadres)
+      if (_plat(c) &&
+          c.width >= 6 &&
+          c.height <= 0.25 * ligne &&
+          !debout.any(c.deflate(1).overlaps))
+        c,
+  ]..sort((a, b) => a.left.compareTo(b.left));
+  bool barre(Rect p) {
+    bool dessus(Rect c) =>
+        c.center.dx > p.left && c.center.dx < p.right && c.bottom < p.top;
+    bool dessous(Rect c) =>
+        c.center.dx > p.left && c.center.dx < p.right && c.top > p.bottom;
+    final autres = cadres.where((c) => !identical(c, p)).toList();
+    return autres.any(dessus) && autres.any(dessous);
+  }
+
+  final signes = <String>[];
+  final pris = <Rect>{};
+  for (final p in plats) {
+    if (pris.contains(p) || barre(p)) continue;
+    final jumeau = plats
+        .where((q) => !identical(q, p) && !pris.contains(q))
+        .where((q) {
+          final commun = math.min(p.right, q.right) - math.max(p.left, q.left);
+          final ecart = (q.center.dy - p.center.dy).abs();
+          return commun > 0.5 * math.min(p.width, q.width) &&
+              ecart > 2 &&
+              ecart < 0.9 * math.max(p.width, q.width);
+        })
+        .firstOrNull;
+    if (jumeau != null) {
+      pris.addAll([p, jumeau]);
+      signes.add('=');
+    } else {
+      pris.add(p);
+      signes.add('-');
+    }
+  }
+  return signes;
+}
+
+/// `e^x = 7` lu `e^{x} - 7` (Pad 7) : le trait du dessus, arrondi, a échappé
+/// au modèle. Si les traits montrent un `=` que la lecture n'a pas, et un
+/// moins de trop à sa place, ce moins redevient `=`.
+String redresserEgal(List<Trait> traits, String latex) {
+  if (latex.contains('=')) return latex;
+  final signes = signesPlats(traits);
+  if (signes.where((s) => s == '=').length != 1) return latex;
+  final moins = RegExp(r'(?<!\\)-').allMatches(latex).toList();
+  final moinsTraces = signes.where((s) => s == '-').length;
+  if (moins.length != moinsTraces + 1) return latex;
+  final rang = signes.indexOf('=');
+  final m = moins[rang];
+  return latex.replaceRange(m.start, m.end, '=');
 }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:fikajiana/comprendre/blocs.dart';
@@ -89,6 +90,7 @@ class BlocCalcul {
       ..hauteurLigne = (json['hl'] as num?)?.toDouble()
       ..demandeResultat = json['dr'] as bool? ?? false
       ..lueParMorceaux = json['lm'] as bool? ?? false
+      ..note = json['note'] as String?
       .._points = json['points'] as int? ?? 0;
   }
 
@@ -154,6 +156,10 @@ class BlocCalcul {
   /// Lue par morceaux : ce qui a été compris se montre, un chiffre peut être
   /// faux et le résultat avec lui.
   bool lueParMorceaux = false;
+
+  /// Un mot écrit à côté d'une ligne, `longueur` : une note, pas un calcul
+  /// à signaler (Pad 7).
+  String? note;
 
   /// `cercle(A;2)`, `(AB)` : ce qu'il faut construire dans la Figure.
   CommandeGeo? commande;
@@ -318,6 +324,7 @@ class BlocCalcul {
     'hl': ?hauteurLigne,
     if (demandeResultat) 'dr': true,
     if (lueParMorceaux) 'lm': true,
+    'note': ?note,
   };
 }
 
@@ -545,12 +552,14 @@ class CalculFeuille extends ChangeNotifier {
       .._points = _compterPoints(traits)
       ..cadre = cadreDuGroupe(traits)
       ..etat = EtatBloc.lecture
+      ..note = null
       .._oublierResultat();
     notifyListeners();
     try {
       // Ce qui sort d'une seule ligne se lit par morceaux (ADR 0029).
       final structuree = await lireStructure(lecteur, traits);
-      var latex = structuree ?? await lecteur.lire(traits);
+      var latex =
+          structuree ?? redresserEgal(traits, await lecteur.lire(traits));
       if (bloc._version != version || !identical(_blocs[bloc.cle], bloc)) {
         return;
       }
@@ -606,7 +615,13 @@ class CalculFeuille extends ChangeNotifier {
     int version,
   ) async {
     final ecrit = separerMot(traits);
-    if (ecrit == null) return;
+    if (ecrit == null) {
+      _lireUnMotSeul(bloc, traits);
+      if (bloc.note == null && bloc.latex != null) {
+        await _calculer(bloc);
+      }
+      return;
+    }
     final classes = classerMots(ecrit.mot);
     final suite = (await lireAuMieux(lecteur, ecrit.suite)).trim();
     if (bloc._version != version || !identical(_blocs[bloc.cle], bloc)) return;
@@ -626,6 +641,67 @@ class CalculFeuille extends ChangeNotifier {
     await _calculer(bloc);
   }
 
+  /// `30×8` sans `=` : un calcul de nombres attend sa valeur (Antsa : « le =
+  /// oublié »). Un nombre seul, `8`, ou une lettre, non.
+  static bool _calculDeNombres(Analyse analyse) {
+    if (analyse.type != TypeExpression.calcul || analyse.nomValeur != null) {
+      return false;
+    }
+    final giac = analyse.giac;
+    if (giac.contains('==') || RegExp('[<>]').hasMatch(giac)) return false;
+    final sansFonctions = giac.replaceAll(
+      RegExp(
+        r'\b(sqrt|sin|cos|tan|asin|acos|atan|ln|log10|exp|abs|floor|ceil|'
+        r'comb|gcd|lcm|round|pi|normal|simplify)\b',
+      ),
+      '',
+    );
+    if (RegExp('[a-zA-Z]').hasMatch(sansFonctions)) return false;
+    return RegExp('[-+*/^(]')
+        .hasMatch(giac.replaceFirst(RegExp(r'^\(?-'), ''));
+  }
+
+  /// `⇒ plot` à côté de `f'(x)=2x-2` : la ligne d'à côté se trace ; un mot
+  /// comme `longueur` reste une note (Pad 7, ADR 0031).
+  void _lireUnMotSeul(BlocCalcul bloc, List<Trait> traits) {
+    final mot = reconnaitreMotSeul(traits);
+    if (mot == null) return;
+    final courbe = motsTracer.contains(mot) ? _courbeAGauche(bloc) : null;
+    if (courbe != null) {
+      bloc
+        ..latex = courbe
+        ..lueParMorceaux = true;
+      return;
+    }
+    bloc
+      ..note = mot
+      ..latex = '\\text{$mot}'
+      ..etat = EtatBloc.fait;
+  }
+
+  /// La courbe de la ligne écrite juste à gauche, sur la même ligne :
+  /// sa définition, ou `y=` son résultat en x.
+  String? _courbeAGauche(BlocCalcul bloc) {
+    final ici = bloc.cadre;
+    BlocCalcul? voisin;
+    for (final autre in _blocs.values) {
+      if (identical(autre, bloc) || autre.estSaisie) continue;
+      final c = autre.cadre;
+      final commun = math.min(c.bottom, ici.bottom) - math.max(c.top, ici.top);
+      if (commun < 0.4 * math.min(c.height, ici.height)) continue;
+      if (c.left >= ici.left) continue;
+      if (voisin == null || c.right > voisin.cadre.right) voisin = autre;
+    }
+    if (voisin == null) return null;
+    if (voisin.seTrace) return voisin.latex;
+    final resultat = voisin.resultat;
+    if (resultat == null || voisin.estResolution) return null;
+    if (!RegExp(r'(?<![a-zA-Z\\])x(?![a-zA-Z])').hasMatch(resultat)) {
+      return null;
+    }
+    return 'y=$resultat';
+  }
+
   /// `1/3` écrit en ligne : les traits se rangent en fraction, et s'annulent.
   String _redresser(BlocCalcul bloc, String latex) {
     final traits = _traitsDe(bloc);
@@ -640,6 +716,7 @@ class CalculFeuille extends ChangeNotifier {
   /// Toute lecture reste corrigeable : le calcul repart du texte corrigé.
   Future<void> corriger(BlocCalcul bloc, String latex) async {
     bloc
+      ..note = null
       ..latex = latex
       .._oublierResultat();
     await _calculer(bloc);
@@ -795,6 +872,10 @@ class CalculFeuille extends ChangeNotifier {
         ..etat = EtatBloc.fait;
       return;
     }
+    if (bloc.note != null) {
+      bloc.etat = EtatBloc.fait;
+      return;
+    }
     if (bloc.objet != null || bloc.courbeSeule) {
       bloc.etat = EtatBloc.fait;
       return;
@@ -811,7 +892,7 @@ class CalculFeuille extends ChangeNotifier {
     bloc
       ..type = analyse.type
       ..inconnues = analyse.inconnues
-      ..demandeResultat = analyse.demandeResultat
+      ..demandeResultat = analyse.demandeResultat || _calculDeNombres(analyse)
       ..aPlacer = _aPlacer(bloc);
     if (analyse.nomValeur != null) {
       bloc.etat = EtatBloc.fait;

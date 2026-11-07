@@ -35,7 +35,7 @@ class _Lecteur extends Lecteur {
   @override
   Future<List<String>> lirePlusieurs(List<Trait> traits) async {
     doutes++;
-    return plusieurs.isEmpty ? [reponse] : plusieurs;
+    return plusieurs.isEmpty ? [selon?.call(traits) ?? reponse] : plusieurs;
   }
 }
 
@@ -299,10 +299,17 @@ void main() {
       expect(abregerApproche('1e+20'), '1e+20');
     });
 
-    test('une expression sans = n’affiche rien', () async {
+    // Antsa : « rajoute = si l'utilisateur a oublié ». Un calcul de nombres
+    // donne sa valeur ; une expression en x, rien : on ne sait ce qu'on veut.
+    test('2+3 sans = donne « = 5 » ; x+3 sans = n’affiche rien', () async {
       lecteur.reponse = '2+3';
       _trait(encre, 0, 0);
       calcul.encreChangee();
+      await _attendre();
+      expect(calcul.blocs.single.montreResultat, isTrue);
+      expect(calcul.blocs.single.egalAjoute, isTrue);
+      lecteur.reponse = 'x+3';
+      calcul.relire(calcul.blocs.single);
       await _attendre();
       expect(calcul.blocs.single.montreResultat, isFalse);
     });
@@ -735,6 +742,78 @@ void main() {
       expect(b.latex, isNot(contains(r'\|')));
       expect(moteur.entrees.last, startsWith('expand('));
       expect(b.egalAjoute, isTrue);
+    });
+  });
+
+  group('la feuille d’Antsa du 7 novembre, relue juste', () {
+    List<Trait> charger(String nom) => [
+      for (final t in jsonDecode(
+        File('test/fixtures/pad7/$nom.json').readAsStringSync(),
+      ) as List<dynamic>)
+        Trait.depuisDocument(t as Map<String, dynamic>),
+    ];
+
+    /// Ajoute les traits d'une ligne, avec ce que le modèle en a lu.
+    Future<BlocCalcul> ecrire(String nom, String lu) async {
+      final traits = charger(nom);
+      final ids = {for (final t in traits) t.id};
+      final avant = lecteur.selon;
+      lecteur.selon = (lus) =>
+          lus.every((t) => ids.contains(t.id)) ? lu : avant?.call(lus);
+      encre.chargerDocument([
+        for (final t in encre.traits) t.versDocument(),
+        for (final t in traits) t.versDocument(),
+      ]);
+      calcul.encreChangee();
+      await _attendre();
+      return calcul.blocs.firstWhere((b) => b.traits.contains(traits.first.id));
+    }
+
+    test('30×8 sans = : « = 240 » s’écrit', () async {
+      moteur.reponse = const ReponseGiac(
+        exact: '240',
+        latex: '240',
+        approche: '240.0',
+      );
+      final b = await ecrire('trente_fois_8', r'3 0 \times 8');
+      expect(b.montreResultat, isTrue);
+      expect(b.egalAjoute, isTrue);
+    });
+
+    test('A(8;-1) et B(5;8) se lisent, puis AB est leur distance', () async {
+      final a = await ecrire('point_A', 'A ( 8 i - 1 )');
+      final b = await ecrire('point_B', r'\beta ( 5 , 0 )');
+      expect(a.latex, 'A(8;-1)');
+      expect(b.latex, 'B(5;8)');
+      final ab = await ecrire('AB_egal', 'A B =');
+      expect(ab.etat, EtatBloc.fait);
+      // √((5-8)² + (8+1)²) = √90, pas A·B.
+      expect(moteur.entrees.last, contains('sqrt'));
+    });
+
+    test('e^x = 7 lu « e^x - 7 » : se résout', () async {
+      final b = await ecrire('e_x_egal_7', 'e ^ { x } - 7');
+      expect(b.latex, contains('='));
+      expect(b.estResolution, isTrue);
+    });
+
+    test('« longueur » à côté : une note, pas une erreur', () async {
+      final b = await ecrire('longueur', r'\log _ { \theta _ { 0 } } \tan');
+      expect(b.note, 'longueur');
+      expect(b.etat, EtatBloc.fait);
+    });
+
+    test('« ⇒ plot » à côté de f’(x) = : la dérivée se trace', () async {
+      await calcul.saisir('f(x)=x^2-2x+7', const Offset(0, -2000));
+      moteur.reponse = const ReponseGiac(
+        exact: r'2\cdot x-2',
+        latex: r'2\cdot x-2',
+        approche: '2*x-2',
+      );
+      await ecrire('derivee_f', "f'( x ) =");
+      final plot = await ecrire('fleche_plot', r'\ni p ^ { 1 0 + }');
+      expect(plot.latex, startsWith('y=2'));
+      expect(plot.seTrace, isTrue);
     });
   });
 
