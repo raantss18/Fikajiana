@@ -52,7 +52,8 @@ class Analyse {
   /// Les deux membres d'une équation, traduits pour Giac.
   final (String, String)? membres;
 
-  /// `a` pour `a=2` : sa valeur est [giac], à retenir pour les lignes suivantes.
+  /// `a` pour `a=2` : sa valeur est [giac], à retenir pour les lignes
+  /// suivantes.
   final String? nomValeur;
 
   /// `f` pour `f(x)=x^2`, à retenir pour les lignes suivantes.

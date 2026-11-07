@@ -125,6 +125,14 @@ Future<void> main() async {
         definitions: avant == null
             ? const {}
             : {avant.nomFonction!: avant.definition!},
+        vecteurs: {
+          for (final MapEntry(:key, :value)
+              in (cas['vec'] as Map<String, dynamic>? ?? const {}).entries)
+            key: (
+              ((value as List<dynamic>)[0] as num).toDouble(),
+              (value[1] as num).toDouble(),
+            ),
+        },
       );
       final reponse = await moteur.calculer(analyse.giac);
       ecart = reponse.arrete

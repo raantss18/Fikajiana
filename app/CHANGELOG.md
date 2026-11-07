@@ -4,6 +4,9 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Le `=` oublié s'écrit tout seul : `f'(x)` ou `det(…)` donne « = … » à droite, et un résultat ne se pose plus sur une autre écriture. / A forgotten `=` is written for you: `f'(x)` or `det(…)` gives “= …” on the right, and a result no longer lands on other writing.
+- Nouvelles commandes, à la main ou au clavier : `développer`, `factoriser`, `simplifier`, `décomposer`, `premier`, `moyenne`, `médiane`, `variance`, `écart-type`, `arrondi(x;n)`, `pgcd`, `discriminant`, `tangente(f;a)` et le produit scalaire de deux vecteurs. / New commands, handwritten or typed: expand, factor, simplify, prime factors, primality, mean, median, variance, standard deviation, rounding, gcd, discriminant, tangent `tangente(f;a)` and the dot product of two vectors.
+
 - Construire depuis la Feuille : `cercle(A;2)`, `cercle(A;B)`, `(AB)`, `[AB]`, `[AB)`, `I=milieu(A;B)`, `médiatrice(A;B)` se placent dans la Figure d'un toucher. / Build from the sheet: `cercle(A;2)`, `cercle(A;B)`, `(AB)`, `[AB]`, `[AB)`, `I=milieu(A;B)`, `médiatrice(A;B)` are placed in the Figure with one tap.
 
 - Les matrices, les flèches de vecteur et les normes se lisent à partir de vos traits, case par case : `det` d'une matrice 3×3 écrite à la main se calcule. / Matrices, vector arrows and norms are read from your strokes, cell by cell: the `det` of a handwritten 3×3 matrix is calculated.

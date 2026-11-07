@@ -15,7 +15,9 @@
 4. 🔄 **Lien Feuille ↔ Figure** : Tracer et Placer vont au même endroit (fait). Reste : accrocher les constructions aux courbes ; un objet garde sa ligne d'origine.
 5. 🔄 **`a=2`** définit `a`, fait (ADR 0029). 🔄 `cercle(A;2)`, `(AB)`, `[AB]`, `I=milieu(A;B)`, `médiatrice(A;B)` depuis la Feuille, faits ; à essayer au stylet. ⏳ parallèle et perpendiculaire.
 6. 🔄 **Bouton Fond** sur la Feuille (demande d'Antsa), fait, à essayer.
-7. ⏳ **Essai réseau coupé sur le Pad 7** : manque pour 0.7.1 et 0.7.2 (mode avion à activer par Antsa).
+7. 🔄 **`=` oublié et fonctions de maths** (demande d'Antsa) : le `=` s'écrit devant `f'(x)`, `det`… ; un résultat cherche une place libre (ADR 0030). `développer`, `factoriser`, `simplifier`, `décomposer`, `premier`, `moyenne`, `médiane`, `variance`, `écart-type`, `arrondi`, `pgcd`, `discriminant`, `tangente(f;a)`, produit scalaire : banc sur le Pad 7. ⏳ parallèle et perpendiculaire depuis la Feuille ; essai au stylet.
+8. ⏳ **Feuille toute manuscrite** (demande d'Antsa, 2026-11-07) : sur la Feuille, les boutons (Placer dans la Figure, Tracer…) s'écrivent à la main, comme les résultats, et le petit stylo Corriger reste toujours là. Garder les cibles de 48 dp, le contraste AA et le nom lu par TalkBack (règle 9).
+9. ⏳ **Essai réseau coupé sur le Pad 7** : manque pour 0.7.1 et 0.7.2 (mode avion à activer par Antsa).
 
 Déjà livré ce jour : rature et stylet (0.6.1), lueur et trait ondulé (0.7.1), main qui défile (0.7.2). Fusionné, pas encore publié : saisie naturelle, mémoire de la feuille, `det`, points et vecteurs, calcul formel de la PR 29 (0.8.0).
 

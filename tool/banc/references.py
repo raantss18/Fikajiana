@@ -251,6 +251,35 @@ for latex, recurrence, depart in [
 ]:
     fonction_en("suites", latex, sp.rsolve(recurrence, u(n), depart), n, [2, 5])
 
+# Commandes de calcul en toutes lettres (développer, statistiques…)
+fonction("commandes", r"\operatorname{developper}\left((x+1)^{2}\right)", sp.expand((x + 1)**2))
+fonction("commandes", r"\mathrm{factoriser}(x^{2}-1)", sp.factor(x**2 - 1))
+fonction("commandes", r"simplifier(\frac{x^{2}-1}{x-1})", sp.simplify((x**2 - 1) / (x - 1)))
+valeur("commandes", "decomposer(360)", 360)
+verite("commandes", "premier(97)", sp.isprime(97))
+verite("commandes", "premier(91)", sp.isprime(91))
+valeur("commandes", "moyenne(2;4;9)", R(2 + 4 + 9, 3))
+valeur("commandes", "moyenne(2,4,9)", R(2 + 4 + 9, 3))
+valeur("commandes", r"\operatorname{mediane}(3;1;2)", 2)
+valeur("commandes", "mediane(1;2;3;4)", R(5, 2))
+# Variance de la population : division par n, comme au lycée.
+liste = [1, 2, 3, 4]
+moy = R(sum(liste), len(liste))
+valeur("commandes", "variance(1;2;3;4)", sum((v - moy)**2 for v in liste) / len(liste))
+valeur("commandes", r"\operatorname{ecarttype}(2;4)", 1)
+valeur("commandes", "arrondi(3{,}14159;2)", R(314, 100))
+valeur("commandes", r"arrondi(\frac{2}{3};2)", R(67, 100))
+valeur("commandes", "discriminant(x^{2}-3x+2)", (-3)**2 - 4 * 1 * 2)
+valeur("commandes", "discriminant(2x^{2}+x+5)", 1**2 - 4 * 2 * 5)
+valeur("commandes", r"\operatorname{pgcd}(12;18)", sp.gcd(12, 18))
+AVANT = len(cas)
+F = x**2 + 1
+fonction("commandes", "tangente(f;2)", F.subs(x, 2) + sp.diff(F, x).subs(x, 2) * (x - 2))
+for c in cas[AVANT:]:
+    c["d"] = "f(x)=x^2+1"
+cas.append({"f": "commandes", "l": r"\vec{u}\cdot\vec{v}", "g": "valeur",
+            "vec": {"u": [1, 2], "v": [3, -4]}, "a": nombre(1 * 3 + 2 * -4)})
+
 # Vrai ou faux
 verite("verite", "2+2=5", False)
 verite("verite", r"\frac{1}{2}+\frac{1}{3}=\frac{5}{6}", True)
