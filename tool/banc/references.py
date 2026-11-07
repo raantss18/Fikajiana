@@ -280,6 +280,19 @@ for c in cas[AVANT:]:
 cas.append({"f": "commandes", "l": r"\vec{u}\cdot\vec{v}", "g": "valeur",
             "vec": {"u": [1, 2], "v": [3, -4]}, "a": nombre(1 * 3 + 2 * -4)})
 
+# Matrices déclarées sur la feuille (demande d'Antsa) : det(A), A⁻¹, AX=B.
+M = Matrix([[1, 2], [3, 4]])
+V = Matrix([5, 6])
+AVANT = len(cas)
+valeur("matrices nommées", r"\det(A)", M.det())
+valeur("matrices nommées", r"\det(A)=", M.det())
+matrice("matrices nommées", "A^{-1}=", list(M.inv()))
+matrice("matrices nommées", "AB=", list(M * V))
+matrice("matrices nommées", "AX=B", list(M.inv() * V))
+matrice("matrices nommées", r"A\cdot X=B", list(M.inv() * V))
+for c in cas[AVANT:]:
+    c["vals"] = [r"A=\begin{pmatrix}1&2\\3&4\end{pmatrix}", r"B=\begin{pmatrix}5\\6\end{pmatrix}"]
+
 # Vrai ou faux
 verite("verite", "2+2=5", False)
 verite("verite", r"\frac{1}{2}+\frac{1}{3}=\frac{5}{6}", True)

@@ -4,6 +4,8 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Une matrice se déclare sur la Feuille (`A=[1,2;3,4]` ou à la main), puis `det(A)`, `A^{-1}`, `AB`, et `AX=B` donne X. / A matrix can be declared on the Sheet (`A=[1,2;3,4]` or by hand), then `det(A)`, `A^{-1}`, `AB`, and `AX=B` gives X.
+
 ## [1.0.0] — 2026-11-07
 
 ### Message fr

@@ -817,6 +817,36 @@ void main() {
     });
   });
 
+  // Demande d'Antsa : déclarer A, puis det(A), A^{-1}, AX=B plus bas.
+  group('une matrice déclarée sur la feuille', () {
+    Future<BlocCalcul> taper(String latex, double y) async {
+      await calcul.saisir(latex, Offset(0, y));
+      return calcul.blocs.last;
+    }
+
+    test('det(A), A^{-1} et AX=B se servent de A et B', () async {
+      await taper(r'A=\begin{pmatrix}1&2\\3&4\end{pmatrix}', 0);
+      await taper(r'B=\begin{pmatrix}5\\6\end{pmatrix}', 100);
+      await taper(r'\det(A)', 200);
+      expect(moteur.entrees.last, 'det(([[1,2],[3,4]]))');
+      await taper('A^{-1}', 300);
+      expect(moteur.entrees.last, '(([[1,2],[3,4]]))^((-1))');
+      moteur.reponse = const ReponseGiac(
+        exact: r'\left(\begin{array}{c}-4 \\ \frac{9}{2}\end{array}\right)',
+        latex: '',
+        approche: '',
+      );
+      final x = await taper('AX=B', 400);
+      expect(moteur.entrees.last, 'inv([[1,2],[3,4]])*([[5],[6]])');
+      expect(x.inconnueMatrice, 'X');
+      expect(x.estResolution, isTrue);
+      expect(x.texte(approcheVoulue: false, virgule: true), startsWith('X='));
+      // Et X sert ensuite.
+      await taper('X^{2}', 500);
+      expect(moteur.entrees.last, contains('inv([[1,2],[3,4]])'));
+    });
+  });
+
   group('une lecture douteuse en demande d’autres', () {
     Future<BlocCalcul> ecrire() async {
       _trait(encre, 0, 0);

@@ -90,6 +90,7 @@ class BlocCalcul {
       ..hauteurLigne = (json['hl'] as num?)?.toDouble()
       ..demandeResultat = json['dr'] as bool? ?? false
       ..lueParMorceaux = json['lm'] as bool? ?? false
+      ..inconnueMatrice = json['im'] as String?
       ..note = json['note'] as String?
       .._points = json['points'] as int? ?? 0;
   }
@@ -173,6 +174,9 @@ class BlocCalcul {
   /// `f'(x)` ou `det(…)` : la réponse s'affiche même sans `=`.
   bool demandeResultat = false;
 
+  /// `X` pour `AX=B` : la réponse s'écrit `X = …`, comme une résolution.
+  String? inconnueMatrice;
+
   /// La feuille propose de la tracer.
   bool get seTrace => courbeSeule || type == TypeExpression.fonction;
 
@@ -200,6 +204,7 @@ class BlocCalcul {
 
   /// Une équation ou un système : le résultat n'est pas une valeur à égaler.
   bool get estResolution =>
+      inconnueMatrice != null ||
       type == TypeExpression.equation ||
       type == TypeExpression.systeme ||
       type == TypeExpression.suite;
@@ -211,7 +216,10 @@ class BlocCalcul {
     final longue = exact != null && RegExp(r'\d\.\d{9}').hasMatch(exact);
     final choisie = approcheVoulue || inchange || longue ? approche : null;
     final String? valeur;
-    if (estResolution) {
+    final matrice = inconnueMatrice;
+    if (matrice != null) {
+      valeur = exact == null ? null : '$matrice=$exact';
+    } else if (estResolution) {
       final brut = choisie == null ? exact : _ensembleApproche(choisie);
       valeur = brut == null
           ? null
@@ -353,6 +361,7 @@ class BlocCalcul {
     'hl': ?hauteurLigne,
     if (demandeResultat) 'dr': true,
     if (lueParMorceaux) 'lm': true,
+    'im': ?inconnueMatrice,
     'note': ?note,
   };
 }
@@ -872,6 +881,9 @@ class CalculFeuille extends ChangeNotifier {
         }
         final valeur = a.nomValeur;
         if (valeur != null) contexte.valeurs[valeur] = a.giac;
+        // `AX=B` résolu : X sert aux lignes suivantes.
+        final inconnue = a.inconnueMatrice;
+        if (inconnue != null) contexte.valeurs[inconnue] = '(${a.giac})';
       } on ErreurLatex {
         continue;
       }
@@ -977,6 +989,7 @@ class CalculFeuille extends ChangeNotifier {
       ..type = analyse.type
       ..inconnues = analyse.inconnues
       ..demandeResultat = analyse.demandeResultat || _calculDeNombres(analyse)
+      ..inconnueMatrice = analyse.inconnueMatrice
       ..aPlacer = _aPlacer(bloc);
     if (analyse.nomValeur != null) {
       bloc.etat = EtatBloc.fait;

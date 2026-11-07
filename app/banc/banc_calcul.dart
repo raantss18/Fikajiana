@@ -120,8 +120,18 @@ Future<void> main() async {
     try {
       final definition = cas['d'] as String?;
       final avant = definition == null ? null : analyserLatex(definition);
+      // Les valeurs déclarées plus haut sur la feuille : `A = (…)`.
+      final valeurs = {
+        for (final v in (cas['vals'] as List<dynamic>? ?? const []))
+          if (analyserLatex(v as String) case Analyse(
+            :final nomValeur?,
+            :final giac,
+          ))
+            nomValeur: giac,
+      };
       final analyse = analyserLatex(
         latex,
+        valeurs: valeurs,
         definitions: avant == null
             ? const {}
             : {avant.nomFonction!: avant.definition!},
