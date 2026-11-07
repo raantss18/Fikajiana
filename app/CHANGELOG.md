@@ -4,6 +4,18 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+## [1.0.2] — 2026-11-07
+
+### Message fr
+
+L'écriture se lit mieux sur téléphone : un « 1 » qui monte de tout en bas, les grandes parenthèses d'un point comme A(1;-1), et une barre de fraction ajoutée sous un calcul. Une lecture douteuse ne remplace plus votre écriture.
+
+### Message en
+
+Handwriting is read better on phones: a "1" that starts from the very bottom, the tall parentheses of a point such as A(1;-1), and a fraction bar added under a calculation. A doubtful reading no longer replaces your handwriting.
+
+### Changements
+
 - Mieux lu à la main : un `1` qui monte de tout en bas, les grandes parenthèses peu bombées, un `;` au point détaché ; une barre et un dénominateur ajoutés sous un calcul le prolongent. / Better read by hand: a `1` that starts from the very bottom, tall flat parentheses, a `;` with a detached dot; a bar and a denominator added under a calculation extend it.
 - Une lecture douteuse ne remplace plus l'écriture au propre. / A doubtful reading no longer replaces the handwriting with a neat version.
 ## [1.0.1] — 2026-11-07
