@@ -4,6 +4,18 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+## [1.0.4] — 2026-11-07
+
+### Message fr
+
+Un Guide, dans le Menu, montre tout ce que l'app sait faire, avec une recherche et un bouton « Essayer ». Une somme Σ ou une limite écrites avec leurs bornes se lisent en entier et se calculent, et un « 9 » pris pour un « g » redevient un 9.
+
+### Message en
+
+A Guide, in the Menu, shows everything the app can do, with a search and a "Try" button. A Σ sum or a limit written with their bounds are read in full and computed, and a "9" taken for a "g" becomes a 9 again.
+
+### Changements
+
 - Un Guide, dans le Menu, présente tout ce que l'app sait faire, avec une recherche ; « Essayer » pose l'exemple sur la Feuille ou ouvre la Figure avec l'outil. / A Guide, in the Menu, shows everything the app can do, with a search; “Try” puts the example on the Sheet or opens the Figure with the tool.
 - Une somme Σ écrite avec ses bornes (`5` dessus, `n = 0` dessous) se lit et se calcule. / A Σ sum written with its bounds (`5` above, `n = 0` below) is read and computed.
 - « Relire la feuille » regroupe ce qui n'avait rien donné, sans toucher aux lignes corrigées. / "Read the sheet again" regroups what gave nothing, leaving corrected lines alone.
