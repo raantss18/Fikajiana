@@ -4,6 +4,11 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Les résultats s'écrivent dans une écriture manuscrite plus belle (police Caveat, SIL OFL). / Results are written in a nicer handwriting (Caveat font, SIL OFL).
+- Une valeur approchée s'écrit avec `≈`, et le résultat arrive plus vite dès qu'on trace le `=`. / An approximate value is written with `≈`, and the result comes faster as soon as the `=` is drawn.
+- `B=[5;6]` déclare B sans rien placer dans la Figure, et les matrices s'écrivent à la taille de la ligne. / `B=[5;6]` declares B without placing anything in the Figure, and matrices are written at line size.
+- Une matrice se déclare sur la Feuille (`A=[1,2;3,4]` ou à la main), puis `det(A)`, `A^{-1}`, `AB`, et `AX=B` donne X. / A matrix can be declared on the Sheet (`A=[1,2;3,4]` or by hand), then `det(A)`, `A^{-1}`, `AB`, and `AX=B` gives X.
+
 ## [1.0.0] — 2026-11-07
 
 ### Message fr

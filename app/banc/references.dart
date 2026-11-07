@@ -1556,6 +1556,90 @@ const String referencesJson = r'''
 ]
 },
 {
+"f": "matrices nommées",
+"l": "\\det(A)",
+"g": "valeur",
+"a": [
+-2.0,
+0.0
+],
+"vals": [
+"A=\\begin{pmatrix}1&2\\\\3&4\\end{pmatrix}",
+"B=\\begin{pmatrix}5\\\\6\\end{pmatrix}"
+]
+},
+{
+"f": "matrices nommées",
+"l": "\\det(A)=",
+"g": "valeur",
+"a": [
+-2.0,
+0.0
+],
+"vals": [
+"A=\\begin{pmatrix}1&2\\\\3&4\\end{pmatrix}",
+"B=\\begin{pmatrix}5\\\\6\\end{pmatrix}"
+]
+},
+{
+"f": "matrices nommées",
+"l": "A^{-1}=",
+"g": "liste",
+"ordre": true,
+"a": [
+-2.0,
+1.0,
+1.5,
+-0.5
+],
+"vals": [
+"A=\\begin{pmatrix}1&2\\\\3&4\\end{pmatrix}",
+"B=\\begin{pmatrix}5\\\\6\\end{pmatrix}"
+]
+},
+{
+"f": "matrices nommées",
+"l": "AB=",
+"g": "liste",
+"ordre": true,
+"a": [
+17.0,
+39.0
+],
+"vals": [
+"A=\\begin{pmatrix}1&2\\\\3&4\\end{pmatrix}",
+"B=\\begin{pmatrix}5\\\\6\\end{pmatrix}"
+]
+},
+{
+"f": "matrices nommées",
+"l": "AX=B",
+"g": "liste",
+"ordre": true,
+"a": [
+-4.0,
+4.5
+],
+"vals": [
+"A=\\begin{pmatrix}1&2\\\\3&4\\end{pmatrix}",
+"B=\\begin{pmatrix}5\\\\6\\end{pmatrix}"
+]
+},
+{
+"f": "matrices nommées",
+"l": "A\\cdot X=B",
+"g": "liste",
+"ordre": true,
+"a": [
+-4.0,
+4.5
+],
+"vals": [
+"A=\\begin{pmatrix}1&2\\\\3&4\\end{pmatrix}",
+"B=\\begin{pmatrix}5\\\\6\\end{pmatrix}"
+]
+},
+{
 "f": "verite",
 "l": "2+2=5",
 "g": "verite",

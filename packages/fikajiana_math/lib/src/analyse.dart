@@ -34,7 +34,12 @@ class Analyse {
     this.nomFonction,
     this.nomValeur,
     this.demandeResultat = false,
+    this.inconnueMatrice,
   });
+
+  /// `X` pour `AX=B` : l'inconnue d'une équation matricielle, que [giac]
+  /// calcule directement (`A^{-1}B`). Le résultat s'écrit `X = …`.
+  final String? inconnueMatrice;
 
   /// Type deviné.
   final TypeExpression type;
@@ -233,6 +238,12 @@ Analyse analyserLatex(
       'normal((${expression.gauche.giac})-(${droite.giac}))==0',
     );
   }
+  final matricielle = _equationMatricielle(
+    expression.gauche.giac,
+    droite.giac,
+    vecteurs,
+  );
+  if (matricielle != null) return matricielle;
   final variable = _ordonner(symboles).first;
   return Analyse(
     TypeExpression.equation,
@@ -316,6 +327,51 @@ Analyse _analyserSuite(Lecture lecture, String nom) {
     throw const ErreurLatex('suite avec une lettre inconnue');
   }
 }
+
+/// `AX=B`, `A\cdot X=B`, avec A une matrice de la feuille et B une matrice,
+/// un vecteur colonne ou un vecteur `\vec{B}` : X = A⁻¹B, si A est
+/// inversible (sinon Giac le dit). `XA=B` : X = BA⁻¹.
+Analyse? _equationMatricielle(
+  String gauche,
+  String droite,
+  Map<String, (double, double)> vecteurs,
+) {
+  String? sansParentheses(String s) {
+    var t = s.trim();
+    while (t.startsWith('(') && t.endsWith(')')) {
+      t = t.substring(1, t.length - 1).trim();
+    }
+    return t.startsWith('[[') && t.endsWith(']]') ? t : null;
+  }
+
+  final produit =
+      RegExp(r'^(.*)\*([A-Z])$').firstMatch(gauche) ??
+      RegExp(r'^([A-Z])\*(.*)$').firstMatch(gauche);
+  if (produit == null) return null;
+  final aGauche = RegExp(r'^[A-Z]$').hasMatch(produit[2]!);
+  final inconnue = aGauche ? produit[2]! : produit[1]!;
+  final matrice = sansParentheses(aGauche ? produit[1]! : produit[2]!);
+  if (matrice == null) return null;
+  var second = droite.trim();
+  // `(([[5],[6]]))` d'une matrice déclarée : la matrice seule.
+  final seule = RegExp(r'^\(+(\[\[[^()]*\]\])\)+$').firstMatch(second);
+  if (seule != null) second = seule[1]!;
+  final vecteur = vecteurs[second];
+  if (vecteur != null) {
+    second = '[[${_nombreGiac(vecteur.$1)}],[${_nombreGiac(vecteur.$2)}]]';
+  }
+  if (!second.contains('[') || RegExp('[a-zA-Z]').hasMatch(second)) {
+    return null;
+  }
+  return Analyse(
+    TypeExpression.calcul,
+    aGauche ? 'inv($matrice)*($second)' : '($second)*inv($matrice)',
+    inconnueMatrice: inconnue,
+    demandeResultat: true,
+  );
+}
+
+String _nombreGiac(double v) => v == v.roundToDouble() ? '${v.round()}' : '$v';
 
 /// Inconnues usuelles d'abord : x, y, z, t, puis l'ordre alphabétique.
 List<String> _ordonner(Set<String> symboles) {

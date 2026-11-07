@@ -41,4 +41,18 @@ void main() {
     await t.tap(find.byType(CrayonManuscrit));
     expect(touche, 1);
   });
+
+  // Vu sur le Pad 7 : `A=[1,2;3,4]` tapée ne s'affichait plus du tout.
+  testWidgets('une matrice déclarée au clavier s’écrit à la main', (t) async {
+    await monter(
+      t,
+      const EcritureManuscrite(
+        latex: r'A=\begin{pmatrix}1&2\\3&4\end{pmatrix}',
+        couleur: Colors.blue,
+        repli: Text('repli'),
+      ),
+    );
+    expect(find.text('repli'), findsNothing);
+    expect(t.getSize(find.byType(EcritureManuscrite)).height, greaterThan(40));
+  });
 }

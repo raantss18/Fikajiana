@@ -169,4 +169,13 @@ void main() {
       expect(identical(ecrit(b), avant), isFalse);
     });
   });
+
+  test('une matrice s’écrit plus haut que la ligne, lisible', () {
+    const ligne = Rect.fromLTWH(0, 0, 0, 36);
+    final matrice = ecrireResultat(
+      r'A=\begin{pmatrix}1&2\\3&4\end{pmatrix}',
+      ligne,
+    )!;
+    expect(matrice.cadre.height, greaterThan(1.2 * 36));
+  });
 }

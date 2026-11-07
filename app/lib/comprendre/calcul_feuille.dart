@@ -90,6 +90,7 @@ class BlocCalcul {
       ..hauteurLigne = (json['hl'] as num?)?.toDouble()
       ..demandeResultat = json['dr'] as bool? ?? false
       ..lueParMorceaux = json['lm'] as bool? ?? false
+      ..inconnueMatrice = json['im'] as String?
       ..note = json['note'] as String?
       .._points = json['points'] as int? ?? 0;
   }
@@ -173,6 +174,9 @@ class BlocCalcul {
   /// `f'(x)` ou `det(…)` : la réponse s'affiche même sans `=`.
   bool demandeResultat = false;
 
+  /// `X` pour `AX=B` : la réponse s'écrit `X = …`, comme une résolution.
+  String? inconnueMatrice;
+
   /// La feuille propose de la tracer.
   bool get seTrace => courbeSeule || type == TypeExpression.fonction;
 
@@ -200,18 +204,40 @@ class BlocCalcul {
 
   /// Une équation ou un système : le résultat n'est pas une valeur à égaler.
   bool get estResolution =>
+      inconnueMatrice != null ||
       type == TypeExpression.equation ||
       type == TypeExpression.systeme ||
       type == TypeExpression.suite;
+
+  String? _approcheChoisie({required bool approcheVoulue}) {
+    final exact = resultat;
+    // Une valeur que Giac n'a trouvée que numériquement est déjà approchée.
+    final longue = exact != null && RegExp(r'\d\.\d{9}').hasMatch(exact);
+    return approcheVoulue || inchange || longue ? approche : null;
+  }
+
+  /// La valeur montrée n'est qu'approchée : `≈` au lieu de `=` (repris de
+  /// Mikajy, GPL-3.0) ; `1/4 → 0,25` reste exact.
+  bool estApproche({required bool approcheVoulue}) {
+    final exact = resultat;
+    if (exact == null || estResolution || inconnueMatrice != null) {
+      return false;
+    }
+    if (_approcheChoisie(approcheVoulue: approcheVoulue) == null) return false;
+    final plat = exact.replaceAll(' ', '');
+    return num.tryParse(plat) == null && decimaleExacte(plat) == null;
+  }
 
   /// Ce qu'il faut afficher selon le mode, en LaTeX.
   String? texte({required bool approcheVoulue, required bool virgule}) {
     final exact = resultat;
     // Une valeur que Giac n'a trouvée que numériquement est déjà approchée.
-    final longue = exact != null && RegExp(r'\d\.\d{9}').hasMatch(exact);
-    final choisie = approcheVoulue || inchange || longue ? approche : null;
+    final choisie = _approcheChoisie(approcheVoulue: approcheVoulue);
     final String? valeur;
-    if (estResolution) {
+    final matrice = inconnueMatrice;
+    if (matrice != null) {
+      valeur = exact == null ? null : '$matrice=$exact';
+    } else if (estResolution) {
       final brut = choisie == null ? exact : _ensembleApproche(choisie);
       valeur = brut == null
           ? null
@@ -282,22 +308,24 @@ class BlocCalcul {
         ? texte(approcheVoulue: approcheVoulue, virgule: virgule)
         : null;
     if (valeur == null) return null;
-    if (_ecritPour != valeur) {
-      _ecritPour = valeur;
-      _ecrit = _placer(valeur);
+    final approche = v == null && estApproche(approcheVoulue: approcheVoulue);
+    final cle = '$approche$valeur';
+    if (_ecritPour != cle) {
+      _ecritPour = cle;
+      _ecrit = _placer(valeur, approche: approche);
     }
     return _ecrit;
   }
 
   /// À droite après un `=`, dessous pour une équation ; de l'autre côté si la
   /// place est prise, et à la place voulue si les deux le sont.
-  EcritureResultat? _placer(String valeur) {
+  EcritureResultat? _placer(String valeur, {bool approche = false}) {
     EcritureResultat? essai({required bool dessous}) => ecrireResultat(
       // Sous l'écriture, la valeur seule ne dirait pas ce qu'elle égale.
       // `2+2=5` est faux : le mot suit, sans `=` ; `premier(17) = vrai`.
       (verite != null ? demandeResultat : egalAjoute) ||
               (finitParEgal && dessous)
-          ? '=$valeur'
+          ? '${approche ? r'\approx ' : '='}$valeur'
           : valeur,
       // Au propre, l'écriture est plus courte : le résultat la suit.
       (_auPropreActif
@@ -353,6 +381,7 @@ class BlocCalcul {
     'hl': ?hauteurLigne,
     if (demandeResultat) 'dr': true,
     if (lueParMorceaux) 'lm': true,
+    'im': ?inconnueMatrice,
     'note': ?note,
   };
 }
@@ -390,7 +419,7 @@ class CalculFeuille extends ChangeNotifier {
     required this.encre,
     required this.lecteur,
     required this.moteur,
-    this.pause = const Duration(milliseconds: 900),
+    this.pause = const Duration(milliseconds: 700),
     bool Function()? degres,
   }) : degres = degres ?? (() => false);
 
@@ -484,7 +513,39 @@ class CalculFeuille extends ChangeNotifier {
   void encreChangee() {
     _retirerTraitsDisparus();
     _minuteur?.cancel();
-    _minuteur = Timer(pause, () => unawaited(_lireLesNouveaux()));
+    // Un `=` qui ferme la ligne demande le résultat : lu presque aussitôt
+    // (idée de Mikajy, GPL-3.0).
+    final attente = _finitParUnEgal() && pause > _apresEgal
+        ? _apresEgal
+        : pause;
+    _minuteur = Timer(attente, () => unawaited(_lireLesNouveaux()));
+  }
+
+  static const _apresEgal = Duration(milliseconds: 250);
+
+  /// Les deux derniers traits font un `=`, au bout de leur ligne.
+  bool _finitParUnEgal() {
+    final traits = _ecrits.toList();
+    if (traits.length < 3) return false;
+    final a = cadreDuGroupe([traits[traits.length - 2]]);
+    final b = cadreDuGroupe([traits.last]);
+    bool plat(Rect c) => c.width >= 6 && c.height <= 0.35 * c.width;
+    if (!plat(a) || !plat(b)) return false;
+    final commun = math.min(a.right, b.right) - math.max(a.left, b.left);
+    final ecart = (a.center.dy - b.center.dy).abs();
+    if (commun < 0.5 * math.min(a.width, b.width) ||
+        ecart < 2 ||
+        ecart > math.max(a.width, b.width)) {
+      return false;
+    }
+    final egal = a.expandToInclude(b);
+    // Rien après lui sur la même ligne : il ferme le calcul.
+    return !traits.take(traits.length - 2).any((t) {
+      final c = cadreDuGroupe([t]);
+      return c.left > egal.right &&
+          c.center.dy > egal.top - 2 * egal.height &&
+          c.center.dy < egal.bottom + 2 * egal.height;
+    });
   }
 
   Iterable<Trait> get _ecrits => encre.traits.where((t) => t.forme == null);
@@ -872,6 +933,9 @@ class CalculFeuille extends ChangeNotifier {
         }
         final valeur = a.nomValeur;
         if (valeur != null) contexte.valeurs[valeur] = a.giac;
+        // `AX=B` résolu : X sert aux lignes suivantes.
+        final inconnue = a.inconnueMatrice;
+        if (inconnue != null) contexte.valeurs[inconnue] = '(${a.giac})';
       } on ErreurLatex {
         continue;
       }
@@ -977,6 +1041,7 @@ class CalculFeuille extends ChangeNotifier {
       ..type = analyse.type
       ..inconnues = analyse.inconnues
       ..demandeResultat = analyse.demandeResultat || _calculDeNombres(analyse)
+      ..inconnueMatrice = analyse.inconnueMatrice
       ..aPlacer = _aPlacer(bloc);
     if (analyse.nomValeur != null) {
       bloc.etat = EtatBloc.fait;

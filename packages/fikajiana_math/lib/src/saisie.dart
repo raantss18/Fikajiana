@@ -56,6 +56,9 @@ Saisie lireSaisie(String texte) {
   if (lireObjet(propre) != null || lireCommande(propre) != null) {
     return Saisie(propre);
   }
+  // `A=[1,2;3,4]` ou `A=[[1,2],[3,4]]` : une matrice au clavier.
+  final matrice = _matriceTapee(propre);
+  if (matrice != null) return Saisie(matrice);
   // `C : x^2+y^3=0` : une courbe nommée ; le nom reste, la suite se traduit.
   final nomme = RegExp(r'^([A-Za-z](?:_\d+)?)\s*:(?!=)\s*(.+)$')
       .firstMatch(propre);
@@ -108,6 +111,46 @@ String? _commandeDeCalcul(String texte) {
   ];
   // `\\text` : l'affichage garde les accents ; le lecteur les ôte.
   return '\\text{${m[1]}}\\left(${traduits.join(';')}\\right)${m[3]}';
+}
+
+/// `[1,2;3,4]`, `[[1,2],[3,4]]`, `[5;6]` (colonne), précédé ou non de `A=`.
+/// Les cases se traduisent une à une. `null` si ce n'en est pas une.
+String? _matriceTapee(String texte) {
+  final m = RegExp(r'^(?:([A-Z])\s*=\s*)?\[(.*)\]\s*(=?)$').firstMatch(texte);
+  if (m == null) return null;
+  final corps = m[2]!.trim();
+  final List<String> lignes;
+  if (corps.startsWith('[')) {
+    // `[[1,2],[3,4]]` : des lignes entre crochets.
+    lignes = [
+      for (final l in RegExp(r'\[([^\[\]]*)\]').allMatches(corps)) l[1]!,
+    ];
+    if (lignes.isEmpty) return null;
+  } else {
+    lignes = corps.split(';');
+  }
+  final cases = [
+    for (final l in lignes)
+      [
+        for (final c in l.trim().split(RegExp(r'\s*,\s*|\s+')))
+          if (c.isNotEmpty) c,
+      ],
+  ];
+  if (cases.isEmpty || cases.any((l) => l.isEmpty)) return null;
+  // `[5;6]` ou `[1,2;3,4]` ; une seule ligne d'un nombre n'est pas une matrice.
+  if (cases.length == 1 && cases.single.length == 1) return null;
+  final colonnes = cases.first.length;
+  if (cases.any((l) => l.length != colonnes)) return null;
+  try {
+    final latex = [
+      for (final l in cases)
+        [for (final c in l) _Traducteur(_decouper(c)).traduire()].join('&'),
+    ].join(r'\\');
+    final nom = m[1] == null ? '' : '${m[1]}=';
+    return '$nom\\begin{pmatrix}$latex\\end{pmatrix}${m[3]}';
+  } on _Refus {
+    return null;
+  }
 }
 
 /// Coupe [texte] à chaque [signe] hors des parenthèses.

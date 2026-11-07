@@ -9,6 +9,7 @@
 | `path_provider` | BSD-3-Clause | dossier de l'app | https://pub.dev/packages/path_provider/license |
 | `shared_preferences` | BSD-3-Clause | réglages sur l'appareil | https://pub.dev/packages/shared_preferences/license |
 | Nunito | SIL OFL 1.1 (`app/assets/polices/OFL-Nunito.txt`) | police de texte | https://github.com/googlefonts/nunito |
+| Caveat (contours aplatis dans `app/lib/comprendre/glyphes_caveat.dart`) | SIL OFL 1.1 (`app/assets/polices/OFL-Caveat.txt`) | écriture des résultats | https://github.com/google/fonts/tree/main/ofl/caveat |
 | `perfect_freehand` | MIT | rendu du trait | https://pub.dev/packages/perfect_freehand/license |
 | `intl` | BSD-3-Clause | formats et traductions | https://pub.dev/packages/intl/license |
 | `ffi` | BSD-3-Clause | appel de Giac | https://pub.dev/packages/ffi/license |
