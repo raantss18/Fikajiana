@@ -7,6 +7,7 @@ import 'package:fikajiana/encre/vue_feuille.dart';
 import 'package:fikajiana/l10n/l10n.dart';
 import 'package:fikajiana/reglages/reglages.dart';
 import 'package:fikajiana/ui/calcul/marques_bloc.dart';
+import 'package:fikajiana/ui/calcul/panneau_saisie.dart';
 import 'package:fikajiana/ui/navigation/destination.dart';
 import 'package:fikajiana/ui/navigation/page_destination.dart';
 import 'package:fikajiana/ui/services.dart';
@@ -458,100 +459,17 @@ class _Formule extends StatelessWidget {
   }
 }
 
-/// Dialogue de saisie ou de correction, avec aperçu de la formule.
+/// Saisie ou correction : voir [ouvrirPanneauSaisie].
 Future<String?> demanderLatex(
   BuildContext context,
   String initial, {
   VoidCallback? surRetirer,
-  String? titre,
   String? aide,
   String? action,
-}) {
-  return showDialog<String>(
-    context: context,
-    builder: (_) => _DialogueLatex(
-      initial: initial,
-      surRetirer: surRetirer,
-      titre: titre,
-      aide: aide,
-      action: action,
-    ),
-  );
-}
-
-class _DialogueLatex extends StatefulWidget {
-  const new({
-    required this.initial,
-    this.surRetirer,
-    this.titre,
-    this.aide,
-    this.action,
-  });
-
-  final String initial;
-  final VoidCallback? surRetirer;
-  final String? titre;
-  final String? aide;
-  final String? action;
-
-  @override
-  State<_DialogueLatex> createState() => _DialogueLatexState();
-}
-
-class _DialogueLatexState extends State<_DialogueLatex> {
-  late final _texte = TextEditingController(text: widget.initial);
-
-  @override
-  void dispose() {
-    _texte.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return AlertDialog(
-      title: Text(widget.titre ?? l10n.saisieTitre),
-      scrollable: true,
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          TextField(
-            controller: _texte,
-            autofocus: widget.initial.isEmpty,
-            autocorrect: false,
-            enableSuggestions: false,
-            decoration: InputDecoration(
-              hintText: widget.aide ?? l10n.saisieAide,
-            ),
-            onChanged: (_) => setState(() {}),
-            // En paysage, le clavier couvre les boutons du dialogue.
-            textInputAction: TextInputAction.done,
-            onSubmitted: (texte) => Navigator.of(context).pop(texte),
-          ),
-          const SizedBox(height: AppEspacement.md),
-          if (_texte.text.isNotEmpty) _Formule(latex: _texte.text),
-        ],
-      ),
-      actions: [
-        if (widget.surRetirer != null)
-          TextButton(
-            onPressed: () {
-              widget.surRetirer!();
-              Navigator.of(context).pop();
-            },
-            child: Text(l10n.retirer),
-          ),
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(l10n.annulerDialogue),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.of(context).pop(_texte.text),
-          child: Text(widget.action ?? l10n.valider),
-        ),
-      ],
-    );
-  }
-}
+}) => ouvrirPanneauSaisie(
+  context,
+  initial,
+  surRetirer: surRetirer,
+  aide: aide,
+  action: action,
+);

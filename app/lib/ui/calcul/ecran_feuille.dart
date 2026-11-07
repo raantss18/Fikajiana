@@ -13,7 +13,9 @@ import 'package:fikajiana/reglages/reglages.dart';
 import 'package:fikajiana/reglages/support.dart';
 import 'package:fikajiana/ui/calcul/carte_bloc.dart';
 import 'package:fikajiana/ui/calcul/couche_resultats.dart';
+import 'package:fikajiana/ui/calcul/panneau_saisie.dart';
 import 'package:fikajiana/ui/export.dart';
+import 'package:fikajiana/ui/navigation/destination.dart';
 import 'package:fikajiana/ui/navigation/page_destination.dart';
 import 'package:fikajiana/ui/reglages/ecran_reglages.dart';
 import 'package:fikajiana/ui/services.dart';
@@ -139,6 +141,11 @@ class _EcranFeuilleState extends State<EcranFeuille> {
     final position = depart + Offset(0, saisies * _ecartSaisies);
     unawaited(_calcul.saisir(latex, _vue.versPage(position)));
     setState(() {});
+    // Le bouton a dit Tracer : la ligne se pose, et le graphique s'ouvre.
+    if (verbeDe(latex) is VerbeTracer &&
+        PorteeServices.de(context).courbes.ajouter(latex)) {
+      Navigator.of(context).push(RouteDestination(Destination.graphe));
+    }
   }
 
   /// Où se trouve ce qui est écrit, résultats compris.
@@ -251,7 +258,7 @@ class _EcranFeuilleState extends State<EcranFeuille> {
                       Positioned(
                         left: AppEspacement.md,
                         right: 80,
-                        bottom: AppEspacement.md,
+                        bottom: 72,
                         child: SafeArea(
                           child: Card(
                             child: ListTile(
@@ -277,6 +284,24 @@ class _EcranFeuilleState extends State<EcranFeuille> {
         ),
         if (_encre.estVide && _calcul.blocs.isEmpty)
           _Invitation(support: reglages.support),
+        if (!_enExport)
+          Positioned(
+            left: 0,
+            bottom: 0,
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(AppEspacement.sm),
+                child: FilledButton.tonalIcon(
+                  icon: const Icon(Icons.keyboard_outlined),
+                  label: Text(l10n.saisieOuvrir),
+                  onPressed: () {
+                    setState(() => _outilsOuverts = false);
+                    unawaited(_saisirAuClavier());
+                  },
+                ),
+              ),
+            ),
+          ),
         Positioned(
           right: 0,
           bottom: 0,
@@ -296,10 +321,6 @@ class _EcranFeuilleState extends State<EcranFeuille> {
                   _outilsOuverts = false;
                 }),
                 surChangement: _surEncre,
-                surClavier: () {
-                  setState(() => _outilsOuverts = false);
-                  unawaited(_saisirAuClavier());
-                },
                 peutExporter: !_encre.estVide || _calcul.blocs.isNotEmpty,
                 surExporter: (format) => unawaited(
                   exporter(
@@ -377,14 +398,12 @@ class _Outils extends StatelessWidget {
     required this.surBasculer,
     required this.surGomme,
     required this.surChangement,
-    required this.surClavier,
     required this.peutExporter,
     required this.surExporter,
   });
 
   final bool peutExporter;
   final ValueChanged<FormatExport> surExporter;
-  final VoidCallback surClavier;
   final Encre encre;
   final VueFeuille vue;
   final Reglages reglages;
@@ -442,7 +461,6 @@ class _Outils extends StatelessWidget {
         selected: gomme,
         onTap: () => surGomme(!gomme),
       ),
-      ligne(Icons.keyboard_outlined, l10n.saisirClavier, surClavier),
       ligne(
         Icons.undo,
         l10n.annuler,

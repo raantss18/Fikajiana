@@ -116,15 +116,12 @@
     "@zoneEcriture": {
         "description": "Screen reader label of the ink canvas"
     },
-    "saisirClavier": "Type with the keyboard",
     "@saisirClavier": {
         "description": "Toolbar: type an expression instead of writing it"
     },
-    "saisieTitre": "Expression to compute",
     "@saisieTitre": {
         "description": "Title of the typing dialog"
     },
-    "saisieAide": "In LaTeX, for example 2+3= or x^2=2",
     "@saisieAide": {
         "description": "Hint of the typing field"
     },
@@ -541,5 +538,18 @@
     "blocEffacer": "Erase",
     "blocEfface": "Writing erased",
     "ecrireAuDoigt": "Also write with a finger",
-    "ecrireAuDoigtDetail": "With a stylus, your hand only moves the page. Turn this on to write with a finger too."
+    "ecrireAuDoigtDetail": "With a stylus, your hand only moves the page. Turn this on to write with a finger too.",
+    "saisieExemple": "x^2+3x-5=0, sin 2x, sqrt 2…",
+    "saisieCompris": "Understood",
+    "saisieCalculer": "Calculate",
+    "saisieResoudre": "Solve for {inconnue}",
+    "saisieMotInconnu": "Unknown word: “{mot}”",
+    "saisieNombresColles": "Two numbers in a row: add an operation",
+    "saisieSigneInattendu": "The sign “{signe}” is misplaced",
+    "saisieIncomplet": "Keep typing",
+    "saisiePasCompris": "This can't be calculated yet",
+    "saisieLectureDeux": "Read as 1/(2x) instead of (1/2)x",
+    "saisieLectureUne": "Back to the first reading",
+    "saisieAide": "Type as you write, or in LaTeX",
+    "saisieOuvrir": "Type a calculation"
 }
