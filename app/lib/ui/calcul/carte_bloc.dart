@@ -103,7 +103,7 @@ class RepereBloc extends StatelessWidget {
       // Ce qui a été compris, à vérifier d'un coup d'œil : un chiffre mal lu
       // fausserait le résultat sans le dire.
       // Sous la ligne si le résultat va à droite, à droite s'il va dessous.
-      final ou = bloc.finitParEgal || !bloc.dessousLibre
+      final ou = !bloc.resultatDessous
           ? bloc.cadre.bottomLeft * vue.zoom +
                 vue.decalage +
                 const Offset(0, AppEspacement.xxs)
@@ -365,12 +365,14 @@ class RepereBloc extends StatelessWidget {
               surOuvrir: (_) => unawaited(_corriger(context)),
             );
           }
-          position = bloc.estSaisie || !bloc.finitParEgal
+          position = bloc.estSaisie || bloc.resultatDessous
               ? dessous
               : droite + const Offset(AppEspacement.sm, -14);
           final ecrit = _sansEgalFinal(bloc.latex ?? '');
           contenu = _Formule(
-            latex: !bloc.estSaisie
+            latex: bloc.egalAjoute
+                ? '= $valeur'
+                : !bloc.estSaisie
                 ? valeur
                 : !bloc.estResolution
                 ? '$ecrit = $valeur'
