@@ -553,7 +553,8 @@ class LecteurLatex {
       return Terme(complet, symboles: _libre(complet));
     }
     final prime = _prendre("'");
-    final fonction = prime || _nomsDeFonctionsLibres.contains(nom);
+    final fonction =
+        prime || _nomsDeFonctionsLibres.contains(nom) || _enTeteDeDefinition;
     if (fonction && _courant.est('(')) {
       _i++;
       final argument = _somme();
@@ -573,6 +574,16 @@ class LecteurLatex {
     if (nom == 'e' || nom == 'i') return Terme(nom);
     return Terme(nom, symboles: _libre(nom));
   }
+
+  /// `k(x)=` tout au début : une définition, quelle que soit la lettre. La
+  /// lettre vient d'être lue. `x(x)=` ou `y(x)=` n'en sont pas.
+  bool get _enTeteDeDefinition =>
+      _i == 1 &&
+      !const {'x', 'y', 'z', 't', 'r'}.contains(_jetons[0].texte) &&
+      _courant.est('(') &&
+      _voir(1).genre == _Genre.lettre &&
+      _voir(2).est(')') &&
+      _voir(3).est('=');
 
   Set<String> _libre(String nom) => _liees.contains(nom) ? const {} : {nom};
 
@@ -628,7 +639,7 @@ class LecteurLatex {
       argument = _somme();
       _attendre(')');
     } else {
-      argument = _puissance();
+      argument = _argumentSansParentheses();
     }
     final appel = '$nom(${argument.giac})';
     if (exposant == null) return Terme(appel, symboles: argument.symboles);
@@ -636,6 +647,20 @@ class LecteurLatex {
       '($appel)^(${exposant.giac})',
       symboles: {...argument.symboles, ...exposant.symboles},
     );
+  }
+
+  /// `\sin 2x` est `sin(2x)`, et `\sin x \cos x` s'arrête à `\cos`.
+  Terme _argumentSansParentheses() {
+    var argument = _puissance();
+    while (!_debutDeDifferentielle &&
+        (_courant.genre == _Genre.lettre ||
+            (_courant.genre == _Genre.commande &&
+                (_constantes.containsKey(_courant.texte) ||
+                    _grecques.contains(_courant.texte))))) {
+      final suite = _puissance();
+      argument = _fusion('${argument.giac}*${suite.giac}', [argument, suite]);
+    }
+    return argument;
   }
 
   Terme _racine() {
@@ -660,12 +685,23 @@ class LecteurLatex {
     Terme? haut;
     for (var k = 0; k < 2; k++) {
       if (_prendre('_')) {
-        bas = _groupeOuAtome();
+        bas = _borne();
       } else if (_prendre('^')) {
-        haut = _groupeOuAtome();
+        haut = _borne();
       }
     }
     return (bas, haut);
+  }
+
+  /// Une borne sans accolades s'arrête au premier signe : dans `_0^1`, le `^`
+  /// commence l'autre borne, pas une puissance de 0.
+  Terme _borne() {
+    if (_courant.est('{')) return _groupeOuAtome();
+    if (_prendre('-')) {
+      final t = _atome();
+      return Terme('(-${t.giac})', symboles: t.symboles);
+    }
+    return _atome();
   }
 
   Terme _integrale() {

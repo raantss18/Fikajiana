@@ -182,7 +182,6 @@ class _EcranGrapheState extends State<EcranGraphe> {
     final latex = await demanderLatex(
       context,
       '',
-      titre: l10n.grapheAjouter,
       aide: l10n.grapheAide,
       action: l10n.grapheTracer,
     );
@@ -196,7 +195,6 @@ class _EcranGrapheState extends State<EcranGraphe> {
     final latex = await demanderLatex(
       context,
       courbes.liste[indice].latex,
-      titre: l10n.grapheModifier,
       aide: l10n.grapheAide,
       action: l10n.grapheTracer,
       surRetirer: () {

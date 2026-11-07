@@ -286,6 +286,7 @@ void main() {
       await t.tap(find.text('Ajouter une courbe'));
       await t.pumpAndSettle();
       await t.enterText(find.byType(TextField), latex);
+      await t.pump();
       await t.tap(find.widgetWithText(FilledButton, 'Tracer'));
       await t.pumpAndSettle();
     }
@@ -326,15 +327,11 @@ void main() {
         ),
       );
       await t.pumpAndSettle();
-      await t.tap(find.byTooltip('Outils'));
-      await t.pump();
-      await t.tap(find.text('Saisir au clavier'));
+      await t.tap(find.text('Taper un calcul'));
       await t.pumpAndSettle();
       await t.enterText(find.byType(TextField), 'g(x)=x+1');
-      await t.tap(find.widgetWithText(FilledButton, 'Calculer'));
       await t.pump();
-      await t.pump();
-      await t.pumpAndSettle();
+      // Le bouton a dit Tracer : le graphique s'ouvre d'un coup.
       await t.tap(find.widgetWithText(FilledButton, 'Tracer'));
       await t.pumpAndSettle();
       expect(find.byType(EcranGraphe), findsOneWidget);
@@ -366,15 +363,10 @@ void main() {
         ),
       );
       await t.pumpAndSettle();
-      await t.tap(find.byTooltip('Outils'));
-      await t.pump();
-      await t.tap(find.text('Saisir au clavier'));
+      await t.tap(find.text('Taper un calcul'));
       await t.pumpAndSettle();
       await t.enterText(find.byType(TextField), 'x^2+y^2=9');
-      await t.tap(find.widgetWithText(FilledButton, 'Calculer'));
       await t.pump();
-      await t.pump();
-      await t.pumpAndSettle();
       // Le nom se lit : ce n'est pas qu'un dessin de courbe.
       await t.tap(find.widgetWithText(FilledButton, 'Tracer'));
       await t.pumpAndSettle();

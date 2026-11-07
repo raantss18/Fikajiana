@@ -4,6 +4,9 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Au clavier, tapez comme vous écrivez : `x^2+3x-5=0`, `x²`, `sin 2x`, `racine de 2`, `3,5` ou du LaTeX. L'aperçu montre ce qui est compris, et le bouton dit ce qui va se passer : Calculer, Résoudre en x ou Tracer. / On the keyboard, type as you write: `x^2+3x-5=0`, `x²`, `sin 2x`, `sqrt 2`, `3,5` or LaTeX. The preview shows what is understood, and the button says what will happen: Calculate, Solve for x or Plot.
+- `sin 2x` écrit à la main est maintenant `sin(2x)`, et une intégrale `∫_0^1` garde ses bornes. / Handwritten `sin 2x` now means `sin(2x)`, and an integral `∫_0^1` keeps its bounds.
+
 ## [0.7.2] — 2026-11-07
 
 ### Message fr
