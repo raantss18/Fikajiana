@@ -68,8 +68,14 @@ class _EcranGeometrieState extends State<EcranGeometrie> {
   /// Le tracé à main levée du stylet, en cours (Antsa) : redressé au lever.
   List<Offset>? _trace;
 
+  /// Au stylet, sans outil ; au doigt aussi avec l'outil Main levée (Antsa :
+  /// « on n'a pas forcément un stylet »).
+  bool _dessine(PointerEvent e) =>
+      _atelier.outil == OutilGeo.mainLevee ||
+      (e.kind == PointerDeviceKind.stylus && !_construit);
+
   void _styletBaisse(PointerDownEvent e) {
-    if (e.kind != PointerDeviceKind.stylus || _construit) return;
+    if (!_dessine(e) || _trace != null) return;
     final m = _vue.versMaths(e.localPosition, _taille);
     // Sur un point ou un objet, le stylet le déplace comme le doigt.
     if (_atelier.objetProche(m.x, m.y, _tolerance) != null) return;
@@ -78,7 +84,7 @@ class _EcranGeometrieState extends State<EcranGeometrie> {
 
   void _styletBouge(PointerMoveEvent e) {
     final trace = _trace;
-    if (trace == null || e.kind != PointerDeviceKind.stylus) return;
+    if (trace == null || !_dessine(e)) return;
     setState(() => trace.add(e.localPosition));
   }
 
@@ -125,7 +131,16 @@ class _EcranGeometrieState extends State<EcranGeometrie> {
     final m = _vue.versMaths(d.localFocalPoint, _taille);
     _dernierMaths = m;
     final unDoigt = d.pointerCount == 1;
-    _depart = unDoigt && _construit ? d.localFocalPoint : null;
+    // Un trait en cours : la vue ne bouge pas sous le doigt qui dessine.
+    if (_trace != null) {
+      _depart = null;
+      _attrape = null;
+      _glisse = null;
+      return;
+    }
+    _depart = unDoigt && _construit && _atelier.outil != OutilGeo.mainLevee
+        ? d.localFocalPoint
+        : null;
     _attrape = unDoigt ? _atelier.pointLibreProche(m.x, m.y, _tolerance) : null;
     _glisse = unDoigt && _attrape == null
         ? _atelier.objetAGlisser(m.x, m.y, _tolerance)

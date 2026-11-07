@@ -80,6 +80,19 @@ const Map<String, List<_Dessin>> _chiffres = {
     ],
   ],
   '2': [
+    // Large, la base longue (téléphone d'Antsa, dans une matrice).
+    [
+      [
+        (0.05, 0.15),
+        (0.2, 0.0),
+        (0.4, 0.0),
+        (0.5, 0.15),
+        (0.45, 0.4),
+        (0.2, 0.72),
+        (0.0, 1.0),
+        (1.0, 0.98),
+      ],
+    ],
     [
       [
         (0.16, 0.11),
@@ -186,6 +199,12 @@ const Map<String, List<_Dessin>> _chiffres = {
     [
       [(.3, 0), (.1, .55), (.9, .55)],
       [(.75, .05), (.75, 1)],
+    ],
+    // Ouvert en haut, la hampe droite qui descend sous la barre (téléphone
+    // d'Antsa) : le modèle y lit `1/1`.
+    [
+      [(0, 0), (.12, .68), (1, .68)],
+      [(.72, .04), (.62, 1)],
     ],
   ],
   '5': [
@@ -638,8 +657,44 @@ String? _trancher((String, double, double) m) {
 }
 
 /// Le chiffre que dessinent ces traits, ou `null` dans le doute.
-String? reconnaitreChiffre(List<List<Offset>> traits) =>
-    _trancher(_meilleur(traits, _modelesChiffres));
+String? reconnaitreChiffre(List<List<Offset>> traits) => _quatreOuvert(traits)
+    ? '4'
+    : _trancher(_meilleur(traits, _modelesChiffres));
+
+/// Le `4` ouvert d'Antsa : un `L` (descend, puis part à droite) et une hampe
+/// qui croise sa barre et descend dessous. Les nuages de points le confondent
+/// avec un `1`.
+bool _quatreOuvert(List<List<Offset>> traits) {
+  if (traits.length != 2) return false;
+  for (final (l, hampe) in [(traits[0], traits[1]), (traits[1], traits[0])]) {
+    if (l.length < 3 || hampe.length < 2) continue;
+    final cl = _cadre(l);
+    final ch = _cadre(hampe);
+    final hauteur = math.max(cl.height, ch.height);
+    if (cl.height < 0.3 * hauteur || cl.width < 0.4 * hauteur) continue;
+    // Le `L` : commence en haut à gauche, finit à droite, au bas de sa boîte.
+    if ((l.first.dx - cl.left) > 0.3 * cl.width ||
+        (l.first.dy - cl.top) > 0.3 * cl.height ||
+        (cl.right - l.last.dx) > 0.2 * cl.width ||
+        (cl.bottom - l.last.dy) > 0.3 * cl.height) {
+      continue;
+    }
+    // La hampe : debout, à droite, elle croise la barre et descend dessous.
+    if (ch.width > 0.4 * ch.height) continue;
+    final x = ch.center.dx;
+    if (x < cl.left + 0.4 * cl.width || x > cl.right + 0.1 * cl.width) continue;
+    if (ch.top > cl.bottom - 0.2 * hauteur ||
+        ch.bottom < cl.bottom + 0.1 * hauteur) {
+      continue;
+    }
+    return true;
+  }
+  return false;
+}
+
+Rect _cadre(List<Offset> s) => s
+    .skip(1)
+    .fold(s.first & Size.zero, (r, p) => r.expandToInclude(p & Size.zero));
 
 /// La lettre capitale que dessinent ces traits, ou `null` dans le doute.
 String? reconnaitreCapitale(List<List<Offset>> traits) =>
@@ -655,4 +710,16 @@ String? reconnaitreCapitale(List<List<Offset>> traits) =>
 (String, double) essayerCapitale(List<List<Offset>> traits) {
   final (s, d, _) = _meilleur(traits, _modelesLettres);
   return (s, d);
+}
+
+/// Débogage : tous les chiffres et leur distance.
+List<(String, double)> classerChiffresDebug(List<List<Offset>> traits) {
+  final nuage = _normaliser(_reechantillonner(traits));
+  final parSigne = <String, double>{};
+  for (final (s, modele) in _modelesChiffres) {
+    final d = _distance(nuage, modele);
+    parSigne[s] = math.min(parSigne[s] ?? double.infinity, d);
+  }
+  return parSigne.entries.map((e) => (e.key, e.value)).toList()
+    ..sort((a, b) => a.$2.compareTo(b.$2));
 }

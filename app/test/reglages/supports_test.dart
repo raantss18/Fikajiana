@@ -190,6 +190,7 @@ void main() {
       await _monter(t, reglages: reglages);
       await t.tap(find.byTooltip('Outils'));
       await t.pump();
+      await t.ensureVisible(find.textContaining('Valeurs exactes'));
       await t.tap(find.textContaining('Valeurs exactes'));
       await t.pump();
       expect(reglages.approche, isTrue);

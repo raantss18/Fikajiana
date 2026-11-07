@@ -13,6 +13,7 @@ extension LibellesOutil on OutilGeo {
   String libelle(AppLocalizations l10n) => switch (this) {
     OutilGeo.deplacer => l10n.outilDeplacer,
     OutilGeo.gomme => l10n.outilGomme,
+    OutilGeo.mainLevee => l10n.outilMainLevee,
     OutilGeo.point => l10n.outilPoint,
     OutilGeo.milieu => l10n.outilMilieu,
     OutilGeo.intersection => l10n.outilIntersection,
@@ -56,6 +57,7 @@ extension LibellesOutil on OutilGeo {
   String aide(AppLocalizations l10n) => switch (this) {
     OutilGeo.deplacer || OutilGeo.curseur => l10n.aideDeplacer,
     OutilGeo.gomme => l10n.aideGomme,
+    OutilGeo.mainLevee => l10n.aideMainLevee,
     OutilGeo.point => l10n.aidePoint,
     OutilGeo.milieu => l10n.aideMilieu,
     OutilGeo.intersection => l10n.aideIntersection,

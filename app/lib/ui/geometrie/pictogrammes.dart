@@ -117,6 +117,13 @@ class _Trace {
         g(3, 21, 21, 3);
         a(6, 6, 18, 18);
         a(18, 6, 6, 18);
+      case OutilGeo.mainLevee:
+        // Un trait qui ondule, et le segment net qu'il devient.
+        a(3, 16, 7, 11);
+        a(7, 11, 11, 15);
+        a(11, 15, 15, 9);
+        a(15, 9, 21, 13);
+        g(3, 21, 21, 19);
       case OutilGeo.point:
         pa(12, 12);
       case OutilGeo.milieu:

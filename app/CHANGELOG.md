@@ -4,6 +4,9 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Une ligne simple se lit sur son tracé, en quelques millisecondes, sans le modèle : `1+1`, `30×8=`, les cases et l'exposant d'une matrice. / A simple line is read from its strokes, in milliseconds, without the model: `1+1`, `30×8=`, matrix cells and exponent.
+- `lim` écrit au-dessus de `x → 0` se comprend. / `lim` written above `x → 0` is understood.
+- « Le doigt écrit » se règle dans le panneau Fond de la Feuille ; dans la Figure, l'outil Main levée trace au doigt comme au stylet. / "Finger writes" is set in the Sheet's Background panel; in the Figure, the Freehand tool draws with a finger as with a stylus.
 ## [1.0.2] — 2026-11-07
 
 ### Message fr

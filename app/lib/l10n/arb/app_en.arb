@@ -330,6 +330,8 @@
     "aideBissectrice": "Tap three points, the vertex second.",
     "aideParDroite": "Tap a line and the point to go through.",
     "aideIntersection": "Tap the two lines or circles that cross.",
+    "outilMainLevee": "Freehand",
+    "aideMainLevee": "Draw a stroke with a finger or a stylus: it becomes a segment, a polygon or a circle, and its vertices get names.",
     "aideGomme": "Tap the object to remove; what depends on it goes too.",
     "geometrieDescription": "Figure with {n} objects",
     "@geometrieDescription": {
@@ -531,6 +533,7 @@
     "blocPanneauErreur": "The calculation failed",
     "blocEffacer": "Erase",
     "blocEfface": "Writing erased",
+    "doigtEcrit": "Finger writes",
     "ecrireAuDoigt": "Also write with a finger",
     "ecrireAuDoigtDetail": "With a stylus, your hand only moves the page. Turn this on to write with a finger too.",
     "saisieExemple": "x^2+3x-5=0, sin 2x, sqrt 2…",
