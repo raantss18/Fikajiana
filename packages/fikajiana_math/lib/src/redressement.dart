@@ -12,7 +12,51 @@ String redresserLecture(String latex, {Set<String> fonctions = const {}}) {
   s = _parentheseEnExposant(s);
   s = _tete(s, fonctions);
   s = _baseE(s);
+  s = _matriceEnBinome(s);
+  s = _teteDeDeterminant(s);
+  s = _pointEnFraction(s);
   return s;
+}
+
+/// Les nombres d'une ligne : `2 5` donne 2 et 5, `- 1 - 3` donne -1 et -3.
+List<String>? _nombres(String ligne) {
+  final trouves = RegExp(r'(-\s*)?\d').allMatches(ligne);
+  final reste = ligne.replaceAll(RegExp(r'[-\s\d]'), '');
+  if (reste.isNotEmpty || trouves.isEmpty) return null;
+  return [for (final m in trouves) m[0]!.replaceAll(' ', '')];
+}
+
+/// `\binom{2 5}{-1 -3}` : une matrice lue comme un coefficient binomial. Les
+/// deux lignes ont autant de nombres et il y en a au moins deux, ce qu'un
+/// binomial n'écrit presque jamais. `\binom{10}{2}` et `\binom{n}{k}` restent.
+String _matriceEnBinome(String s) =>
+    s.replaceAllMapped(RegExp(r'\\binom\s*\{([^{}]*)\}\s*\{([^{}]*)\}'), (m) {
+      final (haut, bas) = (_nombres(m[1]!), _nombres(m[2]!));
+      if (haut == null || bas == null) return m[0]!;
+      if (haut.length != bas.length || haut.length < 2) return m[0]!;
+      return '\\begin{pmatrix}${haut.join('&')}\\\\${bas.join('&')}'
+          '\\end{pmatrix}';
+    });
+
+/// `det` écrit à la main, lu `\alpha +`, `d e t` ou `d e t`, devant une matrice.
+String _teteDeDeterminant(String s) => s.replaceFirstMapped(
+  RegExp(
+    r'^\s*(?:\\alpha\s*\+?|\\delta\s*\+?|d\s*e\s*t|\\det)\s*'
+    r'(\(?\s*\\begin\{[a-z]*matrix\})',
+  ),
+  (m) => '\\det ${m[1]}',
+);
+
+/// `A(1/2)` : le point-virgule d'un point, lu comme une barre. Une lettre
+/// capitale devant une fraction de deux nombres n'a pas d'autre sens courant.
+String _pointEnFraction(String s) {
+  final m = RegExp(
+    r'^\s*([A-Z])\s*\(\s*(?:(-?\s*\d+)\s*/\s*(-?\s*\d+)'
+    r'|\\frac\s*\{\s*(-?\s*\d+)\s*\}\s*\{\s*(-?\s*\d+)\s*\})\s*\)\s*$',
+  ).firstMatch(s);
+  if (m == null) return s;
+  String net(String v) => v.replaceAll(' ', '');
+  return '${m[1]}(${net(m[2] ?? m[4]!)};${net(m[3] ?? m[5]!)})';
 }
 
 const _exposantPrime = r"\^\s*\{?\s*(?:1|\\ell|l|I|\||\\prime|')\s*\}?";

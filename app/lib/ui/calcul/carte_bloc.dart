@@ -258,7 +258,16 @@ class RepereBloc extends StatelessWidget {
             virgule: virgule,
           );
           if (!bloc.montreResultat || valeur == null) {
-            return const SizedBox.shrink();
+            if (enExport || bloc.estSaisie) return const SizedBox.shrink();
+            // Rien à afficher, mais on doit pouvoir voir ce qui a été lu.
+            return _AVerifier(
+              bloc: bloc,
+              vue: vue,
+              libelle: l10n.corriger,
+              couleur: accent,
+              vague: false,
+              surOuvrir: (_) => unawaited(_corriger(context)),
+            );
           }
           position = bloc.estSaisie || !bloc.finitParEgal
               ? dessous
@@ -354,9 +363,13 @@ class _AVerifier extends StatelessWidget {
     required this.libelle,
     required this.couleur,
     required this.surOuvrir,
+    this.vague = true,
   });
 
   static const _hauteur = 48.0;
+
+  /// Sans trait : la ligne n'a rien à signaler, on peut seulement la toucher.
+  final bool vague;
 
   final BlocCalcul bloc;
   final VueFeuille vue;
@@ -381,7 +394,7 @@ class _AVerifier extends StatelessWidget {
           child: SizedBox(
             width: largeur,
             height: _hauteur,
-            child: VagueAVerifier(couleur: couleur),
+            child: vague ? VagueAVerifier(couleur: couleur) : null,
           ),
         ),
       ),

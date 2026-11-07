@@ -133,6 +133,15 @@ class _EcranFeuilleState extends State<EcranFeuille> {
     super.dispose();
   }
 
+  Future<void> _choisirFond() => showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    useSafeArea: true,
+    showDragHandle: true,
+    constraints: const BoxConstraints(maxWidth: 560),
+    builder: (_) => const SingleChildScrollView(child: ListeSupports()),
+  );
+
   Future<void> _saisirAuClavier() async {
     final latex = await demanderLatex(context, '');
     if (latex == null || latex.trim().isEmpty || !mounted) return;
@@ -291,6 +300,22 @@ class _EcranFeuilleState extends State<EcranFeuille> {
         ),
         if (_encre.estVide && _calcul.blocs.isEmpty)
           _Invitation(support: reglages.support),
+        if (!_enExport)
+          Positioned(
+            right: 0,
+            // Sur un petit téléphone, sous la barre : rien ne se chevauche.
+            top: MediaQuery.sizeOf(context).width < 420 ? 56 : 0,
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(AppEspacement.sm),
+                child: TextButton.icon(
+                  icon: const Icon(Icons.texture),
+                  label: Text(l10n.choisirFond),
+                  onPressed: () => unawaited(_choisirFond()),
+                ),
+              ),
+            ),
+          ),
         if (!_enExport)
           Positioned(
             left: 0,
