@@ -11,6 +11,13 @@ void main() {
   EcritureResultat? ecrit(BlocCalcul b) =>
       b.ecriture(approcheVoulue: false, virgule: false);
 
+  test('le signe de la racine laisse de la place au nombre', () {
+    final seul = ecrireResultat('2', ecriture)!.cadre;
+    final racine = ecrireResultat(r'\sqrt{2}', ecriture)!.cadre;
+    // Serré, `√29` se lisait `(29` sur le Pad 7.
+    expect(racine.width - seul.width, greaterThan(0.4 * seul.height));
+  });
+
   group('sait écrire', () {
     for (final latex in [
       '0',

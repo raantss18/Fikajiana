@@ -174,6 +174,10 @@ class _EcranFeuilleState extends State<EcranFeuille> {
                   bloc: bloc,
                   calcul: _calcul,
                   vue: _vue,
+                  surTouche: () {
+                    _encre.retirerPointDuToucher();
+                    _surEncre();
+                  },
                 ),
               if (_calcul.modeleManquant)
                 Positioned(

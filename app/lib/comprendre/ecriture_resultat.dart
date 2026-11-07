@@ -484,23 +484,16 @@ class _Compositeur {
     );
   }
 
+  /// Le signe prend de la place : serré, il se confond avec les chiffres et
+  /// `√29` se lit `(29` (vu sur le Pad 7).
   _Boite _racine() {
     final corps = _groupe();
-    final dessus = -corps.haut - 0.14;
-    return _Boite(0.36 + corps.largeur + 0.08, -dessus, corps.bas, [
-      _l([
-        0,
-        -0.4,
-        0.1,
-        -0.46,
-        0.18,
-        corps.bas,
-        0.36,
-        dessus,
-        0.36 + corps.largeur + 0.08,
-        dessus,
-      ]),
-      ..._deplacer(corps, const Offset(0.36, 0)).traces,
+    final dessus = -corps.haut - 0.22;
+    const gauche = 0.54;
+    final droite = gauche + corps.largeur + 0.08;
+    return _Boite(droite, -dessus, corps.bas, [
+      _l([0, -0.3, 0.12, -0.38, 0.26, corps.bas, 0.44, dessus, droite, dessus]),
+      ..._deplacer(corps, const Offset(gauche, 0)).traces,
     ]);
   }
 }
