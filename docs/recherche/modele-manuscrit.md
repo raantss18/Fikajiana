@@ -43,3 +43,7 @@ Le code suit `preprocessor_config` (384×384, normalisation 0,5) : https://huggi
 - **Vérifié** : lecture du code ; les mesures ci-dessus, sur PC ; licences et tailles aux sources citées.
 - **Supposé** : les 770 ms ; la simulation PIL représente Skia ; le choix par plausibilité approchera le plafond.
 - **Reste à tester** : aucun classeur de plausibilité n'existe encore ; l'appareil ; d'autres mains. Les mêmes 50 expressions ont servi partout, donc ces résultats sont optimistes.
+
+## Choix d'Antsa (2026-11-07)
+
+Plusieurs lectures d'abord ; poids non commerciaux refusés ; corpus public en CC0 ; moins de 500 ms pour une expression courte, jusqu'à 1 s pour une longue.

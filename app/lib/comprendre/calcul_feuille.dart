@@ -10,6 +10,7 @@ import 'package:fikajiana/graphe/courbes.dart';
 import 'package:fikajiana/moteur/giac.dart';
 import 'package:fikajiana/moteur/moteur.dart';
 import 'package:fikajiana/reconnaissance/lecteur.dart';
+import 'package:fikajiana/reconnaissance/pix2text.dart' show normaliserLatex;
 import 'package:fikajiana_math/fikajiana_math.dart';
 import 'package:flutter/foundation.dart';
 
@@ -128,6 +129,9 @@ class BlocCalcul {
     }
     return _objet;
   }
+
+  /// Ce que le modèle a aussi pu lire, à proposer à la correction.
+  List<String> autresLectures = const [];
 
   /// `f'(x)` ou `det(…)` : la réponse s'affiche même sans `=`.
   bool demandeResultat = false;
@@ -442,13 +446,37 @@ class CalculFeuille extends ChangeNotifier {
       .._oublierResultat();
     notifyListeners();
     try {
-      final latex = await lecteur.lire(traits);
+      var latex = await lecteur.lire(traits);
       if (bloc._version != version || !identical(_blocs[bloc.cle], bloc)) {
         return;
       }
+      final fonctions = _definitionsPour(bloc).keys.toSet();
+      bloc.autresLectures = const [];
+      // Une lecture qui étonne : on en demande d'autres (ADR 0028). Ce coût
+      // n'est payé que dans le doute.
+      if (plausibilite(latex, fonctions: fonctions) < 0) {
+        final lectures = await lecteur.lirePlusieurs(traits);
+        if (bloc._version != version || !identical(_blocs[bloc.cle], bloc)) {
+          return;
+        }
+        final choix = choisirLecture([
+          latex,
+          ...lectures,
+        ], fonctions: fonctions);
+        final garde = redresserLecture(choix, fonctions: fonctions);
+        final vues = <String>{normaliserLatex(garde)};
+        bloc.autresLectures = [
+          for (final l in lectures)
+            if (vues.add(
+              normaliserLatex(redresserLecture(l, fonctions: fonctions)),
+            ))
+              redresserLecture(l, fonctions: fonctions),
+        ];
+        latex = choix;
+      }
       bloc.latex = _redresser(
         bloc,
-        redresserLecture(latex, fonctions: _definitionsPour(bloc).keys.toSet()),
+        redresserLecture(latex, fonctions: fonctions),
       );
       await _calculer(bloc);
     } on ModeleAbsent {

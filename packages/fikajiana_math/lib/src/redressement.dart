@@ -35,7 +35,7 @@ String _parentheseEnExposant(String s) => s.replaceAllMapped(
 
 /// Les têtes confondues avec un `f` ou un `g` écrits à la main.
 const _commeF = r'\\frac\s*\{\s*1\s*\}\s*\{\s*\d\s*\}|1\s*/\s*\d|7|4|1|\\ell';
-const _commeG = r'9|8|q';
+const _commeG = '9|8|q';
 
 /// `\frac{1}{4}(x)=e^x+2` : une fraction devant `(x)=` n'a pas de raison d'être
 /// écrite ainsi ; c'est une définition si la suite dépend de x, ou si cette
@@ -48,7 +48,9 @@ String _tete(String s, Set<String> fonctions) {
       : null;
 
   final avecPrime = RegExp(
-    '^\\s*($_commeF|$_commeG)\\s*(?:\'|$_exposantPrime)\\s*\\(\\s*([a-z])\\s*\\)(.*)\$',
+    '^\\s*($_commeF|$_commeG)\\s*(?:'
+    "'"
+    '|$_exposantPrime)\\s*\\(\\s*([a-z])\\s*\\)(.*)\$',
     dotAll: true,
   ).firstMatch(s);
   if (avecPrime != null) {

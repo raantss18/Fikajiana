@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:fikajiana/encre/encre.dart';
 import 'package:fikajiana/reconnaissance/pix2text.dart';
 import 'package:fikajiana/reconnaissance/rasteriser.dart';
@@ -23,6 +25,57 @@ void main() {
 
     test('un jeton inconnu est ignoré', () {
       expect(decodeur.decoder([5, 999]), r'\frac');
+    });
+  });
+
+  group('recherche en faisceau', () {
+    // 0 : fin ; le modèle préfère 1, puis 2 ; après 2, il est très sûr.
+    Future<List<double>> etape(List<int> jetons) async {
+      if (jetons.length >= 3) return [9, 0, 0];
+      if (jetons.last == 2) return [0, 0, 8];
+      return [0, 2, 1.9];
+    }
+
+    test('rend plusieurs lectures, la meilleure d’abord', () async {
+      final h = await decoderEnFaisceau(
+        depart: 0,
+        fin: 0,
+        largeur: 2,
+        jetonsMaximum: 6,
+        etape: etape,
+      );
+      expect(h, hasLength(2));
+      expect(h.every((x) => x.finie), isTrue);
+      expect(h.first.scoreMoyen, greaterThanOrEqualTo(h.last.scoreMoyen));
+      expect(h.map((x) => x.jetons[1]).toSet(), containsAll([2]));
+    });
+
+    test('une largeur de 1 revient à la lecture simple', () async {
+      final h = await decoderEnFaisceau(
+        depart: 0,
+        fin: 0,
+        largeur: 1,
+        jetonsMaximum: 6,
+        etape: (j) async => j.length >= 3 ? [9, 0] : [0, 5],
+      );
+      expect(h.single.jetons, [0, 1, 1]);
+    });
+
+    test('s’arrête à la limite de jetons', () async {
+      final h = await decoderEnFaisceau(
+        depart: 0,
+        fin: 0,
+        largeur: 2,
+        jetonsMaximum: 4,
+        etape: (_) async => [0, 5, 4],
+      );
+      expect(h.every((x) => x.jetons.length <= 5), isTrue);
+    });
+
+    test('log-softmax : somme des probabilités à 1, ordre gardé', () {
+      final p = logSoftmax([1, 2, 3]);
+      expect(p.map(math.exp).reduce((a, b) => a + b), closeTo(1, 1e-9));
+      expect(p[2], greaterThan(p[0]));
     });
   });
 

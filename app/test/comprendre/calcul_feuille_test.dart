@@ -11,7 +11,7 @@ import 'package:fikajiana/reconnaissance/lecteur.dart';
 import 'package:fikajiana_math/fikajiana_math.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-class _Lecteur implements Lecteur {
+class _Lecteur extends Lecteur {
   new(this.reponse);
   String reponse;
   bool absent = false;
@@ -22,6 +22,16 @@ class _Lecteur implements Lecteur {
     lectures++;
     if (absent) throw const ModeleAbsent();
     return reponse;
+  }
+
+  /// Ce que répond la recherche en faisceau.
+  List<String> plusieurs = const [];
+  int doutes = 0;
+
+  @override
+  Future<List<String>> lirePlusieurs(List<Trait> traits) async {
+    doutes++;
+    return plusieurs.isEmpty ? [reponse] : plusieurs;
   }
 }
 
@@ -585,5 +595,31 @@ void main() {
     await _attendre();
     expect(calcul.blocs, hasLength(2));
     expect(haut.dessousLibre, isFalse);
+  });
+
+  group('une lecture douteuse en demande d’autres', () {
+    Future<BlocCalcul> ecrire() async {
+      _trait(encre, 0, 0);
+      encre.terminer();
+      calcul.encreChangee();
+      await _attendre();
+      return calcul.blocs.single;
+    }
+
+    test('une lecture sensée ne coûte rien de plus', () async {
+      lecteur.reponse = 'x+1=2';
+      await ecrire();
+      expect(lecteur.doutes, 0);
+    });
+
+    test('la plus sensée est gardée, les autres sont proposées', () async {
+      lecteur
+        ..reponse = r'\begin{matrix}x=1\\x=\end{matrix}'
+        ..plusieurs = ['x+1=2', 'x+4=2'];
+      final b = await ecrire();
+      expect(lecteur.doutes, 1);
+      expect(b.latex, 'x+1=2');
+      expect(b.autresLectures, ['x+4=2']);
+    });
   });
 }

@@ -175,6 +175,7 @@ Future<ChoixBloc?> ouvrirPanneauBloc(
   required String message,
   required Widget? lecture,
   required String effacer,
+  List<Widget> autres = const [],
 }) {
   final fixe = MediaQuery.disableAnimationsOf(context);
   return showGeneralDialog<ChoixBloc>(
@@ -188,6 +189,7 @@ Future<ChoixBloc?> ouvrirPanneauBloc(
       message: message,
       lecture: lecture,
       effacer: effacer,
+      autres: autres,
     ),
     transitionBuilder: (context, animation, _, child) {
       final courbe = CurvedAnimation(
@@ -215,8 +217,11 @@ class _PanneauBloc extends StatelessWidget {
     required this.message,
     required this.lecture,
     required this.effacer,
+    this.autres = const [],
   });
 
+  /// D'autres lectures possibles, à toucher.
+  final List<Widget> autres;
   final Offset ancre;
   final String message;
   final Widget? lecture;
@@ -259,6 +264,14 @@ class _PanneauBloc extends StatelessWidget {
                   if (lecture != null) ...[
                     const SizedBox(height: AppEspacement.sm),
                     lecture!,
+                  ],
+                  if (autres.isNotEmpty) ...[
+                    const SizedBox(height: AppEspacement.sm),
+                    Text(
+                      l10n.blocAutresLectures,
+                      style: theme.textTheme.bodySmall,
+                    ),
+                    Wrap(spacing: AppEspacement.sm, children: autres),
                   ],
                   const SizedBox(height: AppEspacement.sm),
                   Wrap(

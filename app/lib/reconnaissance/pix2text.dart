@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:flutter_onnxruntime/flutter_onnxruntime.dart';
@@ -67,6 +68,62 @@ class Lecture {
   final int jetons;
 }
 
+/// Une lecture en cours : ses jetons et sa log-probabilité.
+class Hypothese {
+  const new(this.jetons, this.score, {this.finie = false});
+
+  final List<int> jetons;
+  final double score;
+  final bool finie;
+
+  /// Sans ce partage par la longueur, les courtes gagneraient toujours.
+  double get scoreMoyen => score / jetons.length;
+}
+
+/// Recherche en faisceau : garde les [largeur] meilleures suites à chaque pas.
+/// [etape] rend les logits du jeton suivant.
+Future<List<Hypothese>> decoderEnFaisceau({
+  required int depart,
+  required int fin,
+  required int largeur,
+  required int jetonsMaximum,
+  required Future<List<double>> Function(List<int>) etape,
+}) async {
+  var faisceau = [
+    Hypothese([depart], 0),
+  ];
+  for (var pas = 0; pas < jetonsMaximum; pas++) {
+    if (faisceau.every((h) => h.finie)) break;
+    final suites = <Hypothese>[];
+    for (final h in faisceau) {
+      if (h.finie) {
+        suites.add(h);
+        continue;
+      }
+      final probabilites = logSoftmax(await etape(h.jetons));
+      final indices = List.generate(probabilites.length, (i) => i)
+        ..sort((a, b) => probabilites[b].compareTo(probabilites[a]));
+      for (final i in indices.take(largeur)) {
+        suites.add(
+          i == fin
+              ? Hypothese(h.jetons, h.score + probabilites[i], finie: true)
+              : Hypothese([...h.jetons, i], h.score + probabilites[i]),
+        );
+      }
+    }
+    suites.sort((a, b) => b.scoreMoyen.compareTo(a.scoreMoyen));
+    faisceau = suites.take(largeur).toList();
+  }
+  return faisceau;
+}
+
+List<double> logSoftmax(List<double> logits) {
+  final maximum = logits.reduce(math.max);
+  final somme = logits.fold<double>(0, (s, v) => s + math.exp(v - maximum));
+  final total = math.log(somme);
+  return [for (final v in logits) v - maximum - total];
+}
+
 /// Pix2Text-MFR en ONNX. Rien ne quitte l'appareil.
 class Pix2Text {
   new _(this._encodeur, this._decodeur, this._decodeurTexte);
@@ -126,6 +183,49 @@ class Pix2Text {
       msDecodeur: chrono.elapsedMilliseconds,
       jetons: jetons.length - 1,
     );
+  }
+
+  /// Plusieurs lectures, de la plus probable à la moins probable. Coûte environ
+  /// [largeur] fois une lecture : réservé aux lectures douteuses (ADR 0028).
+  Future<List<String>> lirePlusieurs(
+    Float32List image, {
+    int largeur = 3,
+    int jetonsMaximum = _jetonsMaximum,
+  }) async {
+    final entree = await OrtValue.fromList(image, [1, 3, 384, 384]);
+    final sortie = await _encodeur.run({'pixel_values': entree});
+    await entree.dispose();
+    final memoire = sortie.values.first;
+    try {
+      final hypotheses = await decoderEnFaisceau(
+        depart: _jetonFin,
+        fin: _jetonFin,
+        largeur: largeur,
+        jetonsMaximum: jetonsMaximum,
+        etape: (jetons) async {
+          final ids = await OrtValue.fromList(Int64List.fromList(jetons), [
+            1,
+            jetons.length,
+          ]);
+          final resultat = await _decodeur.run({
+            'input_ids': ids,
+            'encoder_hidden_states': memoire,
+          });
+          await ids.dispose();
+          final logits = resultat.values.first;
+          final valeurs = await logits.asFlattenedList();
+          await logits.dispose();
+          final vocabulaire = valeurs.length ~/ jetons.length;
+          return [
+            for (var i = valeurs.length - vocabulaire; i < valeurs.length; i++)
+              (valeurs[i] as num).toDouble(),
+          ];
+        },
+      );
+      return [for (final h in hypotheses) _decodeurTexte.decoder(h.jetons)];
+    } finally {
+      await memoire.dispose();
+    }
   }
 
   /// Indice du maximum dans la dernière ligne des logits.
