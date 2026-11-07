@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:fikajiana/comprendre/calcul_feuille.dart';
 import 'package:fikajiana/encre/traverse_ecriture.dart';
 import 'package:fikajiana/encre/vue_feuille.dart';
 import 'package:fikajiana/l10n/l10n.dart';
 import 'package:fikajiana/reglages/reglages.dart';
+import 'package:fikajiana/ui/calcul/marques_bloc.dart';
 import 'package:fikajiana/ui/navigation/destination.dart';
 import 'package:fikajiana/ui/navigation/page_destination.dart';
 import 'package:fikajiana/ui/services.dart';
@@ -20,6 +22,7 @@ class RepereBloc extends StatelessWidget {
     required this.calcul,
     required this.vue,
     required this.surTouche,
+    required this.surEffacer,
     this.enExport = false,
     super.key,
   });
@@ -34,6 +37,9 @@ class RepereBloc extends StatelessWidget {
   /// point dans l'encre : voir [TraverseEcriture].
   final VoidCallback surTouche;
 
+  /// « Effacer » dans le panneau d'une écriture à vérifier.
+  final VoidCallback surEffacer;
+
   Future<void> _corriger(BuildContext context) async {
     surTouche();
     final latex = await demanderLatex(
@@ -43,6 +49,33 @@ class RepereBloc extends StatelessWidget {
     );
     if (latex != null && latex.trim().isNotEmpty) {
       unawaited(calcul.corriger(bloc, latex));
+    }
+  }
+
+  Future<void> _ouvrirPanneau(BuildContext context, Offset ancre) async {
+    surTouche();
+    final l10n = context.l10n;
+    final latex = bloc.latex?.trim() ?? '';
+    final choix = await ouvrirPanneauBloc(
+      context,
+      ancre: ancre,
+      message: switch (bloc.etat) {
+        EtatBloc.arrete => l10n.blocPanneauArrete,
+        EtatBloc.sansResultat => l10n.blocPanneauSansResultat,
+        EtatBloc.nonCompris => l10n.blocPanneauNonCompris,
+        _ => l10n.blocPanneauErreur,
+      },
+      lecture: latex.isEmpty ? null : _Formule(latex: latex),
+      effacer: bloc.estSaisie ? l10n.retirer : l10n.blocEffacer,
+    );
+    if (!context.mounted) return;
+    switch (choix) {
+      case ChoixBloc.corriger:
+        await _corriger(context);
+      case ChoixBloc.effacer:
+        surEffacer();
+      case null:
+        break;
     }
   }
 
@@ -72,33 +105,32 @@ class RepereBloc extends StatelessWidget {
     final Offset position;
     final Widget contenu;
     switch (bloc.etat) {
-      case EtatBloc.lecture:
-        return Positioned(
-          left: droite.dx + AppEspacement.sm,
-          top: droite.dy - 24,
-          child: const SizedBox.square(
-            dimension: 48,
-            child: Center(
-              child: SizedBox.square(
-                dimension: 18,
-                child: CircularProgressIndicator(strokeWidth: 2),
+      case EtatBloc.lecture || EtatBloc.calcul:
+        final lueur = (bloc.cadre.inflate(6).topLeft * vue.zoom) + vue.decalage;
+        final taille = bloc.cadre.inflate(6).size * vue.zoom;
+        return Positioned.fill(
+          child: Stack(
+            children: [
+              Positioned(
+                left: lueur.dx,
+                top: lueur.dy,
+                width: taille.width,
+                height: taille.height,
+                child: LueurLecture(couleur: accent),
               ),
-            ),
-          ),
-        );
-      case EtatBloc.calcul:
-        return Positioned(
-          left: droite.dx + AppEspacement.sm,
-          top: droite.dy - 24,
-          child: TraverseEcriture(
-            child: IconButton(
-              icon: const Icon(Icons.stop_circle_outlined),
-              tooltip: l10n.blocArreter,
-              onPressed: () {
-                surTouche();
-                calcul.arreter();
-              },
-            ),
+              if (bloc.etat == EtatBloc.calcul)
+                Positioned(
+                  left: droite.dx + AppEspacement.sm,
+                  top: droite.dy - 24,
+                  child: _ArretDiffere(
+                    libelle: l10n.blocArreter,
+                    surArreter: () {
+                      surTouche();
+                      calcul.arreter();
+                    },
+                  ),
+                ),
+            ],
           ),
         );
       case EtatBloc.sansModele:
@@ -113,16 +145,12 @@ class RepereBloc extends StatelessWidget {
           EtatBloc.nonCompris => l10n.blocNonCompris,
           _ => l10n.blocErreur,
         };
-        return Positioned(
-          left: droite.dx + AppEspacement.sm,
-          top: droite.dy - 24,
-          child: TraverseEcriture(
-            child: IconButton(
-              icon: Icon(Icons.help_outline, color: accent),
-              tooltip: message,
-              onPressed: () => unawaited(_corriger(context)),
-            ),
-          ),
+        return _AVerifier(
+          bloc: bloc,
+          vue: vue,
+          libelle: message,
+          couleur: accent,
+          surOuvrir: (ancre) => _ouvrirPanneau(context, ancre),
         );
       case EtatBloc.fait:
         // Une courbe : rien à calculer, un bouton nommé pour la tracer. La
@@ -206,6 +234,119 @@ class RepereBloc extends StatelessWidget {
             onTap: () => unawaited(_corriger(context)),
             child: Center(widthFactor: 1, child: contenu),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// « Arrêter » n'apparaît que si le calcul dure : un calcul court ne montre
+/// que la lueur.
+class _ArretDiffere extends StatefulWidget {
+  const new({required this.libelle, required this.surArreter});
+
+  final String libelle;
+  final VoidCallback surArreter;
+
+  @override
+  State<_ArretDiffere> createState() => _ArretDiffereState();
+}
+
+class _ArretDiffereState extends State<_ArretDiffere> {
+  static const _attente = Duration(milliseconds: 1500);
+
+  late final Timer _minuteur;
+  var _visible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _minuteur = Timer(_attente, () {
+      if (mounted) setState(() => _visible = true);
+    });
+  }
+
+  @override
+  void dispose() {
+    _minuteur.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: MediaQuery.disableAnimationsOf(context)
+          ? Duration.zero
+          : Durations.short3,
+      child: _visible
+          ? TraverseEcriture(
+              child: FilledButton.tonalIcon(
+                icon: const Icon(Icons.stop_outlined),
+                label: Text(widget.libelle),
+                onPressed: widget.surArreter,
+              ),
+            )
+          : const SizedBox.shrink(),
+    );
+  }
+}
+
+/// Une écriture à vérifier : un trait ondulé dessous, à toucher. Le stylet peut
+/// écrire par-dessus. Une expression saisie au clavier se montre aussi.
+class _AVerifier extends StatelessWidget {
+  const new({
+    required this.bloc,
+    required this.vue,
+    required this.libelle,
+    required this.couleur,
+    required this.surOuvrir,
+  });
+
+  static const _hauteur = 48.0;
+
+  final BlocCalcul bloc;
+  final VueFeuille vue;
+  final String libelle;
+  final Color couleur;
+  final ValueChanged<Offset> surOuvrir;
+
+  @override
+  Widget build(BuildContext context) {
+    final bas = bloc.cadre.bottomLeft * vue.zoom + vue.decalage;
+    final largeur = math.max(_hauteur, bloc.cadre.width * vue.zoom);
+    final ligne = Semantics(
+      button: true,
+      label: libelle,
+      child: Builder(
+        builder: (context) => GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTapUp: (details) {
+            final boite = context.findRenderObject()! as RenderBox;
+            surOuvrir(boite.localToGlobal(Offset(0, boite.size.height)));
+          },
+          child: SizedBox(
+            width: largeur,
+            height: _hauteur,
+            child: VagueAVerifier(couleur: couleur),
+          ),
+        ),
+      ),
+    );
+    if (!bloc.estSaisie) {
+      return Positioned(left: bas.dx, top: bas.dy - 16, child: ligne);
+    }
+    return Positioned(
+      left: bas.dx,
+      top: bas.dy,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 480),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _Formule(latex: bloc.latex ?? '', couleur: couleur),
+            ligne,
+          ],
         ),
       ),
     );

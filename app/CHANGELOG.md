@@ -4,6 +4,20 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+## [0.7.1] — 2026-11-07
+
+### Message fr
+
+Fini le petit ? et le petit cercle : une lueur passe sous ton écriture pendant la lecture, et un trait ondulé montre ce qui reste à vérifier. Touche-le pour voir ce qui a été lu, puis corriger ou effacer.
+
+### Message en
+
+No more small ? or spinner: a glow passes under your writing while it is read, and a wavy underline shows what needs checking. Tap it to see what was read, then correct or erase it.
+
+### Changements
+
+- Quand une écriture reste à vérifier, un trait ondulé remplace le petit `?` : touchez-le pour voir ce qui a été lu, corriger ou effacer. La lecture se voit par une lueur sous l'écriture, plus par un cercle. / When writing needs checking, a wavy underline replaces the small `?`: tap it to see what was read, correct or erase it. Reading now shows as a glow under your writing, not a spinner.
+
 ## [0.7.0] — 2026-11-07
 
 ### Message fr

@@ -533,5 +533,11 @@
         }
     },
     "recentrerGraphe": "Back to the starting view",
-    "ratureFaite": "Erased by scribbling"
+    "ratureFaite": "Erased by scribbling",
+    "blocPanneauNonCompris": "Read this way, it can't be calculated",
+    "blocPanneauSansResultat": "This calculation gives no result",
+    "blocPanneauArrete": "Calculation stopped: it was taking too long",
+    "blocPanneauErreur": "The calculation failed",
+    "blocEffacer": "Erase",
+    "blocEfface": "Writing erased"
 }
