@@ -416,24 +416,23 @@ class _EcranGeometrieState extends State<EcranGeometrie> {
     if (valeur != null) atelier.ajouterCurseur(valeur);
   }
 
+  List<Color> get _stylos => PorteeReglages.de(context).support.stylos;
+
   Future<void> _ouvrirObjets() => _feuille(
     (contexte) => PanneauObjets(
       atelier: _atelier,
       // Les courbes sont des objets de la Figure : elles ouvrent la liste.
       courbes: [
         for (var i = 0; i < _courbes.liste.length; i++)
-          LegendeCourbe(
-            numero: i + 1,
+          (
             latex: _courbes.liste[i].latex,
-            couleur: PorteeReglages.de(context)
-                .support
-                .stylos[i % PorteeReglages.de(context).support.stylos.length],
-            surToucher: () {
-              Navigator.of(contexte).pop();
-              unawaited(_modifierCourbe(i));
-            },
+            couleur: _stylos[i % _stylos.length],
           ),
       ],
+      surCourbe: (i) {
+        Navigator.of(contexte).pop();
+        unawaited(_modifierCourbe(i));
+      },
       surObjet: (id) {
         Navigator.of(contexte).pop();
         unawaited(_ouvrirProprietes(id));

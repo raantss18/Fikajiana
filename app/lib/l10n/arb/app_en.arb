@@ -597,5 +597,9 @@
                 "type": "int"
             }
         }
+    },
+    "objetCourbe": "Curve",
+    "@objetCourbe": {
+        "description": "Kind of a curve row in the Figure's object list."
     }
 }

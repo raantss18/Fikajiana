@@ -368,5 +368,6 @@
     "motPlacer": "placer",
     "historiqueCourbes": "{n, plural, =1{1 courbe} other{{n} courbes}}",
     "nouveauDocument": "Nouveau document",
-    "objetsPresents": "{n, plural, =0{Objets} =1{1 objet} other{{n} objets}}"
+    "objetsPresents": "{n, plural, =0{Objets} =1{1 objet} other{{n} objets}}",
+    "objetCourbe": "Courbe"
 }

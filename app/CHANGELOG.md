@@ -23,6 +23,7 @@ Fikajiana 1.0: each sheet now has its own Figure, and a new sheet starts with an
 - Une seule création, « Nouveau document » : la feuille et sa Figure ensemble. `∫f(x)dx` se simplifie : `x³+x`, pas `3x³/3+x`. `plot(f(x))` écrit à la main se trace. / A single creation entry, "New document": the sheet and its Figure together. `∫f(x)dx` is simplified: `x³+x`, not `3x³/3+x`. Handwritten `plot(f(x))` can be plotted.
 - Dans la Figure, un bouton discret nommé « 4 objets » ouvre la liste de tout ce qu'elle contient, courbes comprises ; la légende flottante ne gêne plus la vue (elle reste dans l'image exportée). / In the Figure, a discreet button named "4 objects" opens the list of everything it holds, curves included; the floating legend no longer blocks the view (it stays in the exported image).
 - `AB =` écrit à la main donne la distance entre les points A et B de la feuille, même quand le modèle lit mal les deux lettres. / Handwritten `AB =` gives the distance between points A and B of the sheet, even when the model misreads the two letters.
+- Une ligne tapée au clavier s'écrit à la main sur la Feuille, comme le reste : la question à l'encre de la feuille, la réponse en résultat. / A line typed on the keyboard is handwritten on the Sheet like everything else: the question in the sheet's ink, the answer as a result.
 - La page s'arrête en haut ; l'export PNG et PDF part de son coin. / The page stops at the top; PNG and PDF export start from its corner.
 
 ## [0.9.1] — 2026-11-07

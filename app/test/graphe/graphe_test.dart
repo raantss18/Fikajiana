@@ -299,9 +299,10 @@ void main() {
       // La courbe est un objet de la Figure : comptée, et dans la liste.
       await t.tap(find.text('1 objet'));
       await t.pumpAndSettle();
-      expect(find.text('1'), findsOneWidget);
+      // Une ligne comme les autres objets : numéro, formule, « Courbe ».
+      expect(find.text('Courbe'), findsOneWidget);
 
-      await t.tap(find.text('1'));
+      await t.tap(find.text('Courbe'));
       await t.pumpAndSettle();
       await t.tap(find.text('Retirer'));
       await t.pumpAndSettle();
