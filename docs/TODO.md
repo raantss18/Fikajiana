@@ -13,7 +13,7 @@
 2. 🔄 **Meilleur modèle** : étude faite (`docs/recherche/modele-manuscrit.md`) : aucun modèle à remplacer tel quel. Choix d'Antsa : plusieurs lectures dans le doute (ADR 0028, fait, à mesurer sur le Pad 7), poids non commerciaux refusés. ⏳ Corpus de 200 lignes publiques en CC0, puis mesure.
 3. 🔄 **Deux espaces** : fusionné (ADR 0027), non publié. Reste : essai au stylet sur le Pad 7 et sur le Poco.
 4. 🔄 **Lien Feuille ↔ Figure** : Tracer et Placer vont au même endroit (fait). Reste : accrocher les constructions aux courbes ; un objet garde sa ligne d'origine.
-5. 🔄 **`a=2`** définit `a`, fait (ADR 0029). ⏳ `cercle(A;2)`, `droite(A;B)`, `milieu(A;B)` depuis la Feuille.
+5. 🔄 **`a=2`** définit `a`, fait (ADR 0029). 🔄 `cercle(A;2)`, `(AB)`, `[AB]`, `I=milieu(A;B)`, `médiatrice(A;B)` depuis la Feuille, faits ; à essayer au stylet. ⏳ parallèle et perpendiculaire.
 6. 🔄 **Bouton Fond** sur la Feuille (demande d'Antsa), fait, à essayer.
 7. ⏳ **Essai réseau coupé sur le Pad 7** : manque pour 0.7.1 et 0.7.2 (mode avion à activer par Antsa).
 

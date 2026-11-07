@@ -98,6 +98,7 @@ class RepereBloc extends StatelessWidget {
   Widget build(BuildContext context) {
     final contenu = _contenu(context);
     final objets = bloc.aPlacer;
+    final commande = bloc.commande;
     if (bloc.lueParMorceaux && !enExport && bloc.etat == EtatBloc.fait) {
       // Ce qui a été compris, à vérifier d'un coup d'œil : un chiffre mal lu
       // fausserait le résultat sans le dire.
@@ -140,7 +141,11 @@ class RepereBloc extends StatelessWidget {
                 left: bloc.cadre.right * vue.zoom + vue.decalage.dx + 8,
                 top: bloc.cadre.top * vue.zoom + vue.decalage.dy,
                 child: TraverseEcriture(
-                  child: _BoutonPlacer(objets: objets, surTouche: surTouche),
+                  child: _BoutonPlacer(
+                    objets: objets,
+                    commande: commande,
+                    surTouche: surTouche,
+                  ),
                 ),
               ),
           ],
@@ -160,7 +165,22 @@ class RepereBloc extends StatelessWidget {
             left: haut.dx + AppEspacement.sm,
             top: haut.dy,
             child: TraverseEcriture(
-              child: _BoutonPlacer(objets: objets, surTouche: surTouche),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Tapée au clavier, la ligne n'a pas d'encre : on l'écrit.
+                  if (bloc.estSaisie)
+                    _Formule(
+                      latex: bloc.latex ?? '',
+                      couleur: Theme.of(context).colorScheme.tertiary,
+                    ),
+                  _BoutonPlacer(
+                    objets: objets,
+                    commande: commande,
+                    surTouche: surTouche,
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -381,9 +401,10 @@ class RepereBloc extends StatelessWidget {
 
 /// Place dans la Figure ce qu'une ligne a calculé : un vecteur et ses points.
 class _BoutonPlacer extends StatelessWidget {
-  const new({required this.objets, required this.surTouche});
+  const new({required this.objets, required this.surTouche, this.commande});
 
   final List<ObjetLu> objets;
+  final CommandeGeo? commande;
   final VoidCallback surTouche;
 
   @override
@@ -394,6 +415,8 @@ class _BoutonPlacer extends StatelessWidget {
       surTouche();
       final atelier = PorteeServices.de(context).atelier;
       objets.forEach(atelier.placerObjet);
+      final c = commande;
+      if (c != null) atelier.construire(c);
       Navigator.of(context).push(RouteDestination(Destination.figure));
     },
   );

@@ -27,6 +27,102 @@ class VecteurLu extends ObjetLu {
   const new(super.nom, super.x, super.y);
 }
 
+/// Ce qu'une commande de la Feuille construit dans la Figure.
+enum GenreCommande {
+  /// `(AB)`, `droite(A;B)`.
+  droite,
+
+  /// `[AB]`, `segment(A;B)`.
+  segment,
+
+  /// `[AB)`, `demi-droite(A;B)`.
+  demiDroite,
+
+  /// `cercle(A;B)` : de centre A, passant par B.
+  cercle,
+
+  /// `cercle(A;2)` : de centre A, de rayon 2.
+  cercleRayon,
+
+  /// `milieu(A;B)`, `I=milieu(A;B)`.
+  milieu,
+
+  /// `mediatrice(A;B)`.
+  mediatrice,
+}
+
+/// `cercle(A;2)`, `(AB)`, `[AB]`, `I=milieu(A;B)` : une construction écrite
+/// sur la Feuille, à faire dans la Figure avec des points déjà déclarés.
+class CommandeGeo {
+  /// Crée la commande.
+  const new(this.genre, this.points, {this.rayon, this.nom});
+
+  /// Ce qu'elle construit.
+  final GenreCommande genre;
+
+  /// Les noms des points dont elle part, dans l'ordre.
+  final List<String> points;
+
+  /// Le rayon d'un cercle de rayon donné.
+  final double? rayon;
+
+  /// Le nom donné au résultat : `I` dans `I=milieu(A;B)`.
+  final String? nom;
+}
+
+final Map<String, GenreCommande> _motsCommandes = {
+  'cercle': GenreCommande.cercle,
+  'droite': GenreCommande.droite,
+  'segment': GenreCommande.segment,
+  'demidroite': GenreCommande.demiDroite,
+  'demi-droite': GenreCommande.demiDroite,
+  'milieu': GenreCommande.milieu,
+  'mediatrice': GenreCommande.mediatrice,
+  'médiatrice': GenreCommande.mediatrice,
+};
+
+/// La construction que dit [latex], ou `null`.
+CommandeGeo? lireCommande(String latex) {
+  final s = latex
+      .replaceAll(RegExp(r'\\(?:left|right)\b'), '')
+      .replaceAllMapped(
+        RegExp(r'\\(?:mathrm|text|operatorname|mathit|rm)\s*\{([^{}]*)\}'),
+        (m) => m[1]!,
+      )
+      .replaceAll(r'\{', '{')
+      .replaceAll(r'\}', '}')
+      .replaceAll(RegExp(r'\s'), '');
+  // `(AB)`, `[AB]`, `[AB)` : l'écriture du cours.
+  final court = RegExp(r'^([(\[])([A-Z])([A-Z])([)\]])$').firstMatch(s);
+  if (court != null) {
+    final genre = switch ((court[1], court[4])) {
+      ('(', ')') => GenreCommande.droite,
+      ('[', ']') => GenreCommande.segment,
+      ('[', ')') => GenreCommande.demiDroite,
+      _ => null,
+    };
+    if (genre == null) return null;
+    return CommandeGeo(genre, [court[2]!, court[3]!]);
+  }
+  final m = RegExp(r'^(?:([A-Z])=)?([a-zéè\-]+)\(([A-Z])[;,|]?([A-Z]|[^)]+)\)$')
+      .firstMatch(s);
+  if (m == null) return null;
+  var genre = _motsCommandes[m[2]!.toLowerCase()];
+  if (genre == null) return null;
+  final premier = m[3]!;
+  final second = m[4]!;
+  final nom = m[1];
+  if (RegExp(r'^[A-Z]$').hasMatch(second)) {
+    return CommandeGeo(genre, [premier, second], nom: nom);
+  }
+  // Un nombre après le centre : le rayon.
+  if (genre != GenreCommande.cercle) return null;
+  final rayon = _valeur(second.replaceFirst(RegExp('^[;,|]'), ''));
+  if (rayon == null || rayon <= 0) return null;
+  genre = GenreCommande.cercleRayon;
+  return CommandeGeo(genre, [premier], rayon: rayon, nom: nom);
+}
+
 final _colonne = RegExp(
   r'\\begin\{(?:pmatrix|bmatrix|matrix|array)\}(?:\{[a-z|]*\})?'
   r'(.*?)\\\\(.*?)(?:\\\\)?\\end\{(?:pmatrix|bmatrix|matrix|array)\}',

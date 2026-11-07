@@ -149,9 +149,21 @@ class _EcranFeuilleState extends State<EcranFeuille> {
     final saisies = _calcul.blocs.where((b) => b.estSaisie).length;
     final depart = MediaQuery.sizeOf(context).center(Offset.zero) / 2;
     final position = depart + Offset(0, saisies * _ecartSaisies);
-    unawaited(_calcul.saisir(latex, _vue.versPage(position)));
+    await _calcul.saisir(latex, _vue.versPage(position));
+    if (!mounted) return;
     setState(() {});
     final services = PorteeServices.de(context);
+    // Une construction : la ligne se pose, puis la Figure s'ouvre avec elle.
+    if (lireCommande(latex) != null) {
+      final bloc = _calcul.blocs.lastOrNull;
+      final commande = bloc?.commande;
+      if (bloc != null && commande != null) {
+        bloc.aPlacer.forEach(services.atelier.placerObjet);
+        services.atelier.construire(commande);
+        Navigator.of(context).push(RouteDestination(Destination.figure));
+      }
+      return;
+    }
     final objet = lireObjet(latex);
     if (objet != null) {
       services.atelier.placerObjet(objet);

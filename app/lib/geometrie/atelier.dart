@@ -770,6 +770,48 @@ class Atelier extends ChangeNotifier {
     _valider();
   }
 
+  /// Construit dans la Figure ce que commande la Feuille : `cercle(A;2)`,
+  /// `(AB)`… Les points doivent y être ; rend `false` sinon. S'annule d'un
+  /// coup.
+  bool construire(CommandeGeo commande) {
+    final ids = [for (final n in commande.points) _pointExistant(n)];
+    if (ids.contains(null)) return false;
+    final parents = ids.cast<int>();
+    final int id;
+    switch (commande.genre) {
+      case GenreCommande.cercleRayon:
+        final r = _ajouter(
+          NombreLibre(commande.rayon!),
+          apparence: Apparence(visible: false),
+        );
+        id = _ajouter(
+          Construite(GenreConstruction.cercleRayon, [...parents, r]),
+        );
+      case final genre:
+        final construction = switch (genre) {
+          GenreCommande.droite => GenreConstruction.droite,
+          GenreCommande.segment => GenreConstruction.segment,
+          GenreCommande.demiDroite => GenreConstruction.demiDroite,
+          GenreCommande.cercle => GenreConstruction.cercle,
+          GenreCommande.milieu => GenreConstruction.milieu,
+          GenreCommande.mediatrice => GenreConstruction.mediatrice,
+          GenreCommande.cercleRayon => GenreConstruction.cercleRayon,
+        };
+        final deja = _figure.objets.where((o) {
+          final d = _figure.definition(o);
+          return d is Construite &&
+              d.genre == construction &&
+              d.parents.join(',') == parents.join(',');
+        }).firstOrNull;
+        id = deja ?? _ajouter(Construite(construction, parents));
+    }
+    final nom = commande.nom;
+    if (nom != null) _figure.renommer(id, nom);
+    _formes = null;
+    _valider();
+    return true;
+  }
+
   int? _pointExistant(String nom) {
     for (final id in _figure.objets) {
       if (_figure.categorie(id) == CategorieGeo.point &&

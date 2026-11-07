@@ -153,6 +153,9 @@ class BlocCalcul {
   /// faux et le résultat avec lui.
   bool lueParMorceaux = false;
 
+  /// `cercle(A;2)`, `(AB)` : ce qu'il faut construire dans la Figure.
+  CommandeGeo? commande;
+
   /// Un vecteur calculé peut aussi se placer dans la Figure.
   List<ObjetLu> aPlacer = const [];
 
@@ -664,6 +667,23 @@ class CalculFeuille extends ChangeNotifier {
   }
 
   Future<void> _calculer(BlocCalcul bloc, {bool propager = true}) async {
+    final commande = lireCommande(bloc.latex ?? '');
+    if (commande != null) {
+      // Ses points doivent être déclarés au-dessus : sinon, rien à placer.
+      final points = _contextePour(bloc).points;
+      if (!commande.points.every(points.containsKey)) {
+        bloc.etat = EtatBloc.nonCompris;
+        return;
+      }
+      bloc
+        ..aPlacer = [
+          for (final n in commande.points)
+            PointLu(n, points[n]!.$1, points[n]!.$2),
+        ]
+        ..commande = commande
+        ..etat = EtatBloc.fait;
+      return;
+    }
     if (bloc.objet != null || bloc.courbeSeule) {
       bloc.etat = EtatBloc.fait;
       return;

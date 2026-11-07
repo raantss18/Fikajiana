@@ -52,4 +52,48 @@ void main() {
       expect(a.figure.objets, isEmpty);
     });
   });
+
+  group('construire depuis la feuille', () {
+    Atelier avecAB() => Atelier()
+      ..placerObjet(const PointLu('A', 0, 0))
+      ..placerObjet(const PointLu('B', 4, 0));
+
+    test('un cercle de rayon donné', () {
+      final a = avecAB();
+      expect(
+        a.construire(
+          const CommandeGeo(GenreCommande.cercleRayon, ['A'], rayon: 2),
+        ),
+        isTrue,
+      );
+      final c = a.formes.values.whereType<CercleGeo>().single;
+      expect(c.rayon, 2);
+    });
+
+    test('la droite (AB), une seule fois', () {
+      final a = avecAB();
+      const droite = CommandeGeo(GenreCommande.droite, ['A', 'B']);
+      a
+        ..construire(droite)
+        ..construire(droite);
+      expect(a.formes.values.whereType<DroiteGeo>(), hasLength(1));
+    });
+
+    test('I = milieu de [AB]', () {
+      final a = avecAB()
+        ..construire(
+          const CommandeGeo(GenreCommande.milieu, ['A', 'B'], nom: 'I'),
+        );
+      expect((point(a, 'I')!.x, point(a, 'I')!.y), (2, 0));
+    });
+
+    test('sans le point, rien ne se fait', () {
+      final a = Atelier();
+      expect(
+        a.construire(const CommandeGeo(GenreCommande.droite, ['A', 'B'])),
+        isFalse,
+      );
+      expect(a.figure.objets, isEmpty);
+    });
+  });
 }
