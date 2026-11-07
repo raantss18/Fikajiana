@@ -88,7 +88,7 @@ List<List<Trait>> _separerLignes(List<Trait> groupe) {
     rangs.last.add(t);
   }
 
-  rang.length >= 3 && cadreDuGroupe(rang).width >= 0.3 * largeurTotale;
+  // Une vraie ligne : assez de signes, assez large ; un exposant n'en est pas.
   bool estLigne(List<Trait> rang) =>
       rang.length >= 3 && cadreDuGroupe(rang).width >= 0.3 * largeurTotale;
   final lignes = rangs.where(estLigne).toList();

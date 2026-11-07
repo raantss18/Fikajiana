@@ -568,7 +568,7 @@ void main() {
     void barre(double y) {
       encre.commencer(PointEncre(0, y, 0.1));
       for (var i = 1; i <= 5; i++) {
-        encre.prolonger(PointEncre(0, y + i * 10.0, 0.1));
+        encre.prolonger(PointEncre(i * 10.0, y + i * 10.0, 0.1));
       }
       encre.terminer();
     }
