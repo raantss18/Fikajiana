@@ -738,6 +738,63 @@ class Atelier extends ChangeNotifier {
     ).calculer((id) => id == fantome ? PointGeo(x, y) : formes[id]);
   }
 
+  /// Place un point ou un vecteur déclaré sur la Feuille. Un point du même nom
+  /// se déplace au lieu de se doubler. S'annule d'un coup.
+  void placerObjet(ObjetLu objet) {
+    switch (objet) {
+      case PointLu(:final nom, :final x, :final y):
+        _pointNomme(nom, x, y);
+      case VecteurLu(:final nom, :final x, :final y):
+        final (origine, extremite) = nom.length == 2
+            ? (nom[0], nom[1])
+            : ('O', nom.toUpperCase());
+        final depart = _pointExistant(origine);
+        final a = depart ?? _pointNomme(origine, 0, 0);
+        final forme = formes[a];
+        final (ax, ay) = forme is PointGeo ? (forme.x, forme.y) : (0.0, 0.0);
+        final b = _pointNomme(extremite, ax + x, ay + y);
+        final deja = _figure.objets.any((id) {
+          final d = _figure.definition(id);
+          return d is Construite &&
+              d.genre == GenreConstruction.vecteur &&
+              d.parents.length == 2 &&
+              d.parents[0] == a &&
+              d.parents[1] == b;
+        });
+        if (!deja) {
+          final id = _ajouter(Construite(GenreConstruction.vecteur, [a, b]));
+          if (nom.length == 1) _figure.renommer(id, nom);
+        }
+    }
+    _formes = null;
+    _valider();
+  }
+
+  int? _pointExistant(String nom) {
+    for (final id in _figure.objets) {
+      if (_figure.categorie(id) == CategorieGeo.point &&
+          _figure.apparence(id).nom == nom) {
+        return id;
+      }
+    }
+    return null;
+  }
+
+  int _pointNomme(String nom, double x, double y) {
+    final existant = _pointExistant(nom);
+    if (existant != null) {
+      if (_figure.definition(existant) is PointLibre) {
+        _figure.deplacer(existant, x, y);
+      }
+      _formes = null;
+      return existant;
+    }
+    final id = _ajouter(PointLibre(x, y));
+    _figure.renommer(id, nom);
+    _formes = null;
+    return id;
+  }
+
   /// Crée un curseur de valeur [valeur].
   int ajouterCurseur(double valeur, {double? min, double? max}) {
     final id = _ajouter(NombreLibre(valeur, min: min, max: max));

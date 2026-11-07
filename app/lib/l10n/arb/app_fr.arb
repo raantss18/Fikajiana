@@ -358,5 +358,6 @@
     "saisieLectureDeux": "Lire 1/(2x) plutôt que (1/2)x",
     "saisieLectureUne": "Revenir à la première lecture",
     "saisieAide": "Tapez comme vous écrivez, ou en LaTeX",
-    "saisieOuvrir": "Taper un calcul"
+    "saisieOuvrir": "Taper un calcul",
+    "placerEnGeometrie": "Placer en Géométrie"
 }

@@ -154,6 +154,39 @@ class RepereBloc extends StatelessWidget {
           surOuvrir: (ancre) => _ouvrirPanneau(context, ancre),
         );
       case EtatBloc.fait:
+        // Un point ou un vecteur : il a sa place en Géométrie.
+        final objet = bloc.objet;
+        if (objet != null) {
+          if (enExport) return const SizedBox.shrink();
+          return Positioned(
+            left: droite.dx + AppEspacement.sm,
+            top: droite.dy - 24,
+            child: TraverseEcriture(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (bloc.estSaisie)
+                    _Formule(latex: bloc.latex ?? '', couleur: accent),
+                  FilledButton.tonalIcon(
+                    icon: const Icon(Icons.place_outlined),
+                    label: Text(l10n.placerEnGeometrie),
+                    onPressed: () {
+                      surTouche();
+                      PorteeServices.de(context).atelier.placerObjet(objet);
+                      Navigator.of(context)
+                          .push(RouteDestination(Destination.geometrie));
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.edit_outlined),
+                    tooltip: l10n.corriger,
+                    onPressed: () => unawaited(_corriger(context)),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
         // Une courbe : rien à calculer, un bouton nommé pour la tracer. La
         // lecture peut être fausse : elle se corrige à côté.
         if (bloc.seTrace) {
