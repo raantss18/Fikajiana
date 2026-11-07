@@ -15,6 +15,26 @@ List<Trait> _traits(String nom) => [
     Trait.depuisDocument(t as Map<String, dynamic>),
 ];
 
+/// Les mêmes traits avec une quinzaine de points chacun, comme le stylet
+/// simulé les rejoue sur le Pad 7 : un tracé plus grossier ne doit rien
+/// changer.
+List<Trait> _rejoues(String nom) {
+  final json = jsonDecode(
+    File('test/fixtures/pad7/$nom.json').readAsStringSync(),
+  ) as List<dynamic>;
+  return [
+    for (final t in json.cast<Map<String, dynamic>>())
+      Trait.depuisDocument({
+        ...t,
+        'points': () {
+          final p = t['points'] as List<dynamic>;
+          final pas = (p.length ~/ 14).clamp(1, p.length);
+          return [for (var i = 0; i < p.length; i += pas) p[i], p.last];
+        }(),
+      }),
+  ];
+}
+
 /// Répond ce que Pix2Text a lu de ces mêmes traits sur l'ordinateur
 /// (`models/rejouer_encre.py`), selon les traits demandés ; sinon du bruit.
 class _Modele extends Lecteur {
@@ -107,6 +127,35 @@ void main() {
           traits,
         ),
         startsWith(r'2\begin{pmatrix}'),
+      );
+    });
+
+    // Rejoué au stylet sur le Pad 7 : `AB =` lu `λ·β`.
+    test('AB = : deux points de la feuille, lus à leur tracé', () {
+      final traits = _traits('AB_egal');
+      expect(lireNomDePoints(traits, {'A', 'B'}), 'AB=');
+      expect(lireNomDePoints(_rejoues('AB_egal'), {'A', 'B'}), 'AB=');
+      // Sans ces points sur la feuille, rien n'est deviné.
+      expect(lireNomDePoints(traits, {'C', 'D'}), isNull);
+      expect(lireNomDePoints(_traits('e_x_egal_7'), {'A', 'B'}), isNull);
+      expect(lireNomDePoints(_traits('trente_fois_8'), {'A', 'B'}), isNull);
+    });
+
+    test('rejoués plus grossiers, les points et le = restent lus', () async {
+      for (final (nom, attendu) in [
+        ('point_A', 'A(8;-1)'),
+        ('point_B', 'B(5;8)'),
+      ]) {
+        final traits = _rejoues(nom);
+        expect(
+          await lireStructure(_Modele(traits, const {}), traits),
+          attendu,
+          reason: nom,
+        );
+      }
+      expect(
+        redresserEgal(_rejoues('e_x_egal_7'), 'e ^ { x } - 7'),
+        'e ^ { x } = 7',
       );
     });
 

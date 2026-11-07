@@ -21,6 +21,7 @@ Fikajiana 1.0: each sheet now has its own Figure, and a new sheet starts with an
 - `⇒ plot` à côté d'une ligne propose de la tracer ; un mot comme « longueur » reste une note, sans être signalé. / `⇒ plot` next to a line offers to plot it; a word such as "longueur" stays a note, without being flagged.
 - Tracer, Placer et Corriger s'écrivent à la main sur la Feuille, et les matrices aussi. / Plot, Place and Correct are handwritten on the Sheet, and so are matrices.
 - Une seule création, « Nouveau document » : la feuille et sa Figure ensemble. `∫f(x)dx` se simplifie : `x³+x`, pas `3x³/3+x`. `plot(f(x))` écrit à la main se trace. / A single creation entry, "New document": the sheet and its Figure together. `∫f(x)dx` is simplified: `x³+x`, not `3x³/3+x`. Handwritten `plot(f(x))` can be plotted.
+- `AB =` écrit à la main donne la distance entre les points A et B de la feuille, même quand le modèle lit mal les deux lettres. / Handwritten `AB =` gives the distance between points A and B of the sheet, even when the model misreads the two letters.
 - La page s'arrête en haut ; l'export PNG et PDF part de son coin. / The page stops at the top; PNG and PDF export start from its corner.
 
 ## [0.9.1] — 2026-11-07

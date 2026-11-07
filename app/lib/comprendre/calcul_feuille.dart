@@ -558,8 +558,14 @@ class CalculFeuille extends ChangeNotifier {
     try {
       // Ce qui sort d'une seule ligne se lit par morceaux (ADR 0029).
       final structuree = await lireStructure(lecteur, traits);
+      // `AB =` : deux points de la feuille, lus à leur tracé (Pad 7).
+      final nomDePoints = structuree == null
+          ? lireNomDePoints(traits, _contextePour(bloc).points.keys.toSet())
+          : null;
       var latex =
-          structuree ?? redresserEgal(traits, await lecteur.lire(traits));
+          structuree ??
+          nomDePoints ??
+          redresserEgal(traits, await lecteur.lire(traits));
       if (bloc._version != version || !identical(_blocs[bloc.cle], bloc)) {
         return;
       }
