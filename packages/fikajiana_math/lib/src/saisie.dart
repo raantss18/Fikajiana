@@ -56,6 +56,16 @@ Saisie lireSaisie(String texte) {
   if (lireObjet(propre) != null || lireCommande(propre) != null) {
     return Saisie(propre);
   }
+  // `C : x^2+y^3=0` : une courbe nommée ; le nom reste, la suite se traduit.
+  final nomme = RegExp(
+    r'^([A-Za-z](?:_\d+)?)\s*:(?!=)\s*(.+)$',
+  ).firstMatch(propre);
+  if (nomme != null) {
+    final suite = lireSaisie(nomme[2]!);
+    final latex = suite.latex;
+    if (latex == null) return suite;
+    return Saisie('${nomme[1]} : $latex');
+  }
   try {
     final commande = _commandeDeCalcul(propre);
     if (commande != null) return Saisie(commande);

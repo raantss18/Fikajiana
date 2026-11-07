@@ -1152,7 +1152,16 @@ class Figure {
     }
   }
 
+  /// Les noms pris hors de la figure : les courbes nommées `C : …`.
+  Set<String> Function() nomsReserves = () => const {};
+
+  /// Tous les noms donnés aux objets.
+  Set<String> get noms => {
+    for (final id in _definitions.keys) ?_apparences[id]?.nom,
+  };
+
   bool _nomPris(String nom) =>
+      nomsReserves().contains(nom) ||
       _definitions.keys.any((id) => _apparences[id]?.nom == nom);
 
   /// Renomme [id] ; `false` si le nom est vide ou déjà pris.

@@ -262,7 +262,11 @@ class Atelier extends ChangeNotifier {
 
   OutilGeo get outil => _outil;
   List<int> get choisis => List.unmodifiable(_choisis);
-  Figure get figure => _figure;
+  Figure get figure => _figure..nomsReserves = nomsReserves;
+
+  /// Les noms pris ailleurs (les courbes `C : …`) : un nouvel objet ne les
+  /// reçoit pas.
+  Set<String> Function() nomsReserves = () => const {};
   bool get estVide => _figure.objets.isEmpty;
   bool get peutAnnuler => _etatCourant > 0;
   bool get peutRetablir => _etatCourant < _etats.length - 1;
@@ -564,7 +568,7 @@ class Atelier extends ChangeNotifier {
   }
 
   int _ajouter(Definition definition, {Apparence? apparence}) {
-    final id = _figure.ajouter(definition, apparence: apparence);
+    final id = figure.ajouter(definition, apparence: apparence);
     _formes = null;
     return id;
   }

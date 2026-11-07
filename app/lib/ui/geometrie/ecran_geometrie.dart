@@ -425,7 +425,8 @@ class _EcranGeometrieState extends State<EcranGeometrie> {
       courbes: [
         for (var i = 0; i < _courbes.liste.length; i++)
           (
-            latex: _courbes.liste[i].latex,
+            latex: separerNomDeCourbe(_courbes.liste[i].latex).$2,
+            nom: _courbes.liste[i].nom ?? '${i + 1}',
             couleur: _stylos[i % _stylos.length],
           ),
       ],

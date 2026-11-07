@@ -18,7 +18,11 @@ class Courbe {
     this.corpsY,
     this.debut,
     this.fin,
+    this.nom,
   });
+
+  /// `C` pour `C : x^2+y^3=0` : un objet de la Figure, à son nom.
+  final String? nom;
 
   final String latex;
 
@@ -92,10 +96,35 @@ final _plage = RegExp(
 
 /// Traduit `f(x)=x^2`, `y=2x+1`, `x^2`, `x^2+y^2=4`, `(\cos(t),\sin(t))`,
 /// `x=\cos(t),y=\sin(t)` ou `r=2\cos(\theta)` ; `null` si ce n'est pas traçable.
+/// `C : x^2+y^3=0`, `C_1: …` : un nom, puis la courbe. `f(x)=…` n'en est pas.
+final _nomDeCourbe = RegExp(
+  r'^\s*([A-Za-z](?:\s*_\s*\{?\s*\d+\s*\}?)?)\s*:(?!=)\s*(.+)$',
+);
+
+/// Le nom et la courbe d'une écriture `C : …` ; sans nom, `(null, latex)`.
+(String?, String) separerNomDeCourbe(String latex) {
+  final m = _nomDeCourbe.firstMatch(latex);
+  if (m == null) return (null, latex);
+  return (m[1]!.replaceAll(RegExp(r'[\s{}]'), ''), m[2]!.trim());
+}
+
 Courbe? lireCourbe(String latex) {
   try {
-    final courbe = _lire(latex);
-    if (courbe == null) return null;
+    final (nom, corps) = separerNomDeCourbe(latex);
+    final lue = _lire(corps);
+    if (lue == null) return null;
+    final courbe = nom == null
+        ? lue
+        : Courbe(
+            latex: latex,
+            corps: lue.corps,
+            variable: lue.variable,
+            genre: lue.genre,
+            corpsY: lue.corpsY,
+            debut: lue.debut,
+            fin: lue.fin,
+            nom: nom,
+          );
     // Une erreur d'écriture se voit ici, pas au moment de dessiner.
     const essai = Fenetre(
       xMin: -1,
@@ -289,17 +318,45 @@ class Courbes extends ChangeNotifier {
 
   List<Courbe> get liste => List.unmodifiable(_courbes);
 
+  /// Les noms des objets de la Figure : une courbe nommée ne les prend pas.
+  Set<String> Function() nomsPris = () => const {};
+
+  /// Les noms des courbes.
+  Set<String> get noms => {for (final c in _courbes) ?c.nom};
+
+  /// [nom], ou `C_1`, `C_2`… s'il est déjà pris (demande d'Antsa).
+  String nomLibre(String nom) {
+    final pris = {...nomsPris(), ...noms};
+    if (!pris.contains(nom)) return nom;
+    final base = nom.split('_').first;
+    for (var i = 1; ; i++) {
+      if (!pris.contains('${base}_$i')) return '${base}_$i';
+    }
+  }
+
   /// Ajoute [latex] ; `false` s'il n'est pas traçable. Déjà là : rien à faire.
+  /// Un nom déjà pris devient `C_1`.
   bool ajouter(String latex) {
-    final courbe = lireCourbe(latex);
+    var courbe = lireCourbe(latex);
     if (courbe == null) return false;
-    if (_courbes.any(
-      (c) => c.corps == courbe.corps && c.corpsY == courbe.corpsY,
-    )) {
+    final nom = courbe.nom;
+    if (nom != null) {
+      final deja = _courbes.where((c) => c.nom == nom).firstOrNull;
+      if (deja != null && deja.corps == courbe.corps) return true;
+      final libre = nomLibre(nom);
+      if (libre != nom) {
+        courbe = lireCourbe('$libre : ${separerNomDeCourbe(latex).$2}')!;
+      }
+    }
+    final nouvelle = courbe;
+    if (nouvelle.nom == null &&
+        _courbes.any(
+          (c) => c.corps == nouvelle.corps && c.corpsY == nouvelle.corpsY,
+        )) {
       return true;
     }
     if (_courbes.length == maximum) _courbes.removeAt(0);
-    _courbes.add(courbe);
+    _courbes.add(nouvelle);
     _changer();
     return true;
   }

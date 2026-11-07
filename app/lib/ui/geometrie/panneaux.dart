@@ -375,7 +375,7 @@ class PanneauObjets extends StatelessWidget {
 
   /// Les courbes de la Figure, en tête, comme les autres objets : numéro,
   /// formule et couleur (jamais la couleur seule).
-  final List<({String latex, Color couleur})> courbes;
+  final List<({String latex, String nom, Color couleur})> courbes;
 
   /// Toucher une courbe : la modifier.
   final ValueChanged<int>? surCourbe;
@@ -404,7 +404,7 @@ class PanneauObjets extends StatelessWidget {
                 title: Row(
                   children: [
                     Text(
-                      '${i + 1} : ',
+                      '${courbe.nom} : ',
                       style: style?.copyWith(color: courbe.couleur),
                     ),
                     Flexible(
