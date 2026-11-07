@@ -1,6 +1,6 @@
 name: fikajiana
 description: Calculatrice, calcul formel, graphique et géométrie plane, avec saisie manuscrite hors ligne.
-version: 0.7.0+22
+version: 0.7.0+23
 publish_to: none
 
 environment:
