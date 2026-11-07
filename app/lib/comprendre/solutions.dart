@@ -16,7 +16,14 @@ String ecrireSolutions(
   final suite = propre == latex ? '' : r',\,n \in \mathbb{Z}';
   final texte = propre.trim();
   // Le terme général, déjà écrit : il suffit de le nommer.
-  if (type == TypeExpression.suite) return '${inconnues.first}=$texte';
+  // Giac écrit `\mathrm{u\_0}` le premier terme laissé sans valeur.
+  if (type == TypeExpression.suite) {
+    final termes = texte.replaceAllMapped(
+      RegExp(r'\\mathrm\{([a-zA-Z])\\_(\w+)\}'),
+      (m) => '${m[1]}_{${m[2]}}',
+    );
+    return '${inconnues.first}=$termes';
+  }
   if (texte == '[]' || texte == '' || texte == r'\{\}') return r'S=\emptyset';
 
   final ou =
