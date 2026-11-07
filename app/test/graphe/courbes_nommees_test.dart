@@ -32,10 +32,7 @@ void main() {
 
     test('un point C de la Figure garde son nom ; la courbe prend C_1', () {
       final atelier = Atelier();
-      final courbes = Courbes();
-      courbes
-        ..nomsPris = (() => atelier.figure.noms)
-        ..ajouter('');
+      final courbes = Courbes()..nomsPris = (() => atelier.figure.noms);
       atelier
         ..nomsReserves = (() => courbes.noms)
         ..placerObjet(const PointLu('C', 1, 2));
