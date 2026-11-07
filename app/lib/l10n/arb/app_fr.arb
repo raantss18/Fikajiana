@@ -334,5 +334,11 @@
         }
     },
     "recentrerGraphe": "Revenir au cadrage de départ",
-    "ratureFaite": "Effacé par la rature"
+    "ratureFaite": "Effacé par la rature",
+    "blocPanneauNonCompris": "Lu ainsi, cela ne se calcule pas",
+    "blocPanneauSansResultat": "Ce calcul ne donne pas de résultat",
+    "blocPanneauArrete": "Calcul arrêté : il durait trop longtemps",
+    "blocPanneauErreur": "Le calcul a échoué",
+    "blocEffacer": "Effacer",
+    "blocEfface": "Écriture effacée"
 }

@@ -4,6 +4,8 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Quand une écriture reste à vérifier, un trait ondulé remplace le petit `?` : touchez-le pour voir ce qui a été lu, corriger ou effacer. La lecture se voit par une lueur sous l'écriture, plus par un cercle. / When writing needs checking, a wavy underline replaces the small `?`: tap it to see what was read, correct or erase it. Reading now shows as a glow under your writing, not a spinner.
+
 ## [0.6.1] — 2026-11-07
 
 ### Message fr

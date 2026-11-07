@@ -87,13 +87,15 @@ class _EcranFeuilleState extends State<EcranFeuille> {
   }
 
   /// Une rature a effacé : un geste si rapide doit pouvoir se rattraper.
-  void _surRature() {
+  void _surRature() => _proposerAnnuler(context.l10n.ratureFaite);
+
+  void _proposerAnnuler(String message) {
     final l10n = context.l10n;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
-          content: Text(l10n.ratureFaite),
+          content: Text(message),
           behavior: SnackBarBehavior.floating,
           // Avec une action, Flutter la garderait jusqu'à ce qu'on la ferme.
           persist: false,
@@ -177,6 +179,15 @@ class _EcranFeuilleState extends State<EcranFeuille> {
                   surTouche: () {
                     _encre.retirerPointDuToucher();
                     _surEncre();
+                  },
+                  surEffacer: () {
+                    if (bloc.estSaisie) {
+                      _calcul.retirer(bloc);
+                      return;
+                    }
+                    _encre.retirerTraits(bloc.traits);
+                    _surEncre();
+                    _proposerAnnuler(context.l10n.blocEfface);
                   },
                 ),
               if (_calcul.modeleManquant)

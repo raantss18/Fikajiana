@@ -257,6 +257,13 @@ class Encre {
     abandonnerDernierTrait();
   }
 
+  /// Retire les traits [ids] d'un coup. S'annule.
+  void retirerTraits(Set<int> ids) {
+    if (!_traits.any((t) => ids.contains(t.id))) return;
+    _memoriser();
+    _traits.removeWhere((t) => ids.contains(t.id));
+  }
+
   /// Le dernier trait est-il une rature sur quelque chose ? Elle s'efface alors
   /// avec ce qu'elle couvre, plus les traits [enPlus]. Le tout s'annule d'un
   /// coup : `commencer` a déjà mémorisé l'état d'avant la rature.
