@@ -9,6 +9,7 @@ import 'package:fikajiana/comprendre/fraction_ecrite.dart';
 import 'package:fikajiana/comprendre/mots.dart';
 import 'package:fikajiana/comprendre/solutions.dart';
 import 'package:fikajiana/comprendre/structure.dart';
+import 'package:fikajiana/comprendre/trace_ligne.dart';
 import 'package:fikajiana/encre/encre.dart';
 import 'package:fikajiana/graphe/courbes.dart';
 import 'package:fikajiana/moteur/giac.dart';
@@ -691,9 +692,14 @@ class CalculFeuille extends ChangeNotifier {
       final nomDePoints = structuree == null
           ? lireNomDePoints(traits, _contextePour(bloc).points.keys.toSet())
           : null;
+      // Une ligne simple se lit sur son tracé, sans le modèle (ADR 0035).
+      final tracee = structuree == null && nomDePoints == null
+          ? lireAuTrace(traits)
+          : null;
       var latex =
           structuree ??
           nomDePoints ??
+          tracee ??
           redresserEgal(traits, await lecteur.lire(traits));
       if (bloc._version != version || !identical(_blocs[bloc.cle], bloc)) {
         return;
@@ -702,7 +708,9 @@ class CalculFeuille extends ChangeNotifier {
       bloc.autresLectures = const [];
       // Une lecture qui étonne : on en demande d'autres (ADR 0028). Ce coût
       // n'est payé que dans le doute.
-      if (structuree == null && plausibilite(latex, fonctions: fonctions) < 0) {
+      if (structuree == null &&
+          tracee == null &&
+          plausibilite(latex, fonctions: fonctions) < 0) {
         final lectures = await lecteur.lirePlusieurs(traits);
         if (bloc._version != version || !identical(_blocs[bloc.cle], bloc)) {
           return;

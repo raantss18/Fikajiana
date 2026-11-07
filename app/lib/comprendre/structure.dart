@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:fikajiana/comprendre/blocs.dart';
+import 'package:fikajiana/comprendre/mots.dart';
 import 'package:fikajiana/comprendre/signes.dart';
 import 'package:fikajiana/encre/encre.dart';
 import 'package:fikajiana/reconnaissance/lecteur.dart';
@@ -41,6 +42,15 @@ class StructurePoint extends Structure {
   final List<Trait> queue;
 }
 
+/// `lim` au-dessus de `x → 0`, et ce qui suit à droite.
+class StructureLimite extends Structure {
+  const new(this.mot, this.variable, this.cible, this.queue);
+  final List<Trait> mot;
+  final List<Trait> variable;
+  final List<Trait> cible;
+  final List<Trait> queue;
+}
+
 /// `‖…‖`, et ce qui suit.
 class StructureNorme extends Structure {
   const new(this.dedans, this.queue);
@@ -66,7 +76,11 @@ Structure? trouverStructure(List<Trait> traits) {
     return c.width >= 5 || c.height >= 5;
   }).toList();
   if (nets.length < 3) return null;
-  return _norme(nets) ?? _fleche(nets) ?? _point(nets) ?? _matrice(nets);
+  return _norme(nets) ??
+      _fleche(nets) ??
+      _limite(nets) ??
+      _point(nets) ??
+      _matrice(nets);
 }
 
 /// Un trait sans ventre : une barre. `((` et `))` ne sont pas `‖` (vu sur
@@ -160,8 +174,86 @@ StructureFleche? _fleche(List<Trait> traits) {
   return null;
 }
 
+/// La pointe d'une flèche `→` : le trait revient sur lui-même au bout, ou un
+/// petit trait se tient à son bout droit.
+bool _fleches(Trait f, List<Trait> traits, double hauteur, List<Trait> pointe) {
+  final c = _c(f);
+  if (c.width < 20 || c.height > 0.5 * c.width) return false;
+  final s = [for (final p in f.points) p.position];
+  if (s.last.dx < c.right - 0.12 * c.width) return true;
+  for (final t in traits) {
+    if (identical(t, f)) continue;
+    final ct = _c(t);
+    if (math.max(ct.width, ct.height) > 0.6 * hauteur) continue;
+    if (ct.center.dx < c.right - 0.3 * c.width ||
+        ct.center.dx > c.right + 0.2 * c.width ||
+        (ct.center.dy - c.center.dy).abs() > 0.4 * hauteur) {
+      continue;
+    }
+    pointe.add(t);
+    return true;
+  }
+  return false;
+}
+
+/// `lim` écrit au-dessus de `x → 0` : le modèle lit `\lim_{\Im\infty}`
+/// (téléphone d'Antsa). La flèche se voit au tracé, le mot au-dessus, la
+/// variable à gauche, la cible à droite ; le reste suit, à droite du bloc.
+StructureLimite? _limite(List<Trait> traits) {
+  final hauteur = cadreDuGroupe(traits).height;
+  for (final f in traits) {
+    final pointe = <Trait>[];
+    if (!_fleches(f, traits, hauteur, pointe)) continue;
+    final c = _c(f);
+    // La flèche donne l'échelle : une lettre fait environ sa largeur.
+    final echelle = c.width;
+    final variable = <Trait>[];
+    final cible = <Trait>[];
+    for (final t in traits) {
+      if (identical(t, f) || pointe.contains(t)) continue;
+      final ct = _c(t);
+      if ((ct.center.dy - c.center.dy).abs() > 0.5 * echelle) continue;
+      if (ct.center.dx < c.left && ct.right > c.left - 1.2 * echelle) {
+        variable.add(t);
+      } else if (ct.center.dx > c.right && ct.left < c.right + 0.6 * echelle) {
+        cible.add(t);
+      }
+    }
+    if (variable.isEmpty || cible.isEmpty) continue;
+    final bloc = cadreDuGroupe([...variable, f, ...cible]);
+    final mot = <Trait>[];
+    final queue = <Trait>[];
+    var autre = false;
+    for (final t in traits) {
+      if (identical(t, f) ||
+          pointe.contains(t) ||
+          variable.contains(t) ||
+          cible.contains(t)) {
+        continue;
+      }
+      final ct = _c(t);
+      if (ct.bottom <= c.top + 2 &&
+          ct.center.dx >= bloc.left - 0.3 * echelle &&
+          ct.center.dx <= bloc.right + 0.3 * echelle) {
+        mot.add(t);
+      } else if (ct.left >= bloc.right - 0.1 * echelle) {
+        queue.add(t);
+      } else {
+        autre = true;
+      }
+    }
+    if (autre || mot.length < 2 || queue.isEmpty) continue;
+    final cm = cadreDuGroupe(mot);
+    if (cm.width < 1.2 * cm.height) continue;
+    return StructureLimite(mot, variable, cible, queue);
+  }
+  return null;
+}
+
 /// Une parenthèse : haute, étroite, le ventre d'un côté. `1` s'ouvre vers la
 /// droite pour `(`, vers la gauche pour `)`.
+int genreParenthese(Trait t, double hauteur) => _parenthese(t, hauteur);
+
 int _parenthese(Trait t, double hauteur) {
   final s = [for (final p in t.points) p.position];
   if (s.length < 3) return 0;
@@ -200,6 +292,22 @@ int _parenthese(Trait t, double hauteur) {
     if (q * ventre.sign < 0.3 * ventre.abs()) return 0;
   }
   return ventre < 0 ? 1 : -1;
+}
+
+String _sansEspace(String s) => s.replaceAll(' ', '');
+
+/// Un exposant court lu sur son tracé : `2`, `-1`, `12` ; `null` sinon.
+String? _exposantAuTrace(List<Trait> exposant) {
+  final moins = _signeMoins(exposant);
+  final corps = [
+    for (final t in exposant)
+      if (!moins.contains(t)) t,
+  ];
+  final chiffres = [
+    for (final g in _glyphes(corps)) reconnaitreChiffre(_dessin(g)),
+  ];
+  if (chiffres.isEmpty || chiffres.contains(null)) return null;
+  return '${moins.isEmpty ? '' : '-'}${chiffres.join()}';
 }
 
 /// `A(8;-1)` : une lettre, `(`, deux nombres séparés par `;` ou `,`, `)`.
@@ -449,6 +557,32 @@ Future<String?> lireStructure(Lecteur lecteur, List<Trait> traits) async {
       final nombres = await _lireLigne(lecteur, [premier, second]);
       if (nombres == null) return null;
       return '$lu(${nombres.join(';')})${await morceau(queue)}';
+    case StructureLimite(
+      :final mot,
+      :final variable,
+      :final cible,
+      :final queue,
+    ):
+      final luMot = await lecteur.lire(mot);
+      if (!luMot.contains('lim') &&
+          motSur(
+                classerMots(mot, lexique: const ['lim', 'sin', 'cos', 'ln']),
+                seuil: 2,
+              ) !=
+              'lim') {
+        return null;
+      }
+      final lettre =
+          _lettreMinuscule(await lecteur.lireCourt(variable)) ??
+          (_estX(variable) ? 'x' : null);
+      if (lettre == null) return null;
+      final vers =
+          _exposantAuTrace(cible) ??
+          _cibleDeLimite(await lecteur.lireCourt(cible));
+      if (vers == null) return null;
+      final corps = await morceau(queue);
+      if (corps.isEmpty) return null;
+      return '\\lim_{$lettre \\to $vers} $corps';
     case StructureFleche(:final nom, :final queue):
       final lettres = [
         for (final g in _glyphes(nom)) reconnaitreCapitale(_dessin(g)),
@@ -475,9 +609,11 @@ Future<String?> lireStructure(Lecteur lecteur, List<Trait> traits) async {
       final matrice = '\\begin{pmatrix}${lignes.join(r'\\')}\\end{pmatrix}';
       // Le nom devant : jamais une structure, le `e` de `det` a une barre.
       final avant = tete.isEmpty ? '' : (await lecteur.lire(tete)).trim();
-      final puissance = exposant.isEmpty
-          ? ''
-          : '^{${(await morceau(exposant)).replaceAll(' ', '')}}';
+      // `²` seul, le modèle y lit `Σ` (téléphone d'Antsa) : le tracé d'abord.
+      final expo = exposant.isEmpty
+          ? null
+          : _exposantAuTrace(exposant) ?? _sansEspace(await morceau(exposant));
+      final puissance = expo == null ? '' : '^{$expo}';
       final apres = '$puissance${await morceau(queue)}';
       // Devant une matrice, seul un nombre ou une lettre multiplie ; un mot
       // mal lu, `φe^{1/2}` (Pad 7), est le `det` écrit à la main.
@@ -490,6 +626,37 @@ Future<String?> lireStructure(Lecteur lecteur, List<Trait> traits) async {
 }
 
 /// Une capitale lue par le modèle : `β` est un `B` mal lu.
+/// La variable d'une limite : une minuscule, `x` le plus souvent.
+String? _lettreMinuscule(String lu) {
+  final propre = lu.replaceAll(RegExp(r'[\s{}]'), '');
+  if (RegExp(r'^[a-z]$').hasMatch(propre)) return propre;
+  const proches = {r'\chi': 'x', r'\times': 'x', 'X': 'x', r'\gamma': 'y'};
+  return proches[propre];
+}
+
+/// Deux traits qui se croisent ou se font face, de même taille : un `x`.
+bool _estX(List<Trait> traits) {
+  if (traits.length != 2) return false;
+  final (a, b) = (_c(traits[0]), _c(traits[1]));
+  final taille = math.max(a.width, b.width);
+  return (a.center - b.center).distance < 0.5 * taille &&
+      a.height > 0.5 * a.width &&
+      b.height > 0.5 * b.width;
+}
+
+/// `0`, `+\infty`, `-\infty`, `0^+` : ce vers quoi tend la variable.
+String? _cibleDeLimite(String lu) {
+  final propre = lu.replaceAll(RegExp(r'[\s{}]'), '');
+  if (RegExp(r'^[+-]?(\d+|\\infty)(\^[+-])?$').hasMatch(propre)) return propre;
+  const proches = {
+    r'\sim': r'\infty',
+    r'\propto': r'\infty',
+    'O': '0',
+    'o': '0',
+  };
+  return proches[propre];
+}
+
 String? _lettreLue(String lu) {
   const proches = {r'\beta': 'B', r'\alpha': 'A', r'\Delta': 'A'};
   final propre = lu.replaceAll(RegExp(r'[\s{}]'), '');
@@ -527,6 +694,10 @@ int _signes(List<Trait> corps) {
 }
 
 /// Les signes d'un morceau : les traits qui se chevauchent en largeur.
+/// Les signes d'une ligne, de gauche à droite : des traits qui se
+/// chevauchent en largeur font un seul signe.
+List<List<Trait>> glyphesDe(List<Trait> traits) => _glyphes(traits);
+
 List<List<Trait>> _glyphes(List<Trait> traits) {
   final tries = traits.toList()
     ..sort((a, b) => _c(a).left.compareTo(_c(b).left));
@@ -563,15 +734,18 @@ Future<List<String>?> _lireLigne(
           if (!moins[i].contains(t)) t,
       ],
   ];
-  final parTrace = <String>[];
+  final parTrace = <String?>[];
   for (var i = 0; i < corps.length; i++) {
     final chiffres = [
       for (final g in _glyphes(corps[i])) reconnaitreChiffre(_dessin(g)),
     ];
-    if (chiffres.isEmpty || chiffres.contains(null)) break;
-    parTrace.add('${moins[i].isEmpty ? '' : '-'}${chiffres.join()}');
+    parTrace.add(
+      chiffres.isEmpty || chiffres.contains(null)
+          ? null
+          : '${moins[i].isEmpty ? '' : '-'}${chiffres.join()}',
+    );
   }
-  if (parTrace.length == corps.length) return parTrace;
+  if (!parTrace.contains(null)) return parTrace.cast<String>();
 
   final attendus = [for (final c in corps) _signes(c)];
   final total = attendus.fold(0, (s, n) => s + n);
@@ -608,10 +782,16 @@ Future<List<String>?> _lireLigne(
     );
   }
   if (proches.length == corps.length) return proches;
-  // Sinon, case par case, sur une image large.
+  // Sinon, case par case : le tracé quand il est sûr (le `4` ouvert
+  // d'Antsa, que le modèle lit `1/1`), le modèle sur une image large sinon.
   final valeurs = <String>[];
-  for (final kase in ligne) {
-    final v = _case(await lecteur.lireCourt(kase));
+  for (var i = 0; i < ligne.length; i++) {
+    final sure = parTrace[i];
+    if (sure != null) {
+      valeurs.add(sure);
+      continue;
+    }
+    final v = _case(await lecteur.lireCourt(ligne[i]));
     if (!_caseLisible(v)) return null;
     valeurs.add(v);
   }

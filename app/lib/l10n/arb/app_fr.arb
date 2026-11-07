@@ -137,6 +137,8 @@
     "aideBissectrice": "Touche trois points, le sommet en deuxième.",
     "aideParDroite": "Touche une droite et le point par lequel passer.",
     "aideIntersection": "Touche les deux lignes ou cercles qui se coupent.",
+    "outilMainLevee": "Main levée",
+    "aideMainLevee": "Trace un trait au doigt ou au stylet : il devient un segment, un polygone ou un cercle, et ses sommets se nomment.",
     "aideGomme": "Touche l'objet à retirer ; ce qui en dépend part avec lui.",
     "geometrieDescription": "Figure de {n} objets",
     "@geometrieDescription": {
@@ -338,6 +340,7 @@
     "blocPanneauErreur": "Le calcul a échoué",
     "blocEffacer": "Effacer",
     "blocEfface": "Écriture effacée",
+    "doigtEcrit": "Le doigt écrit",
     "ecrireAuDoigt": "Écrire aussi au doigt",
     "ecrireAuDoigtDetail": "Avec un stylet, la main fait seulement défiler la page. Activez ceci pour écrire aussi au doigt.",
     "saisieExemple": "x^2+3x-5=0, sin 2x, racine de 2…",

@@ -49,6 +49,9 @@ enum _Attendu {
 enum OutilGeo {
   deplacer(GroupeOutils.base, []),
   gomme(GroupeOutils.base, [_Attendu.objet]),
+
+  /// Un trait au doigt ou au stylet devient segment, polygone ou cercle.
+  mainLevee(GroupeOutils.base, []),
   point(GroupeOutils.points, [_Attendu.point]),
   milieu(GroupeOutils.points, [
     _Attendu.point,

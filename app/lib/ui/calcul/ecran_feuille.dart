@@ -619,6 +619,18 @@ class _Outils extends StatelessWidget {
         selected: gomme,
         onTap: () => surGomme(!gomme),
       ),
+      // Sans stylet, le doigt écrit déjà ; avec, on choisit ici (Antsa : « on
+      // n'a pas forcément un stylet »).
+      SwitchListTile(
+        dense: true,
+        secondary: const Icon(Icons.touch_app_outlined),
+        title: Text(l10n.doigtEcrit),
+        subtitle: reglages.styletConnu ? null : Text(l10n.ecrireAuDoigtDetail),
+        value: reglages.ecrireAuDoigt || !reglages.styletConnu,
+        onChanged: reglages.styletConnu
+            ? (valeur) => _agir(() => reglages.ecrireAuDoigt = valeur)
+            : null,
+      ),
       ligne(Icons.refresh, l10n.relireFeuille, surRelire),
       ligne(
         Icons.undo,
