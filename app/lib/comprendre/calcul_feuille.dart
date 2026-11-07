@@ -6,6 +6,7 @@ import 'package:fikajiana/comprendre/ecriture_resultat.dart';
 import 'package:fikajiana/comprendre/fraction_ecrite.dart';
 import 'package:fikajiana/comprendre/solutions.dart';
 import 'package:fikajiana/encre/encre.dart';
+import 'package:fikajiana/graphe/courbes.dart';
 import 'package:fikajiana/moteur/giac.dart';
 import 'package:fikajiana/moteur/moteur.dart';
 import 'package:fikajiana/reconnaissance/lecteur.dart';
@@ -99,12 +100,29 @@ class BlocCalcul {
 
   bool get estSaisie => cle.startsWith('saisie-');
 
+  String? _courbeLue;
+  bool _courbeSeule = false;
+
+  /// Une courbe, pas un calcul : elle se trace et Giac n'a rien à résoudre.
+  bool get courbeSeule {
+    final lu = latex;
+    if (lu == null) return false;
+    if (_courbeLue != lu) {
+      _courbeLue = lu;
+      _courbeSeule = estCourbeSeule(lu);
+    }
+    return _courbeSeule;
+  }
+
+  /// La feuille propose de la tracer.
+  bool get seTrace => courbeSeule || type == TypeExpression.fonction;
+
   bool get finitParEgal => latex?.trimRight().endsWith('=') ?? false;
 
   /// Un résultat se montre après un `=`, ou sous une équation ou un système.
   /// Une expression sans `=` ne demande rien.
   bool get montreResultat {
-    if (etat != EtatBloc.fait || verite != null) return false;
+    if (etat != EtatBloc.fait || verite != null || courbeSeule) return false;
     return estSaisie || finitParEgal || estResolution;
   }
 
@@ -435,6 +453,10 @@ class CalculFeuille extends ChangeNotifier {
   }
 
   Future<void> _calculer(BlocCalcul bloc) async {
+    if (bloc.courbeSeule) {
+      bloc.etat = EtatBloc.fait;
+      return;
+    }
     final Analyse analyse;
     final enDegres = degres();
     try {

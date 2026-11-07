@@ -6,6 +6,22 @@ Une ligne par changement, en français et en anglais.
 
 - Quand une écriture reste à vérifier, un trait ondulé remplace le petit `?` : touchez-le pour voir ce qui a été lu, corriger ou effacer. La lecture se voit par une lueur sous l'écriture, plus par un cercle. / When writing needs checking, a wavy underline replaces the small `?`: tap it to see what was read, correct or erase it. Reading now shows as a glow under your writing, not a spinner.
 
+## [0.7.0] — 2026-11-07
+
+### Message fr
+
+Écris `x^2+y^2=9` ou `(\cos(t),\sin(t))` sur la feuille et touche Tracer. Enregistre ta feuille, ton graphe ou ta figure en image ou en PDF, à l'endroit de ton choix. Les Outils de la Feuille portent maintenant leur nom.
+
+### Message en
+
+Write `x^2+y^2=9` or `(\cos(t),\sin(t))` on the sheet and tap Plot. Save your sheet, graph or figure as an image or a PDF, wherever you choose. The sheet's Tools now show their names.
+
+### Changements
+
+- Une équation en x et y, une courbe paramétrée ou polaire se trace depuis la Feuille, avec un bouton nommé Tracer et un crayon pour corriger la lecture. / An equation in x and y, a parametric or polar curve can be plotted from the sheet, with a named Plot button and a pencil to correct the reading.
+- Exporter en PNG ou en PDF : la Feuille entière, même plus grande que l'écran, le Graphe avec toute sa légende, la Figure. / Export as PNG or PDF: the whole sheet, even larger than the screen, the graph with its full legend, the figure.
+- Les Outils de la Feuille sont une liste de commandes nommées. / The sheet's Tools are a list of named commands.
+
 ## [0.6.1] — 2026-11-07
 
 ### Message fr

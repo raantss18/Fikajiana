@@ -133,14 +133,14 @@ void main() {
 
       await t.tap(find.byTooltip('Outils'));
       await t.pump();
-      await t.tap(find.byTooltip('Gomme'));
+      await t.tap(find.text('Gomme'));
       await t.pump();
       await _ecrireAuStylet(t);
       expect(encre.estVide, isTrue);
 
       await t.tap(find.byTooltip('Outils'));
       await t.pump();
-      await t.tap(find.byTooltip('Annuler'));
+      await t.tap(find.text('Annuler'));
       await t.pump();
       expect(encre.traits, hasLength(1));
     });
@@ -152,7 +152,7 @@ void main() {
       final etat = t.state<State<FeuilleEncre>>(find.byType(FeuilleEncre));
       await t.tap(find.byTooltip('Outils'));
       await t.pump();
-      await t.tap(find.byTooltip('Gomme'));
+      await t.tap(find.text('Gomme'));
       await t.pump();
       await t.tap(find.byTooltip('Outils'));
       await t.pump();
@@ -176,13 +176,13 @@ void main() {
 
     testWidgets('les outils sont repliés au départ', (t) async {
       await _monter(t);
-      expect(find.byTooltip('Gomme'), findsNothing);
+      expect(find.text('Gomme'), findsNothing);
       await t.tap(find.byTooltip('Outils'));
       await t.pump();
-      expect(find.byTooltip('Gomme'), findsOneWidget);
+      expect(find.text('Gomme'), findsOneWidget);
       await t.tap(find.byTooltip('Outils'));
       await t.pump();
-      expect(find.byTooltip('Gomme'), findsNothing);
+      expect(find.text('Gomme'), findsNothing);
     });
 
     testWidgets('exact et degrés se basculent et se voient', (t) async {
@@ -190,14 +190,16 @@ void main() {
       await _monter(t, reglages: reglages);
       await t.tap(find.byTooltip('Outils'));
       await t.pump();
-      await t.tap(find.text('='));
+      await t.tap(find.textContaining('Valeurs exactes'));
       await t.pump();
       expect(reglages.approche, isTrue);
-      expect(find.text('≈'), findsOneWidget);
-      await t.tap(find.text('RAD'));
+      expect(find.textContaining('Valeurs approchées'), findsOneWidget);
+      await t.ensureVisible(find.textContaining('Angles en radians'));
+      await t.pump();
+      await t.tap(find.textContaining('Angles en radians'));
       await t.pump();
       expect(reglages.degres, isTrue);
-      expect(find.text('DEG'), findsOneWidget);
+      expect(find.textContaining('Angles en degrés'), findsOneWidget);
     });
 
     testWidgets('cibles et contrastes, tableau noir', (t) async {

@@ -1,10 +1,12 @@
 import 'dart:async';
 
+import 'package:fikajiana/export/capture.dart';
 import 'package:fikajiana/geometrie/atelier.dart';
 import 'package:fikajiana/graphe/vue_graphe.dart';
 import 'package:fikajiana/l10n/l10n.dart';
 import 'package:fikajiana/reglages/reglages.dart';
 import 'package:fikajiana/reglages/support.dart';
+import 'package:fikajiana/ui/export.dart';
 import 'package:fikajiana/ui/geometrie/panneaux.dart';
 import 'package:fikajiana/ui/geometrie/peintre_figure.dart';
 import 'package:fikajiana/ui/geometrie/pictogrammes.dart';
@@ -29,6 +31,7 @@ class EcranGeometrie extends StatefulWidget {
 }
 
 class _EcranGeometrieState extends State<EcranGeometrie> {
+  final GlobalKey _image = GlobalKey();
   final _vue = VueGraphe();
   Size _taille = Size.zero;
   Offset _dernierFocal = Offset.zero;
@@ -231,6 +234,17 @@ class _EcranGeometrieState extends State<EcranGeometrie> {
         surZoomPlus: () => _vue.zoomer(1.5, centre, _taille),
         surZoomMoins: () => _vue.zoomer(1 / 1.5, centre, _taille),
         surRecentrer: _vue.recentrer,
+        surExporter: (format) {
+          Navigator.of(contexte).pop();
+          unawaited(
+            exporter(
+              context,
+              nom: 'figure',
+              format: format,
+              capture: () => capturerCadre(_image),
+            ),
+          );
+        },
       ),
     );
   }
@@ -302,46 +316,51 @@ class _EcranGeometrieState extends State<EcranGeometrie> {
         return Stack(
           fit: StackFit.expand,
           children: [
-            LayoutBuilder(
-              builder: (context, contraintes) {
-                _taille = contraintes.biggest;
-                return Semantics(
-                  label: atelier.estVide
-                      ? l10n.geometrieVide
-                      : l10n.geometrieDescription(atelier.figure.objets.length),
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onScaleStart: _surDebut,
-                    onScaleUpdate: _surGeste,
-                    onScaleEnd: _surFin,
-                    onTapUp: (d) => _toucher(d.localPosition),
-                    onLongPressStart: (d) {
-                      final m = _vue.versMaths(d.localPosition, _taille);
-                      final id = atelier.objetProche(m.x, m.y, _tolerance);
-                      if (id != null) unawaited(_ouvrirProprietes(id));
-                    },
-                    child: CustomPaint(
-                      size: Size.infinite,
-                      painter: PeintreFigure(
-                        atelier: atelier,
-                        vue: _vue,
-                        fond: reglages.support.fond,
-                        grille: theme.colorScheme.outlineVariant,
-                        palette: reglages.support.stylos,
-                        choix: theme.colorScheme.tertiary,
-                        francais: francais,
-                        texte: theme.textTheme.titleSmall!.copyWith(
-                          color: theme.colorScheme.onSurface,
+            RepaintBoundary(
+              key: _image,
+              child: LayoutBuilder(
+                builder: (context, contraintes) {
+                  _taille = contraintes.biggest;
+                  return Semantics(
+                    label: atelier.estVide
+                        ? l10n.geometrieVide
+                        : l10n.geometrieDescription(
+                            atelier.figure.objets.length,
+                          ),
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onScaleStart: _surDebut,
+                      onScaleUpdate: _surGeste,
+                      onScaleEnd: _surFin,
+                      onTapUp: (d) => _toucher(d.localPosition),
+                      onLongPressStart: (d) {
+                        final m = _vue.versMaths(d.localPosition, _taille);
+                        final id = atelier.objetProche(m.x, m.y, _tolerance);
+                        if (id != null) unawaited(_ouvrirProprietes(id));
+                      },
+                      child: CustomPaint(
+                        size: Size.infinite,
+                        painter: PeintreFigure(
+                          atelier: atelier,
+                          vue: _vue,
+                          fond: reglages.support.fond,
+                          grille: theme.colorScheme.outlineVariant,
+                          palette: reglages.support.stylos,
+                          choix: theme.colorScheme.tertiary,
+                          francais: francais,
+                          texte: theme.textTheme.titleSmall!.copyWith(
+                            color: theme.colorScheme.onSurface,
+                          ),
+                          doigt: doigt,
+                          apercu: doigtMaths == null
+                              ? null
+                              : atelier.apercu(doigtMaths.x, doigtMaths.y),
                         ),
-                        doigt: doigt,
-                        apercu: doigtMaths == null
-                            ? null
-                            : atelier.apercu(doigtMaths.x, doigtMaths.y),
                       ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
             if (atelier.estVide && atelier.outil == OutilGeo.deplacer)
               IgnorePointer(

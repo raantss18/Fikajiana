@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
+import 'package:fikajiana/export/capture.dart';
 import 'package:fikajiana/graphe/courbes.dart';
 import 'package:fikajiana/graphe/vue_graphe.dart';
 import 'package:fikajiana/l10n/l10n.dart';
 import 'package:fikajiana/reglages/reglages.dart';
 import 'package:fikajiana/ui/calcul/carte_bloc.dart';
+import 'package:fikajiana/ui/export.dart';
 import 'package:fikajiana/ui/graphe/tableau_valeurs.dart';
 import 'package:fikajiana/ui/services.dart';
 import 'package:fikajiana/ui/theme/espacement.dart';
@@ -22,6 +25,8 @@ class EcranGraphe extends StatefulWidget {
 
 class _EcranGrapheState extends State<EcranGraphe> {
   final _vue = VueGraphe();
+  final GlobalKey _image = GlobalKey();
+  var _enExport = false;
   Offset _dernierFocal = Offset.zero;
   double _derniereEchelle = 1;
   Size _taille = Size.zero;
@@ -69,6 +74,17 @@ class _EcranGrapheState extends State<EcranGraphe> {
       }
     }
     setState(() => _point = trouve);
+  }
+
+  /// Toute la légende sur l'image : à l'écran, elle défile.
+  Future<ui.Image> _capturer() async {
+    setState(() => _enExport = true);
+    try {
+      await WidgetsBinding.instance.endOfFrame;
+      return await capturerCadre(_image);
+    } finally {
+      if (mounted) setState(() => _enExport = false);
+    }
   }
 
   Future<void> _ouvrirOutils(Reglages reglages) {
@@ -125,6 +141,20 @@ class _EcranGrapheState extends State<EcranGraphe> {
                 ),
                 onTap: () =>
                     fermerPuis(() => reglages.degres = !reglages.degres),
+              ),
+              ...lignesExport(
+                contexte,
+                actif: _courbes.liste.isNotEmpty,
+                surChoix: (format) => fermerPuis(
+                  () => unawaited(
+                    exporter(
+                      context,
+                      nom: 'graphe',
+                      format: format,
+                      capture: _capturer,
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
@@ -196,95 +226,110 @@ class _EcranGrapheState extends State<EcranGraphe> {
       listenable: Listenable.merge([_courbes, _vue]),
       builder: (context, _) {
         final courbes = _courbes.liste;
+        final legende = [
+          for (var i = 0; i < courbes.length; i++)
+            _Legende(
+              numero: i + 1,
+              latex: courbes[i].latex,
+              couleur: stylos[i % stylos.length],
+              surToucher: () => unawaited(_modifier(i)),
+            ),
+        ];
         return Stack(
           fit: StackFit.expand,
           children: [
-            LayoutBuilder(
-              builder: (context, contraintes) {
-                _taille = contraintes.biggest;
-                return Semantics(
-                  label: courbes.isEmpty
-                      ? l10n.grapheVide
-                      : l10n.grapheDescription(courbes.length),
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onScaleStart: (d) {
-                      _dernierFocal = d.localFocalPoint;
-                      _derniereEchelle = 1;
-                    },
-                    onScaleUpdate: (d) {
-                      _vue.glisser(d.localFocalPoint - _dernierFocal);
-                      if (d.scale != _derniereEchelle) {
-                        _vue.zoomer(
-                          d.scale / _derniereEchelle,
-                          d.localFocalPoint,
-                          _taille,
-                        );
-                      }
-                      _dernierFocal = d.localFocalPoint;
-                      _derniereEchelle = d.scale;
-                    },
-                    onTapUp: (d) =>
-                        _lirePoint(d.localPosition, degres: reglages.degres),
-                    child: CustomPaint(
-                      size: Size.infinite,
-                      painter: PeintreGraphe(
-                        vue: _vue,
-                        courbes: courbes,
-                        degres: reglages.degres,
-                        stylos: stylos,
-                        fond: reglages.support.fond,
-                        axes: couleurs.onSurface,
-                        grille: couleurs.outlineVariant,
-                        texte: theme.textTheme.bodySmall!.copyWith(
-                          color: couleurs.onSurface,
+            // L'image exportée : courbes et légende, sans les boutons.
+            RepaintBoundary(
+              key: _image,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  LayoutBuilder(
+                    builder: (context, contraintes) {
+                      _taille = contraintes.biggest;
+                      return Semantics(
+                        label: courbes.isEmpty
+                            ? l10n.grapheVide
+                            : l10n.grapheDescription(courbes.length),
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onScaleStart: (d) {
+                            _dernierFocal = d.localFocalPoint;
+                            _derniereEchelle = 1;
+                          },
+                          onScaleUpdate: (d) {
+                            _vue.glisser(d.localFocalPoint - _dernierFocal);
+                            if (d.scale != _derniereEchelle) {
+                              _vue.zoomer(
+                                d.scale / _derniereEchelle,
+                                d.localFocalPoint,
+                                _taille,
+                              );
+                            }
+                            _dernierFocal = d.localFocalPoint;
+                            _derniereEchelle = d.scale;
+                          },
+                          onTapUp: (d) => _lirePoint(
+                            d.localPosition,
+                            degres: reglages.degres,
+                          ),
+                          child: CustomPaint(
+                            size: Size.infinite,
+                            painter: PeintreGraphe(
+                              vue: _vue,
+                              courbes: courbes,
+                              degres: reglages.degres,
+                              stylos: stylos,
+                              fond: reglages.support.fond,
+                              axes: couleurs.onSurface,
+                              grille: couleurs.outlineVariant,
+                              texte: theme.textTheme.bodySmall!.copyWith(
+                                color: couleurs.onSurface,
+                              ),
+                              virgule: virgule,
+                              point: _point,
+                            ),
+                          ),
                         ),
-                        virgule: virgule,
-                        point: _point,
+                      );
+                    },
+                  ),
+                  if (courbes.isEmpty)
+                    IgnorePointer(
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(AppEspacement.lg),
+                          child: Text(
+                            l10n.grapheVide,
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.bodyLarge,
+                          ),
+                        ),
+                      ),
+                    ),
+                  // La légende, à droite de ← et de Menu : numéro et formule,
+                  // jamais la couleur seule.
+                  Positioned(
+                    left: _enExport ? AppEspacement.sm : 120,
+                    right: 0,
+                    top: 0,
+                    child: SafeArea(
+                      bottom: false,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: AppEspacement.sm),
+                        child: _enExport
+                            ? Wrap(
+                                runSpacing: AppEspacement.sm,
+                                children: legende,
+                              )
+                            : SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Row(children: legende),
+                              ),
                       ),
                     ),
                   ),
-                );
-              },
-            ),
-            if (courbes.isEmpty)
-              IgnorePointer(
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppEspacement.lg),
-                    child: Text(
-                      l10n.grapheVide,
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.bodyLarge,
-                    ),
-                  ),
-                ),
-              ),
-            // La légende, à droite de ← et de Menu : numéro et formule, jamais
-            // la couleur seule.
-            Positioned(
-              left: 120,
-              right: 0,
-              top: 0,
-              child: SafeArea(
-                bottom: false,
-                child: Padding(
-                  padding: const EdgeInsets.only(top: AppEspacement.sm),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        for (var i = 0; i < courbes.length; i++)
-                          _Legende(
-                            numero: i + 1,
-                            latex: courbes[i].latex,
-                            couleur: stylos[i % stylos.length],
-                            surToucher: () => unawaited(_modifier(i)),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
+                ],
               ),
             ),
             Positioned(

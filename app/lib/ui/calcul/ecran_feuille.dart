@@ -1,16 +1,19 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 
 import 'package:fikajiana/comprendre/calcul_feuille.dart';
 import 'package:fikajiana/comprendre/stockage_feuille.dart';
 import 'package:fikajiana/encre/encre.dart';
 import 'package:fikajiana/encre/feuille_encre.dart';
 import 'package:fikajiana/encre/vue_feuille.dart';
+import 'package:fikajiana/export/capture.dart';
 import 'package:fikajiana/l10n/l10n.dart';
 import 'package:fikajiana/reconnaissance/modele.dart';
 import 'package:fikajiana/reglages/reglages.dart';
 import 'package:fikajiana/reglages/support.dart';
 import 'package:fikajiana/ui/calcul/carte_bloc.dart';
 import 'package:fikajiana/ui/calcul/couche_resultats.dart';
+import 'package:fikajiana/ui/export.dart';
 import 'package:fikajiana/ui/navigation/page_destination.dart';
 import 'package:fikajiana/ui/reglages/ecran_reglages.dart';
 import 'package:fikajiana/ui/services.dart';
@@ -33,6 +36,8 @@ class _EcranFeuilleState extends State<EcranFeuille> {
   final _vue = VueFeuille();
   var _gomme = false;
   var _outilsOuverts = false;
+  final GlobalKey _image = GlobalKey();
+  var _enExport = false;
   bool? _degres;
   bool get _degresVus => _degres ?? false;
   late final CalculFeuille _calcul;
@@ -136,6 +141,50 @@ class _EcranFeuilleState extends State<EcranFeuille> {
     setState(() {});
   }
 
+  /// Où se trouve ce qui est écrit, résultats compris.
+  Iterable<Rect> _zonesEcrites(Reglages reglages) sync* {
+    final virgule = Localizations.localeOf(context).languageCode == 'fr';
+    for (final trait in _encre.traits) {
+      final points = trait.pointsVisibles;
+      if (points.isEmpty) continue;
+      yield points.fold(
+        points.first & Size.zero,
+        (zone, p) => zone.expandToInclude(p & Size.zero),
+      );
+    }
+    for (final bloc in _calcul.blocs) {
+      yield bloc.cadre;
+      final ecrit = bloc.ecriture(
+        approcheVoulue: reglages.approche,
+        virgule: virgule,
+      );
+      if (ecrit != null) {
+        yield ecrit.cadre;
+      } else if (bloc.estSaisie) {
+        // Une formule saisie vit à côté, dans la largeur de sa carte.
+        yield bloc.cadre.bottomLeft & const Size(480, 96);
+      }
+    }
+  }
+
+  Future<ui.Image> _capturer(Reglages reglages) async {
+    final cadre = cadreDeLaPage(_zonesEcrites(reglages))!;
+    final (zoom, decalage) = (_vue.zoom, _vue.decalage);
+    setState(() {
+      _enExport = true;
+      _outilsOuverts = false;
+    });
+    try {
+      return await capturerPage(_image, cadre, (coin) async {
+        _vue.placer(1, -coin);
+        await WidgetsBinding.instance.endOfFrame;
+      });
+    } finally {
+      _vue.placer(zoom, decalage);
+      if (mounted) setState(() => _enExport = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final reglages = PorteeReglages.de(context);
@@ -143,77 +192,89 @@ class _EcranFeuilleState extends State<EcranFeuille> {
     return Stack(
       fit: StackFit.expand,
       children: [
-        FeuilleEncre(
-          encre: _encre,
-          vue: _vue,
-          libelle: l10n.zoneEcriture,
-          support: reglages.support,
-          stylo: reglages.indiceStylo,
-          gomme: _gomme,
-          surChangement: _surEncre,
-          surRature: _surRature,
-          ciblesRature: (zone) => _calcul.traitsDuResultatSous(
-            zone,
-            approcheVoulue: reglages.approche,
-            virgule: Localizations.localeOf(context).languageCode == 'fr',
+        // L'image exportée : l'encre et les résultats, sans les boutons.
+        RepaintBoundary(
+          key: _image,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              FeuilleEncre(
+                encre: _encre,
+                vue: _vue,
+                libelle: l10n.zoneEcriture,
+                support: reglages.support,
+                stylo: reglages.indiceStylo,
+                gomme: _gomme,
+                surChangement: _surEncre,
+                surRature: _surRature,
+                ciblesRature: (zone) => _calcul.traitsDuResultatSous(
+                  zone,
+                  approcheVoulue: reglages.approche,
+                  virgule: Localizations.localeOf(context).languageCode == 'fr',
+                ),
+              ),
+              ListenableBuilder(
+                listenable: Listenable.merge([_calcul, _vue]),
+                builder: (context, _) => Stack(
+                  children: [
+                    CoucheResultats(
+                      blocs: _calcul.blocs,
+                      vue: _vue,
+                      approche: reglages.approche,
+                      virgule:
+                          Localizations.localeOf(context).languageCode == 'fr',
+                    ),
+                    for (final bloc in _calcul.blocs)
+                      RepereBloc(
+                        key: ValueKey(bloc.cle),
+                        bloc: bloc,
+                        calcul: _calcul,
+                        vue: _vue,
+                        enExport: _enExport,
+                        surTouche: () {
+                          _encre.retirerPointDuToucher();
+                          _surEncre();
+                        },
+                        surEffacer: () {
+                          if (bloc.estSaisie) {
+                            _calcul.retirer(bloc);
+                            return;
+                          }
+                          _encre.retirerTraits(bloc.traits);
+                          _surEncre();
+                          _proposerAnnuler(context.l10n.blocEfface);
+                        },
+                      ),
+                    if (_calcul.modeleManquant && !_enExport)
+                      Positioned(
+                        left: AppEspacement.md,
+                        right: 80,
+                        bottom: AppEspacement.md,
+                        child: SafeArea(
+                          child: Card(
+                            child: ListTile(
+                              leading: const Icon(Icons.download_outlined),
+                              title: Text(l10n.modeleManquant),
+                              trailing: TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).push(
+                                    RouteEcran((_) => const EcranReglages()),
+                                  );
+                                },
+                                child: Text(l10n.reglages),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
         if (_encre.estVide && _calcul.blocs.isEmpty)
           _Invitation(support: reglages.support),
-        ListenableBuilder(
-          listenable: Listenable.merge([_calcul, _vue]),
-          builder: (context, _) => Stack(
-            children: [
-              CoucheResultats(
-                blocs: _calcul.blocs,
-                vue: _vue,
-                approche: reglages.approche,
-                virgule: Localizations.localeOf(context).languageCode == 'fr',
-              ),
-              for (final bloc in _calcul.blocs)
-                RepereBloc(
-                  key: ValueKey(bloc.cle),
-                  bloc: bloc,
-                  calcul: _calcul,
-                  vue: _vue,
-                  surTouche: () {
-                    _encre.retirerPointDuToucher();
-                    _surEncre();
-                  },
-                  surEffacer: () {
-                    if (bloc.estSaisie) {
-                      _calcul.retirer(bloc);
-                      return;
-                    }
-                    _encre.retirerTraits(bloc.traits);
-                    _surEncre();
-                    _proposerAnnuler(context.l10n.blocEfface);
-                  },
-                ),
-              if (_calcul.modeleManquant)
-                Positioned(
-                  left: AppEspacement.md,
-                  right: 80,
-                  bottom: AppEspacement.md,
-                  child: SafeArea(
-                    child: Card(
-                      child: ListTile(
-                        leading: const Icon(Icons.download_outlined),
-                        title: Text(l10n.modeleManquant),
-                        trailing: TextButton(
-                          onPressed: () {
-                            Navigator.of(context)
-                                .push(RouteEcran((_) => const EcranReglages()));
-                          },
-                          child: Text(l10n.reglages),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
         Positioned(
           right: 0,
           bottom: 0,
@@ -237,10 +298,35 @@ class _EcranFeuilleState extends State<EcranFeuille> {
                   setState(() => _outilsOuverts = false);
                   unawaited(_saisirAuClavier());
                 },
+                peutExporter: !_encre.estVide || _calcul.blocs.isNotEmpty,
+                surExporter: (format) => unawaited(
+                  exporter(
+                    context,
+                    nom: 'feuille',
+                    format: format,
+                    capture: () => _capturer(reglages),
+                  ),
+                ),
               ),
             ),
           ),
         ),
+        // La page défile sous ce voile, le temps de la photographier.
+        if (_enExport)
+          Positioned.fill(
+            child: AbsorbPointer(
+              child: ColoredBox(
+                color: Theme.of(context).colorScheme.surface,
+                child: Center(
+                  child: Semantics(
+                    liveRegion: true,
+                    label: l10n.exportEnCours,
+                    child: const CircularProgressIndicator(),
+                  ),
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -290,8 +376,12 @@ class _Outils extends StatelessWidget {
     required this.surGomme,
     required this.surChangement,
     required this.surClavier,
+    required this.peutExporter,
+    required this.surExporter,
   });
 
+  final bool peutExporter;
+  final ValueChanged<FormatExport> surExporter;
   final VoidCallback surClavier;
   final Encre encre;
   final VueFeuille vue;
@@ -316,77 +406,93 @@ class _Outils extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final support = reglages.support;
+    // Chaque commande porte son nom, seuls les stylos restent des pastilles.
+    ListTile ligne(IconData icone, String nom, VoidCallback? action) =>
+        ListTile(
+          dense: true,
+          leading: Icon(icone),
+          title: Text(nom),
+          enabled: action != null,
+          onTap: action,
+        );
     final boutons = <Widget>[
-      Tooltip(
-        message: reglages.approche ? l10n.modeApproche : l10n.modeExact,
-        child: TextButton(
-          onPressed: () => reglages.approche = !reglages.approche,
-          child: Text(reglages.approche ? '≈' : '='),
+      Wrap(
+        children: [
+          for (var i = 0; i < support.stylos.length; i++)
+            _BoutonStylo(
+              couleur: support.stylos[i],
+              fond: support.fond,
+              libelle: support.nomStylo(l10n, i),
+              choisi: !gomme && reglages.indiceStylo == i,
+              surChoix: () {
+                reglages.indiceStylo = i;
+                surGomme(false);
+              },
+            ),
+        ],
+      ),
+      ListTile(
+        dense: true,
+        leading: Icon(
+          gomme ? Icons.cleaning_services : Icons.cleaning_services_outlined,
         ),
+        title: Text(l10n.gomme),
+        selected: gomme,
+        onTap: () => surGomme(!gomme),
       ),
-      Tooltip(
-        message: reglages.degres ? l10n.modeDegres : l10n.modeRadians,
-        child: TextButton(
-          onPressed: () => reglages.degres = !reglages.degres,
-          child: Text(reglages.degres ? 'DEG' : 'RAD'),
-        ),
+      ligne(Icons.keyboard_outlined, l10n.saisirClavier, surClavier),
+      ligne(
+        Icons.undo,
+        l10n.annuler,
+        encre.peutAnnuler ? () => _agir(encre.annuler) : null,
       ),
-      for (var i = 0; i < support.stylos.length; i++)
-        _BoutonStylo(
-          couleur: support.stylos[i],
-          fond: support.fond,
-          libelle: support.nomStylo(l10n, i),
-          choisi: !gomme && reglages.indiceStylo == i,
-          surChoix: () {
-            reglages.indiceStylo = i;
-            surGomme(false);
-          },
-        ),
-      IconButton(
-        icon: const Icon(Icons.cleaning_services_outlined),
-        selectedIcon: const Icon(Icons.cleaning_services),
-        isSelected: gomme,
-        tooltip: l10n.gomme,
-        onPressed: () => surGomme(!gomme),
+      ligne(
+        Icons.redo,
+        l10n.refaire,
+        encre.peutRefaire ? () => _agir(encre.refaire) : null,
       ),
-      IconButton(
-        icon: const Icon(Icons.keyboard_outlined),
-        tooltip: l10n.saisirClavier,
-        onPressed: surClavier,
+      ligne(
+        Icons.delete_outline,
+        l10n.effacerTout,
+        encre.estVide ? null : () => _agir(encre.effacer),
       ),
-      IconButton(
-        icon: const Icon(Icons.undo),
-        tooltip: l10n.annuler,
-        onPressed: encre.peutAnnuler ? () => _agir(encre.annuler) : null,
+      const Divider(),
+      ligne(
+        Icons.calculate_outlined,
+        reglages.approche ? l10n.modeApproche : l10n.modeExact,
+        () => reglages.approche = !reglages.approche,
       ),
-      IconButton(
-        icon: const Icon(Icons.redo),
-        tooltip: l10n.refaire,
-        onPressed: encre.peutRefaire ? () => _agir(encre.refaire) : null,
+      ligne(
+        Icons.straighten,
+        reglages.degres ? l10n.modeDegres : l10n.modeRadians,
+        () => reglages.degres = !reglages.degres,
       ),
-      IconButton(
-        icon: const Icon(Icons.delete_outline),
-        tooltip: l10n.effacerTout,
-        onPressed: encre.estVide ? null : () => _agir(encre.effacer),
-      ),
+      const Divider(),
       // Alternative aux gestes à deux doigts (WCAG 2.2, critère 2.5.7).
-      IconButton(
-        icon: const Icon(Icons.zoom_in),
-        tooltip: l10n.zoomPlus,
-        onPressed: () => vue.zoomerPlus(_centre(context)),
+      ligne(
+        Icons.zoom_in,
+        l10n.zoomPlus,
+        () => vue.zoomerPlus(_centre(context)),
       ),
-      IconButton(
-        icon: const Icon(Icons.zoom_out),
-        tooltip: l10n.zoomMoins,
-        onPressed: () => vue.zoomerMoins(_centre(context)),
+      ligne(
+        Icons.zoom_out,
+        l10n.zoomMoins,
+        () => vue.zoomerMoins(_centre(context)),
       ),
       ListenableBuilder(
         listenable: vue,
-        builder: (context, _) => IconButton(
-          icon: const Icon(Icons.fit_screen_outlined),
-          tooltip: l10n.recentrer,
-          onPressed: vue.estInitiale ? null : vue.recentrer,
+        builder: (context, _) => ligne(
+          Icons.fit_screen_outlined,
+          l10n.recentrer,
+          vue.estInitiale ? null : vue.recentrer,
         ),
+      ),
+      const Divider(),
+      ...lignesExport(
+        context,
+        actif: peutExporter,
+        surChoix: surExporter,
+        dense: true,
       ),
     ];
     final couleurs = Theme.of(context).colorScheme;
@@ -437,13 +543,16 @@ class _Outils extends StatelessWidget {
           margin: EdgeInsets.zero,
           child: ConstrainedBox(
             constraints: BoxConstraints(
-              // En paysage, le panneau s'étale plutôt qu'il ne monte.
-              maxWidth: taille.height < taille.width ? 340 : 224,
+              maxWidth: 300,
               maxHeight: taille.height * 0.6,
             ),
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(AppEspacement.sm),
-              child: Wrap(children: boutons),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: boutons,
+              ),
             ),
           ),
         ),

@@ -23,7 +23,8 @@ Android, téléphone et tablette. <b>Libre</b>, sans compte, sans pub, et <b>hor
 - **Écrire** au stylet ou au doigt, sur une feuille blanche, un cahier ou un tableau noir, avec des stylos de couleur et une gomme, sur une page sans bord.
 - **Calculer** : écris `2+3=` et le résultat s'écrit à la main après le signe égal. Écris `x+3=4` et la solution s'écrit dessous. Fractions, racines, équations, systèmes, intégrales, limites, sommes, matrices.
 - **Basculer** entre valeur exacte et approchée, degrés et radians.
-- **Tracer** : écris `f(x)=x^2`, touche l'icône à côté, et la courbe s'affiche. Dans le Graphe, ajoute aussi `x^2+y^2=4`, `(\cos(t),\sin(t))` ou `r=1+\cos(\theta)`. Glisser, pincer, plusieurs courbes, tableau de valeurs, un toucher lit les coordonnées d'un point.
+- **Tracer** : écris `f(x)=x^2`, touche Tracer à côté, et la courbe s'affiche. Cela marche aussi avec `x^2+y^2=4`, `(\cos(t),\sin(t))` ou `r=1+\cos(\theta)`. Glisser, pincer, plusieurs courbes, tableau de valeurs, un toucher lit les coordonnées d'un point.
+- **Exporter** : la feuille entière, le graphe ou la figure, en image PNG ou en PDF, à l'endroit de ton choix.
 - **Construire** : 40 outils nommés, de la parallèle à la conique par cinq points : polygones, arcs, tangentes, symétries, rotations, homothéties, mesures, curseurs, lieux. Déplace un point : toute la figure suit. L'outil Relation dit ce qui lie deux objets.
 - **Retrouver** : le Menu crée une nouvelle feuille, un graphe ou une figure, et l'Historique les garde tous, sur l'appareil.
 - **Effacer d'un geste** : gribouille sur ce que tu as écrit ; un `1/3` en ligne se range en fraction, avec tes propres traits.
@@ -41,8 +42,8 @@ Tout tient dans deux boutons, Menu et Outils. Le reste de l'écran est à toi.
 ## À savoir
 
 - **La lecture se trompe encore souvent** : 37 expressions justes sur 50 dans [un essai optimiste](docs/recherche/spike-ocr.md), avec une seule personne. La lecture ne s'affiche pas : si un résultat te surprend, touche-le.
-- **Pas encore là** : formes dessinées reconnues, texte et fonctions dans une figure, export en PDF ou PNG. L'avancement est dans [`docs/TODO.md`](docs/TODO.md).
-- **Vie privée** : aucun compte, aucune pub, aucune télémétrie. L'encre ne quitte jamais l'appareil. Seuls le téléchargement du modèle et la recherche de mise à jour, à ta demande, utilisent le réseau.
+- **Pas encore là** : formes dessinées reconnues, texte et fonctions dans une figure. L'avancement est dans [`docs/TODO.md`](docs/TODO.md).
+- **Vie privée** : aucun compte, aucune pub, aucune télémétrie. L'encre ne quitte l'appareil que si tu exportes vers un dossier en ligne de ton choix. Seuls le téléchargement du modèle et la recherche de mise à jour, à ta demande, utilisent le réseau.
 - **Le modèle de lecture n'est pas dans l'application** : il vient de [la page de son auteur](https://huggingface.co/breezedeus/pix2text-mfr), sous licence MIT. L'origine de ses données d'entraînement n'est pas publiée ([ADR 0016](docs/adr/0016-modele-telecharge.md)).
 
 ## Pour les développeurs
@@ -84,5 +85,5 @@ Code sous [GPL-3.0-or-later](LICENSE) ; dépendances : [`THIRD_PARTY_LICENSES.md
 - 📱 **[Download for Android](https://github.com/raantss18/Fikajiana/releases/latest/download/fikajiana-arm64-v8a.apk)** (Android 7 or later, 64-bit) · [latest release notes](https://github.com/raantss18/Fikajiana/releases/latest)
 - To read handwriting: Menu → Settings → "Download the model" (117 MB, once). Keyboard entry works without it.
 - **Recognition is still often wrong** (37 of 50 in [an optimistic test](docs/recherche/spike-ocr.md)): tap a result to see what was read and correct it.
-- Not there yet: hand-drawn shapes, text and functions in a figure, PDF or PNG export.
+- Not there yet: hand-drawn shapes, text and functions in a figure.
 - **Author:** RANIRIAMANJAKA Antsa — [antsa.raniriamanjaka@univ-antananarivo.mg](mailto:antsa.raniriamanjaka@univ-antananarivo.mg). **License:** GPL-3.0-or-later.
