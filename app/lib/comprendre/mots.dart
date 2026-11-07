@@ -23,6 +23,8 @@ class MotEcrit {
 
 /// Les commandes qu'on écrit à la main, telles qu'elles s'affichent.
 const motsDeCommande = [
+  'tracer',
+  'plot',
   'développer',
   'factoriser',
   'simplifier',

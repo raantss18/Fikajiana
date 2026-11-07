@@ -6,6 +6,7 @@ import 'package:fikajiana/encre/traverse_ecriture.dart';
 import 'package:fikajiana/encre/vue_feuille.dart';
 import 'package:fikajiana/l10n/l10n.dart';
 import 'package:fikajiana/reglages/reglages.dart';
+import 'package:fikajiana/ui/calcul/action_manuscrite.dart';
 import 'package:fikajiana/ui/calcul/marques_bloc.dart';
 import 'package:fikajiana/ui/calcul/panneau_saisie.dart';
 import 'package:fikajiana/ui/formule_affichee.dart';
@@ -225,20 +226,19 @@ class RepereBloc extends StatelessWidget {
                 children: [
                   if (bloc.estSaisie)
                     _Formule(latex: bloc.latex ?? '', couleur: accent),
-                  FilledButton.tonalIcon(
-                    icon: const Icon(Icons.place_outlined),
-                    label: Text(l10n.placerDansFigure),
-                    onPressed: () {
+                  ActionManuscrite(
+                    mot: l10n.motPlacer,
+                    libelle: l10n.placerDansFigure,
+                    surToucher: () {
                       surTouche();
                       PorteeServices.de(context).atelier.placerObjet(objet);
                       Navigator.of(context)
                           .push(RouteDestination(Destination.figure));
                     },
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.edit_outlined),
-                    tooltip: l10n.corriger,
-                    onPressed: () => unawaited(_corriger(context)),
+                  CrayonManuscrit(
+                    libelle: l10n.corriger,
+                    surToucher: () => unawaited(_corriger(context)),
                   ),
                 ],
               ),
@@ -250,6 +250,8 @@ class RepereBloc extends StatelessWidget {
         if (bloc.seTrace) {
           final formule = _Formule(latex: bloc.latex ?? '', couleur: accent);
           if (enExport && !bloc.estSaisie) return const SizedBox.shrink();
+          final dejaTracee = PorteeServices.de(context).courbes.liste
+              .any((c) => c.latex == bloc.latex);
           return Positioned(
             left: droite.dx + AppEspacement.sm,
             top: droite.dy - 24,
@@ -260,15 +262,12 @@ class RepereBloc extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (bloc.estSaisie) formule,
-                        FilledButton.tonalIcon(
-                          icon: const Icon(Icons.show_chart),
-                          label: Text(
-                            PorteeServices.de(context).courbes.liste
-                                    .any((c) => c.latex == bloc.latex)
-                                ? l10n.voirDansFigure
-                                : l10n.grapheTracer,
-                          ),
-                          onPressed: () {
+                        ActionManuscrite(
+                          mot: dejaTracee ? l10n.motVoir : l10n.motTracer,
+                          libelle: dejaTracee
+                              ? l10n.voirDansFigure
+                              : l10n.grapheTracer,
+                          surToucher: () {
                             surTouche();
                             final services = PorteeServices.de(context);
                             final deja = services.courbes.liste.any(
@@ -281,10 +280,9 @@ class RepereBloc extends StatelessWidget {
                             }
                           },
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.edit_outlined),
-                          tooltip: l10n.corriger,
-                          onPressed: () => unawaited(_corriger(context)),
+                        CrayonManuscrit(
+                          libelle: l10n.corriger,
+                          surToucher: () => unawaited(_corriger(context)),
                         ),
                       ],
                     ),
@@ -378,10 +376,10 @@ class _BoutonPlacer extends StatelessWidget {
   final VoidCallback surTouche;
 
   @override
-  Widget build(BuildContext context) => FilledButton.tonalIcon(
-    icon: const Icon(Icons.place_outlined),
-    label: Text(context.l10n.placerDansFigure),
-    onPressed: () {
+  Widget build(BuildContext context) => ActionManuscrite(
+    mot: context.l10n.motPlacer,
+    libelle: context.l10n.placerDansFigure,
+    surToucher: () {
       surTouche();
       final atelier = PorteeServices.de(context).atelier;
       objets.forEach(atelier.placerObjet);

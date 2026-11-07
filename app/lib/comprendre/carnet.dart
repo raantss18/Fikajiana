@@ -195,25 +195,82 @@ class Carnet extends ChangeNotifier {
   }
 }
 
-/// Avant la 0.10, la Figure en cours n'appartenait à aucune feuille : on
-/// la rattache à la feuille en cours, une seule fois. Les autres figures et
-/// graphes deviennent des documents à part : rien ne se perd (ADR 0032).
+/// Avant la 1.0, une Figure n'appartenait à aucune feuille : chacune est
+/// rattachée à la feuille dont elle reprend le contenu (ses points, ses
+/// courbes). Sans feuille qui lui ressemble, elle reste un document à part :
+/// rien ne se perd (ADR 0032). La 0.10 de développement l'attachait à la
+/// feuille en cours : la marque 2 refait ce choix.
 void rattacherFiguresAuxFeuilles(Directory dossier, List<String> annexes) {
   final marque = File('${dossier.path}/documents.txt');
-  if (marque.existsSync()) return;
-  final note = File('${dossier.path}/courante.txt');
-  final feuille = note.existsSync() ? note.readAsStringSync().trim() : null;
-  if (feuille != null && feuille.isNotEmpty) {
-    for (final annexe in annexes) {
-      final noteAnnexe = File('${dossier.path}/$annexe/courant.txt');
-      if (!noteAnnexe.existsSync()) continue;
-      final courant = noteAnnexe.readAsStringSync().trim();
-      final source = File('${dossier.path}/$annexe/$courant.json');
-      final cible = File('${dossier.path}/$annexe/$feuille.json');
-      if (courant != feuille && source.existsSync() && !cible.existsSync()) {
-        source.renameSync(cible.path);
+  if (marque.existsSync() && marque.readAsStringSync().trim() == '2') return;
+  final feuilles = <String, Set<String>>{};
+  final dossierFeuilles = Directory('${dossier.path}/feuilles');
+  if (dossierFeuilles.existsSync()) {
+    for (final f in dossierFeuilles.listSync().whereType<File>()) {
+      if (!f.path.endsWith('.json')) continue;
+      try {
+        final json = jsonDecode(f.readAsStringSync()) as Map<String, dynamic>;
+        feuilles[f.uri.pathSegments.last.replaceAll('.json', '')] = {
+          for (final b
+              in (json['blocs'] as List<dynamic>? ?? const [])
+                  .cast<Map<String, dynamic>>())
+            if (b['latex'] case final String latex) _empreinte(latex),
+        };
+      } on Object {
+        continue;
       }
     }
   }
-  marque.writeAsStringSync('1');
+  for (final annexe in annexes) {
+    final d = Directory('${dossier.path}/$annexe');
+    if (!d.existsSync()) continue;
+    for (final f in d.listSync().whereType<File>().toList()) {
+      if (!f.path.endsWith('.json')) continue;
+      final id = f.uri.pathSegments.last.replaceAll('.json', '');
+      final Set<String> traces;
+      try {
+        traces = _tracesDeLaFigure(jsonDecode(f.readAsStringSync()));
+      } on Object {
+        continue;
+      }
+      int score(String feuille) =>
+          traces.where((t) => feuilles[feuille]!.contains(t)).length;
+      final meilleure = feuilles.keys.fold<String?>(
+        null,
+        (m, k) => score(k) > (m == null ? 0 : score(m)) ? k : m,
+      );
+      if (meilleure == null || meilleure == id) continue;
+      if (feuilles.containsKey(id) && score(id) >= score(meilleure)) continue;
+      final cible = File('${d.path}/$meilleure.json');
+      if (!cible.existsSync()) f.renameSync(cible.path);
+    }
+  }
+  marque.writeAsStringSync('2');
 }
+
+/// Ce qu'une Figure a dû recevoir d'une feuille : ses courbes, ses points.
+Set<String> _tracesDeLaFigure(Object? contenu) => switch (contenu) {
+  final List<dynamic> courbes => {
+    for (final c in courbes.whereType<String>()) _empreinte(c),
+  },
+  final Map<String, dynamic> figure => {
+    for (final o
+        in (figure['objets'] as List<dynamic>? ?? const [])
+            .cast<Map<String, dynamic>>())
+      if (o case {'t': 'libre', 'a': {'n': final String nom}})
+        _empreinte('$nom(${_nombre(o['x'])};${_nombre(o['y'])})'),
+  },
+  _ => const {},
+};
+
+String _nombre(Object? v) {
+  final d = (v as num?)?.toDouble() ?? 0;
+  return d == d.roundToDouble() ? '${d.round()}' : '$d';
+}
+
+/// Une écriture sans ses espaces ni ses habits : `A ( 1 ; 2 )` vaut `A(1;2)`,
+/// et `B(5,-4)` aussi bien que `B(5;-4)`.
+String _empreinte(String latex) => latex
+    .replaceAll(RegExp(r'\\(left|right)'), '')
+    .replaceAll(RegExp(r'\s'), '')
+    .replaceAll(',', ';');

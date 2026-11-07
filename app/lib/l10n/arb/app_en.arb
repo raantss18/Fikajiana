@@ -340,7 +340,6 @@
             }
         }
     },
-    "historiqueNouvelle": "New sheet",
     "historiqueSupprimer": "Delete",
     "historiqueSupprimerTitre": "Delete this sheet?",
     "historiqueSupprimerTexte": "It will be erased from the device, with no way back.",
@@ -487,14 +486,12 @@
         }
     },
     "relationIciSeulement": "True in this position only: it stops when the figure is deformed.",
-    "nouvelleFeuille": "New sheet",
-    "nouvelleFigure": "New figure",
     "historiqueSectionFeuilles": "Documents",
     "historiqueSectionGraphes": "Graphs",
     "historiqueSectionFigures": "Figures",
     "historiqueSupprimerAutre": "Delete?",
     "historiqueGrapheVide": "Empty graph",
-    "historiqueObjets": "{n} objects",
+    "historiqueObjets": "{n, plural, =1{1 object} other{{n} objects}}",
     "@historiqueObjets": {
         "description": "historiqueObjets",
         "placeholders": {
@@ -558,16 +555,38 @@
     "blocRelire": "Read again",
     "saisieDefinir": "Define {nom}",
     "relireFeuille": "Read the sheet again",
-    "historiqueFigure": "Figure: {courbes} curves, {objets} objects",
+    "historiqueFigure": "Figure: {contenu}",
     "@historiqueFigure": {
         "description": "What a document's Figure holds, in the History.",
         "placeholders": {
-            "courbes": {
-                "type": "int"
-            },
-            "objets": {
+            "contenu": {
+                "type": "String"
+            }
+        }
+    },
+    "motTracer": "plot",
+    "motVoir": "see",
+    "motPlacer": "place",
+    "@motTracer": {
+        "description": "Handwritten action word on the Sheet: lowercase ASCII letters only."
+    },
+    "@motVoir": {
+        "description": "Handwritten action word on the Sheet: lowercase ASCII letters only."
+    },
+    "@motPlacer": {
+        "description": "Handwritten action word on the Sheet: lowercase ASCII letters only."
+    },
+    "historiqueCourbes": "{n, plural, =1{1 curve} other{{n} curves}}",
+    "@historiqueCourbes": {
+        "description": "Number of curves in a document's Figure.",
+        "placeholders": {
+            "n": {
                 "type": "int"
             }
         }
+    },
+    "nouveauDocument": "New document",
+    "@nouveauDocument": {
+        "description": "The single creation entry: a new sheet with its own empty Figure."
     }
 }

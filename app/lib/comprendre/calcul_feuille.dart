@@ -634,11 +634,41 @@ class CalculFeuille extends ChangeNotifier {
       ...bloc.autresLectures,
     ];
     if (sur == null) return;
+    // `plot(g(x))` : ce qui est entre parenthèses se trace (Pad 7).
+    final courbe = motsTracer.contains(sur) ? _courbeDe(bloc, suite) : null;
+    if (motsTracer.contains(sur) && courbe == null) return;
     bloc
-      ..latex = candidats.first
+      ..latex = courbe ?? candidats.first
       // Ce qui a été compris s'affiche, à vérifier d'un coup d'œil.
       ..lueParMorceaux = true;
     await _calculer(bloc);
+  }
+
+  /// La courbe de `(g(x))` : la définition de g écrite plus haut, telle
+  /// quelle ; sinon `y=` l'expression en x.
+  String? _courbeDe(BlocCalcul bloc, String suite) {
+    var dedans = suite.replaceAll(RegExp(r'\\(left|right)'), '').trim();
+    while (dedans.startsWith('(') && dedans.endsWith(')')) {
+      dedans = dedans.substring(1, dedans.length - 1).trim();
+    }
+    final appel = RegExp(r'^([a-zA-Z])\(x\)$')
+        .firstMatch(dedans.replaceAll(' ', ''));
+    if (appel != null) {
+      final dessus =
+          _blocs.values
+              .where((b) => b.cadre.top < bloc.cadre.top && b.seTrace)
+              .where((b) {
+                try {
+                  return analyserLatex(b.latex ?? '').nomFonction == appel[1];
+                } on ErreurLatex {
+                  return false;
+                }
+              })
+              .toList()
+            ..sort((a, b) => a.cadre.top.compareTo(b.cadre.top));
+      return dessus.lastOrNull?.latex;
+    }
+    return RegExp(r'(?<![a-zA-Z\\])x').hasMatch(dedans) ? 'y=$dedans' : null;
   }
 
   /// `30×8` sans `=` : un calcul de nombres attend sa valeur (Antsa : « le =
@@ -657,8 +687,7 @@ class CalculFeuille extends ChangeNotifier {
       '',
     );
     if (RegExp('[a-zA-Z]').hasMatch(sansFonctions)) return false;
-    return RegExp('[-+*/^(]')
-        .hasMatch(giac.replaceFirst(RegExp(r'^\(?-'), ''));
+    return RegExp('[-+*/^(]').hasMatch(giac.replaceFirst(RegExp(r'^\(?-'), ''));
   }
 
   /// `⇒ plot` à côté de `f'(x)=2x-2` : la ligne d'à côté se trace ; un mot

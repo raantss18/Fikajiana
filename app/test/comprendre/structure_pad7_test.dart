@@ -87,6 +87,29 @@ void main() {
       expect(redresserEgal(_traits('trente_fois_8'), '3 0 - 8'), '3 0 - 8');
     });
 
+    test('det lu « φe^{1/2} » sur le Pad : reste det', () async {
+      final traits = _traits('det_2x2_40');
+      final modele = _Modele(traits, const {
+        [0, 2, 3, 4]: r'\phi e ^ { \frac { 1 } { 2 } }',
+        [6, 7, 8]: '8 - 1',
+        [9, 10, 11]: '8 - 4',
+      });
+      final lu = await lireStructure(modele, traits);
+      expect(lu, startsWith(r'\det \begin{pmatrix}8&-1\\8&4'));
+      // Un vrai facteur, lui, reste : 2·(…).
+      expect(
+        await lireStructure(
+          _Modele(traits, const {
+            [0, 2, 3, 4]: '2',
+            [6, 7, 8]: '8 - 1',
+            [9, 10, 11]: '8 - 4',
+          }),
+          traits,
+        ),
+        startsWith(r'2\begin{pmatrix}'),
+      );
+    });
+
     test('une matrice reste une matrice, pas un point', () {
       expect(trouverStructure(_traits('det_3x3_72')), isA<StructureMatrice>());
       expect(trouverStructure(_traits('det_2x2_40')), isA<StructureMatrice>());

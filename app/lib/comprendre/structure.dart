@@ -437,7 +437,12 @@ Future<String?> lireStructure(Lecteur lecteur, List<Trait> traits) async {
           ? ''
           : '^{${(await morceau(exposant)).replaceAll(' ', '')}}';
       final apres = '$puissance${await morceau(queue)}';
-      final nom = ressembleADet(avant) ? r'\det ' : avant;
+      // Devant une matrice, seul un nombre ou une lettre multiplie ; un mot
+      // mal lu, `φe^{1/2}` (Pad 7), est le `det` écrit à la main.
+      final facteur = RegExp(
+        r'^\s*[-+]?\s*(\d[\d\s.,]*|[a-zA-Z])?\s*(\\cdot|\\times)?\s*$',
+      ).hasMatch(avant);
+      final nom = ressembleADet(avant) || !facteur ? r'\det ' : avant;
       return '$nom$matrice$apres';
   }
 }

@@ -161,14 +161,16 @@ class _Menu extends StatelessWidget {
       style: _styleFlottant(context),
       onSelected: (cible) => _aller(context, cible),
       itemBuilder: (_) => [
-        _nouveau(Icons.note_add_outlined, l10n.nouvelleFeuille, () {
+        // Une seule création : la feuille et sa Figure sont liées (Antsa,
+        // ADR 0032). On reste dans l'espace où l'on est.
+        _nouveau(Icons.note_add_outlined, l10n.nouveauDocument, () {
           services.carnet.nouvelle();
-          _aller(context, Destination.feuille);
-        }),
-        // Un document neuf : feuille et Figure vides, ensemble.
-        _nouveau(Icons.add_box_outlined, l10n.nouvelleFigure, () {
-          services.carnet.nouvelle();
-          _aller(context, Destination.figure);
+          _aller(
+            context,
+            destination == Destination.figure
+                ? Destination.figure
+                : Destination.feuille,
+          );
         }),
         const PopupMenuDivider(),
         for (final d in Destination.values)

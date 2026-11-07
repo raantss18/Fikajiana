@@ -1376,7 +1376,11 @@ class LecteurLatex {
         symboles: symboles,
       );
     }
-    return Terme('integrate(${corps.giac},$variable)', symboles: symboles);
+    // `3x^3/3+x` brut (Pad 7) : la primitive se simplifie.
+    return Terme(
+      'normal(integrate(${corps.giac},$variable))',
+      symboles: symboles,
+    );
   }
 
   bool get _debutDifferentielleSimple =>

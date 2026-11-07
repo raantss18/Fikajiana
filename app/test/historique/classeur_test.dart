@@ -64,18 +64,15 @@ void main() {
   });
 
   group('menu', () {
-    Future<void> menu(WidgetTester t, String entree) async {
+    // Antsa : feuille et figure sont liées, une seule création.
+    testWidgets('une seule création : « Nouveau document »', (t) async {
+      await t.pumpFikajiana();
       await t.tap(find.byTooltip('Menu').last);
       await t.pumpAndSettle();
-      await t.tap(find.text(entree));
+      expect(find.text('Nouvelle figure'), findsNothing);
+      expect(find.text('Nouvelle feuille'), findsNothing);
+      await t.tap(find.text('Nouveau document'));
       await t.pumpAndSettle();
-    }
-
-    testWidgets('propose les deux créations, et y mène', (t) async {
-      await t.pumpFikajiana();
-      await menu(t, 'Nouvelle figure');
-      expect(find.byType(EcranGeometrie), findsOneWidget);
-      await menu(t, 'Nouvelle feuille');
       expect(find.byType(EcranGeometrie), findsNothing);
     });
   });

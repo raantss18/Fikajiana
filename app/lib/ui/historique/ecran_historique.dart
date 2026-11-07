@@ -61,7 +61,7 @@ class EcranHistorique extends StatelessWidget {
           children: [
             ListTile(
               leading: const Icon(Icons.add),
-              title: Text(l10n.historiqueNouvelle),
+              title: Text(l10n.nouveauDocument),
               onTap: () {
                 carnet.nouvelle();
                 _revenir(context);
@@ -156,7 +156,13 @@ class _Apercu extends StatelessWidget {
       children: [
         ecrit,
         Text(
-          l10n.historiqueFigure(feuille.courbes.length, feuille.objets),
+          l10n.historiqueFigure(
+            [
+              if (feuille.courbes.isNotEmpty)
+                l10n.historiqueCourbes(feuille.courbes.length),
+              if (feuille.objets > 0) l10n.historiqueObjets(feuille.objets),
+            ].join(', '),
+          ),
           style: style,
         ),
       ],

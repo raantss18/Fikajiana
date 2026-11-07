@@ -141,25 +141,59 @@ void main() {
       expect(grapheDe(id).existsSync(), isFalse);
     });
 
-    test('la Figure en cours d’avant est rattachée à la feuille en cours', () {
-      // Avant : une feuille 100, une figure 200, chacune « courante ».
-      File('${dossier.path}/courante.txt').writeAsStringSync('100');
-      File('${dossier.path}/feuilles/100.json')
-        ..parent.createSync(recursive: true)
-        ..writeAsStringSync('{"traits":[],"blocs":[]}');
-      figureDe('200').writeAsStringSync('{"objets":[{"id":0}]}');
-      File('${dossier.path}/figures/courant.txt').writeAsStringSync('200');
-      figureDe('300').writeAsStringSync('{"objets":[]}');
+    void feuille(String id, List<String> lignes) =>
+        File('${dossier.path}/feuilles/$id.json')
+          ..parent.createSync(recursive: true)
+          ..writeAsStringSync(
+            jsonEncode({
+              'traits': <Object>[],
+              'blocs': [
+                for (final l in lignes) {'latex': l},
+              ],
+            }),
+          );
+
+    // Le cas du Pad 7 : la figure et la courbe d'anciennes feuilles avaient
+    // été rattachées à la feuille en cours.
+    test('chaque Figure rejoint la feuille dont elle vient', () {
+      feuille('100', ['A ( 1 ; 2 )', 'B ( 5 , - 4 )', 'cercle(A;3)']);
+      feuille('200', ['f ( x ) = x ^ { 2 } - 1']);
+      feuille('300', ['5 - 3 5 =']);
+      File('${dossier.path}/documents.txt').writeAsStringSync('1');
+      figureDe('300').writeAsStringSync(
+        jsonEncode({
+          'objets': [
+            {
+              'id': 0,
+              't': 'libre',
+              'x': 1.0,
+              'y': 2.0,
+              'a': {'n': 'A'},
+            },
+            {
+              'id': 1,
+              't': 'libre',
+              'x': 5.0,
+              'y': -4.0,
+              'a': {'n': 'B'},
+            },
+          ],
+        }),
+      );
+      grapheDe('300')
+          .writeAsStringSync(jsonEncode(['f ( x ) = x ^ { 2 } - 1']));
+      figureDe('400').writeAsStringSync('{"objets":[]}');
       rattacherFiguresAuxFeuilles(dossier, annexes);
       expect(figureDe('100').existsSync(), isTrue);
-      expect(figureDe('200').existsSync(), isFalse);
-      // Une autre figure reste un document à part : rien ne se perd.
-      final carnet = Carnet(dossier: dossier, annexes: annexes);
-      expect(carnet.apercus().map((a) => a.id), containsAll(['100', '300']));
+      expect(grapheDe('200').existsSync(), isTrue);
+      expect(figureDe('300').existsSync(), isFalse);
+      expect(grapheDe('300').existsSync(), isFalse);
+      // Une figure qui ne ressemble à aucune feuille reste à part.
+      expect(figureDe('400').existsSync(), isTrue);
       // Une seule fois.
-      figureDe('200').writeAsStringSync('{"objets":[]}');
+      figureDe('300').writeAsStringSync(figureDe('100').readAsStringSync());
       rattacherFiguresAuxFeuilles(dossier, annexes);
-      expect(figureDe('200').existsSync(), isTrue);
+      expect(figureDe('300').existsSync(), isTrue);
     });
   });
 
@@ -172,7 +206,7 @@ void main() {
       await t.pumpAndSettle();
       expect(find.byType(EcranHistorique), findsOneWidget);
       expect(find.textContaining('Aucune feuille'), findsOneWidget);
-      await t.tap(find.text('Nouvelle feuille'));
+      await t.tap(find.text('Nouveau document'));
       await t.pumpAndSettle();
       expect(find.byType(EcranHistorique), findsNothing);
       expect(find.byType(BackButton), findsNothing);

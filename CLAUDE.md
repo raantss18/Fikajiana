@@ -30,7 +30,7 @@
 
 - **Autonomie** : décider seul ce qui est réversible et le noter (ADR). Une branche et une PR par tâche, ouverte dès que la tâche est poussée ;
   fusionner soi-même quand tous les contrôles sont verts, si la PR ne publie rien.
-- **Versions** : en sortir une après chaque modification majeure ou plusieurs améliorations, sans redemander (demande d'Antsa, 2026-11-06), une fois les contrôles passés.
+- **Versions** : en sortir une après chaque modification majeure ou plusieurs améliorations, sans redemander (demande d'Antsa, 2026-11-06), une fois les contrôles passés. Chaque chiffre va de 0 à 9 : 0.1.9 → 0.2.0, 1.9.9 → 2.0.0 (`tool/version_suivante.py`).
 - **Réservé à Antsa** : les clés (`release-keys/`), toute action publique hors du dépôt, un grand changement de cap.
 - **Pile de PR** : ne jamais supprimer la branche d'une PR qui sert de base à une autre (les PR empilées seraient fermées).
 - **Nouveautés** : une ligne fr/en sous `## [Non publié]` de `app/CHANGELOG.md`. Le message de mise à jour dit ce que la version permet de faire.

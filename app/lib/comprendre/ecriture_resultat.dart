@@ -458,6 +458,7 @@ class _Compositeur {
       'geq' => _lettre('≥'),
       'emptyset' => _lettre('∅'),
       'frac' => _fraction(),
+      'begin' => _matrice(),
       'sqrt' => _racine(),
       'pi' => _lettre('π'),
       'infty' => _lettre('∞'),
@@ -498,6 +499,73 @@ class _Compositeur {
         ).traces,
       ],
     );
+  }
+
+  /// `\begin{pmatrix}a&b\\c&d\end{pmatrix}` : ses cases écrites à la main,
+  /// entre deux grandes parenthèses tracées (Antsa : pas de matrice imprimée).
+  _Boite _matrice() {
+    const debut = '{pmatrix}';
+    if (!_s.startsWith(debut, _i)) throw const _NonPrisEnCharge();
+    _i += debut.length;
+    const fin = r'\end{pmatrix}';
+    final bout = _s.indexOf(fin, _i);
+    if (bout < 0) throw const _NonPrisEnCharge();
+    final lignes = [
+      for (final l in _s.substring(_i, bout).split(r'\\'))
+        if (l.trim().isNotEmpty)
+          [for (final c in l.split('&')) _Compositeur(c.trim()).composer()],
+    ];
+    _i = bout + fin.length;
+    if (lignes.isEmpty) throw const _NonPrisEnCharge();
+    final colonnes = lignes.map((l) => l.length).reduce(math.max);
+    final largeurs = [
+      for (var j = 0; j < colonnes; j++)
+        lignes.map((l) => j < l.length ? l[j].largeur : 0.0).reduce(math.max),
+    ];
+    const ecart = 0.5;
+    const interligne = 0.3;
+    final hauts = [
+      for (final l in lignes) l.map((c) => c.haut).reduce(math.max),
+    ];
+    final bas = [for (final l in lignes) l.map((c) => c.bas).reduce(math.max)];
+    final hauteur =
+        [for (var i = 0; i < lignes.length; i++) hauts[i] + bas[i]]
+            .reduce((a, b) => a + b) +
+        interligne * (lignes.length - 1);
+    // Centrée sur la barre de fraction, comme une fraction.
+    final dessus = -0.42 - hauteur / 2;
+    const bord = 0.42;
+    final traces = <_Trace>[];
+    var y = dessus;
+    for (var i = 0; i < lignes.length; i++) {
+      var x = bord;
+      for (var j = 0; j < lignes[i].length; j++) {
+        final c = lignes[i][j];
+        traces.addAll(
+          _deplacer(
+            c,
+            Offset(x + (largeurs[j] - c.largeur) / 2, y + hauts[i]),
+          ).traces,
+        );
+        x += largeurs[j] + ecart;
+      }
+      y += hauts[i] + bas[i] + interligne;
+    }
+    final largeur =
+        bord * 2 + largeurs.reduce((a, b) => a + b) + ecart * (colonnes - 1);
+    final (h, b) = (dessus - 0.1, dessus + hauteur + 0.1);
+    _Trace parenthese(double x, double sens) => [
+      for (var k = 0; k <= 12; k++)
+        Offset(
+          x - sens * 0.22 * math.sin(math.pi * k / 12),
+          h + (b - h) * k / 12,
+        ),
+    ];
+    return _Boite(largeur, -h, b, [
+      parenthese(0.26, 1),
+      parenthese(largeur - 0.26, -1),
+      ...traces,
+    ]);
   }
 
   /// Le signe prend de la place : serré, il se confond avec les chiffres et
@@ -592,6 +660,15 @@ _Trace _densifier(_Trace trace) {
 const double _hauteurMin = 22;
 const double _hauteurMax = 90;
 
+/// Giac écrit une matrice `\left(\begin{array}{cc}…\end{array}\right)`.
+String _matricesSimples(String latex) => latex
+    .replaceAll(
+      RegExp(r'\\left\(\s*\\begin\{array\}\{[a-z]*\}'),
+      r'\begin{pmatrix}',
+    )
+    .replaceAll(RegExp(r'\\end\{array\}\s*\\right\)'), r'\end{pmatrix}')
+    .replaceAll('\n', ' ');
+
 /// Compose [latex] à droite de [ecriture], ou [dessous], à la taille de
 /// l'écriture. Rend `null` si ce résultat ne sait pas s'écrire à la main.
 EcritureResultat? ecrireResultat(
@@ -602,7 +679,7 @@ EcritureResultat? ecrireResultat(
 }) {
   final _Boite boite;
   try {
-    boite = _Compositeur(latex).composer();
+    boite = _Compositeur(_matricesSimples(latex)).composer();
   } on _NonPrisEnCharge {
     return null;
   }
