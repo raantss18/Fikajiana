@@ -77,13 +77,23 @@ void main() {
 
     tape(
       'développer((x+1)^2)',
-      r'\operatorname{developper}\left(\left(x+1\right)^{2}\right)',
+      r'\text{développer}\left(\left(x+1\right)^{2}\right)',
     );
-    tape('moyenne(2;4;9)', r'\operatorname{moyenne}\left(2;4;9\right)');
-    tape('moyenne(2,4,9)', r'\operatorname{moyenne}\left(2;4;9\right)');
-    tape('Écart-type(2;4)', r'\operatorname{ecarttype}\left(2;4\right)');
-    tape('tangente(f;2)', r'\operatorname{tangente}\left(f;2\right)');
-    tape('pgcd(12;18)=', r'\operatorname{pgcd}\left(12;18\right)=');
+    tape('moyenne(2;4;9)', r'\text{moyenne}\left(2;4;9\right)');
+    tape('moyenne(2,4,9)', r'\text{moyenne}\left(2;4;9\right)');
+    tape('Écart-type(2;4)', r'\text{Écart-type}\left(2;4\right)');
+    tape('tangente(f;2)', r'\text{tangente}\left(f;2\right)');
+    tape('pgcd(12;18)=', r'\text{pgcd}\left(12;18\right)=');
+
+    test('à corriger, la commande se relit comme elle a été tapée', () {
+      for (final texte in ['moyenne(2;4;9)', 'tangente(f;2)', 'pgcd(12;18)']) {
+        expect(texteDepuisLatex(lireSaisie(texte).latex!), texte);
+      }
+      expect(
+        texteDepuisLatex(r'\operatorname{moyenne}\left(2;4;9\right)'),
+        'moyenne(2;4;9)',
+      );
+    });
 
     test('tangente(x) reste la fonction tangente', () {
       expect(lireSaisie('tangente(x)').latex, contains(r'\tan'));

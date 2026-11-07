@@ -1,6 +1,7 @@
 import 'package:fikajiana/graphe/courbes.dart';
 import 'package:fikajiana/graphe/vue_graphe.dart';
 import 'package:fikajiana/l10n/l10n.dart';
+import 'package:fikajiana/ui/formule_affichee.dart';
 import 'package:fikajiana/ui/theme/espacement.dart';
 import 'package:fikajiana_math/fikajiana_math.dart';
 import 'package:flutter/material.dart';
@@ -163,7 +164,7 @@ class _TableauValeursState extends State<TableauValeurs> {
                     DataColumn(
                       numeric: true,
                       label: Math.tex(
-                        c.latex,
+                        pourAffichage(c.latex),
                         textStyle: theme.textTheme.bodyMedium,
                         onErrorFallback: (_) => Text(c.latex),
                       ),

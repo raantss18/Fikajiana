@@ -1,6 +1,7 @@
 import 'package:fikajiana/comprendre/carnet.dart';
 import 'package:fikajiana/comprendre/classeur.dart';
 import 'package:fikajiana/l10n/l10n.dart';
+import 'package:fikajiana/ui/formule_affichee.dart';
 import 'package:fikajiana/ui/navigation/destination.dart';
 import 'package:fikajiana/ui/navigation/page_destination.dart';
 import 'package:fikajiana/ui/services.dart';
@@ -254,7 +255,7 @@ class _ApercuGraphe extends StatelessWidget {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Math.tex(
-        courbes.take(3).join(r'\quad '),
+        pourAffichage(courbes.take(3).join(r'\quad ')),
         textStyle: style,
         onErrorFallback: (_) => Text(courbes.first, style: style),
       ),
@@ -281,7 +282,7 @@ class _Apercu extends StatelessWidget {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Math.tex(
-        feuille.calculs.take(3).join(r'\quad '),
+        pourAffichage(feuille.calculs.take(3).join(r'\quad ')),
         textStyle: style,
         onErrorFallback: (_) => Text(feuille.calculs.first, style: style),
       ),

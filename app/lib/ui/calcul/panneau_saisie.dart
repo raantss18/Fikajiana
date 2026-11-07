@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:fikajiana/graphe/courbes.dart';
 import 'package:fikajiana/l10n/l10n.dart';
+import 'package:fikajiana/ui/formule_affichee.dart';
 import 'package:fikajiana/ui/theme/espacement.dart';
 import 'package:fikajiana_math/fikajiana_math.dart';
 import 'package:flutter/material.dart';
@@ -39,15 +40,21 @@ class VerbeDefinir extends Verbe {
   final String nom;
 }
 
-/// Ce que fera ce LaTeX ; `null` s'il ne se comprend pas.
-Verbe? verbeDe(String latex) {
+/// Comprend un LaTeX, avec ce que la feuille sait déjà : ses fonctions, ses
+/// points et ses valeurs.
+typedef Analyseur = Analyse Function(String latex);
+
+/// Ce que fera ce LaTeX ; `null` s'il ne se comprend pas. Sans [analyser],
+/// `tangente(f;0)` ou `\vec{AB}` seraient refusés : `f` et `A` sont sur la
+/// feuille (vu sur le Pad 7).
+Verbe? verbeDe(String latex, {Analyseur analyser = analyserLatex}) {
   if (lireObjet(latex) != null || lireCommande(latex) != null) {
     return const VerbePlacer();
   }
   if (estCourbeSeule(latex)) return const VerbeTracer();
   final Analyse analyse;
   try {
-    analyse = analyserLatex(latex);
+    analyse = analyser(latex);
   } on ErreurLatex {
     return null;
   }
@@ -70,6 +77,7 @@ Future<String?> ouvrirPanneauSaisie(
   VoidCallback? surRetirer,
   String? aide,
   String? action,
+  Analyseur analyser = analyserLatex,
 }) {
   return showModalBottomSheet<String>(
     context: context,
@@ -81,6 +89,7 @@ Future<String?> ouvrirPanneauSaisie(
       surRetirer: surRetirer,
       aide: aide,
       action: action,
+      analyser: analyser,
     ),
   );
 }
@@ -103,8 +112,12 @@ class PanneauSaisie extends StatefulWidget {
     this.surRetirer,
     this.aide,
     this.action,
+    this.analyser = analyserLatex,
     super.key,
   });
+
+  /// Comprend la saisie avec ce que sait la feuille.
+  final Analyseur analyser;
 
   final String initial;
   final VoidCallback? surRetirer;
@@ -195,7 +208,7 @@ class _PanneauSaisieState extends State<PanneauSaisie> {
                     // effacée, pour qu'elle ne passe pas pour la bonne.
                     opacity: valable ? 1 : 0.45,
                     child: Math.tex(
-                      _apercu!,
+                      pourAffichage(_apercu!),
                       textStyle: theme.textTheme.titleLarge,
                       onErrorFallback: (_) =>
                           Text(_apercu!, style: theme.textTheme.titleLarge),
@@ -214,7 +227,9 @@ class _PanneauSaisieState extends State<PanneauSaisie> {
     final saisie = lireSaisie(_texte.text);
     final autre = saisie.autreLecture;
     final latex = _autreChoisie && autre != null ? autre : saisie.latex;
-    final verbe = latex == null ? null : verbeDe(latex);
+    final verbe = latex == null
+        ? null
+        : verbeDe(latex, analyser: widget.analyser);
     // Ce qu'on valide doit se comprendre, ou se tracer : `(cos(t),sin(t))`.
     final valable = latex != null && (verbe != null || widget.action != null);
     if (valable) _apercu = latex;

@@ -91,13 +91,14 @@ String? _commandeDeCalcul(String texte) {
       return null;
     }
     final a = _Traducteur(_decouper(morceaux.last)).traduire();
-    return '\\operatorname{tangente}\\left(${morceaux.first.trim()};$a'
+    return '\\text{tangente}\\left(${morceaux.first.trim()};$a'
         '\\right)${m[3]}';
   }
   final traduits = [
     for (final morceau in morceaux) _Traducteur(_decouper(morceau)).traduire(),
   ];
-  return '\\operatorname{$nom}\\left(${traduits.join(';')}\\right)${m[3]}';
+  // `\\text` : l'affichage garde les accents ; le lecteur les ôte.
+  return '\\text{${m[1]}}\\left(${traduits.join(';')}\\right)${m[3]}';
 }
 
 /// Coupe [texte] à chaque [signe] hors des parenthèses.
@@ -126,6 +127,10 @@ String texteDepuisLatex(String latex) {
     return '${_groupe(a[0])}/${_groupe(a[1])}';
   });
   s = _remplacerCommande(s, 'sqrt', 1, (a) => 'sqrt(${a[0]})');
+  // `\text{moyenne}`, `\operatorname{pgcd}` : le nom tel quel.
+  for (final nom in ['text', 'operatorname', 'mathrm']) {
+    s = _remplacerCommande(s, nom, 1, (a) => a[0]);
+  }
   s = _sansExposantsGroupes(s);
   const simples = {
     r'\left': '',

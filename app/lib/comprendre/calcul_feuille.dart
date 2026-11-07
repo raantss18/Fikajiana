@@ -600,6 +600,15 @@ class CalculFeuille extends ChangeNotifier {
   }
 
   /// Ce qui est défini au-dessus de [bloc] : le plus proche l'emporte.
+  /// [latex] compris comme s'il était écrit à la place de [bloc].
+  Analyse analyserPour(BlocCalcul bloc, String latex) =>
+      _contextePour(bloc).analyser(latex);
+
+  /// [latex] compris sous tout ce qui est écrit : une ligne tapée.
+  Analyse analyserEnBas(String latex) => _contextePour(
+    BlocCalcul(cle: '', cadre: const Rect.fromLTWH(0, 1000000000, 0, 0)),
+  ).analyser(latex);
+
   _Contexte _contextePour(BlocCalcul bloc) {
     final contexte = _Contexte();
     final dessus =

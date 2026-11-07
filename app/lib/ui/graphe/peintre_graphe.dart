@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:fikajiana/graphe/courbes.dart';
 import 'package:fikajiana/graphe/vue_graphe.dart';
+import 'package:fikajiana/ui/formule_affichee.dart';
 import 'package:fikajiana/ui/theme/espacement.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
@@ -48,7 +49,7 @@ class LegendeCourbe extends StatelessWidget {
                   ),
                   const SizedBox(width: AppEspacement.sm),
                   Math.tex(
-                    latex,
+                    pourAffichage(latex),
                     textStyle: theme.textTheme.bodyMedium,
                     onErrorFallback: (_) => Text(latex),
                   ),

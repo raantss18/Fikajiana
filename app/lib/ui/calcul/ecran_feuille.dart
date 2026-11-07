@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:fikajiana/comprendre/calcul_feuille.dart';
@@ -25,6 +26,30 @@ import 'package:fikajiana_math/fikajiana_math.dart';
 import 'package:flutter/material.dart';
 
 const double _ecartSaisies = 64;
+
+/// Une ligne tapée occupe environ cette place à l'écran : sa formule et son
+/// résultat, ou son bouton, centrés sur sa position.
+const Size _placeSaisie = Size(480, 64);
+
+/// La première place, en descendant depuis [depart], où une ligne tapée ne
+/// couvre rien de [zones] (en coordonnées de la page). Vu sur le Pad 7 : posée
+/// à une place fixe, elle recouvrait l'écriture.
+@visibleForTesting
+Offset placeLibre(Offset depart, List<Rect> zones, {double zoom = 1}) {
+  final taille = _placeSaisie / zoom;
+  final pas = _ecartSaisies / zoom;
+  for (var i = 0; i < 200; i++) {
+    final position = depart + Offset(0, i * pas);
+    final occupe = Rect.fromLTWH(
+      position.dx,
+      position.dy - taille.height / 2,
+      taille.width,
+      taille.height,
+    );
+    if (!zones.any(occupe.overlaps)) return position;
+  }
+  return depart;
+}
 
 /// La Feuille : on écrit sur le support choisi, outils repliés dans un bouton.
 class EcranFeuille extends StatefulWidget {
@@ -143,13 +168,30 @@ class _EcranFeuilleState extends State<EcranFeuille> {
   );
 
   Future<void> _saisirAuClavier() async {
-    final latex = await demanderLatex(context, '');
+    final latex = await demanderLatex(
+      context,
+      '',
+      analyser: _calcul.analyserEnBas,
+    );
     if (latex == null || latex.trim().isEmpty || !mounted) return;
-    // Chaque saisie sous la précédente : elles ne se recouvrent pas.
-    final saisies = _calcul.blocs.where((b) => b.estSaisie).length;
-    final depart = MediaQuery.sizeOf(context).center(Offset.zero) / 2;
-    final position = depart + Offset(0, saisies * _ecartSaisies);
-    await _calcul.saisir(latex, _vue.versPage(position));
+    // Sous tout ce qui est écrit : la ligne voit les fonctions et les points
+    // de la feuille, et ne recouvre rien.
+    final ecran = MediaQuery.sizeOf(context);
+    final depart = _vue.versPage(ecran.center(Offset.zero) / 2);
+    final zones = _zonesEcrites(PorteeReglages.de(context)).toList();
+    final bas = zones.fold(depart.dy, (b, z) => math.max(b, z.bottom));
+    final position = placeLibre(
+      Offset(
+        depart.dx,
+        bas + (_placeSaisie.height / 2 + AppEspacement.sm) / _vue.zoom,
+      ),
+      zones,
+      zoom: _vue.zoom,
+    );
+    // Hors de vue, la feuille défile jusqu'à elle.
+    final y = position.dy * _vue.zoom + _vue.decalage.dy;
+    if (y > ecran.height * 0.7) _vue.glisser(Offset(0, ecran.height / 2 - y));
+    await _calcul.saisir(latex, position);
     if (!mounted) return;
     setState(() {});
     final services = PorteeServices.de(context);
@@ -171,7 +213,8 @@ class _EcranFeuilleState extends State<EcranFeuille> {
       return;
     }
     // Le bouton a dit Tracer : la ligne se pose, et le graphique s'ouvre.
-    if (verbeDe(latex) is VerbeTracer && services.courbes.ajouter(latex)) {
+    if (verbeDe(latex, analyser: _calcul.analyserEnBas) is VerbeTracer &&
+        services.courbes.ajouter(latex)) {
       Navigator.of(context).push(RouteDestination(Destination.figure));
     }
   }
@@ -189,6 +232,10 @@ class _EcranFeuilleState extends State<EcranFeuille> {
     }
     for (final bloc in _calcul.blocs) {
       yield bloc.cadre;
+      // Ce qui a été lu par morceaux s'affiche sous la ligne (une matrice).
+      if (bloc.lueParMorceaux && !bloc.resultatDessous) {
+        yield bloc.cadre.bottomLeft & (_placeSaisie * 1.5 / _vue.zoom);
+      }
       final ecrit = bloc.ecriture(
         approcheVoulue: reglages.approche,
         virgule: virgule,

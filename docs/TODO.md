@@ -16,6 +16,7 @@
 5. 🔄 **`a=2`** définit `a`, fait (ADR 0029). 🔄 `cercle(A;2)`, `(AB)`, `[AB]`, `I=milieu(A;B)`, `médiatrice(A;B)` depuis la Feuille, faits ; à essayer au stylet. ⏳ parallèle et perpendiculaire.
 6. 🔄 **Bouton Fond** sur la Feuille (demande d'Antsa), fait, à essayer.
 7. 🔄 **`=` oublié et fonctions de maths** (demande d'Antsa) : le `=` s'écrit devant `f'(x)`, `det`… ; un résultat cherche une place libre (ADR 0030). `développer`, `factoriser`, `simplifier`, `décomposer`, `premier`, `moyenne`, `médiane`, `variance`, `écart-type`, `arrondi`, `pgcd`, `discriminant`, `tangente(f;a)`, produit scalaire : banc sur le Pad 7. ⏳ parallèle et perpendiculaire depuis la Feuille ; essai au stylet.
+   Essayé sur le Pad 7 au clavier : `moyenne`, `médiane`, `variance`, `écart-type`, `développer`, `discriminant`, `tangente(f;0)`, `premier` justes. Corrigé en route : `\operatorname` affiché brut, ligne tapée posée sur l'écriture, panneau qui ignorait les fonctions de la feuille, « Vrai » sans sa formule. Reste : la lecture d'une matrice 3×3, affichée sous sa ligne, touche la ligne suivante.
 8. ⏳ **Feuille toute manuscrite** (demande d'Antsa, 2026-11-07) : sur la Feuille, les boutons (Placer dans la Figure, Tracer…) s'écrivent à la main, comme les résultats, et le petit stylo Corriger reste toujours là. Garder les cibles de 48 dp, le contraste AA et le nom lu par TalkBack (règle 9).
 9. ⏳ **Essai réseau coupé sur le Pad 7** : manque pour 0.7.1 et 0.7.2 (mode avion à activer par Antsa).
 
