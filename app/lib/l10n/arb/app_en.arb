@@ -603,5 +603,6 @@
         "description": "Kind of a curve row in the Figure's object list."
     },
     "auPropre": "Write neatly",
-    "auPropreDetail": "What is read is written neatly in place of your ink; your handwriting is kept."
+    "auPropreDetail": "What is read is written neatly in place of your ink; your handwriting is kept.",
+    "formeNonReconnue": "Shape not recognised: draw a line, a circle or a closed polygon."
 }

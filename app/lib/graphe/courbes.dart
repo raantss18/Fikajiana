@@ -101,6 +101,12 @@ final _nomDeCourbe = RegExp(
   r'^\s*([A-Za-z](?:\s*_\s*\{?\s*\d+\s*\}?)?)\s*:(?!=)\s*(.+)$',
 );
 
+/// `C_1` s'affiche `C₁`.
+String nomAffiche(String nom) => nom.replaceAllMapped(
+  RegExp(r'_(\d+)'),
+  (m) => m[1]!.split('').map((c) => '₀₁₂₃₄₅₆₇₈₉'[int.parse(c)]).join(),
+);
+
 /// Le nom et la courbe d'une écriture `C : …` ; sans nom, `(null, latex)`.
 (String?, String) separerNomDeCourbe(String latex) {
   final m = _nomDeCourbe.firstMatch(latex);

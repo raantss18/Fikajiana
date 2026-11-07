@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 
+import 'package:fikajiana/encre/formes.dart';
+
 import 'package:fikajiana/export/capture.dart';
 import 'package:fikajiana/geometrie/atelier.dart';
 import 'package:fikajiana/graphe/courbes.dart';
@@ -18,6 +20,7 @@ import 'package:fikajiana/ui/graphe/tableau_valeurs.dart';
 import 'package:fikajiana/ui/services.dart';
 import 'package:fikajiana/ui/theme/espacement.dart';
 import 'package:fikajiana_math/fikajiana_math.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
@@ -62,6 +65,43 @@ class _EcranGeometrieState extends State<EcranGeometrie> {
   Offset? _doigt;
   Offset? _depart;
 
+  /// Le tracé à main levée du stylet, en cours (Antsa) : redressé au lever.
+  List<Offset>? _trace;
+
+  void _styletBaisse(PointerDownEvent e) {
+    if (e.kind != PointerDeviceKind.stylus || _construit) return;
+    final m = _vue.versMaths(e.localPosition, _taille);
+    // Sur un point ou un objet, le stylet le déplace comme le doigt.
+    if (_atelier.objetProche(m.x, m.y, _tolerance) != null) return;
+    setState(() => _trace = [e.localPosition]);
+  }
+
+  void _styletBouge(PointerMoveEvent e) {
+    final trace = _trace;
+    if (trace == null || e.kind != PointerDeviceKind.stylus) return;
+    setState(() => trace.add(e.localPosition));
+  }
+
+  void _styletLeve(PointerEvent e) {
+    final trace = _trace;
+    if (trace == null) return;
+    setState(() => _trace = null);
+    ({double x, double y}) m(Offset p) => _vue.versMaths(p, _taille);
+    switch (reconnaitreForme(trace)) {
+      case FormeLigne(:final a, :final b):
+        _atelier.segmentDessine(m(a), m(b), _tolerance);
+      case FormePolygone(:final sommets):
+        _atelier.polygoneDessine([for (final s in sommets) m(s)], _tolerance);
+      case FormeCercle(:final centre, :final rayon):
+        _atelier.cercleDessine(m(centre), rayon / _vue.unite, _tolerance);
+      case null:
+        // Un gribouillis : rien n'est construit, et on le dit.
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(context.l10n.formeNonReconnue)));
+    }
+  }
+
   Atelier get _atelier => PorteeServices.de(context).atelier;
   Courbes get _courbes => PorteeServices.de(context).courbes;
 
@@ -93,6 +133,7 @@ class _EcranGeometrieState extends State<EcranGeometrie> {
   }
 
   void _surGeste(ScaleUpdateDetails d) {
+    if (_trace != null) return;
     final m = _vue.versMaths(d.localFocalPoint, _taille);
     if (d.pointerCount == 1) {
       final (attrape, glisse) = (_attrape, _glisse);
@@ -426,7 +467,7 @@ class _EcranGeometrieState extends State<EcranGeometrie> {
         for (var i = 0; i < _courbes.liste.length; i++)
           (
             latex: separerNomDeCourbe(_courbes.liste[i].latex).$2,
-            nom: _courbes.liste[i].nom ?? '${i + 1}',
+            nom: nomAffiche(_courbes.liste[i].nom ?? '${i + 1}'),
             couleur: _stylos[i % _stylos.length],
           ),
       ],
@@ -502,52 +543,70 @@ class _EcranGeometrieState extends State<EcranGeometrie> {
                             : l10n.geometrieDescription(
                                 atelier.figure.objets.length,
                               ),
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onScaleStart: _surDebut,
-                          onScaleUpdate: _surGeste,
-                          onScaleEnd: _surFin,
-                          onTapUp: (d) => _toucher(d.localPosition),
-                          onLongPressStart: (d) {
-                            final m = _vue.versMaths(d.localPosition, _taille);
-                            final id = atelier.objetProche(
-                              m.x,
-                              m.y,
-                              _tolerance,
-                            );
-                            if (id != null) unawaited(_ouvrirProprietes(id));
-                          },
-                          child: CustomPaint(
-                            size: Size.infinite,
-                            painter: PeintreFigure(
-                              atelier: atelier,
-                              vue: _vue,
-                              fond: reglages.support.fond,
-                              grille: theme.colorScheme.outlineVariant,
-                              palette: reglages.support.stylos,
-                              choix: theme.colorScheme.tertiary,
-                              francais: francais,
-                              texte: theme.textTheme.titleSmall!.copyWith(
-                                color: theme.colorScheme.onSurface,
-                              ),
-                              doigt: doigt,
-                              apercu: doigtMaths == null
-                                  ? null
-                                  : atelier.apercu(doigtMaths.x, doigtMaths.y),
-                              courbes: PeintreGraphe(
+                        child: Listener(
+                          onPointerDown: _styletBaisse,
+                          onPointerMove: _styletBouge,
+                          onPointerUp: _styletLeve,
+                          onPointerCancel: _styletLeve,
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onScaleStart: _surDebut,
+                            onScaleUpdate: _surGeste,
+                            onScaleEnd: _surFin,
+                            onTapUp: (d) => _toucher(d.localPosition),
+                            onLongPressStart: (d) {
+                              final m = _vue.versMaths(
+                                d.localPosition,
+                                _taille,
+                              );
+                              final id = atelier.objetProche(
+                                m.x,
+                                m.y,
+                                _tolerance,
+                              );
+                              if (id != null) unawaited(_ouvrirProprietes(id));
+                            },
+                            child: CustomPaint(
+                              size: Size.infinite,
+                              painter: PeintreFigure(
+                                atelier: atelier,
                                 vue: _vue,
-                                courbes: courbes,
-                                degres: reglages.degres,
-                                stylos: stylos,
                                 fond: reglages.support.fond,
-                                axes: theme.colorScheme.onSurface,
                                 grille: theme.colorScheme.outlineVariant,
-                                texte: theme.textTheme.bodySmall!.copyWith(
+                                palette: reglages.support.stylos,
+                                choix: theme.colorScheme.tertiary,
+                                francais: francais,
+                                texte: theme.textTheme.titleSmall!.copyWith(
                                   color: theme.colorScheme.onSurface,
                                 ),
-                                virgule: francais,
-                                point: _point,
+                                doigt: doigt,
+                                apercu: doigtMaths == null
+                                    ? null
+                                    : atelier.apercu(
+                                        doigtMaths.x,
+                                        doigtMaths.y,
+                                      ),
+                                courbes: PeintreGraphe(
+                                  vue: _vue,
+                                  courbes: courbes,
+                                  degres: reglages.degres,
+                                  stylos: stylos,
+                                  fond: reglages.support.fond,
+                                  axes: theme.colorScheme.onSurface,
+                                  grille: theme.colorScheme.outlineVariant,
+                                  texte: theme.textTheme.bodySmall!.copyWith(
+                                    color: theme.colorScheme.onSurface,
+                                  ),
+                                  virgule: francais,
+                                  point: _point,
+                                ),
                               ),
+                              foregroundPainter: _trace == null
+                                  ? null
+                                  : _PeintreTrace(
+                                      List.of(_trace!),
+                                      stylos.first,
+                                    ),
                             ),
                           ),
                         ),
@@ -915,4 +974,33 @@ class _BarreCurseurState extends State<_BarreCurseur>
       ),
     );
   }
+}
+
+/// Le tracé du stylet, pendant qu'il dessine.
+class _PeintreTrace extends CustomPainter {
+  const new(this.points, this.couleur);
+
+  final List<Offset> points;
+  final Color couleur;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (points.length < 2) return;
+    final chemin = Path()..moveTo(points.first.dx, points.first.dy);
+    for (final p in points.skip(1)) {
+      chemin.lineTo(p.dx, p.dy);
+    }
+    canvas.drawPath(
+      chemin,
+      Paint()
+        ..color = couleur
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_PeintreTrace ancien) => true;
 }

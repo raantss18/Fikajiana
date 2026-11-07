@@ -187,7 +187,7 @@ class PeintreGraphe extends CustomPainter {
       _ecrire(
         canvas,
         // Son nom s'il en a un (`C : …`), sinon son numéro.
-        courbes[indice].nom ?? '${indice + 1}',
+        nomAffiche(courbes[indice].nom ?? '${indice + 1}'),
         position + const Offset(4, -22),
         style: texte.copyWith(color: couleur, fontWeight: FontWeight.bold),
       );

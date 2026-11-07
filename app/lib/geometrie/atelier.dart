@@ -841,6 +841,54 @@ class Atelier extends ChangeNotifier {
     return id;
   }
 
+  /// Un sommet dessiné : le point déjà là s'il est tout près, sinon un point
+  /// nouveau, nommé tout seul (A, B, C…).
+  int _sommetDessine(double x, double y, double tolerance) {
+    final proche = objetProche(x, y, tolerance, filtre: (f) => f is PointGeo);
+    return proche ?? _pointIntelligent(x, y, tolerance);
+  }
+
+  /// Un trait à main levée redressé en segment `[AB]` (Antsa). S'annule.
+  void segmentDessine(
+    ({double x, double y}) a,
+    ({double x, double y}) b,
+    double tolerance,
+  ) {
+    final pa = _sommetDessine(a.x, a.y, tolerance);
+    final pb = _sommetDessine(b.x, b.y, tolerance);
+    if (pa != pb) {
+      _ajouter(Construite(GenreConstruction.segment, [pa, pb]));
+    }
+    _formes = null;
+    _valider();
+  }
+
+  /// Un tracé fermé redressé en polygone, sommets nommés. S'annule.
+  void polygoneDessine(List<({double x, double y})> sommets, double tolerance) {
+    final ids = <int>[];
+    for (final s in sommets) {
+      final id = _sommetDessine(s.x, s.y, tolerance);
+      if (!ids.contains(id)) ids.add(id);
+    }
+    if (ids.length >= 3) {
+      _ajouter(Construite(GenreConstruction.polygone, ids));
+    }
+    _formes = null;
+    _valider();
+  }
+
+  /// Un rond redressé en cercle de centre nommé. S'annule.
+  void cercleDessine(({double x, double y}) centre, double rayon, double tol) {
+    final c = _sommetDessine(centre.x, centre.y, tol);
+    final r = _ajouter(
+      NombreLibre(rayon),
+      apparence: Apparence(visible: false),
+    );
+    _ajouter(Construite(GenreConstruction.cercleRayon, [c, r]));
+    _formes = null;
+    _valider();
+  }
+
   /// Crée un curseur de valeur [valeur].
   int ajouterCurseur(double valeur, {double? min, double? max}) {
     final id = _ajouter(NombreLibre(valeur, min: min, max: max));

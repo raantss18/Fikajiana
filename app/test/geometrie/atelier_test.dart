@@ -5,6 +5,7 @@ import 'package:fikajiana/geometrie/ecriture_geo.dart';
 import 'package:fikajiana/ui/geometrie/ecran_geometrie.dart';
 import 'package:fikajiana/ui/services.dart';
 import 'package:fikajiana_math/fikajiana_math.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -517,6 +518,72 @@ void main() {
       await t.testTextInput.receiveAction(TextInputAction.done);
       await t.pumpAndSettle();
       expect(s.atelier.figure.nom(0), 'O');
+    });
+
+    // Antsa : tracer à main levée ; la forme se redresse et se nomme.
+    Future<void> dessiner(WidgetTester t, List<Offset> points) async {
+      final g = await t.startGesture(
+        points.first,
+        kind: PointerDeviceKind.stylus,
+      );
+      for (final p in points.skip(1)) {
+        await g.moveTo(p);
+        await t.pump(const Duration(milliseconds: 10));
+      }
+      await g.up();
+      await t.pumpAndSettle();
+    }
+
+    testWidgets('au stylet, un trait devient un segment [AB]', (t) async {
+      await ouvrir(t);
+      final s = PorteeServices.de(t.element(find.byType(EcranGeometrie)));
+      await dessiner(t, [
+        for (var i = 0; i <= 20; i++)
+          Offset(100 + i * 10, 300 + i * 2 + (i.isEven ? 1 : -1)),
+      ]);
+      final f = s.atelier.figure;
+      expect(f.objets, hasLength(3));
+      expect(f.noms, containsAll(['A', 'B']));
+      expect(find.text('3 objets'), findsOneWidget);
+    });
+
+    testWidgets('au stylet, un triangle se redresse et nomme ses sommets', (
+      t,
+    ) async {
+      await ouvrir(t);
+      final s = PorteeServices.de(t.element(find.byType(EcranGeometrie)));
+      final sommets = [
+        const Offset(100, 500),
+        const Offset(300, 500),
+        const Offset(200, 330),
+      ];
+      await dessiner(t, [
+        for (var k = 0; k < 3; k++)
+          for (var i = 0; i < 15; i++)
+            Offset.lerp(sommets[k], sommets[(k + 1) % 3], i / 15)!,
+        sommets.first,
+      ]);
+      expect(s.atelier.figure.noms, containsAll(['A', 'B', 'C']));
+      expect(
+        s.atelier.figure.objets.where(
+          (id) => s.atelier.figure.categorie(id) == CategorieGeo.polygone,
+        ),
+        hasLength(1),
+      );
+    });
+
+    testWidgets('un gribouillis ne construit rien, et le dit', (t) async {
+      await ouvrir(t);
+      final s = PorteeServices.de(t.element(find.byType(EcranGeometrie)));
+      await dessiner(t, [
+        for (var i = 0; i < 30; i++)
+          Offset(
+            100 + (i * 37 % 90).toDouble(),
+            300 + (i * 53 % 70).toDouble(),
+          ),
+      ]);
+      expect(s.atelier.figure.objets, isEmpty);
+      expect(find.textContaining('Forme non reconnue'), findsOneWidget);
     });
 
     testWidgets('la liste des objets dit tout', (t) async {
