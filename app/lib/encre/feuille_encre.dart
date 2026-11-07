@@ -30,6 +30,8 @@ class FeuilleEncre extends StatefulWidget {
     this.surChangement,
     this.surRature,
     this.ciblesRature,
+    this.doigtDefile = false,
+    this.surStylet,
     super.key,
   });
 
@@ -48,12 +50,22 @@ class FeuilleEncre extends StatefulWidget {
   /// ceux d'un calcul dont on rature le résultat.
   final Set<int> Function(Rect)? ciblesRature;
 
+  /// Le doigt, et donc la main, ne fait que déplacer la page : un stylet a déjà
+  /// servi sur cet appareil.
+  final bool doigtDefile;
+
+  /// Un stylet vient de toucher ou de survoler la feuille.
+  final VoidCallback? surStylet;
+
   @override
   State<FeuilleEncre> createState() => _FeuilleEncreState();
 }
 
 class _FeuilleEncreState extends State<FeuilleEncre>
     with SingleTickerProviderStateMixin {
+  /// Après le stylet, le temps de lever la main sans déplacer la page.
+  static const _delaiMain = Duration(milliseconds: 400);
+
   /// Les traits qui s'en vont, et ceux qui vont ailleurs : (avant, après).
   var _partants = <Trait>[];
   var _trajets = <(Trait, Trait)>[];
@@ -73,6 +85,13 @@ class _FeuilleEncreState extends State<FeuilleEncre>
   var _styletVu = false;
   var _gomme = false;
   int? _pointeur;
+
+  /// Le pointeur en cours est le stylet, pas un doigt.
+  var _pointeurStylet = false;
+
+  /// Le dernier signe de vie du stylet, posé ou survolant : juste autour, le
+  /// doigt qui bouge est la main qui écrit, pas un défilement.
+  Duration? _styletProche;
   Offset _positionPointeur = Offset.zero;
   Timer? _maintien;
   Offset _ancre = Offset.zero;
@@ -172,9 +191,19 @@ class _FeuilleEncreState extends State<FeuilleEncre>
 
   void _baisser(PointerDownEvent e) {
     final stylet = _estStylet(e);
-    if (stylet) _styletVu = true;
-    if (!stylet && _styletVu) {
-      // La paume pendant l'écriture ne déplace pas la page.
+    if (stylet) {
+      _signalerStylet(e.timeStamp);
+      // La main posée avant le stylet n'écrit pas et ne déplace plus la page.
+      _doigts.clear();
+      // Un doigt avait commencé un trait : c'était la main.
+      if (_pointeur != null && !_pointeurStylet) {
+        _maintien?.cancel();
+        if (!_gomme) widget.encre.abandonnerDernierTrait();
+        _pointeur = null;
+      }
+    }
+    if (!stylet && (_styletVu || widget.doigtDefile)) {
+      // Pendant que le stylet écrit, la main ne fait rien ; sinon, elle défile.
       if (_pointeur == null) _doigts[e.pointer] = e.localPosition;
       return;
     }
@@ -187,6 +216,7 @@ class _FeuilleEncreState extends State<FeuilleEncre>
       return;
     }
     if (_pointeur != null) return;
+    _pointeurStylet = stylet;
     _pointeur = e.pointer;
     _positionPointeur = e.localPosition;
     _gomme = _estGomme(e);
@@ -234,10 +264,27 @@ class _FeuilleEncreState extends State<FeuilleEncre>
     });
   }
 
+  void _signalerStylet(Duration quand) {
+    _styletVu = true;
+    _styletProche = quand;
+    widget.surStylet?.call();
+  }
+
+  void _survoler(PointerHoverEvent e) {
+    if (_estStylet(e)) _signalerStylet(e.timeStamp);
+  }
+
+  bool _styletTresProche(Duration maintenant) {
+    if (_pointeur != null && _pointeurStylet) return true;
+    final proche = _styletProche;
+    return proche != null && maintenant - proche < _delaiMain;
+  }
+
   void _bougerDoigt(PointerMoveEvent e) {
     final avant = _doigts[e.pointer]!;
     if (_doigts.length == 1) {
       _doigts[e.pointer] = e.localPosition;
+      if (_styletTresProche(e.timeStamp)) return;
       _vue.glisser(e.localPosition - avant);
       return;
     }
@@ -256,6 +303,7 @@ class _FeuilleEncreState extends State<FeuilleEncre>
   void _lever(PointerEvent e) {
     _doigts.remove(e.pointer);
     if (e.pointer != _pointeur) return;
+    if (_pointeurStylet) _styletProche = e.timeStamp;
     _pointeur = null;
     _maintien?.cancel();
     if (!_gomme) {
@@ -273,6 +321,7 @@ class _FeuilleEncreState extends State<FeuilleEncre>
       child: Listener(
         behavior: HitTestBehavior.opaque,
         onPointerDown: _baisser,
+        onPointerHover: _survoler,
         onPointerMove: _deplacer,
         onPointerUp: _lever,
         onPointerCancel: _lever,

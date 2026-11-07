@@ -539,5 +539,7 @@
     "blocPanneauArrete": "Calculation stopped: it was taking too long",
     "blocPanneauErreur": "The calculation failed",
     "blocEffacer": "Erase",
-    "blocEfface": "Writing erased"
+    "blocEfface": "Writing erased",
+    "ecrireAuDoigt": "Also write with a finger",
+    "ecrireAuDoigtDetail": "With a stylus, your hand only moves the page. Turn this on to write with a finger too."
 }
