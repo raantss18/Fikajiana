@@ -166,7 +166,7 @@ class _PeintreVague extends CustomPainter {
 }
 
 /// Ce que la personne choisit dans le panneau d'une écriture à vérifier.
-enum ChoixBloc { corriger, effacer }
+enum ChoixBloc { corriger, effacer, relire }
 
 /// Sous l'écriture : ce qui a été lu, et quoi en faire (ADR 0023).
 Future<ChoixBloc?> ouvrirPanneauBloc(
@@ -279,6 +279,12 @@ class _PanneauBloc extends StatelessWidget {
                     crossAxisAlignment: WrapCrossAlignment.center,
                     spacing: AppEspacement.sm,
                     children: [
+                      TextButton.icon(
+                        icon: const Icon(Icons.refresh),
+                        label: Text(l10n.blocRelire),
+                        onPressed: () =>
+                            Navigator.of(context).pop(ChoixBloc.relire),
+                      ),
                       TextButton.icon(
                         icon: const Icon(Icons.delete_outline),
                         label: Text(effacer),

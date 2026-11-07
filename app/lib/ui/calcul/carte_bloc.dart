@@ -86,6 +86,8 @@ class RepereBloc extends StatelessWidget {
         await _corriger(context);
       case ChoixBloc.effacer:
         surEffacer();
+      case ChoixBloc.relire:
+        calcul.relire(bloc);
       case null:
         break;
     }
@@ -93,6 +95,40 @@ class RepereBloc extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final contenu = _contenu(context);
+    final objets = bloc.aPlacer;
+    if (objets.isEmpty || enExport || bloc.etat != EtatBloc.fait) {
+      return contenu;
+    }
+    // Un vecteur calculé : son résultat, et de quoi le placer.
+    final haut = bloc.cadre.topRight * vue.zoom + vue.decalage;
+    return Positioned.fill(
+      child: Stack(
+        children: [
+          contenu,
+          Positioned(
+            left: haut.dx + AppEspacement.sm,
+            top: haut.dy,
+            child: TraverseEcriture(
+              child: FilledButton.tonalIcon(
+                icon: const Icon(Icons.place_outlined),
+                label: Text(context.l10n.placerDansFigure),
+                onPressed: () {
+                  surTouche();
+                  final atelier = PorteeServices.de(context).atelier;
+                  objets.forEach(atelier.placerObjet);
+                  Navigator.of(context)
+                      .push(RouteDestination(Destination.figure));
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _contenu(BuildContext context) {
     final reglages = PorteeReglages.de(context);
     final virgule = Localizations.localeOf(context).languageCode == 'fr';
     final accent = Theme.of(context).colorScheme.tertiary;

@@ -20,7 +20,14 @@ const double _marge = 0.12;
 Future<ui.Image?> rasteriser(Encre encre) => rasteriserTraits(encre.traits);
 
 /// Comme [rasteriser], pour un bloc de la feuille.
-Future<ui.Image?> rasteriserTraits(List<Trait> traits) async {
+///
+/// [elargir] : un petit morceau, une case de matrice. Déformé en carré, un
+/// chiffre seul ne ressemble plus à rien : on le centre sur une image large,
+/// comme s'il était écrit dans une ligne.
+Future<ui.Image?> rasteriserTraits(
+  List<Trait> traits, {
+  bool elargir = false,
+}) async {
   final encre = Encre();
   for (final t in traits) {
     encre.commencer(t.points.first);
@@ -33,7 +40,10 @@ Future<ui.Image?> rasteriserTraits(List<Trait> traits) async {
       ? _hauteurMinimale
       : cadre.height;
   final marge = hauteurEncre * _marge;
-  final largeur = cadre.width + 2 * marge;
+  final largeurEncre = cadre.width + 2 * marge;
+  final largeur = elargir && largeurEncre < 3 * hauteurEncre
+      ? 3 * hauteurEncre
+      : largeurEncre;
   final hauteur = hauteurEncre + 2 * marge;
   final echelle = _coteImage / (largeur > hauteur ? largeur : hauteur);
   final (w, h) = ((largeur * echelle).ceil(), (hauteur * echelle).ceil());
@@ -43,7 +53,7 @@ Future<ui.Image?> rasteriserTraits(List<Trait> traits) async {
     ..drawColor(const ui.Color(0xFFFFFFFF), ui.BlendMode.src)
     ..scale(echelle)
     ..translate(
-      marge - cadre.left,
+      (largeur - cadre.width) / 2 - cadre.left,
       marge - cadre.top + (hauteurEncre - cadre.height) / 2,
     );
   final trait = ui.Paint()

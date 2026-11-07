@@ -33,6 +33,12 @@ class VerbePlacer extends Verbe {
   const new();
 }
 
+/// `a=2`.
+class VerbeDefinir extends Verbe {
+  const new(this.nom);
+  final String nom;
+}
+
 /// Ce que fera ce LaTeX ; `null` s'il ne se comprend pas.
 Verbe? verbeDe(String latex) {
   if (lireObjet(latex) != null) return const VerbePlacer();
@@ -43,6 +49,7 @@ Verbe? verbeDe(String latex) {
   } on ErreurLatex {
     return null;
   }
+  if (analyse.nomValeur != null) return VerbeDefinir(analyse.nomValeur!);
   return switch (analyse.type) {
     TypeExpression.fonction => const VerbeTracer(),
     TypeExpression.equation => VerbeResoudre(analyse.inconnues.first),
@@ -157,6 +164,7 @@ class _PanneauSaisieState extends State<PanneauSaisie> {
           VerbeResoudre(:final inconnue) => l10n.saisieResoudre(inconnue),
           VerbeTracer() => l10n.grapheTracer,
           VerbePlacer() => l10n.placerDansFigure,
+          VerbeDefinir(:final nom) => l10n.saisieDefinir(nom),
           VerbeCalculer() || null => l10n.saisieCalculer,
         };
   }

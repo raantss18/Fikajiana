@@ -4,6 +4,10 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Les matrices, les flèches de vecteur et les normes se lisent à partir de vos traits, case par case : `det` d'une matrice 3×3 écrite à la main se calcule. / Matrices, vector arrows and norms are read from your strokes, cell by cell: the `det` of a handwritten 3×3 matrix is calculated.
+- La feuille retient vos points et vos valeurs : après `A(1;2)` et `B(5;-4)`, le vecteur `AB`, sa norme et la distance `AB` se calculent ; `a=2` définit `a`. / The sheet remembers your points and values: after `A(1;2)` and `B(5;-4)`, the vector `AB`, its norm and the distance `AB` are calculated; `a=2` defines `a`.
+- Relire une ligne depuis son panneau. / Read a line again from its panel.
+
 - Le bouton Fond, sur la Feuille, change le papier, le cahier ou le tableau sans passer par les Réglages. / The Background button on the sheet changes the paper, notebook or blackboard without going to Settings.
 - Toucher sous une ligne montre toujours ce qui a été lu, même si elle n'affiche rien. / Tapping under a line always shows what was read, even if it displays nothing.
 

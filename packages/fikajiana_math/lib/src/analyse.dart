@@ -32,6 +32,7 @@ class Analyse {
     this.corps,
     this.membres,
     this.nomFonction,
+    this.nomValeur,
     this.demandeResultat = false,
   });
 
@@ -50,6 +51,9 @@ class Analyse {
 
   /// Les deux membres d'une équation, traduits pour Giac.
   final (String, String)? membres;
+
+  /// `a` pour `a=2` : sa valeur est [giac], à retenir pour les lignes suivantes.
+  final String? nomValeur;
 
   /// `f` pour `f(x)=x^2`, à retenir pour les lignes suivantes.
   final String? nomFonction;
@@ -120,8 +124,18 @@ Analyse analyserLatex(
   String latex, {
   bool degres = false,
   Map<String, DefinitionFonction> definitions = const {},
+  Map<String, (double, double)> points = const {},
+  Map<String, (double, double)> vecteurs = const {},
+  Map<String, String> valeurs = const {},
 }) {
-  final lecteur = LecteurLatex(latex, degres: degres, definitions: definitions);
+  final lecteur = LecteurLatex(
+    latex,
+    degres: degres,
+    definitions: definitions,
+    points: points,
+    vecteurs: vecteurs,
+    valeurs: valeurs,
+  );
   final lecture = lecteur.lire();
   final suite = lecteur.suite;
   if (suite != null) return _analyserSuite(lecture, suite);
@@ -175,6 +189,16 @@ Analyse analyserLatex(
       inconnues: [variable],
       corps: droite.giac,
       nomFonction: definition.substring(0, definition.indexOf('(')),
+    );
+  }
+  // `a=2` : une valeur pour les lignes suivantes. x, y, z, t, r et θ restent
+  // des inconnues (choix d'Antsa, ADR 0024).
+  if (RegExp(r'^[a-df-hj-qsu-wA-Z]$').hasMatch(expression.gauche.giac) &&
+      droite.symboles.isEmpty) {
+    return Analyse(
+      TypeExpression.calcul,
+      droite.giac,
+      nomValeur: expression.gauche.giac,
     );
   }
   // `y=2x+1` : une courbe à tracer, pas une équation d'inconnue x.

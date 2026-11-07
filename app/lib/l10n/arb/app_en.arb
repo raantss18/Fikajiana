@@ -554,5 +554,8 @@
     "placerDansFigure": "Place in Figure",
     "blocAutresLectures": "Or perhaps:",
     "blocChoisirLecture": "Choose this reading",
-    "choisirFond": "Background"
+    "choisirFond": "Background",
+    "blocRelire": "Read again",
+    "saisieDefinir": "Define {nom}",
+    "relireFeuille": "Read the sheet again"
 }
