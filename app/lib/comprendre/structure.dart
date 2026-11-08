@@ -247,22 +247,30 @@ StructureSomme? _somme(List<Trait> traits) {
 /// petit trait se tient à son bout droit.
 bool _fleches(Trait f, List<Trait> traits, double hauteur, List<Trait> pointe) {
   final c = _c(f);
-  if (c.width < 20 || c.height > 0.5 * c.width) return false;
+  // Une hampe courte suffit : `x → 0` d'Antsa sous `lim` (Pad 7), 20 px.
+  if (c.width < 12 || c.height > 0.5 * c.width) return false;
   final s = [for (final p in f.points) p.position];
   if (s.last.dx < c.right - 0.12 * c.width) return true;
+  Trait? meilleure;
+  var ecart = double.infinity;
   for (final t in traits) {
     if (identical(t, f)) continue;
     final ct = _c(t);
     if (math.max(ct.width, ct.height) > 0.6 * hauteur) continue;
-    if (ct.center.dx < c.right - 0.3 * c.width ||
-        ct.center.dx > c.right + 0.2 * c.width ||
-        (ct.center.dy - c.center.dy).abs() > 0.4 * hauteur) {
+    // La pointe tient le bout de la hampe et l'enjambe : le `m` de `lim`,
+    // juste au-dessus, n'en est pas une (Pad 7, ADR 0046).
+    if (ct.right < c.right - 0.3 * c.width ||
+        ct.left > c.right + 0.2 * c.width + 2 ||
+        ct.top > c.center.dy + 2 ||
+        ct.bottom < c.center.dy - 2) {
       continue;
     }
-    pointe.add(t);
-    return true;
+    final d = (ct.centerLeft - c.centerRight).distance;
+    if (d < ecart) (meilleure, ecart) = (t, d);
   }
-  return false;
+  if (meilleure == null) return false;
+  pointe.add(meilleure);
+  return true;
 }
 
 /// `lim` écrit au-dessus de `x → 0` : le modèle lit `\lim_{\Im\infty}`
@@ -273,8 +281,9 @@ StructureLimite? _limite(List<Trait> traits) {
   for (final f in traits) {
     final pointe = <Trait>[];
     if (!_fleches(f, traits, hauteur, pointe)) continue;
-    final c = _c(f);
-    // La flèche donne l'échelle : une lettre fait environ sa largeur.
+    // La flèche, pointe comprise, donne l'échelle : une lettre fait environ
+    // sa largeur.
+    final c = cadreDuGroupe([f, ...pointe]);
     final echelle = c.width;
     final variable = <Trait>[];
     final cible = <Trait>[];
@@ -430,7 +439,9 @@ StructurePoint? _point(List<Trait> traits) {
           cadreDuGroupe(glyphes[i]).height <= 1.4 * haut)
         i,
   ];
-  if (separateurs.length != 1) return null;
+  if (separateurs.length != 1) {
+    return _pointParTraits(nom, dedans, queue, bas: bas, haut: haut);
+  }
   final k = separateurs.single;
   // Le point d'un `;` écrit à part, juste au-dessus de sa queue : il va avec
   // elle, pas avec le nombre d'à côté (téléphone d'Antsa).
@@ -452,6 +463,47 @@ StructurePoint? _point(List<Trait> traits) {
     [for (final g in glyphes.skip(apres)) ...g],
     queue,
   );
+}
+
+/// `C(2;7)` quand le `;` touche le `2` (Pad 7, ADR 0047) : les signes qui
+/// se chevauchent ne se séparent plus, on cherche le `;` trait par trait.
+/// Sa queue : étroite, elle descend sous les chiffres ; un petit trait tout
+/// près d'elle en fait partie, son point est juste au-dessus.
+StructurePoint? _pointParTraits(
+  List<Trait> nom,
+  List<Trait> dedans,
+  List<Trait> queue, {
+  required double bas,
+  required double haut,
+}) {
+  final queues = [
+    for (final t in dedans)
+      if (!_plat(_c(t)) &&
+          _c(t).width <= 0.45 * haut &&
+          _c(t).bottom > bas + 0.2 * haut &&
+          _c(t).height <= 1.4 * haut)
+        t,
+  ];
+  if (queues.isEmpty) return null;
+  final signe = cadreDuGroupe(queues);
+  if (signe.width > 0.6 * haut) return null;
+  final points = [
+    for (final t in dedans)
+      if (!queues.contains(t) &&
+          math.max(_c(t).width, _c(t).height) <= 0.35 * haut &&
+          _c(t).bottom <= signe.top + 0.2 * haut &&
+          _c(t).center.dx >= signe.left - 0.4 * haut &&
+          _c(t).center.dx <= signe.right + 0.4 * haut)
+        t,
+  ];
+  final premier = <Trait>[];
+  final second = <Trait>[];
+  for (final t in dedans) {
+    if (queues.contains(t) || points.contains(t)) continue;
+    (_c(t).center.dx < signe.center.dx ? premier : second).add(t);
+  }
+  if (premier.isEmpty || second.isEmpty) return null;
+  return StructurePoint(nom, premier, second, queue);
 }
 
 /// Deux grands traits qui se font face, et des lignes de cases entre eux.
@@ -664,8 +716,9 @@ Future<String?> lireStructure(Lecteur lecteur, List<Trait> traits) async {
           _exposantAuTrace(cible) ??
           _cibleDeLimite(await lecteur.lireCourt(cible));
       if (vers == null) return null;
-      final corps = await morceau(queue);
-      if (corps.isEmpty) return null;
+      final lu = await morceau(queue);
+      if (lu.isEmpty) return null;
+      final corps = redresserEgal(queue, lu);
       return '\\lim_{$lettre \\to $vers} $corps';
     case StructureSomme(:final haut, :final bas, :final corps):
       final somme = await morceau(corps);
@@ -1005,7 +1058,13 @@ Future<List<String>?> _lireLigne(
       valeurs.add(sure);
       continue;
     }
-    final v = _case(await lecteur.lireCourt(ligne[i]));
+    var v = _case(await lecteur.lireCourt(ligne[i]));
+    // `- 2 5` lu `2 5` : le moins se voit au tracé, les chiffres se collent
+    // (`B(2;-25)` lu `B(2;2 5)`, Pad 7, ADR 0047).
+    v = v
+        .replaceAllMapped(RegExp(r'(\d)\s+(?=\d)'), (m) => m[1]!)
+        .replaceFirst(RegExp(r'^-\s+'), '-');
+    if (moins[i].isNotEmpty && !v.startsWith('-')) v = '-$v';
     if (!_caseLisible(v)) return null;
     valeurs.add(v);
   }
@@ -1089,11 +1148,43 @@ List<String> signesPlats(List<Trait> traits) {
   return signes;
 }
 
+/// Les traits finissent par un `=` : deux plats l'un sur l'autre, à droite
+/// de tout le reste. Le modèle l'oublie quand il est haut, au niveau d'une
+/// barre de fraction (`lim 1/(x−3)² =`, Pad 7, ADR 0047).
+bool finitParEgal(List<Trait> traits) {
+  final cadres = [for (final t in traits) _c(t)];
+  for (var i = 0; i < cadres.length; i++) {
+    for (var j = 0; j < cadres.length; j++) {
+      if (i == j) continue;
+      final (a, b) = (cadres[i], cadres[j]);
+      if (!_plat(a) || !_plat(b) || a.width < 6 || b.width < 6) continue;
+      if (a.center.dy >= b.center.dy) continue;
+      final commun = math.min(a.right, b.right) - math.max(a.left, b.left);
+      final ecart = b.center.dy - a.center.dy;
+      if (commun < 0.5 * math.min(a.width, b.width) ||
+          ecart < 2 ||
+          ecart > 1.2 * math.max(a.width, b.width)) {
+        continue;
+      }
+      // Rien plus à droite que son milieu : l'exposant d'à côté peut
+      // passer dessous (`(x−3)² =`).
+      final milieu = a.expandToInclude(b).center.dx;
+      var dernier = true;
+      for (var k = 0; k < cadres.length && dernier; k++) {
+        if (k != i && k != j && cadres[k].center.dx >= milieu) dernier = false;
+      }
+      if (dernier) return true;
+    }
+  }
+  return false;
+}
+
 /// `e^x = 7` lu `e^{x} - 7` (Pad 7) : le trait du dessus, arrondi, a échappé
 /// au modèle. Si les traits montrent un `=` que la lecture n'a pas, et un
 /// moins de trop à sa place, ce moins redevient `=`.
 String redresserEgal(List<Trait> traits, String latex) {
   if (latex.contains('=')) return latex;
+  if (finitParEgal(traits)) return '$latex=';
   final signes = signesPlats(traits);
   if (signes.where((s) => s == '=').length != 1) return latex;
   final moins = RegExp(r'(?<!\\)-').allMatches(latex).toList();

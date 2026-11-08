@@ -780,8 +780,10 @@ class CalculFeuille extends ChangeNotifier {
     final cadre = cadreDuGroupe(groupe);
     final hote = _blocs.values.where((b) => !b.estSaisie).where((b) {
       return prolonge(b.cadre, cadre, ferme: b.finitParEgal) ||
+          (precede(b.cadre, cadre) && !finitParEgal(groupe)) ||
           estDenominateur(b.cadre, groupe) ||
-          estBorne(b.cadre, _traitsDe(b), groupe);
+          estBorne(b.cadre, _traitsDe(b), groupe) ||
+          completeDessous(b.cadre, _traitsDe(b), groupe);
     }).firstOrNull;
     final bloc =
         hote ??

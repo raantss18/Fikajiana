@@ -4,6 +4,7 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- `lim` écrite par morceaux (borne, puis dénominateur) reste un seul calcul ; le `=` haut n'est plus perdu ; `B(2;-25)` et `C(2;7)` se lisent justes. / A `lim` written in pieces (bound, then denominator) stays one calculation; a raised `=` is no longer lost; `B(2;-25)` and `C(2;7)` are read correctly.
 - Sans attendre le modèle : `sin(x)`, `cos`, `tan`, `ln 2`, `log`, `exp`, `det` écrits à la main, et les minuscules `s o l r p q g h m w` ; `k = 1` sous un Σ se lit enfin. / Without waiting for the model: handwritten `sin(x)`, `cos`, `tan`, `ln 2`, `log`, `exp`, `det`, and the lowercase `s o l r p q g h m w`; `k = 1` under a Σ is finally read.
 
 ## [1.0.6] — 2026-11-08
