@@ -1,4 +1,5 @@
 import 'package:fikajiana/l10n/gen/app_localizations.dart';
+import 'package:fikajiana/ui/calcul/action_manuscrite.dart';
 import 'package:fikajiana/ui/calcul/marques_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -110,6 +111,7 @@ void main() {
                     message: 'Lu ainsi',
                     lecture: const Text('x+'),
                     effacer: 'Effacer',
+                    motEffacer: 'effacer',
                   ),
                 );
               },
@@ -122,16 +124,30 @@ void main() {
       await t.pumpAndSettle();
     }
 
-    testWidgets('montre ce qui a été lu et ses deux choix', (t) async {
+    testWidgets('ses actions s’écrivent à la main, nommées pour TalkBack', (
+      t,
+    ) async {
       ChoixBloc? choix;
       await ouvrir(t, (c) => choix = c);
       expect(find.text('Lu ainsi'), findsOneWidget);
       expect(find.text('x+'), findsOneWidget);
-      expect(
-        t.getSize(find.byType(FilledButton)).height,
-        greaterThanOrEqualTo(40),
-      );
-      await t.tap(find.text('Corriger'));
+      // Aucun bouton imprimé : des mots manuscrits, de 48 dp au moins.
+      expect(find.byType(FilledButton), findsNothing);
+      expect(find.byType(TextButton), findsOneWidget); // « ouvrir », dessous.
+      expect(find.byType(ActionManuscrite), findsNWidgets(3));
+      for (final nom in ['Relire', 'Effacer', 'Corriger']) {
+        expect(find.bySemanticsLabel(nom), findsOneWidget);
+        final cible = t.getSize(
+          find.ancestor(
+            of: find.byTooltip(nom),
+            matching: find.byType(ActionManuscrite),
+          ),
+        );
+        expect(cible.height, greaterThanOrEqualTo(48));
+        expect(cible.width, greaterThanOrEqualTo(48));
+      }
+      await expectLater(t, meetsGuideline(androidTapTargetGuideline));
+      await t.tap(find.byTooltip('Corriger'));
       await t.pumpAndSettle();
       expect(choix, ChoixBloc.corriger);
     });
@@ -139,7 +155,7 @@ void main() {
     testWidgets('efface sur demande', (t) async {
       ChoixBloc? choix;
       await ouvrir(t, (c) => choix = c);
-      await t.tap(find.text('Effacer'));
+      await t.tap(find.byTooltip('Effacer'));
       await t.pumpAndSettle();
       expect(choix, ChoixBloc.effacer);
     });
@@ -155,7 +171,10 @@ void main() {
 
     testWidgets("s'ouvre au-dessus en bas de l'écran", (t) async {
       await ouvrir(t, (_) {}, ancre: const Offset(20, 790));
-      expect(t.getBottomLeft(find.byType(FilledButton)).dy, lessThan(780));
+      expect(
+        t.getBottomLeft(find.byType(ActionManuscrite).first).dy,
+        lessThan(780),
+      );
     });
   });
 }

@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:fikajiana/l10n/l10n.dart';
+import 'package:fikajiana/ui/calcul/action_manuscrite.dart';
 import 'package:fikajiana/ui/theme/espacement.dart';
 import 'package:flutter/material.dart';
 
@@ -175,6 +176,7 @@ Future<ChoixBloc?> ouvrirPanneauBloc(
   required String message,
   required Widget? lecture,
   required String effacer,
+  required String motEffacer,
   List<Widget> autres = const [],
 }) {
   final fixe = MediaQuery.disableAnimationsOf(context);
@@ -189,6 +191,7 @@ Future<ChoixBloc?> ouvrirPanneauBloc(
       message: message,
       lecture: lecture,
       effacer: effacer,
+      motEffacer: motEffacer,
       autres: autres,
     ),
     transitionBuilder: (context, animation, _, child) {
@@ -217,6 +220,7 @@ class _PanneauBloc extends StatelessWidget {
     required this.message,
     required this.lecture,
     required this.effacer,
+    required this.motEffacer,
     this.autres = const [],
   });
 
@@ -227,7 +231,10 @@ class _PanneauBloc extends StatelessWidget {
   final Widget? lecture;
   final String effacer;
 
-  static const _largeur = 340.0;
+  /// [effacer], tel qu'il s'écrit à la main (sans accent).
+  final String motEffacer;
+
+  static const _largeur = 420.0;
 
   /// Assez pour le panneau : plus bas, il s'ouvre au-dessus de l'écriture.
   static const _hauteur = 220.0;
@@ -250,10 +257,15 @@ class _PanneauBloc extends StatelessWidget {
           top: auDessus ? null : ancre.dy,
           bottom: auDessus ? ecran.height - ancre.dy + 48 : null,
           width: largeur,
+          // Un petit papier posé sur la Feuille : sa couleur, et ses actions
+          // écrites à la main comme les résultats (Antsa, cap n° 8).
           child: Material(
-            color: theme.colorScheme.surfaceContainerHigh,
+            color: theme.colorScheme.surface,
             elevation: 3,
-            borderRadius: BorderRadius.circular(AppEspacement.md),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppEspacement.md),
+              side: BorderSide(color: theme.colorScheme.outlineVariant),
+            ),
             child: Padding(
               padding: const EdgeInsets.all(AppEspacement.md),
               child: Column(
@@ -279,22 +291,22 @@ class _PanneauBloc extends StatelessWidget {
                     crossAxisAlignment: WrapCrossAlignment.center,
                     spacing: AppEspacement.sm,
                     children: [
-                      TextButton.icon(
-                        icon: const Icon(Icons.refresh),
-                        label: Text(l10n.blocRelire),
-                        onPressed: () =>
+                      ActionManuscrite(
+                        mot: l10n.motRelire,
+                        libelle: l10n.blocRelire,
+                        surToucher: () =>
                             Navigator.of(context).pop(ChoixBloc.relire),
                       ),
-                      TextButton.icon(
-                        icon: const Icon(Icons.delete_outline),
-                        label: Text(effacer),
-                        onPressed: () =>
+                      ActionManuscrite(
+                        mot: motEffacer,
+                        libelle: effacer,
+                        surToucher: () =>
                             Navigator.of(context).pop(ChoixBloc.effacer),
                       ),
-                      FilledButton.icon(
-                        icon: const Icon(Icons.edit_outlined),
-                        label: Text(l10n.corriger),
-                        onPressed: () =>
+                      ActionManuscrite(
+                        mot: l10n.motCorriger,
+                        libelle: l10n.corriger,
+                        surToucher: () =>
                             Navigator.of(context).pop(ChoixBloc.corriger),
                       ),
                     ],
