@@ -7,6 +7,7 @@ import 'package:fikajiana/l10n/l10n.dart';
 import 'package:fikajiana/moteur/giac.dart';
 import 'package:fikajiana/moteur/moteur.dart';
 import 'package:fikajiana/reconnaissance/lecteur.dart';
+import 'package:fikajiana_math/fikajiana_math.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -61,6 +62,12 @@ void main() {
           for (final ligne in e.lignes) {
             expect(ecrireALEchelle(ligne, 26), isNotNull, reason: ligne);
           }
+        }
+      });
+
+      test('chaque mot de géométrie se trouve dans le Guide', () {
+        for (final mot in motsDeGeometrie) {
+          expect(chercherGuide(catalogue, mot), isNotEmpty, reason: mot);
         }
       });
 
