@@ -161,4 +161,68 @@ void main() {
     );
     expect(find.bySemanticsLabel('Lecture à confirmer'), findsOneWidget);
   });
+
+  testWidgets('une courbe écrite : le bouton se range avec 👍 et 👎, pas '
+      'après « tracer » (téléphone, Pad 7)', (t) async {
+    final encre = Encre();
+    final calcul = CalculFeuille(
+      encre: encre,
+      lecteur: _Lecteur('f(x)=x^{2}'),
+      moteur: _Moteur(),
+      pause: Duration.zero,
+    );
+    addTearDown(calcul.dispose);
+    await t.runAsync(() async {
+      encre.commencer(const PointEncre(140, 100, 0.1));
+      for (var i = 1; i < 6; i++) {
+        encre.prolonger(PointEncre(140 + i * 4.0, 100, 0.1));
+      }
+      encre.terminer();
+      calcul.encreChangee();
+      for (var i = 0; i < 100; i++) {
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+        if (calcul.blocs.isNotEmpty &&
+            calcul.blocs.single.etat == EtatBloc.fait) {
+          break;
+        }
+      }
+    });
+    final bloc = calcul.blocs.single;
+    expect(bloc.seTrace, isTrue);
+    final vue = VueFeuille();
+    addTearDown(vue.dispose);
+    await t.pumpWidget(
+      PorteeServices(
+        services: Services.enMemoire(),
+        child: PorteeReglages(
+          reglages: Reglages(),
+          child: MaterialApp(
+            locale: const Locale('fr'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: Stack(
+                children: [
+                  RepereBloc(
+                    bloc: bloc,
+                    calcul: calcul,
+                    vue: vue,
+                    surTouche: () {},
+                    surEffacer: () {},
+                    surProposer: (_) {},
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await t.pumpAndSettle();
+    final bouton = find.byType(BoutonActions);
+    expect(bouton, findsOneWidget);
+    final pouce = t.getRect(find.byKey(ValueKey('faux-${bloc.cle}')));
+    expect(t.getRect(bouton).top, pouce.top);
+    expect(t.getRect(bouton).overlaps(bloc.cadre), isFalse);
+  });
 }

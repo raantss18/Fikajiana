@@ -44,7 +44,16 @@ String libelleProposition(AppLocalizations l10n, GenreProposition genre) =>
 /// (« écrire la suite dessous ») et trois points (« au choix »). TalkBack
 /// lit son nom et les actions. Cible de 48 dp (règle 9).
 class BoutonActions extends StatelessWidget {
-  const new({required this.propositions, required this.surChoisir, super.key});
+  const new({
+    required this.propositions,
+    required this.surTouche,
+    required this.surChoisir,
+    super.key,
+  });
+
+  /// Le toucher laisse aussi un point dans l'encre (TraverseEcriture) : il
+  /// s'efface dès l'ouverture, sinon il se lit comme une ligne (Pad 7).
+  final VoidCallback surTouche;
 
   final List<Proposition> propositions;
 
@@ -52,6 +61,7 @@ class BoutonActions extends StatelessWidget {
   final ValueChanged<Proposition> surChoisir;
 
   Future<void> _ouvrir(BuildContext context) async {
+    surTouche();
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final boite = context.findRenderObject()! as RenderBox;

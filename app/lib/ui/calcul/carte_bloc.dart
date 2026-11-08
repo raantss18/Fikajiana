@@ -69,10 +69,8 @@ class RepereBloc extends StatelessWidget {
     return BoutonActions(
       key: ValueKey('actions-${bloc.cle}'),
       propositions: propositions,
-      surChoisir: (p) {
-        surTouche();
-        proposer(p.latex);
-      },
+      surTouche: surTouche,
+      surChoisir: (p) => proposer(p.latex),
     );
   }
 
@@ -450,7 +448,8 @@ class RepereBloc extends StatelessWidget {
                               }
                             },
                           ),
-                          ?_boutonActions(),
+                          // Rangé avec 👍 et 👎 s'ils ont leur place.
+                          if (!_actionsAvecJugement(context)) ?_boutonActions(),
                           CrayonManuscrit(
                             libelle: l10n.corriger,
                             surToucher: () => unawaited(_corriger(context)),

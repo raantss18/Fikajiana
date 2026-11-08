@@ -809,11 +809,21 @@ class CalculFeuille extends ChangeNotifier {
       for (final b in ecrits)
         b: b.ecriture(approcheVoulue: approcheVoulue, virgule: virgule)?.cadre,
     };
+    const ecart = BlocCalcul._ecart;
     final obstacles = [
       for (final b in ecrits) b.cadre,
       ...resultats.values.nonNulls,
+      // « tracer » ou « placer » et le crayon, à droite d'une courbe ou d'un
+      // point : 👍 et 👎 s'y posaient (vu sur le Pad 7, format téléphone).
+      for (final b in ecrits)
+        if (b.etat == EtatBloc.fait && (b.seTrace || b.objet != null))
+          Rect.fromLTWH(
+            b.cadre.right + ecart,
+            b.cadre.center.dy - taille.height / 2,
+            4.5 * taille.height,
+            taille.height,
+          ),
     ];
-    const ecart = BlocCalcul._ecart;
     final h = taille.height;
     final places = <BlocCalcul, Rect>{};
     for (final b in ecrits.where((b) => b.jugeable)) {
@@ -1813,10 +1823,10 @@ class CalculFeuille extends ChangeNotifier {
   final _propositions = <String, (String, List<Proposition>)>{};
 
   /// Les actions de [bloc] s'ouvrent d'un bouton rangé avec 👍 et 👎 : une
-  /// ligne écrite, comprise, qui n'est pas une courbe (celle-ci les garde à
-  /// côté de « tracer »).
+  /// ligne écrite et comprise, courbe comprise (« tracer » et le crayon
+  /// remplissaient déjà la largeur d'un téléphone).
   bool actionsAuJugement(BlocCalcul bloc) =>
-      bloc.jugeable && !bloc.seTrace && propositions(bloc).isNotEmpty;
+      bloc.jugeable && propositions(bloc).isNotEmpty;
 
   /// Ce qu'on peut faire d'une ligne comprise qui ne demande rien : la
   /// résoudre, la dériver, l'intégrer, la tracer, calculer son déterminant.
@@ -1864,8 +1874,14 @@ class CalculFeuille extends ChangeNotifier {
       final v = analyse!.variableFonction ?? analyse.inconnues.firstOrNull;
       if (v != null && RegExp(r'^[A-Za-z]$').hasMatch(nom)) {
         final appel = '$nom\\left($v\\right)';
+        // `y'(x)=` se lirait comme une équation différentielle (`y(x)=C₀`,
+        // vu sur le Pad 7) : pour `y=…`, on dérive son expression.
+        final derivee = nom == 'y'
+            ? '\\frac{d}{d$v}\\left(${lu.substring(lu.indexOf('=') + 1)}'
+                  r'\right)='
+            : "$nom'($v)=";
         candidates.addAll([
-          Proposition(GenreProposition.deriver, "$nom'($v)="),
+          Proposition(GenreProposition.deriver, derivee),
           Proposition(GenreProposition.integrer, '\\int ${appel}d$v='),
           Proposition(GenreProposition.valeur, '$nom\\left(0\\right)='),
           Proposition(
