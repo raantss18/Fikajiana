@@ -43,7 +43,7 @@ Déjà livré ce jour : rature et stylet (0.6.1), lueur et trait ondulé (0.7.1)
 2. ✅ **Historique** : renommer un document (feuille et Figure, `noms.json`), le supprimer avec « Annuler » quelques secondes (corbeille vidée ensuite et au démarrage), trier par date ou par nom. Vu sur le Pad 7 (plein écran, téléphone).
 3. ✅ **Langue** dans les Réglages (celle du système, Français, English), sans redémarrer, gardée au redémarrage. Revue fr/en : aucune clé ne manque ; les seuls mots français de l'anglais sont des noms de commandes (`résoudre`, `médiane`…), écrits tels quels exprès. Vu sur le Pad 7 (plein écran, téléphone).
 4. ✅ **Panneaux de correction écrits à la main** : relire, effacer (retirer), corriger, et les autres lectures, écrits à la main sur un papier couleur de page ; TalkBack dit le nom entier, cibles de 48 dp. Le message aussi, accents compris (TalkBack lit la phrase). Vu sur le Pad 7 en plein écran ; format téléphone vu en test (400 dp), la fenêtre flottante MIUI restait en miniature.
-5. ⏳ **Actions proposées selon le type** d'une ligne comprise sans `=`.
+5. ✅ **Actions proposées selon le type** d'une ligne écrite comprise sans `=` : à côté, écrit à la main, `résoudre`, `dériver`, `tracer` (expression en une variable), `dériver`, `intégrer` (fonction définie), `déterminant` (matrice carrée) ; un toucher pose la ligne dessous, qui se calcule. Chaque ligne proposée est d'abord comprise sous la ligne, sinon elle n'est pas proposée. Vu sur le Pad 7 au stylet simulé (`résoudre`, `dériver`). Reste : fonction et matrice au stylet ; lignes tapées (elles montrent déjà un résultat) non concernées.
 
 ## 0. Erreurs signalées
 

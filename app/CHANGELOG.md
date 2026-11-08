@@ -4,6 +4,7 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Une ligne comprise sans = propose à côté, écrit à la main, ce qu'on peut en faire : résoudre ou dériver une expression, dériver ou intégrer une fonction, le déterminant d'une matrice ; un toucher écrit la ligne dessous. / A line understood without = suggests next to it, handwritten, what can be done with it: solve or derive an expression, derive or integrate a function, a matrix's determinant; a tap writes the line below.
 - Le panneau d'une ligne à vérifier s'écrit à la main comme le reste de la Feuille : relire, effacer, corriger, et les autres lectures possibles. / The panel of a line to check is handwritten like the rest of the Sheet: reread, erase, correct, and the other possible readings.
 - Choix de la langue dans les Réglages (celle du système, Français, English), appliqué aussitôt sans redémarrer. / Language choice in Settings (system, Français, English), applied at once without restarting.
 - Historique : renommer un document (feuille et Figure), le supprimer avec « Annuler » pendant quelques secondes, trier par date ou par nom. / History: rename a document (sheet and Figure), delete it with "Undo" for a few seconds, sort by date or by name.

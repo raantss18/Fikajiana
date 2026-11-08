@@ -429,6 +429,23 @@ class _EcranFeuilleState extends State<EcranFeuille> {
     if (mounted) setState(() {});
   }
 
+  /// Une action proposée (résoudre, dériver…) : sa ligne se pose sous
+  /// [bloc], à la première place libre.
+  Future<void> _poserSous(BlocCalcul bloc, String latex) async {
+    final zones = _zonesEcrites(PorteeReglages.de(context)).toList();
+    final position = placeLibre(
+      Offset(
+        bloc.cadre.left,
+        bloc.cadre.bottom +
+            (_placeSaisie.height / 2 + AppEspacement.sm) / _vue.zoom,
+      ),
+      zones,
+      zoom: _vue.zoom,
+    );
+    await _calcul.saisir(latex, position);
+    if (mounted) setState(() {});
+  }
+
   /// Une construction, un point ou une courbe : la Figure s'ouvre avec eux.
   void _apresSaisie(String latex) {
     final services = PorteeServices.de(context);
@@ -630,6 +647,8 @@ class _EcranFeuilleState extends State<EcranFeuille> {
                         },
                         surEffacer: () => _effacerBloc(bloc),
                         surChoisir: () => _choisir(bloc),
+                        surProposer: (latex) =>
+                            unawaited(_poserSous(bloc, latex)),
                       ),
                     if (_calcul.modeleManquant && !_enExport)
                       Positioned(
