@@ -1198,6 +1198,64 @@ String redresserEgal(List<Trait> traits, String latex) {
   return latex.replaceRange(m.start, m.end, '=');
 }
 
+/// `2^{3}-2x^{6}=` pour `e³ − 2e⁶ =` (Pad 7) : le modèle lit mal le `e`
+/// cursif d'Antsa (`c`, `2`, `x`), que son tracé reconnaît sans doute. Quand
+/// le modèle et le tracé comptent autant de signes, chaque signe que le
+/// tracé lit sûrement `e` (une seule lecture) remplace celui du modèle ; la
+/// forme de la ligne (exposants, opérateurs) reste celle du modèle. Une
+/// lecture qu'on ne sait pas aligner ne change pas. Seul le `e` : sur des
+/// signes isolés, les autres lectures « sûres » des gabarits se trompent
+/// encore trop (ADR 0041).
+String redresserLettres(List<Trait> traits, String latex) {
+  // Les signes du modèle, dans l'ordre : on n'aligne que des lignes
+  // simples (ni fraction, ni racine, ni nom de fonction).
+  final jetons = <(int, int)>[];
+  for (var i = 0; i < latex.length; i++) {
+    final car = latex[i];
+    if (car == r'\') {
+      final m = RegExp(r'\\([a-zA-Z]+)').matchAsPrefix(latex, i);
+      if (m == null) return latex;
+      final nom = m[1]!;
+      if (nom == 'left' || nom == 'right') {
+        i = m.end - 1;
+        continue;
+      }
+      if (nom != 'times' && nom != 'cdot') return latex;
+      jetons.add((i, m.end));
+      i = m.end - 1;
+      continue;
+    }
+    if (' {}^_'.contains(car)) continue;
+    jetons.add((i, i + 1));
+  }
+  final signes = signesDeLaLigne(traits);
+  if (signes.length != jetons.length || signes.isEmpty) return latex;
+  final hauteurs = [for (final g in signes) cadreDuGroupe(g).height]..sort();
+  final hauteur = hauteurs[hauteurs.length ~/ 2];
+  final alnum = RegExp(r'^[0-9a-zA-Z]$');
+  final sortie = StringBuffer();
+  var depuis = 0;
+  for (var k = 0; k < signes.length; k++) {
+    final (debut, fin) = jetons[k];
+    final lu = latex.substring(debut, fin);
+    if (!alnum.hasMatch(lu)) continue;
+    final impose = classeurCourant.impose(signes[k]);
+    final trace =
+        impose ??
+        switch (classeurCourant.signe(signes[k], hauteurLigne: hauteur)) {
+          final Map<String, double> m when m.length == 1 => m.keys.single,
+          _ => null,
+        };
+    if (trace != 'e' || trace == lu) continue;
+    sortie
+      ..write(latex.substring(depuis, debut))
+      ..write(trace);
+    depuis = fin;
+  }
+  sortie.write(latex.substring(depuis));
+  return sortie.toString();
+}
+
 /// `AB =` : deux capitales seules, que le modèle lit `λ·β` (Pad 7). Si les
 /// deux se reconnaissent à leur tracé et sont des points de la feuille, c'est
 /// leur nom, avec le `=` s'il y est ; sinon `null`.

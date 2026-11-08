@@ -365,6 +365,24 @@ void main() {
       expect(bloc.texte(approcheVoulue: false, virgule: false), '1.6094379');
     });
 
+    test(
+      'e³−2e⁶= : la même écriture rendue autrement se montre approchée',
+      () async {
+        lecteur.reponse = 'e ^ { 3 } - 2 e ^ { 6 } =';
+        moteur.reponse = const ReponseGiac(
+          exact: 'exp(3)-2*exp(6)',
+          latex: 'e^{3}-2 e^{6}',
+          approche: '-786.772050062',
+        );
+        _trait(encre, 0, 0);
+        calcul.encreChangee();
+        await _attendre();
+        final bloc = calcul.blocs.single;
+        expect(bloc.inchange, isTrue);
+        expect(bloc.texte(approcheVoulue: false, virgule: false), '-786.77205');
+      },
+    );
+
     test('changer de mode d’angle recalcule', () async {
       var degres = false;
       final avec = CalculFeuille(
