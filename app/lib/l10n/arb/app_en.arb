@@ -639,6 +639,11 @@
         "description": "Kind of a curve row in the Figure's object list."
     },
     "auPropre": "Write neatly",
+    "reglagesLangue": "Language",
+    "langueSysteme": "System language",
+    "guideLangueTitre": "Change language",
+    "guideLanguePhrase": "In Settings, Language: the system's, Français or English. The app switches at once, without restarting; commands can be written in either language.",
+    "guideLangueMots": "language langue system système english français francais french translation",
     "auPropreDetail": "What is read is written neatly in place of your ink; your handwriting is kept.",
     "formeNonReconnue": "Shape not recognised: draw a line, a circle or a closed polygon.",
     "guide": "Guide",

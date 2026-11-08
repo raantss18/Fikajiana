@@ -13,6 +13,7 @@ const _cleDegres = 'degres';
 const _cleStyletConnu = 'stylet_connu';
 const _cleEcrireAuDoigt = 'ecrire_au_doigt';
 const _cleAuPropre = 'au_propre';
+const _cleLangue = 'langue';
 const _cleTourPropose = 'tour_propose';
 const _cleDonner = 'dons_consentis';
 const _cleConsentementDemande = 'dons_consentement_demande';
@@ -39,6 +40,8 @@ class Reglages extends ChangeNotifier {
     _styletConnu = stockage.getBool(_cleStyletConnu) ?? false;
     _ecrireAuDoigt = stockage.getBool(_cleEcrireAuDoigt) ?? false;
     _auPropre = stockage.getBool(_cleAuPropre) ?? true;
+    final langue = stockage.getString(_cleLangue);
+    _langue = langues.contains(langue) ? langue : null;
     _tourPropose = stockage.getString(_cleTourPropose);
     _donner = stockage.getBool(_cleDonner) ?? false;
     _consentementDemande = stockage.getBool(_cleConsentementDemande) ?? false;
@@ -126,6 +129,26 @@ class Reglages extends ChangeNotifier {
     _auPropre = valeur;
     notifyListeners();
     unawaited(stockage?.setBool(_cleAuPropre, valeur));
+  }
+
+  /// Les langues de l'app, par leur code.
+  static const langues = ['fr', 'en'];
+
+  String? _langue;
+
+  /// La langue choisie (`fr`, `en`), ou `null` : celle du système.
+  String? get langue => _langue;
+
+  set langue(String? valeur) {
+    final choix = langues.contains(valeur) ? valeur : null;
+    if (choix == _langue) return;
+    _langue = choix;
+    notifyListeners();
+    unawaited(
+      choix == null
+          ? stockage?.remove(_cleLangue)
+          : stockage?.setString(_cleLangue, choix),
+    );
   }
 
   String? _tourPropose;
