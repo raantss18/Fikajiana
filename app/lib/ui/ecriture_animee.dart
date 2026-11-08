@@ -110,40 +110,46 @@ class _EcritureAnimeeState extends State<EcritureAnimee>
     double duree(EcritureResultat e) =>
         (e.contours.length * _msParTrait).clamp(_msMin, _msMax);
     for (final ligne in widget.lignes) {
-      final ecrit = ecrireALEchelle(ligne.latex, echelle);
+      // Tout se pose sur la même ligne d'écriture, en y = 0 ; la rangée est
+      // ensuite descendue sous la précédente.
+      final ecrit = ecrireALEchelle(
+        ligne.latex,
+        echelle,
+        ligneDeBase: Offset.zero,
+      );
       if (ecrit == null) {
         _morceaux = null;
         return;
       }
-      final place = Offset(0, y);
-      morceaux.add((
-        ecrit: ecrit,
-        place: place,
-        resultat: false,
-        debut: t,
-        fin: t += duree(ecrit),
-      ));
-      var bas = ecrit.cadre.bottom;
-      var droite = ecrit.cadre.right;
+      final rangee = [(ecrit, false)];
       if (ligne.resultat case final resultat?) {
-        final rendu = ecrireResultat(resultat, ecrit.cadre);
+        // À la taille d'un chiffre, pas à celle d'un Σ et de ses bornes.
+        final rendu = ecrireALEchelle(
+          resultat,
+          echelle * 0.85,
+          ligneDeBase: Offset(ecrit.cadre.right + 0.3 * echelle, 0),
+        );
         if (rendu == null) {
           _morceaux = null;
           return;
         }
-        t += _msPause;
-        morceaux.add((
-          ecrit: rendu,
-          place: place,
-          resultat: true,
-          debut: t,
-          fin: t += duree(rendu),
-        ));
-        bas = math.max(bas, rendu.cadre.bottom);
-        droite = math.max(droite, rendu.cadre.right);
+        rangee.add((rendu, true));
       }
-      largeur = math.max(largeur, droite);
-      y += bas + _interligne * echelle;
+      final dessus = rangee.map((r) => r.$1.cadre.top).reduce(math.min);
+      final dessous = rangee.map((r) => r.$1.cadre.bottom).reduce(math.max);
+      final place = Offset(0, y - dessus);
+      for (final (morceau, resultat) in rangee) {
+        if (resultat) t += _msPause;
+        morceaux.add((
+          ecrit: morceau,
+          place: place,
+          resultat: resultat,
+          debut: t,
+          fin: t += duree(morceau),
+        ));
+        largeur = math.max(largeur, morceau.cadre.right);
+      }
+      y = place.dy + dessous + _interligne * echelle;
     }
     // Le haut d'un exposant ou d'une flèche peut monter au-dessus de 0.
     final haut = morceaux

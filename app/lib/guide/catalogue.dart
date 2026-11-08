@@ -15,7 +15,9 @@ enum FamilleGuide {
   points,
   courbes,
   figure,
-  gestes;
+  gestes,
+  feuille,
+  reglages;
 
   String titre(AppLocalizations l10n) => switch (this) {
     calcul => l10n.guideFamilleCalcul,
@@ -30,6 +32,8 @@ enum FamilleGuide {
     courbes => l10n.guideFamilleCourbes,
     figure => l10n.guideFamilleFigure,
     gestes => l10n.guideFamilleGestes,
+    feuille => l10n.guideFamilleFeuille,
+    reglages => l10n.guideFamilleReglages,
   };
 }
 
@@ -109,6 +113,10 @@ List<EntreeGuide> chercherGuide(List<EntreeGuide> tout, String requete) => [
 const _matriceA = r'A=\begin{pmatrix}1&2\\3&4\end{pmatrix}';
 const _pointA = 'A(1;2)';
 const _pointB = 'B(4;6)';
+const _triangleA = 'A(0;0)';
+const _triangleB = 'B(4;0)';
+const _triangleC = 'C(1;3)';
+const _triangleD = 'D(4;3)';
 
 /// Tout ce que l'app sait faire, dans la langue de [l10n].
 List<EntreeGuide> catalogueGuide(AppLocalizations l10n) => [
@@ -177,6 +185,14 @@ List<EntreeGuide> catalogueGuide(AppLocalizations l10n) => [
     phrase: l10n.guideFonctionPhrase,
     motsCles: l10n.guideFonctionMots,
     lignes: ['f(x)=x^{2}-3x+1', r'f\left(2\right)='],
+  ),
+  EntreeGuide(
+    cle: 'usuelles',
+    famille: FamilleGuide.fonctions,
+    titre: l10n.guideUsuellesTitre,
+    phrase: l10n.guideUsuellesPhrase,
+    motsCles: l10n.guideUsuellesMots,
+    lignes: [r'\cos\left(\pi\right)=', r'\ln\left(1\right)='],
   ),
   EntreeGuide(
     cle: 'derivee',
@@ -409,6 +425,107 @@ List<EntreeGuide> catalogueGuide(AppLocalizations l10n) => [
     motsCles: l10n.guideConstructionMots,
     lignes: [_pointA, _pointB, 'milieu(A;B)'],
   ),
+  // Constructions et mesures de géométrie, sur le triangle A, B, C.
+  EntreeGuide(
+    cle: 'geo.parallele',
+    famille: FamilleGuide.points,
+    titre: l10n.guideGeoParalleleTitre,
+    phrase: l10n.guideGeoParallelePhrase,
+    motsCles: l10n.guideGeoParalleleMots,
+    lignes: [_triangleA, _triangleB, _triangleC, 'parallèle((AB);C)'],
+  ),
+  EntreeGuide(
+    cle: 'geo.perpendiculaire',
+    famille: FamilleGuide.points,
+    titre: l10n.guideGeoPerpendiculaireTitre,
+    phrase: l10n.guideGeoPerpendiculairePhrase,
+    motsCles: l10n.guideGeoPerpendiculaireMots,
+    lignes: [_triangleA, _triangleB, _triangleC, 'perpendiculaire((AB);C)'],
+  ),
+  EntreeGuide(
+    cle: 'geo.bissectrice',
+    famille: FamilleGuide.points,
+    titre: l10n.guideGeoBissectriceTitre,
+    phrase: l10n.guideGeoBissectricePhrase,
+    motsCles: l10n.guideGeoBissectriceMots,
+    lignes: [_triangleA, _triangleB, _triangleC, 'bissectrice(A;B;C)'],
+  ),
+  EntreeGuide(
+    cle: 'geo.tangente',
+    famille: FamilleGuide.points,
+    titre: l10n.guideGeoTangenteTitre,
+    phrase: l10n.guideGeoTangentePhrase,
+    motsCles: l10n.guideGeoTangenteMots,
+    lignes: [
+      _triangleA,
+      _triangleB,
+      _triangleC,
+      'k=cercle(A;2)',
+      'tangente(k;B)',
+    ],
+  ),
+  EntreeGuide(
+    cle: 'geo.symetrique',
+    famille: FamilleGuide.points,
+    titre: l10n.guideGeoSymetriqueTitre,
+    phrase: l10n.guideGeoSymetriquePhrase,
+    motsCles: l10n.guideGeoSymetriqueMots,
+    lignes: [_triangleA, _triangleB, _triangleC, "A'=symétrique(A;B)"],
+  ),
+  EntreeGuide(
+    cle: 'geo.projete',
+    famille: FamilleGuide.points,
+    titre: l10n.guideGeoProjeteTitre,
+    phrase: l10n.guideGeoProjetePhrase,
+    motsCles: l10n.guideGeoProjeteMots,
+    lignes: [_triangleA, _triangleB, _triangleC, 'H=projeté(C;(AB))'],
+  ),
+  EntreeGuide(
+    cle: 'geo.intersection',
+    famille: FamilleGuide.points,
+    titre: l10n.guideGeoIntersectionTitre,
+    phrase: l10n.guideGeoIntersectionPhrase,
+    motsCles: l10n.guideGeoIntersectionMots,
+    lignes: [
+      _triangleA,
+      _triangleB,
+      _triangleC,
+      _triangleD,
+      'I=intersection((AC);(BD))',
+    ],
+  ),
+  EntreeGuide(
+    cle: 'geo.polygone',
+    famille: FamilleGuide.points,
+    titre: l10n.guideGeoPolygoneTitre,
+    phrase: l10n.guideGeoPolygonePhrase,
+    motsCles: l10n.guideGeoPolygoneMots,
+    lignes: [_triangleA, _triangleB, _triangleC, 'triangle(A;B;C)'],
+  ),
+  EntreeGuide(
+    cle: 'geo.angle',
+    famille: FamilleGuide.points,
+    titre: l10n.guideGeoAngleTitre,
+    phrase: l10n.guideGeoAnglePhrase,
+    motsCles: l10n.guideGeoAngleMots,
+    lignes: [_triangleA, _triangleB, _triangleC, 'angle(A;B;C)='],
+  ),
+  EntreeGuide(
+    cle: 'geo.aire',
+    famille: FamilleGuide.points,
+    titre: l10n.guideGeoAireTitre,
+    phrase: l10n.guideGeoAirePhrase,
+    motsCles: l10n.guideGeoAireMots,
+    lignes: [_triangleA, _triangleB, _triangleC, 'aire(ABC)='],
+  ),
+  EntreeGuide(
+    cle: 'geo.perimetre',
+    famille: FamilleGuide.points,
+    titre: l10n.guideGeoPerimetreTitre,
+    phrase: l10n.guideGeoPerimetrePhrase,
+    motsCles: l10n.guideGeoPerimetreMots,
+    lignes: [_triangleA, _triangleB, _triangleC, 'périmètre(ABC)='],
+  ),
   // Courbes nommées.
   EntreeGuide(
     cle: 'courbe',
@@ -471,5 +588,133 @@ List<EntreeGuide> catalogueGuide(AppLocalizations l10n) => [
     phrase: l10n.aideMainLevee,
     motsCles: l10n.guideMainLeveeMots,
     outil: OutilGeo.mainLevee,
+  ),
+  // Outils de la Feuille.
+  EntreeGuide(
+    cle: 'clavier',
+    famille: FamilleGuide.feuille,
+    titre: l10n.guideClavierTitre,
+    phrase: l10n.guideClavierPhrase,
+    motsCles: l10n.guideClavierMots,
+  ),
+  EntreeGuide(
+    cle: 'fond',
+    famille: FamilleGuide.feuille,
+    titre: l10n.guideFondTitre,
+    phrase: l10n.guideFondPhrase,
+    motsCles: l10n.guideFondMots,
+  ),
+  EntreeGuide(
+    cle: 'gomme',
+    famille: FamilleGuide.feuille,
+    titre: l10n.guideGommeTitre,
+    phrase: l10n.guideGommePhrase,
+    motsCles: l10n.guideGommeMots,
+  ),
+  EntreeGuide(
+    cle: 'annuler',
+    famille: FamilleGuide.feuille,
+    titre: l10n.guideAnnulerTitre,
+    phrase: l10n.guideAnnulerPhrase,
+    motsCles: l10n.guideAnnulerMots,
+  ),
+  EntreeGuide(
+    cle: 'relire',
+    famille: FamilleGuide.feuille,
+    titre: l10n.guideRelireTitre,
+    phrase: l10n.guideRelirePhrase,
+    motsCles: l10n.guideRelireMots,
+  ),
+  EntreeGuide(
+    cle: 'degres',
+    famille: FamilleGuide.feuille,
+    titre: l10n.guideDegresTitre,
+    phrase: l10n.guideDegresPhrase,
+    motsCles: l10n.guideDegresMots,
+  ),
+  EntreeGuide(
+    cle: 'zoom',
+    famille: FamilleGuide.feuille,
+    titre: l10n.guideZoomTitre,
+    phrase: l10n.guideZoomPhrase,
+    motsCles: l10n.guideZoomMots,
+  ),
+  EntreeGuide(
+    cle: 'exporter',
+    famille: FamilleGuide.feuille,
+    titre: l10n.guideExporterTitre,
+    phrase: l10n.guideExporterPhrase,
+    motsCles: l10n.guideExporterMots,
+  ),
+  EntreeGuide(
+    cle: 'juger',
+    famille: FamilleGuide.feuille,
+    titre: l10n.guideJugerTitre,
+    phrase: l10n.guideJugerPhrase,
+    motsCles: l10n.guideJugerMots,
+  ),
+  EntreeGuide(
+    cle: 'signes',
+    famille: FamilleGuide.feuille,
+    titre: l10n.guideSignesTitre,
+    phrase: l10n.guideSignesPhrase,
+    motsCles: l10n.guideSignesMots,
+  ),
+  EntreeGuide(
+    cle: 'autresLectures',
+    famille: FamilleGuide.feuille,
+    titre: l10n.guideAutresLecturesTitre,
+    phrase: l10n.guideAutresLecturesPhrase,
+    motsCles: l10n.guideAutresLecturesMots,
+  ),
+  // Réglages et documents.
+  EntreeGuide(
+    cle: 'auPropre',
+    famille: FamilleGuide.reglages,
+    titre: l10n.guideAuPropreTitre,
+    phrase: l10n.guideAuProprePhrase,
+    motsCles: l10n.guideAuPropreMots,
+  ),
+  EntreeGuide(
+    cle: 'documents',
+    famille: FamilleGuide.reglages,
+    titre: l10n.guideDocumentsTitre,
+    phrase: l10n.guideDocumentsPhrase,
+    motsCles: l10n.guideDocumentsMots,
+  ),
+  EntreeGuide(
+    cle: 'modele',
+    famille: FamilleGuide.reglages,
+    titre: l10n.guideModeleTitre,
+    phrase: l10n.guideModelePhrase,
+    motsCles: l10n.guideModeleMots,
+  ),
+  EntreeGuide(
+    cle: 'miseAJour',
+    famille: FamilleGuide.reglages,
+    titre: l10n.guideMiseAJourTitre,
+    phrase: l10n.guideMiseAJourPhrase,
+    motsCles: l10n.guideMiseAJourMots,
+  ),
+  EntreeGuide(
+    cle: 'ecritures',
+    famille: FamilleGuide.reglages,
+    titre: l10n.guideEcrituresTitre,
+    phrase: l10n.guideEcrituresPhrase,
+    motsCles: l10n.guideEcrituresMots,
+  ),
+  EntreeGuide(
+    cle: 'dons',
+    famille: FamilleGuide.reglages,
+    titre: l10n.guideDonsTitre,
+    phrase: l10n.guideDonsPhrase,
+    motsCles: l10n.guideDonsMots,
+  ),
+  EntreeGuide(
+    cle: 'tour',
+    famille: FamilleGuide.reglages,
+    titre: l10n.guideTourTitre,
+    phrase: l10n.guideTourPhrase,
+    motsCles: l10n.guideTourMots,
   ),
 ];

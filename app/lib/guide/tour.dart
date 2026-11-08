@@ -50,10 +50,34 @@ List<EtapeTour> etapesTour(AppLocalizations l10n) {
       lignes: const [('f(x)=x^{2}-1', null), ('f(3)=', '8')],
     ),
     EtapeTour(
+      cle: 'matrices',
+      titre: l10n.tourMatricesTitre,
+      phrase: l10n.tourMatricesPhrase,
+      lignes: const [
+        (r'A=\begin{pmatrix}1&2\\3&4\end{pmatrix}', null),
+        (r'\det(A)=', '-2'),
+      ],
+    ),
+    EtapeTour(
+      cle: 'sommes',
+      titre: l10n.tourSommesTitre,
+      phrase: l10n.tourSommesPhrase,
+      lignes: const [
+        (r'\sum_{k=1}^{10}k^{2}=', '385'),
+        (r'\lim_{x\to0}\frac{\sin x}{x}=', '1'),
+      ],
+    ),
+    EtapeTour(
       cle: 'figure',
       titre: l10n.tourFigureTitre,
       phrase: l10n.tourFigurePhrase,
       lignes: const [('A(1;2)', null), ('B(4;6)', null)],
+    ),
+    EtapeTour(
+      cle: 'juger',
+      titre: l10n.tourJugerTitre,
+      phrase: l10n.tourJugerPhrase,
+      lignes: const [(r'30\times8=', '240')],
     ),
     EtapeTour(
       cle: 'suite',

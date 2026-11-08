@@ -36,6 +36,8 @@
 - **Réservé à Antsa** : les clés (`release-keys/`), toute action publique hors du dépôt, un grand changement de cap.
 - **Pile de PR** : ne jamais supprimer la branche d'une PR qui sert de base à une autre (les PR empilées seraient fermées).
 - **Nouveautés** : une ligne fr/en sous `## [Non publié]` de `app/CHANGELOG.md`. Le message de mise à jour dit ce que la version permet de faire.
+  Chaque fonction nouvelle a aussi son entrée dans le Guide (`app/lib/guide/catalogue.dart`, textes fr/en), et un usage de base son étape dans le tour
+  (`app/lib/guide/tour.dart`, résultat recalculé dans `tour_test`) ; `guide_couvre_test` échoue si un bouton des Outils, du Menu ou des Réglages manque au Guide (Antsa, 2026-11-08).
 - **Léger** : mesurer le poids avant et après chaque dépendance.
 
 ## Budgets (⚠ hypothèses à recaler sur mesure)

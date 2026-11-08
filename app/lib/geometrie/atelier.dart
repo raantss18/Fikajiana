@@ -646,8 +646,8 @@ class Atelier extends ChangeNotifier {
     }
   }
 
-  void _creerIntersections(List<int> c) {
-    if (c[0] == c[1]) return;
+  List<int> _creerIntersections(List<int> c) {
+    if (c[0] == c[1]) return const [];
     final (a, b) = (formes[c[0]], formes[c[1]]);
     final combien = switch ((a, b)) {
       (DroiteGeo(), DroiteGeo()) => 1,
@@ -664,9 +664,9 @@ class Atelier extends ChangeNotifier {
       GenreConstruction.intersection3,
       GenreConstruction.intersection4,
     ];
-    for (final genre in genres.take(combien)) {
-      _ajouter(Construite(genre, List.of(c)));
-    }
+    return [
+      for (final genre in genres.take(combien)) _construite(genre, List.of(c)),
+    ];
   }
 
   /// Termine la construction avec ce nombre, ou ce nombre de côtés.
@@ -778,22 +778,61 @@ class Atelier extends ChangeNotifier {
   }
 
   /// Construit dans la Figure ce que commande la Feuille : `cercle(A;2)`,
-  /// `(AB)`… Les points doivent y être ; rend `false` sinon. S'annule d'un
-  /// coup.
+  /// `(AB)`, `parallèle(d;C)`… Les points et les objets nommés doivent y
+  /// être ; rend `false` sinon, sans rien changer. Un nom déjà pris devient
+  /// `I_1`, comme pour les courbes. S'annule d'un coup.
   bool construire(CommandeGeo commande) {
     final ids = [for (final n in commande.points) _pointExistant(n)];
     if (ids.contains(null)) return false;
-    final parents = ids.cast<int>();
-    final int id;
+    final crees = commande.arguments.isEmpty
+        ? _construireSimple(commande, ids.cast<int>())
+        : _construireAvecArguments(commande);
+    if (crees == null || crees.isEmpty) return false;
+    final nom = commande.nom;
+    if (nom != null) {
+      // `T=tangente(C;A)` : la seconde tangente s'appelle T_1. Ce qui porte
+      // déjà ce nom le garde.
+      for (final id in crees) {
+        final actuel = _figure.apparence(id).nom;
+        if (actuel == nom || (actuel?.startsWith('${nom}_') ?? false)) {
+          continue;
+        }
+        _figure.renommer(id, _nomLibre(nom));
+      }
+    }
+    _formes = null;
+    _valider();
+    return true;
+  }
+
+  /// Le premier point ou objet nommé de [commande] absent de la Figure.
+  String? manquant(CommandeGeo commande) => [
+    ...commande.points.where((n) => _pointExistant(n) == null),
+    ...commande.objets.where((n) => _objetDe(ArgNomme(n)) == null),
+  ].firstOrNull;
+
+  /// [nom], ou `nom_1`, `nom_2`… s'il est déjà pris.
+  String _nomLibre(String nom) {
+    final pris = {..._figure.noms, ...nomsReserves()};
+    if (!pris.contains(nom)) return nom;
+    final base = nom.split('_').first;
+    for (var i = 1; ; i++) {
+      if (!pris.contains('${base}_$i')) return '${base}_$i';
+    }
+  }
+
+  List<int> _construireSimple(CommandeGeo commande, List<int> parents) {
     switch (commande.genre) {
       case GenreCommande.cercleRayon:
         final r = _ajouter(
           NombreLibre(commande.rayon!),
           apparence: Apparence(visible: false),
         );
-        id = _ajouter(
-          Construite(GenreConstruction.cercleRayon, [...parents, r]),
-        );
+        return [
+          _ajouter(Construite(GenreConstruction.cercleRayon, [...parents, r])),
+        ];
+      case GenreCommande.polygone:
+        return [_construite(GenreConstruction.polygone, parents)];
       case final genre:
         final construction = switch (genre) {
           GenreCommande.droite => GenreConstruction.droite,
@@ -802,21 +841,117 @@ class Atelier extends ChangeNotifier {
           GenreCommande.cercle => GenreConstruction.cercle,
           GenreCommande.milieu => GenreConstruction.milieu,
           GenreCommande.mediatrice => GenreConstruction.mediatrice,
-          GenreCommande.cercleRayon => GenreConstruction.cercleRayon,
+          GenreCommande.bissectrice => GenreConstruction.bissectrice,
+          _ => null,
         };
-        final deja = _figure.objets.where((o) {
-          final d = _figure.definition(o);
-          return d is Construite &&
-              d.genre == construction &&
-              d.parents.join(',') == parents.join(',');
-        }).firstOrNull;
-        id = deja ?? _ajouter(Construite(construction, parents));
+        if (construction == null) return const [];
+        return [_construite(construction, parents)];
     }
-    final nom = commande.nom;
-    if (nom != null) _figure.renommer(id, nom);
-    _formes = null;
-    _valider();
-    return true;
+  }
+
+  /// La construction de ce genre sur ces parents, déjà là ou ajoutée.
+  int _construite(
+    GenreConstruction genre,
+    List<int> parents, {
+    Apparence? apparence,
+  }) {
+    final deja = _figure.objets.where((o) {
+      final d = _figure.definition(o);
+      return d is Construite &&
+          d.genre == genre &&
+          d.parents.join(',') == parents.join(',');
+    }).firstOrNull;
+    return deja ?? _ajouter(Construite(genre, parents), apparence: apparence);
+  }
+
+  /// L'objet que désigne [argument] : un point, une droite `(AB)` (déjà là,
+  /// ou ajoutée), un objet nommé ; `null` s'il manque.
+  int? _objetDe(ArgumentGeo argument) {
+    switch (argument) {
+      case ArgPoint(:final nom):
+        return _pointExistant(nom);
+      case ArgLigne(:final genre, :final a, :final b):
+        final (pa, pb) = (_pointExistant(a), _pointExistant(b));
+        if (pa == null || pb == null || pa == pb) return null;
+        final construction = switch (genre) {
+          GenreCommande.segment => GenreConstruction.segment,
+          GenreCommande.demiDroite => GenreConstruction.demiDroite,
+          _ => GenreConstruction.droite,
+        };
+        return _construite(construction, [pa, pb]);
+      case ArgNomme(:final nom):
+        // Un nom de point ne désigne une droite ou un cercle que s'il n'y a
+        // rien d'autre de ce nom.
+        int? point;
+        for (final id in _figure.objets) {
+          if (_figure.apparence(id).nom != nom) continue;
+          if (_figure.categorie(id) != CategorieGeo.point) return id;
+          point = id;
+        }
+        return point;
+    }
+  }
+
+  List<int>? _construireAvecArguments(CommandeGeo commande) {
+    // Les objets nommés d'abord : s'il en manque un, rien n'est ajouté.
+    for (final nom in commande.objets) {
+      if (_objetDe(ArgNomme(nom)) == null) return null;
+    }
+    final objets = commande.arguments.map(_objetDe).toList();
+    if (objets.contains(null)) return null;
+    final ids = objets.cast<int>();
+    final f = [for (final id in ids) formes[id]];
+    bool estLigne(int i) => f[i] is DroiteGeo;
+    bool estPoint(int i) => f[i] is PointGeo;
+    switch (commande.genre) {
+      case GenreCommande.parallele || GenreCommande.perpendiculaire:
+        if (!estLigne(0) || !estPoint(1)) return null;
+        final genre = commande.genre == GenreCommande.parallele
+            ? GenreConstruction.parallele
+            : GenreConstruction.perpendiculaire;
+        return [_construite(genre, ids)];
+      case GenreCommande.bissectrice:
+        return [_construite(GenreConstruction.bissectrice, ids)];
+      case GenreCommande.tangente:
+        if (f[0] is! CercleGeo && f[0] is! ConiqueGeo) return null;
+        if (!estPoint(1)) return null;
+        final premiere = _construite(GenreConstruction.tangente1, ids);
+        final surLeCercle = relationsEntre(
+          f[0]!,
+          f[1]!,
+        ).contains(RelationGeo.appartient);
+        // Sur le cercle, il n'y a qu'une tangente.
+        if (surLeCercle) return [premiere];
+        return [premiere, _construite(GenreConstruction.tangente2, ids)];
+      case GenreCommande.symetrique:
+        if (!estPoint(0)) return null;
+        if (estPoint(1)) {
+          return [_construite(GenreConstruction.symetrieCentrale, ids)];
+        }
+        if (!estLigne(1)) return null;
+        return [_construite(GenreConstruction.symetrieAxiale, ids)];
+      case GenreCommande.projete:
+        if (!estLigne(0) || !estPoint(1)) return null;
+        // La perpendiculaire, cachée, coupe la droite au projeté.
+        final perpendiculaire = _construite(
+          GenreConstruction.perpendiculaire,
+          ids,
+          apparence: Apparence(visible: false),
+        );
+        return [
+          _construite(GenreConstruction.intersection1, [
+            perpendiculaire,
+            ids[0],
+          ]),
+        ];
+      case GenreCommande.intersection:
+        if (ids[0] == ids[1]) return null;
+        return _creerIntersections(ids);
+      case GenreCommande.polygone:
+        return [_construite(GenreConstruction.polygone, ids)];
+      case _:
+        return null;
+    }
   }
 
   int? _pointExistant(String nom) {

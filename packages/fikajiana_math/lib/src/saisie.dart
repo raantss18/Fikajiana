@@ -56,6 +56,12 @@ Saisie lireSaisie(String texte) {
   if (lireObjet(propre) != null || lireCommande(propre) != null) {
     return Saisie(propre);
   }
+  // `angle(A;B;C)=`, `aire(ABC)=` : une mesure, lue telle quelle.
+  if (RegExp(
+    r'^(angle|aire|p[ée]rim[eè]tre)\s*\(\s*[A-Z](\s*[;,]?\s*[A-Z])+\s*\)\s*=?$',
+  ).hasMatch(propre)) {
+    return Saisie(propre);
+  }
   // `A=[1,2;3,4]` ou `A=[[1,2],[3,4]]` : une matrice au clavier.
   final matrice = _matriceTapee(propre);
   if (matrice != null) return Saisie(matrice);
