@@ -4,6 +4,8 @@ import android.app.ActivityManager
 import android.content.ClipData
 import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
@@ -43,6 +45,17 @@ class MainActivity : FlutterActivity() {
                     "version" -> resultat.success(info.versionName)
                     // Pour l'export des corrections au format de collecte (ADR 0039).
                     "modele" -> resultat.success(Build.MODEL)
+                    // Les dons consentis partent sur le Wi-Fi seulement, par défaut (ADR 0042).
+                    "reseau" -> {
+                        val gestion = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                        val capacites = gestion.getNetworkCapabilities(gestion.activeNetwork)
+                        resultat.success(
+                            mapOf(
+                                "connecte" to (capacites?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true),
+                                "nonFacture" to (capacites?.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED) == true),
+                            ),
+                        )
+                    }
                     // L'écriture exportée (ADR 0042) : un dossier que `adb pull` lit, sans permission.
                     "dossierEcritures" -> resultat.success(
                         File(getExternalFilesDir(null) ?: filesDir, "ecritures").absolutePath,

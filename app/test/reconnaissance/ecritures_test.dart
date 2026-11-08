@@ -39,18 +39,13 @@ void main() {
   late Encre encre;
   late Ecritures ecritures;
 
-  CalculFeuille feuille({
-    Duration attente = const Duration(milliseconds: 300),
-    bool aider = true,
-  }) {
+  CalculFeuille feuille() {
     final c = CalculFeuille(
       encre: encre,
       lecteur: _Lecteur(),
       moteur: _Moteur(),
       pause: Duration.zero,
-      attenteJuste: attente,
       classeur: ClasseurAppris(ecritures: ecritures),
-      aider: () => aider,
     );
     addTearDown(c.dispose);
     return c;
@@ -65,78 +60,72 @@ void main() {
     ecritures = Ecritures();
   });
 
-  group('collecte pendant l’usage (ADR 0042)', () {
+  group('seules les lignes jugées sont gardées (ADR 0042)', () {
+    test('lue sans jugement : rien de gardé', () async {
+      final calcul = feuille()..encreChangee();
+      await _attendre(700);
+      expect(calcul.blocs.single.latex, r'30\times8');
+      expect(ecritures.liste, isEmpty);
+    });
+
+    test('👍 : la ligne et ses signes, comme justes', () async {
+      final calcul = feuille()..encreChangee();
+      await _attendre();
+      final bloc = calcul.blocs.single;
+      await calcul.jugerJuste(bloc);
+      expect(bloc.juge, isTrue);
+      expect(contenu(), [
+        ('expression', r'30\times8', Origine.juste),
+        ('signe', '3', Origine.juste),
+        ('signe', '0', Origine.juste),
+        ('signe', r'\times', Origine.juste),
+        ('signe', '8', Origine.juste),
+      ]);
+      expect(ecritures.lignesEnAttente, 1);
+    });
+
     test(
-      'une ligne lue, laissée sans correction : juste, et ses signes',
+      '👎 puis un signe corrigé : la ligne corrigée est l’exemple',
       () async {
         final calcul = feuille()..encreChangee();
         await _attendre();
-        expect(calcul.blocs.single.latex, r'30\times8');
+        final bloc = calcul.blocs.single;
+        calcul.jugerFaux(bloc);
+        expect(bloc.juge, isFalse);
         expect(ecritures.liste, isEmpty);
+        final (huit, _) = bloc.signesLus.last;
+        await calcul.corrigerSigne(bloc, huit, '3');
         await _attendre(400);
+        expect(calcul.blocs.single.latex, r'30\times3');
+        expect(calcul.blocs.single.juge, isTrue);
         expect(contenu(), [
-          ('expression', r'30\times8', Origine.juste),
+          ('signe', '3', Origine.correction),
+          ('expression', r'30\times3', Origine.correction),
           ('signe', '3', Origine.juste),
           ('signe', '0', Origine.juste),
           ('signe', r'\times', Origine.juste),
-          ('signe', '8', Origine.juste),
         ]);
       },
     );
 
-    test(
-      'la feuille change : ce qui attendait est gardé tout de suite',
-      () async {
-        final calcul = feuille(attente: const Duration(minutes: 10))
-          ..encreChangee();
-        await _attendre();
-        expect(ecritures.liste, isEmpty);
-        calcul.validerLesJustes();
-        expect(ecritures.liste, hasLength(5));
-      },
-    );
-
-    test('un signe corrigé : jamais la lecture fausse comme juste', () async {
+    test('👍 puis corrigée au clavier : la correction remplace', () async {
       final calcul = feuille()..encreChangee();
       await _attendre();
-      final bloc = calcul.blocs.single;
-      final (huit, _) = bloc.signesLus.last;
-      await calcul.corrigerSigne(bloc, huit, '3');
-      await _attendre(700);
-      expect(calcul.blocs.single.latex, r'30\times3');
-      expect(contenu(), [
-        ('signe', '3', Origine.correction),
-        ('expression', r'30\times3', Origine.juste),
-        ('signe', '3', Origine.juste),
-        ('signe', '0', Origine.juste),
-        ('signe', r'\times', Origine.juste),
-      ]);
-    });
-
-    test('une ligne corrigée après coup remplace sa lecture juste', () async {
-      final calcul = feuille()..encreChangee();
-      await _attendre(700);
+      await calcul.jugerJuste(calcul.blocs.single);
       expect(ecritures.liste, hasLength(5));
       await calcul.corriger(calcul.blocs.single, r'30\times9');
-      await _attendre();
+      await _attendre(50);
       expect(contenu(), [('expression', r'30\times9', Origine.correction)]);
     });
 
-    test('« Aider » coupé : rien de gardé, sauf les signes corrigés', () async {
-      final calcul = feuille(aider: false)..encreChangee();
-      await _attendre(700);
-      expect(ecritures.liste, isEmpty);
-      await calcul.corriger(calcul.blocs.single, r'30\times9');
-      expect(ecritures.liste, isEmpty);
-    });
-
-    test('une ligne effacée avant le délai n’est pas gardée', () async {
+    test('relue après un trait de plus : plus jugée', () async {
       final calcul = feuille()..encreChangee();
       await _attendre();
-      encre.chargerDocument(const []);
-      calcul.encreChangee();
-      await _attendre(700);
-      expect(ecritures.liste, isEmpty);
+      final bloc = calcul.blocs.single;
+      await calcul.jugerJuste(bloc);
+      calcul.relire(bloc);
+      await _attendre();
+      expect(calcul.blocs.single.juge, isNull);
     });
   });
 
@@ -165,7 +154,7 @@ void main() {
       final a = Ecritures(fichier: fichier);
       final traits = encre.traits.toList();
       const c = Rect.fromLTWH(0, 0, 100, 40);
-      await a.ligneJuste(traits, r'30\times8', c, const []);
+      await a.jugerJuste(traits, r'30\times8', c, const []);
       await a.corrigerLigne(traits, r'30\times9', c);
       final b = Ecritures(fichier: fichier);
       await b.charger();
@@ -180,7 +169,7 @@ void main() {
       () async {
         final traits = encre.traits.toList();
         const c = Rect.fromLTWH(10, 20, 300, 40);
-        await ecritures.ligneJuste(traits, r'30\times8', c, [
+        await ecritures.jugerJuste(traits, r'30\times8', c, [
           (traits.take(1).toList(), '3', c),
           (traits.skip(1).take(1).toList(), '§', c),
         ]);

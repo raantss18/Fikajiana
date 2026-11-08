@@ -758,9 +758,6 @@
     "signeLuToucher": "Touch for other readings of this sign",
     "signeLuAutres": "This sign could also be:",
     "effacer": "Delete",
-    "aiderReconnaissance": "Help recognition",
-    "aiderReconnaissanceDetail": "What you write and correct stays on this device to improve reading. Nothing leaves the device without your action.",
-    "prenomAuteur": "First name (author of exported writing)",
     "exporterEcritures": "Export my writing",
     "exporterEcrituresAide": "{n} samples, {taille}, in the collection format (CC0), for training.",
     "aucuneEcriture": "No writing kept yet",
@@ -797,6 +794,26 @@
         "placeholders": {
             "n": {
                 "type": "String"
+            }
+        }
+    },
+    "donsTitre": "Help improve recognition",
+    "donsExplication": "The lines you judge (👍, or 👎 then corrected) can be sent, without your name, to train handwriting reading. Nothing is sent without your consent, and you can change your mind at any time in Settings.",
+    "donsCase": "Help improve recognition",
+    "continuer": "Continue",
+    "donsWifi": "Wi-Fi only",
+    "donsAdresse": "Platform address",
+    "donsAdresseAide": "Empty: nothing is sent. https:// only.",
+    "donsEnAttente": "{n, plural, =0{No line waiting} =1{1 line waiting to be sent} other{{n} lines waiting to be sent}}",
+    "donsRetrait": "Ask to withdraw my donations",
+    "donsRetraitFait": "Withdrawal requested: your donations will be erased from the platform.",
+    "donsRetraitEchec": "The withdrawal could not be requested; try again with a network.",
+    "ligneJuste": "Reading is right",
+    "ligneFausse": "Reading is wrong: correct it",
+    "@donsEnAttente": {
+        "placeholders": {
+            "n": {
+                "type": "int"
             }
         }
     }

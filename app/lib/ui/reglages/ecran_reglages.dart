@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:fikajiana/dons/envoi_dons.dart';
 import 'package:fikajiana/l10n/l10n.dart';
 import 'package:fikajiana/mises_a_jour/mise_a_jour.dart';
 import 'package:fikajiana/reconnaissance/ecritures.dart';
@@ -56,7 +57,7 @@ class EcranReglages extends StatelessWidget {
           ),
           const Divider(),
           const _SectionModele(),
-          const _AiderReconnaissance(),
+          const _Dons(),
           const Divider(),
           const _SectionMiseAJour(),
           const Divider(),
@@ -281,23 +282,23 @@ class ListeSupports extends StatelessWidget {
   }
 }
 
-/// « Aider la reconnaissance » (ADR 0042) : l'écriture lue reste sur
-/// l'appareil ; l'exporter, l'effacer.
-class _AiderReconnaissance extends StatefulWidget {
+/// Les dons d'écriture (ADR 0042) : le consentement, où et quand ils
+/// partent, ce qui attend ; l'export et l'effacement.
+class _Dons extends StatefulWidget {
   const new();
 
   @override
-  State<_AiderReconnaissance> createState() => _AiderReconnaissanceState();
+  State<_Dons> createState() => _DonsState();
 }
 
-class _AiderReconnaissanceState extends State<_AiderReconnaissance> {
-  late final _prenom = TextEditingController(
-    text: PorteeReglages.de(context).prenom,
+class _DonsState extends State<_Dons> {
+  late final _adresse = TextEditingController(
+    text: PorteeReglages.de(context).adressePlateforme,
   );
 
   @override
   void dispose() {
-    _prenom.dispose();
+    _adresse.dispose();
     super.dispose();
   }
 
@@ -322,11 +323,25 @@ class _AiderReconnaissanceState extends State<_AiderReconnaissance> {
     if (oui ?? false) await ecritures.toutEffacer();
   }
 
+  Future<void> _retrait(EnvoiDons dons) async {
+    final messager = ScaffoldMessenger.of(context);
+    final l10n = context.l10n;
+    final fait = await dons.demanderRetrait();
+    messager.showSnackBar(
+      SnackBar(
+        content: Text(fait ? l10n.donsRetraitFait : l10n.donsRetraitEchec),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final theme = Theme.of(context);
     final reglages = PorteeReglages.de(context);
-    final ecritures = PorteeServices.de(context).classeur.ecritures;
+    final services = PorteeServices.de(context);
+    final ecritures = services.classeur.ecritures;
+    final dons = services.dons;
     if (ecritures == null) return const SizedBox.shrink();
     return ListenableBuilder(
       listenable: ecritures,
@@ -338,20 +353,45 @@ class _AiderReconnaissanceState extends State<_AiderReconnaissance> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SwitchListTile(
-              title: Text(l10n.aiderReconnaissance),
-              subtitle: Text(l10n.aiderReconnaissanceDetail),
-              value: reglages.aiderReconnaissance,
-              onChanged: (v) => reglages.aiderReconnaissance = v,
+              title: Text(l10n.donsCase),
+              subtitle: Text(l10n.donsExplication),
+              value: reglages.donner,
+              onChanged: (v) => reglages.donner = v,
+            ),
+            SwitchListTile(
+              title: Text(l10n.donsWifi),
+              value: reglages.wifiSeulement,
+              onChanged: reglages.donner
+                  ? (v) => reglages.wifiSeulement = v
+                  : null,
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppEspacement.md),
               child: TextField(
-                controller: _prenom,
-                decoration: InputDecoration(labelText: l10n.prenomAuteur),
-                textCapitalization: TextCapitalization.words,
-                onChanged: (v) => reglages.prenom = v,
+                controller: _adresse,
+                keyboardType: TextInputType.url,
+                autocorrect: false,
+                decoration: InputDecoration(
+                  labelText: l10n.donsAdresse,
+                  helperText: l10n.donsAdresseAide,
+                  hintText: 'https://',
+                ),
+                onChanged: (v) => reglages.adressePlateforme = v,
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.all(AppEspacement.md),
+              child: Text(
+                l10n.donsEnAttente(ecritures.lignesEnAttente),
+                style: theme.textTheme.bodyMedium,
+              ),
+            ),
+            if (dons != null && dons.adresse != null)
+              ListTile(
+                leading: const Icon(Icons.undo),
+                title: Text(l10n.donsRetrait),
+                onTap: () => unawaited(_retrait(dons)),
+              ),
             ListTile(
               leading: const Icon(Icons.upload_file_outlined),
               title: Text(l10n.exporterEcritures),
@@ -368,9 +408,8 @@ class _AiderReconnaissanceState extends State<_AiderReconnaissance> {
                       ),
               ),
               enabled: !vide,
-              onTap: () => unawaited(
-                exporterEcritures(context, ecritures, auteur: reglages.prenom),
-              ),
+              onTap: () =>
+                  unawaited(exporterEcritures(context, ecritures, auteur: '')),
             ),
             if (!vide)
               ListTile(
@@ -383,4 +422,51 @@ class _AiderReconnaissanceState extends State<_AiderReconnaissance> {
       },
     );
   }
+}
+
+/// Une seule fois (après la mise à jour qui l'apporte, ou au premier
+/// lancement) : la question des dons, la case **non cochée** (ADR 0042).
+Future<void> demanderConsentement(BuildContext context) async {
+  final reglages = PorteeReglages.de(context);
+  if (reglages.consentementDemande) return;
+  var coche = false;
+  await showModalBottomSheet<void>(
+    context: context,
+    isDismissible: false,
+    enableDrag: false,
+    useSafeArea: true,
+    isScrollControlled: true,
+    builder: (context) {
+      final l10n = context.l10n;
+      final theme = Theme.of(context);
+      return StatefulBuilder(
+        builder: (context, changer) => Padding(
+          padding: const EdgeInsets.all(AppEspacement.lg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(l10n.donsTitre, style: theme.textTheme.titleLarge),
+              const SizedBox(height: AppEspacement.sm),
+              Text(l10n.donsExplication),
+              const SizedBox(height: AppEspacement.sm),
+              CheckboxListTile(
+                key: const ValueKey('consentement-case'),
+                value: coche,
+                title: Text(l10n.donsCase),
+                controlAffinity: ListTileControlAffinity.leading,
+                onChanged: (v) => changer(() => coche = v ?? false),
+              ),
+              const SizedBox(height: AppEspacement.sm),
+              FilledButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(l10n.continuer),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+  reglages.donner = coche;
 }

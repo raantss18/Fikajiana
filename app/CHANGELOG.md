@@ -4,7 +4,8 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
-- « Aider la reconnaissance » (Réglages, activé) : les lignes lues justes et vos corrections restent sur l'appareil pour améliorer la lecture ; « Exporter mes écritures » les partage quand vous le choisissez, « Effacer mes écritures » les oublie. / "Help recognition" (Settings, on): lines read correctly and your corrections stay on the device to improve reading; "Export my writing" shares them when you choose, "Delete my writing" forgets them.
+- 👍 et 👎 à côté de chaque ligne lue : 👍 dit que la lecture est juste, 👎 ouvre sa correction ; ces lignes jugées aident la lecture sur l'appareil. / 👍 and 👎 next to each read line: 👍 says the reading is right, 👎 opens its correction; these judged lines help reading on the device.
+- « Aider à améliorer la reconnaissance » (demandé une fois, non par défaut) : vos lignes jugées partent, sans votre nom, vers la plateforme choisie, sur le Wi-Fi seulement si vous le voulez ; retrait possible à tout moment. / "Help improve recognition" (asked once, off by default): your judged lines are sent, without your name, to the chosen platform, on Wi-Fi only if you want; withdrawal possible at any time.
 
 - Le petit modèle par signe, s'il est embarqué, lit un signe que le tracé seul ne reconnaît pas. / The small per-sign model, when bundled, reads a sign the strokes alone do not recognise.
 

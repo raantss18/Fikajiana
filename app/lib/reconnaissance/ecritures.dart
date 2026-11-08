@@ -12,7 +12,7 @@ import 'package:flutter/foundation.dart';
 
 /// D'où vient un échantillon.
 enum Origine {
-  /// Lu, résultat affiché, jamais corrigé : la lecture était juste.
+  /// La personne a dit que la lecture était juste (👍).
   juste,
 
   /// La personne a dit ce qu'il fallait lire.
@@ -20,7 +20,7 @@ enum Origine {
 }
 
 /// Un échantillon d'écriture : une ligne (`expression`) ou un signe
-/// (`signe`), ses traits bruts et ce qu'ils disent (ADR 0042).
+/// (`signe`), ses traits bruts et ce qu'ils disent (ADR 0042, 0043).
 class Echantillon {
   const new({
     required this.id,
@@ -33,6 +33,7 @@ class Echantillon {
     required this.quand,
     required this.auStylet,
     this.clesTraits = const [],
+    this.envoye = false,
   });
 
   factory depuisJson(Map<String, dynamic> json) {
@@ -45,6 +46,7 @@ class Echantillon {
       cle: json['cle'] as String? ?? '',
       quand: DateTime.parse(json['quand'] as String),
       auStylet: json['auStylet'] as bool? ?? true,
+      envoye: json['envoye'] as bool? ?? false,
       clesTraits: (json['clesTraits'] as List<dynamic>? ?? const [])
           .cast<String>(),
       caseLigne: Rect.fromLTWH(
@@ -88,6 +90,23 @@ class Echantillon {
   /// retire toute lecture « juste » qui partage un de ses traits.
   final List<String> clesTraits;
 
+  /// Déjà donné à la plateforme (ADR 0042).
+  final bool envoye;
+
+  Echantillon envoyeA() => Echantillon(
+    id: id,
+    type: type,
+    attendu: attendu,
+    traits: traits,
+    caseLigne: caseLigne,
+    origine: origine,
+    cle: cle,
+    quand: quand,
+    auStylet: auStylet,
+    clesTraits: clesTraits,
+    envoye: true,
+  );
+
   bool get estSigne => type == 'signe';
 
   List<List<Offset>> get dessin => [
@@ -103,6 +122,7 @@ class Echantillon {
     'quand': quand.toIso8601String(),
     'auStylet': auStylet,
     'clesTraits': clesTraits,
+    'envoye': envoye,
     'case': [caseLigne.left, caseLigne.top, caseLigne.width, caseLigne.height],
     'traits': [
       for (final t in traits) [for (final p in t) p.versJson()],
@@ -273,8 +293,14 @@ class Ecritures extends ChangeNotifier {
     return _ajouter([e], retirer: {e.cle, ..._justesTouchant(e)});
   }
 
-  /// La ligne [traits] se lit [latex] : la personne l'a dit.
-  Future<void> corrigerLigne(List<Trait> traits, String latex, Rect cadre) {
+  /// La ligne [traits] se lit [latex] : la personne l'a dit (👎 puis
+  /// correction). [signes] : ses signes lus au tracé après correction.
+  Future<void> corrigerLigne(
+    List<Trait> traits,
+    String latex,
+    Rect cadre, {
+    List<SigneDeLigne> signes = const [],
+  }) {
     final e = _echantillon(
       'expression',
       traits,
@@ -282,12 +308,25 @@ class Ecritures extends ChangeNotifier {
       cadre,
       Origine.correction,
     );
-    return _ajouter([e], retirer: {e.cle, ..._justesTouchant(e)});
+    final retires = {e.cle, ..._justesTouchant(e)};
+    final corriges = {
+      for (final (x, _) in _liste)
+        if (x.origine == Origine.correction && !retires.contains(x.cle)) x.cle,
+    };
+    final lus = [
+      for (final (s, l, c) in signes)
+        if (idDeClasse(l) != null)
+          _echantillon('signe', s, l, c, Origine.juste),
+    ].where((x) => !corriges.contains(x.cle)).toList();
+    return _ajouter(
+      [e, ...lus],
+      retirer: {...retires, for (final x in lus) x.cle},
+    );
   }
 
-  /// Une ligne lue juste : la ligne entière et ses signes lus au tracé. Ce
-  /// que la personne a déjà corrigé n'est pas remplacé.
-  Future<void> ligneJuste(
+  /// Une ligne jugée juste (👍) : la ligne entière et ses signes lus au
+  /// tracé. Ce que la personne a déjà corrigé n'est pas remplacé.
+  Future<void> jugerJuste(
     List<Trait> traits,
     String latex,
     Rect cadre,
@@ -348,6 +387,108 @@ class Ecritures extends ChangeNotifier {
 
   bool get aDesCorrections => _corrections.isNotEmpty;
 
+  /// Les lignes jugées pas encore données.
+  int get lignesEnAttente =>
+      _liste.where((e) => !e.$1.envoye && !e.$1.estSigne).length;
+
+  /// Les dons à envoyer, par paquets de séances au format accepté par la
+  /// plateforme (ADR 0042 ; `plateforme/schema.py`) : sans prénom, avec
+  /// l'identifiant au hasard [contributeur]. Chaque paquet porte les ids
+  /// des échantillons qu'il emporte (ceux qu'on ne peut pas donner aussi :
+  /// ils quittent la file avec lui).
+  List<Don> dons({
+    required String contributeur,
+    required String modele,
+    required Size ecranDp,
+    required double densite,
+    String? versionApp,
+    int echantillonsMax = 400,
+    int pointsMax = 120000,
+    int octetsMax = 1500000,
+  }) {
+    final paquets = <Don>[];
+    for (final stylet in [true, false]) {
+      final pris = [
+        for (final (e, _) in _liste)
+          if (!e.envoye && e.auStylet == stylet) e,
+      ];
+      var ids = <String>[];
+      var echantillons = <Map<String, dynamic>>[];
+      var points = 0;
+      var octets = 0;
+      DateTime? debut;
+      void fermer() {
+        if (echantillons.isEmpty) {
+          if (ids.isNotEmpty) paquets.add(Don(ids, null));
+        } else {
+          paquets.add(
+            Don(
+              ids,
+              jsonEncode({
+                'format': 1,
+                'licence': 'CC0-1.0',
+                'contributeur': contributeur,
+                'version_app': ?versionApp,
+                'appareil': {
+                  'modele': _modelePermis(modele),
+                  'largeur_dp': ecranDp.width.round().clamp(1, 20000),
+                  'hauteur_dp': ecranDp.height.round().clamp(1, 20000),
+                  'densite': densite.clamp(0.1, 10),
+                },
+                'outil': stylet ? 'stylet' : 'doigt',
+                'debut': ?(debut == null ? null : _iso(debut!)),
+                'echantillons': echantillons,
+              }),
+            ),
+          );
+        }
+        ids = [];
+        echantillons = [];
+        points = 0;
+        octets = 0;
+        debut = null;
+      }
+
+      for (final e in pris) {
+        final json = _versFormat(e);
+        final n = e.traits.fold<int>(0, (s, t) => s + t.length);
+        final taille = json == null ? 0 : jsonEncode(json).length;
+        if (echantillons.length >= echantillonsMax ||
+            points + n > pointsMax ||
+            octets + taille > octetsMax) {
+          fermer();
+        }
+        ids.add(e.id);
+        if (json == null) continue;
+        echantillons.add(json);
+        points += n;
+        octets += taille;
+        final d = debut;
+        if (d == null || e.quand.isBefore(d)) debut = e.quand;
+      }
+      fermer();
+    }
+    return paquets;
+  }
+
+  /// Ces échantillons sont partis (ou ne partiront jamais).
+  Future<void> marquerEnvoyes(Iterable<String> ids) {
+    final pris = ids.toSet();
+    for (var i = 0; i < _liste.length; i++) {
+      final (e, n) = _liste[i];
+      if (pris.contains(e.id) && !e.envoye) _liste[i] = (e.envoyeA(), n);
+    }
+    notifyListeners();
+    return _reecrire();
+  }
+
+  /// Le modèle d'appareil, tel que la plateforme l'accepte.
+  static String _modelePermis(String modele) {
+    final net = modele.replaceAll(RegExp(r'[^A-Za-z0-9 ._+()\-]'), '_');
+    final court = net.length > 64 ? net.substring(0, 64) : net;
+    return court.isEmpty ? 'android' : court;
+  }
+
   /// Les échantillons au format de `collecte/FORMAT.md`, un fichier par
   /// outil (`stylet`, `doigt`) : nom → contenu. Un signe d'une classe
   /// inconnue de `collecte/classes.txt` est laissé de côté.
@@ -396,6 +537,15 @@ class Ecritures extends ChangeNotifier {
   static Map<String, dynamic>? _versFormat(Echantillon e) {
     final id = e.estSigne ? idDeClasse(e.attendu) : null;
     if (e.estSigne && id == null) return null;
+    // Les limites du récepteur (`plateforme/schema.py`) : au-delà, gardé
+    // sur l'appareil mais jamais donné.
+    if (e.attendu.trim().isEmpty ||
+        e.attendu.length > 512 ||
+        e.traits.isEmpty ||
+        e.traits.length > 64 ||
+        e.traits.any((t) => t.isEmpty || t.length > 4000)) {
+      return null;
+    }
     final premiers = [
       for (final t in e.traits)
         if (t.isNotEmpty && t.first.tempsMs != null) t.first.tempsMs!,
@@ -424,8 +574,8 @@ class Ecritures extends ChangeNotifier {
       'case': [
         arrondi(c.left),
         arrondi(c.top),
-        arrondi(c.width),
-        arrondi(c.height),
+        math.max(arrondi(c.width), 0.01),
+        math.max(arrondi(c.height), 0.01),
       ],
       'rejete': false,
     };
@@ -450,4 +600,13 @@ class Ecritures extends ChangeNotifier {
     final base = local.toIso8601String().split('.').first;
     return '$base$signe${deux(o.inHours)}:${deux(o.inMinutes % 60)}';
   }
+}
+
+/// Un paquet de dons : les échantillons qu'il emporte et le corps JSON à
+/// envoyer (`null` : rien de donnable, il ne fait que vider la file).
+class Don {
+  const new(this.ids, this.corps);
+
+  final List<String> ids;
+  final String? corps;
 }

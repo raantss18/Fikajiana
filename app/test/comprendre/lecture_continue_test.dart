@@ -104,7 +104,7 @@ void main() {
       expect(
         [
           for (final e in calcul.classeur.ecritures!.liste)
-            if (e.origine == Origine.correction) e.attendu,
+            if (e.origine == Origine.correction && e.estSigne) e.attendu,
         ],
         ['3'],
       );
@@ -172,7 +172,7 @@ void main() {
     expect(
       [
         for (final e in calcul.classeur.ecritures!.liste)
-          if (e.origine == Origine.correction) e.attendu,
+          if (e.origine == Origine.correction && e.estSigne) e.attendu,
       ],
       [classe],
     );

@@ -154,7 +154,7 @@ void main() {
 
     test('une lecture juste ne sert pas de correction', () async {
       final ecritures = Ecritures();
-      await ecritures.ligneJuste(signes.last, '8', caseLigne, [
+      await ecritures.jugerJuste(signes.last, '8', caseLigne, [
         (signes.last, '8', caseLigne),
       ]);
       expect(ecritures.corrige(signes.last), isNull);

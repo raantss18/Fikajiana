@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:fikajiana/comprendre/carnet.dart';
 import 'package:fikajiana/comprendre/classeur.dart';
+import 'package:fikajiana/dons/envoi_dons.dart';
 import 'package:fikajiana/geometrie/atelier.dart';
 import 'package:fikajiana/graphe/courbes.dart';
 import 'package:fikajiana/guide/essai.dart';
@@ -107,6 +108,9 @@ class Services {
   /// Lit chaque signe : corrections de la personne, puis gabarits (et le
   /// petit modèle quand il sera embarqué, ADR 0038).
   final ClasseurAppris classeur;
+
+  /// L'envoi des dons consentis, une fois les réglages chargés (ADR 0042).
+  EnvoiDons? dons;
 
   /// Ce que le Guide demande de poser sur la Feuille.
   final essais = EssaiGuide();
