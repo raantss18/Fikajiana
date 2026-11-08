@@ -50,9 +50,9 @@ Déjà livré ce jour : rature et stylet (0.6.1), lueur et trait ondulé (0.7.1)
 
 ## Couverture d'une calculatrice de lycée (Antsa, 2026-11-08, après la version de l'étape 8)
 
-> En attente du feu vert de la session principale. Une PR par famille, les plus utiles au lycée d'abord ; chaque fonction écrite à la main et au clavier, vérifiée contre SymPy au banc, au Guide, au CHANGELOG ; poids de l'APK mesuré avant et après (73 789 783 octets avant).
+> Feu vert de la session principale (2026-11-09). Une PR par famille, les plus utiles au lycée d'abord ; chaque fonction écrite à la main et au clavier, vérifiée contre SymPy au banc, au Guide, au CHANGELOG ; poids de l'APK mesuré avant et après (73 789 783 octets avant).
 
-1. ⏳ **Étude** `docs/recherche/couverture-calcul.md` (NumWorks, Maxima, Maple, Mathematica, Sage ; ce que Giac fait, ce que Fikajiana expose, ce qui manque). Sources déjà relevées, à reprendre dans l'étude. ❓ Antsa : un interpréteur Python (MicroPython ≈ 256 Ko de code, CPython Android ≈ 21 Mo compressé) ?
+1. ✅ **Étude** `docs/recherche/couverture-calcul.md` : NumWorks (14 applications), Giac (commande et doc par famille, présence dans le source compilé), ce que Fikajiana expose, manques et vagues. Python écarté (Antsa, 2026-11-09). Giac fait tout le reste sans nouvelle dépendance ; absents du Giac compilé : transformée de Fourier, loi hypergéométrique (à écrire avec `comb`), `diagonalize` (prendre `jordan`).
 2. ⏳ **Lois de probabilité** : `X \sim B(n;p)`, `\mathcal{N}(\mu;\sigma^2)`, Poisson, géométrique, exponentielle, uniforme ; `P(X=k)`, `P(X\le k)`, `P(a\le X\le b)`, `E(X)`, `V(X)`, `\sigma(X)`, seuil `P(X\le k)\ge \alpha`.
 3. ⏳ **Régressions et statistiques à deux variables**.
 4. ⏳ **Tableau de valeurs**.
