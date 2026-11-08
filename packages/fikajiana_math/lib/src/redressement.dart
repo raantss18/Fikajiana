@@ -4,9 +4,7 @@
 ///
 /// [fonctions] : les fonctions déjà définies au-dessus sur la feuille.
 String redresserLecture(String latex, {Set<String> fonctions = const {}}) {
-  var s = sansLeftRight(
-    latex.replaceAll(RegExp(r'\\right\s*\.'), ''),
-  ).trim();
+  var s = sansLeftRight(latex.replaceAll(RegExp(r'\\right\s*\.'), '')).trim();
   // `… = .` : un point après le `=` final, lu par le modèle sur le produit
   // de matrices d'Antsa (Pad 7) ; il empêchait tout calcul.
   s = s.replaceFirst(RegExp(r'=\s*\.\s*$'), '=');
