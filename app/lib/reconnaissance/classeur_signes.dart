@@ -10,7 +10,7 @@ import 'package:fikajiana/encre/encre.dart';
 /// lecture au tracé l'écrit : `4`, `x`, `\times`, `-`, `\pi`.
 typedef Classement = List<(String classe, double proba)>;
 
-/// Ce qui dit quel signe dessinent quelques traits (ADR 0040).
+/// Ce qui dit quel signe dessinent quelques traits (ADR 0041).
 ///
 /// [classer] prend son temps (un modèle, en fond) ; les trois autres
 /// répondent sur-le-champ, avec les règles de doute de la lecture au tracé :

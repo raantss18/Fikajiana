@@ -30,7 +30,7 @@ void main() {
   final ligne = _traits('pad7', 'trente_fois_8');
   final signes = signesDeLaLigne(ligne);
 
-  group('ClasseurGabarits (ADR 0040)', () {
+  group('ClasseurGabarits (ADR 0041)', () {
     test('rend les verdicts des gabarits, tels quels', () {
       const c = ClasseurGabarits();
       for (final s in signes) {

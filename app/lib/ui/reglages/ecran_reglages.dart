@@ -282,7 +282,7 @@ class ListeSupports extends StatelessWidget {
 }
 
 /// « Exporter mes corrections » : les signes corrigés, au format de
-/// `collecte/FORMAT.md`, là où la personne choisit (ADR 0040).
+/// `collecte/FORMAT.md`, là où la personne choisit (ADR 0041).
 class _ExporterCorrections extends StatelessWidget {
   const new();
 

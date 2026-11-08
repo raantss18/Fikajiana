@@ -61,7 +61,7 @@ class ExemplePersonnel {
 }
 
 /// Les corrections de la personne, gardées sur l'appareil, jamais envoyées
-/// (ADR 0038, 0040). Un plus proche voisin les relit : un signe tout près
+/// (ADR 0038, 0041). Un plus proche voisin les relit : un signe tout près
 /// d'un exemple, et loin des exemples d'autres classes, en prend la classe.
 class ExemplesPersonnels extends ChangeNotifier {
   new({this.fichier});
