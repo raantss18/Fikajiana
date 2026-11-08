@@ -356,6 +356,20 @@ const Map<String, List<_Dessin>> _chiffres = {
     [
       [(.85, .2), (.5, 0), (.15, .2), (.4, .45), (.85, .3), (.8, 1)],
     ],
+    // Le `9` d'Antsa, à queue recourbée : celle d'un `g` (ADR 0046).
+    [
+      [
+        (.64, .03),
+        (.27, .18),
+        (.2, .38),
+        (.47, .38),
+        (.63, .15),
+        (.59, .25),
+        (.63, .76),
+        (.22, .96),
+        (0, 1),
+      ],
+    ],
   ],
 };
 
@@ -703,6 +717,20 @@ const Map<String, List<_Dessin>> _minuscules = {
       [(.1, 0), (.1, 1)],
       [(.1, .35), (.4, 0), (.75, .1), (.85, .5), (.85, 1)],
     ],
+    // Le `n` cursif : une attaque qui monte, puis deux bosses.
+    [
+      [
+        (0, 1),
+        (.12, .1),
+        (.2, 0),
+        (.25, 1),
+        (.3, .4),
+        (.55, 0),
+        (.75, .15),
+        (.8, .9),
+        (1, 1),
+      ],
+    ],
   ],
   't': [
     [
@@ -776,46 +804,8 @@ const Map<String, List<_Dessin>> _minuscules = {
       [(.05, .1), (.3, 0), (.9, .05), (.05, .95), (.5, .9), (.95, 1)],
     ],
   ],
-  r'\pi': [
-    [
-      [(0, .12), (1, .05)],
-      [(.3, .1), (.25, .85)],
-      [(.7, .08), (.75, .85)],
-    ],
-    [
-      [(0, .15), (.25, .05), (1, .05)],
-      [(.3, .08), (.22, .85)],
-      [(.7, .06), (.72, .75), (.9, .85)],
-    ],
-  ],
-};
-
-/// Des signes que le tracé seul ne sépare pas : le contexte tranche
-/// (`2x` contre `xz`, `30×8` contre `2x`).
-const List<Set<String>> famillesDeSignes = [
-  {'1', 'I'},
-  {'0', 'O'},
-  {'2', 'z', 'Z'},
-  {'5', 'S'},
-  {'c', 'C'},
-  {'k', 'K'},
-  {'u', 'U'},
-  {'v', 'V'},
-  {'x', 'X'},
-  {'y', 'Y'},
-];
-
-Set<String> _famille(String s) =>
-    famillesDeSignes.firstWhere((f) => f.contains(s), orElse: () => {s});
-
-bool _estChiffre(String s) => s.length == 1 && '0123456789'.contains(s);
-
-bool _estMinuscule(String s) => s == r'\pi' || RegExp(r'^[a-z]$').hasMatch(s);
-
-/// Des leurres : des minuscules qu'on ne lit pas au tracé, mais qui
-/// ressemblent à un chiffre. Un `n` cursif à deux bosses passait pour un `4`
-/// (Pad 7) ; si un leurre est le plus proche, on doute.
-const Map<String, List<_Dessin>> _leurres = {
+  // Lues au tracé depuis l'ADR 0046 (avant : des leurres). Les formes
+  // cursives viennent de la séance d'Antsa (Poco, stylet, CC0).
   'm': [
     [
       [
@@ -832,25 +822,25 @@ const Map<String, List<_Dessin>> _leurres = {
       ],
     ],
   ],
-  // Le `n` cursif : une attaque qui monte, puis deux bosses.
-  'n': [
-    [
-      [
-        (0, 1),
-        (.12, .1),
-        (.2, 0),
-        (.25, 1),
-        (.3, .4),
-        (.55, 0),
-        (.75, .15),
-        (.8, .9),
-        (1, 1),
-      ],
-    ],
-  ],
   'h': [
     [
       [(.15, 0), (.15, 1), (.17, .55), (.4, .4), (.65, .5), (.7, 1)],
+    ],
+    // Cursif : une boucle monte, la hampe descend, puis la bosse.
+    [
+      [
+        (0, .55),
+        (.15, .43),
+        (.36, .12),
+        (.3, 0),
+        (.18, .26),
+        (.21, .77),
+        (.27, 1),
+        (.31, .76),
+        (.4, .64),
+        (.47, .75),
+        (.55, 1),
+      ],
     ],
   ],
   'g': [
@@ -884,15 +874,191 @@ const Map<String, List<_Dessin>> _leurres = {
       ],
     ],
   ],
+  'o': [
+    [
+      [
+        (.5, 0),
+        (.12, .2),
+        (0, .55),
+        (.2, .92),
+        (.55, 1),
+        (.88, .8),
+        (.95, .4),
+        (.75, .08),
+        (.5, 0),
+      ],
+    ],
+    [
+      [
+        (.4, 0),
+        (.05, .45),
+        (.35, .9),
+        (.85, .9),
+        (1, .35),
+        (.75, .05),
+        (.25, .12),
+        (.75, .27),
+        (1, .24),
+      ],
+    ],
+  ],
+  's': [
+    [
+      [
+        (.85, .1),
+        (.55, 0),
+        (.2, .05),
+        (.12, .28),
+        (.4, .47),
+        (.72, .58),
+        (.8, .8),
+        (.55, 1),
+        (.2, .98),
+        (0, .85),
+      ],
+    ],
+  ],
+  'l': [
+    [
+      [(.1, 0), (.1, 1)],
+    ],
+    [
+      [
+        (0, .9),
+        (.25, .55),
+        (.4, .2),
+        (.35, 0),
+        (.2, .1),
+        (.15, .5),
+        (.2, .9),
+        (.35, 1),
+        (.5, .95),
+      ],
+    ],
+  ],
+  'r': [
+    [
+      [(.1, 0), (.1, 1), (.1, .4), (.3, .1), (.55, 0), (.7, .05)],
+    ],
+    [
+      [(.1, 0), (.1, 1)],
+      [(.1, .4), (.3, .1), (.55, 0), (.7, .05)],
+    ],
+    [
+      [
+        (.05, .72),
+        (.15, .35),
+        (.05, 0),
+        (.15, .15),
+        (.4, .15),
+        (.47, .35),
+        (.5, .73),
+        (.72, .78),
+        (1, .62),
+      ],
+    ],
+  ],
+  'p': [
+    // La hampe descend, remonte, puis le ventre.
+    [
+      [
+        (.1, 0),
+        (.1, 1),
+        (.1, .1),
+        (.45, 0),
+        (.75, .12),
+        (.75, .38),
+        (.45, .5),
+        (.1, .42),
+      ],
+    ],
+    [
+      [(.1, 0), (.1, 1)],
+      [(.1, .1), (.45, 0), (.75, .12), (.75, .38), (.45, .5), (.1, .42)],
+    ],
+    [
+      [
+        (.1, 1),
+        (.1, 0),
+        (.1, .08),
+        (.45, 0),
+        (.75, .12),
+        (.75, .38),
+        (.45, .5),
+        (.1, .42),
+      ],
+    ],
+    [
+      [
+        (0, .33),
+        (.24, 0),
+        (.22, .7),
+        (.29, 1),
+        (.29, .66),
+        (.26, .16),
+        (.36, .12),
+        (.46, .34),
+        (.71, .26),
+      ],
+    ],
+  ],
+  'w': [
+    [
+      [(0, 0), (.22, .75), (.5, .25), (.78, .75), (1, 0)],
+    ],
+    [
+      [
+        (0, .1),
+        (.35, .58),
+        (.43, .4),
+        (.47, .05),
+        (.66, .54),
+        (.8, .4),
+        (1, 0),
+      ],
+    ],
+  ],
+  r'\pi': [
+    [
+      [(0, .12), (1, .05)],
+      [(.3, .1), (.25, .85)],
+      [(.7, .08), (.75, .85)],
+    ],
+    [
+      [(0, .15), (.25, .05), (1, .05)],
+      [(.3, .08), (.22, .85)],
+      [(.7, .06), (.72, .75), (.9, .85)],
+    ],
+  ],
 };
 
-/// Les leurres seuls : `n` est aussi une vraie minuscule, lue.
-const Set<String> _leurresSeuls = {'m', 'h', 'g', 'q'};
-
-final List<(String, List<Offset>)> _modelesMinuscules = [
-  ..._preparer(_minuscules),
-  ..._preparer(_leurres),
+/// Des signes que le tracé seul ne sépare pas : le contexte tranche
+/// (`2x` contre `xz`, `30×8` contre `2x`).
+const List<Set<String>> famillesDeSignes = [
+  {'1', 'I', 'l'},
+  {'0', 'O', 'o'},
+  {'2', 'z', 'Z'},
+  {'5', 'S', 's'},
+  // Le `9` d'Antsa a la queue d'un `g` : il descend sous la ligne ou non.
+  {'9', 'g'},
+  {'p', 'P'},
+  {'w', 'W'},
+  {'c', 'C'},
+  {'k', 'K'},
+  {'u', 'U'},
+  {'v', 'V'},
+  {'x', 'X'},
+  {'y', 'Y'},
 ];
+
+Set<String> _famille(String s) =>
+    famillesDeSignes.firstWhere((f) => f.contains(s), orElse: () => {s});
+
+bool _estChiffre(String s) => s.length == 1 && '0123456789'.contains(s);
+
+bool _estMinuscule(String s) => s == r'\pi' || RegExp(r'^[a-z]$').hasMatch(s);
+
+final List<(String, List<Offset>)> _modelesMinuscules = _preparer(_minuscules);
 
 /// Une minuscule doit être plus nette qu'un chiffre ou une capitale : elle
 /// vient d'arriver, et ses formes varient davantage.
@@ -909,7 +1075,7 @@ const double _ecartTrace = 0.2;
 const double _penaliteTrait = 0.3;
 
 final List<(String, List<Offset>, int)> _modelesTrace = [
-  for (final dessins in [_chiffres, _lettres, _minuscules, _leurres])
+  for (final dessins in [_chiffres, _lettres, _minuscules])
     for (final MapEntry(key: signe, value: variantes) in dessins.entries)
       for (final dessin in variantes)
         (
@@ -965,9 +1131,6 @@ Map<String, double>? reconnaitreSigne(List<List<Offset>> traits) {
   final dc = d[chiffre]!;
   if (dc <= _seuilTrace &&
       meilleurHors(_famille(chiffre), _estChiffre) - dc >= _ecartTrace) {
-    // Un leurre plus proche : on doute.
-    final leurre = meilleurHors(_famille(chiffre), _leurresSeuls.contains);
-    if (leurre < dc) return null;
     // Une minuscule tout près (`d` et `1`) : on doute aussi ; nettement
     // plus proche, elle seule peut l'emporter.
     final minuscule = meilleurHors(_famille(chiffre), _estMinuscule);
@@ -976,7 +1139,6 @@ Map<String, double>? reconnaitreSigne(List<List<Offset>> traits) {
   }
   final lettre = meilleur((s) => !_estChiffre(s))!;
   final dl = d[lettre]!;
-  if (_leurresSeuls.contains(lettre)) return null;
   if (_estMinuscule(lettre)) {
     // Contre tout le reste, chiffres compris.
     return dl <= _seuilMinuscule &&
@@ -984,8 +1146,10 @@ Map<String, double>? reconnaitreSigne(List<List<Offset>> traits) {
         ? famille(lettre)
         : null;
   }
+  // Une capitale, contre tout le reste aussi : un `S` d'Antsa, plus près
+  // d'un `3` que d'un `G`, se lisait `G` (ADR 0046).
   return dl <= _seuil &&
-          meilleurHors(_famille(lettre), (s) => !_estChiffre(s)) - dl >= _ecart
+          meilleurHors(_famille(lettre), (_) => true) - dl >= _ecart
       ? famille(lettre)
       : null;
 }
@@ -1141,7 +1305,7 @@ String? _trancher((String, double, double) m) {
 }
 
 /// Le chiffre que dessinent ces traits, ou `null` dans le doute : aussi
-/// quand une minuscule ou un leurre (`n`, `m`, `g`…) est plus proche.
+/// quand une minuscule (`n`, `m`, `h`…) est plus proche.
 String? reconnaitreChiffre(List<List<Offset>> traits) {
   if (_quatreOuvert(traits)) return '4';
   final chiffre = _trancher(_meilleur(traits, _modelesChiffres));
