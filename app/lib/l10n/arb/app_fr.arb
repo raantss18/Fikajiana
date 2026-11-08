@@ -521,5 +521,14 @@
     "guideCorrigerPhrase": "Touchez un résultat pour corriger ce qui a été lu, au clavier.",
     "guideCorrigerMots": "corriger erreur lecture mal lu clavier modifier",
     "guideMainLeveeTitre": "Main levée dans la Figure",
-    "guideMainLeveeMots": "main levée dessiner segment polygone cercle forme"
+    "guideMainLeveeMots": "main levée dessiner segment polygone cercle forme",
+    "signesLusTitre": "Les signes lus",
+    "signeLuToucher": "Toucher pour d'autres lectures de ce signe",
+    "signeLuAutres": "Ce signe peut aussi se lire :",
+    "exporterCorrections": "Exporter mes corrections",
+    "exporterCorrectionsAide": "Les signes que vous avez corrigés, au format de collecte (CC0), pour l'entraînement. Rien ne part sans vous.",
+    "aucuneCorrection": "Aucune correction pour l'instant",
+    "effacerCorrections": "Effacer mes corrections",
+    "effacerCorrectionsQuestion": "Oublier tous les signes que vous avez corrigés sur cet appareil ?",
+    "effacer": "Effacer"
 }

@@ -753,5 +753,14 @@
     "guideCorrigerPhrase": "Tap a result to correct what was read, with the keyboard.",
     "guideCorrigerMots": "correct mistake misread keyboard edit",
     "guideMainLeveeTitre": "Freehand in the Figure",
-    "guideMainLeveeMots": "freehand draw segment polygon circle shape"
+    "guideMainLeveeMots": "freehand draw segment polygon circle shape",
+    "signesLusTitre": "Signs read",
+    "signeLuToucher": "Touch for other readings of this sign",
+    "signeLuAutres": "This sign could also be:",
+    "exporterCorrections": "Export my corrections",
+    "exporterCorrectionsAide": "The signs you corrected, in the collection format (CC0), for training. Nothing leaves without you.",
+    "aucuneCorrection": "No corrections yet",
+    "effacerCorrections": "Delete my corrections",
+    "effacerCorrectionsQuestion": "Forget all the signs you corrected on this device?",
+    "effacer": "Delete"
 }

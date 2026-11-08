@@ -14,6 +14,9 @@ import 'package:fikajiana/encre/encre.dart';
 import 'package:fikajiana/graphe/courbes.dart';
 import 'package:fikajiana/moteur/giac.dart';
 import 'package:fikajiana/moteur/moteur.dart';
+import 'package:fikajiana/reconnaissance/classeur_appris.dart';
+import 'package:fikajiana/reconnaissance/classeur_signes.dart';
+import 'package:fikajiana/reconnaissance/exemples_personnels.dart';
 import 'package:fikajiana/reconnaissance/lecteur.dart';
 import 'package:fikajiana/reconnaissance/pix2text.dart' show normaliserLatex;
 import 'package:fikajiana_math/fikajiana_math.dart';
@@ -173,6 +176,10 @@ class BlocCalcul {
 
   /// Ce que le modèle a aussi pu lire, à proposer à la correction.
   List<String> autresLectures = const [];
+
+  /// Lu au tracé : chaque signe, ses traits et ce qu'on y a lu. Toucher
+  /// l'un d'eux propose d'autres lectures (ADR 0039).
+  List<(List<Trait>, String)> signesLus = const [];
 
   /// `f'(x)` ou `det(…)` : la réponse s'affiche même sans `=`.
   bool demandeResultat = false;
@@ -457,17 +464,28 @@ class CalculFeuille extends ChangeNotifier {
     required this.lecteur,
     required this.moteur,
     this.pause = const Duration(milliseconds: 700),
+    this.pauseConnue = const Duration(milliseconds: 400),
+    ClasseurAppris? classeur,
     bool Function()? degres,
-  }) : degres = degres ?? (() => false);
+  }) : degres = degres ?? (() => false),
+       classeur = classeur ?? ClasseurAppris(exemples: ExemplesPersonnels());
 
   final Encre encre;
   final Lecteur lecteur;
   final Moteur moteur;
   final Duration pause;
+
+  /// La pause quand tous les signes de la ligne sont déjà lus (ADR 0039).
+  final Duration pauseConnue;
+
+  /// Lit chaque signe : corrections de la personne, petit modèle, gabarits.
+  final ClasseurAppris classeur;
   final bool Function() degres;
 
   final Map<String, BlocCalcul> _blocs = {};
   Timer? _minuteur;
+  Timer? _minuteurSignes;
+  DateTime _dernierTrait = DateTime.now();
   var _enCours = false;
   var _ferme = false;
   var _compteur = 0;
@@ -556,6 +574,63 @@ class CalculFeuille extends ChangeNotifier {
         ? _apresEgal
         : pause;
     _minuteur = Timer(attente, () => unawaited(_lireLesNouveaux()));
+    // Chaque signe se lit dès qu'il est fini : le stylet levé, et rien de
+    // nouveau depuis un instant (ADR 0039).
+    _dernierTrait = DateTime.now();
+    _minuteurSignes?.cancel();
+    unawaited(_lireLesSignes(finis: true));
+    if (pauseConnue < attente) {
+      _minuteurSignes = Timer(_signeFini, () => unawaited(_lireLesSignes()));
+    }
+  }
+
+  static const _signeFini = Duration(milliseconds: 250);
+
+  /// Classe les signes des traits pas encore lus. Si chaque ligne se lit
+  /// déjà au tracé, la lecture n'attend plus toute la pause.
+  ///
+  /// [finis] : seulement les signes que le dernier trait ne touche pas,
+  /// sitôt ce trait posé ; ils ne changeront plus.
+  Future<void> _lireLesSignes({bool finis = false}) async {
+    if (_ferme) return;
+    final dernier = finis ? _ecrits.lastOrNull : null;
+    final pris = {
+      for (final b in _blocs.values)
+        if (_compterPoints(_traitsDe(b)) == b._points) ...b.traits,
+    };
+    final nouveaux = _ecrits.where((t) => !pris.contains(t.id)).toList();
+    if (nouveaux.isEmpty) return;
+    final top = Stopwatch()..start();
+    final lignes = grouperTraits(nouveaux);
+    var toutesLues = true;
+    for (final ligne in lignes) {
+      final hauteur = cadreDuGroupe(ligne).height;
+      for (final signe in signesDeLaLigne(ligne)) {
+        if (dernier != null && signe.contains(dernier)) continue;
+        await classeur.preparer(signe, hauteurLigne: hauteur);
+      }
+      if (finis) continue;
+      if (avecClasseur(classeur, () => lireAuTrace(ligne)) == null) {
+        toutesLues = false;
+      }
+    }
+    final enAttente = _minuteur?.isActive ?? false;
+    if (finis || _ferme || !toutesLues || !enAttente) return;
+    // Un trait de plus entre-temps : sa propre attente compte.
+    final ecoule = DateTime.now().difference(_dernierTrait);
+    if (ecoule < _signeFini) return;
+    _minuteur?.cancel();
+    final reste = pauseConnue - ecoule;
+    // Un print : c'est bien le journal local qu'on veut, rien d'autre.
+    // ignore: avoid_print
+    print(
+      'fikajiana.lecture signes prêts en ${top.elapsedMilliseconds} ms, '
+      'pause réduite à ${pauseConnue.inMilliseconds} ms',
+    );
+    _minuteur = Timer(
+      reste.isNegative ? Duration.zero : reste,
+      () => unawaited(_lireLesNouveaux()),
+    );
   }
 
   static const _apresEgal = Duration(milliseconds: 250);
@@ -713,16 +788,24 @@ class CalculFeuille extends ChangeNotifier {
       .._oublierResultat();
     notifyListeners();
     try {
+      final chrono = Stopwatch()..start();
+      final (trouves, calcules) = (classeur.trouves, classeur.calcules);
       // Ce qui sort d'une seule ligne se lit par morceaux (ADR 0029).
-      final structuree = await lireStructure(lecteur, traits);
+      final structuree = await avecClasseur(
+        classeur,
+        () => lireStructure(lecteur, traits),
+      );
+      final tempsStructure = chrono.elapsedMicroseconds;
       // `AB =` : deux points de la feuille, lus à leur tracé (Pad 7).
       final nomDePoints = structuree == null
           ? lireNomDePoints(traits, _contextePour(bloc).points.keys.toSet())
           : null;
       // Une ligne simple se lit sur son tracé, sans le modèle (ADR 0035).
-      var tracee = structuree == null && nomDePoints == null
-          ? lireAuTrace(traits)
+      final detail = structuree == null && nomDePoints == null
+          ? avecClasseur(classeur, () => lireAuTraceDetaille(traits))
           : null;
+      var tracee = detail?.latex;
+      final tempsTrace = chrono.elapsedMicroseconds - tempsStructure;
       // `4=0` : personne n'écrit cela ; c'est `n = 0` mal vu (Pad 7).
       if (tracee != null && RegExp(r'^\d+=\d*$').hasMatch(tracee)) {
         tracee = null;
@@ -732,11 +815,15 @@ class CalculFeuille extends ChangeNotifier {
           nomDePoints ??
           tracee ??
           redresserEgal(traits, await lecteur.lire(traits));
+      final tempsModele =
+          chrono.elapsedMicroseconds - tempsStructure - tempsTrace;
       if (bloc._version != version || !identical(_blocs[bloc.cle], bloc)) {
         return;
       }
       final fonctions = _definitionsPour(bloc).keys.toSet();
-      bloc.autresLectures = const [];
+      bloc
+        ..autresLectures = const []
+        ..signesLus = tracee == null ? const [] : detail!.signes;
       // Une lecture qui étonne : on en demande d'autres (ADR 0028). Ce coût
       // n'est payé que dans le doute.
       if (structuree == null &&
@@ -773,6 +860,17 @@ class CalculFeuille extends ChangeNotifier {
       print(
         'fikajiana.lecture $voie (${trouverStructure(traits).runtimeType}) : '
         '$latex',
+      );
+      String ms(int us) => (us / 1000).toStringAsFixed(1);
+      // Le temps de chaque voie, dans le même journal local.
+      // ignore: avoid_print
+      print(
+        'fikajiana.lecture temps : structure ${ms(tempsStructure)} ms, '
+        'tracé ${ms(tempsTrace)} ms '
+        '(signes ${classeur.trouves - trouves} en cache, '
+        '${classeur.calcules - calcules} calculés'
+        '${classeur.modele == null ? '' : ', modèle par signe'}), '
+        'Pix2Text ${ms(tempsModele)} ms',
       );
       bloc
         ..latex = _redresser(
@@ -938,6 +1036,22 @@ class CalculFeuille extends ChangeNotifier {
       .._oublierResultat();
     await _calculer(bloc);
     if (!_ferme) notifyListeners();
+  }
+
+  /// Les meilleures lectures d'un signe lu au tracé.
+  Future<Classement> autresSignes(BlocCalcul bloc, List<Trait> signe) =>
+      classeur.classer(signe, hauteurLigne: bloc.cadre.height);
+
+  /// La personne dit ce qu'est [signe] : la ligne se relit, et l'exemple
+  /// reste sur l'appareil pour les prochaines fois (ADR 0039).
+  Future<void> corrigerSigne(
+    BlocCalcul bloc,
+    List<Trait> signe,
+    String classe,
+  ) async {
+    await classeur.exemples?.ajouter(signe, classe);
+    classeur.oublier();
+    relire(bloc);
   }
 
   /// Saisie au clavier, sans encre : passe par le même calcul.
@@ -1216,6 +1330,7 @@ class CalculFeuille extends ChangeNotifier {
   void dispose() {
     _ferme = true;
     _minuteur?.cancel();
+    _minuteurSignes?.cancel();
     super.dispose();
   }
 }

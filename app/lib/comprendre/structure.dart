@@ -5,6 +5,7 @@ import 'package:fikajiana/comprendre/blocs.dart';
 import 'package:fikajiana/comprendre/mots.dart';
 import 'package:fikajiana/comprendre/signes.dart';
 import 'package:fikajiana/encre/encre.dart';
+import 'package:fikajiana/reconnaissance/classeur_signes.dart';
 import 'package:fikajiana/reconnaissance/lecteur.dart';
 import 'package:fikajiana_math/fikajiana_math.dart';
 
@@ -371,7 +372,7 @@ String? _exposantAuTrace(List<Trait> exposant) {
       if (!moins.contains(t)) t,
   ];
   final chiffres = [
-    for (final g in _glyphes(corps)) reconnaitreChiffre(_dessin(g)),
+    for (final g in _glyphes(corps)) classeurCourant.chiffre(g),
   ];
   if (chiffres.isEmpty || chiffres.contains(null)) return null;
   return '${moins.isEmpty ? '' : '-'}${chiffres.join()}';
@@ -678,7 +679,7 @@ Future<String?> lireStructure(Lecteur lecteur, List<Trait> traits) async {
       return '\\sum_{$indice=$debut}$dessus $somme';
     case StructureFleche(:final nom, :final queue):
       final lettres = [
-        for (final g in _glyphes(nom)) reconnaitreCapitale(_dessin(g)),
+        for (final g in _glyphes(nom)) classeurCourant.capitale(g),
       ];
       final parTrace = lettres.contains(null) ? null : lettres.join();
       // Une seule lettre sous une flèche : un vecteur `u`, en minuscule.
@@ -732,7 +733,7 @@ String? _bornesAuTrace(List<List<Trait>> glyphes) {
       }
       continue;
     }
-    final lu = reconnaitreChiffre(_dessin(g));
+    final lu = classeurCourant.chiffre(g);
     if (lu == null) return null;
     chiffres.add(lu);
   }
@@ -858,7 +859,7 @@ Future<List<String>?> _lireLigne(
   final parTrace = <String?>[];
   for (var i = 0; i < corps.length; i++) {
     final chiffres = [
-      for (final g in _glyphes(corps[i])) reconnaitreChiffre(_dessin(g)),
+      for (final g in _glyphes(corps[i])) classeurCourant.chiffre(g),
     ];
     parTrace.add(
       chiffres.isEmpty || chiffres.contains(null)

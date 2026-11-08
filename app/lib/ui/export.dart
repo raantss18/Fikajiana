@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'dart:isolate';
 import 'dart:ui' as ui;
 
 import 'package:fikajiana/export/pdf_image.dart';
 import 'package:fikajiana/l10n/l10n.dart';
+import 'package:fikajiana/reconnaissance/exemples_personnels.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -97,4 +99,39 @@ List<Widget> lignesExport(
       onTap: () => surChoix(FormatExport.pdf),
     ),
   ];
+}
+
+/// Les corrections de la personne, en JSON (`collecte/FORMAT.md`), là où
+/// elle choisit de les mettre (ADR 0039). Rien ne part autrement.
+Future<void> exporterCorrections(
+  BuildContext context,
+  ExemplesPersonnels exemples,
+) async {
+  final messager = ScaffoldMessenger.of(context);
+  final l10n = context.l10n;
+  final vue = View.of(context);
+  final ecran = vue.physicalSize / vue.devicePixelRatio;
+  try {
+    final modele = await _systeme.invokeMethod<String>('modele') ?? 'inconnu';
+    final json = exemples.exporter(
+      modele: modele,
+      ecranDp: ecran,
+      densite: vue.devicePixelRatio,
+    );
+    final quand = DateTime.now()
+        .toIso8601String()
+        .substring(0, 19)
+        .replaceAll(RegExp('[-:]'), '')
+        .replaceFirst('T', '-');
+    final enregistre = await _systeme.invokeMethod<bool>('enregistrer', {
+      'nom': 'fikajiana-ecriture-$modele-$quand.json',
+      'type': 'application/json',
+      'octets': Uint8List.fromList(utf8.encode(json)),
+    });
+    if (enregistre ?? false) {
+      messager.showSnackBar(SnackBar(content: Text(l10n.exportFait)));
+    }
+  } on Exception {
+    messager.showSnackBar(SnackBar(content: Text(l10n.exportErreur)));
+  }
 }
