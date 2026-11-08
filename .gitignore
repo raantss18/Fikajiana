@@ -25,3 +25,6 @@ release-out/
 
 # Écriture collectée (ADR 0038) : hors Git tant qu'Antsa ne la publie pas.
 /donnees/
+
+# Petit modèle par signe : embarqué à la construction, hors Git tant qu'une version n'est pas adoptée.
+/app/assets/modeles/signes*

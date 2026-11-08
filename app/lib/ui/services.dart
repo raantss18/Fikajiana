@@ -8,6 +8,7 @@ import 'package:fikajiana/graphe/courbes.dart';
 import 'package:fikajiana/guide/essai.dart';
 import 'package:fikajiana/moteur/moteur.dart';
 import 'package:fikajiana/reconnaissance/classeur_appris.dart';
+import 'package:fikajiana/reconnaissance/classeur_onnx.dart';
 import 'package:fikajiana/reconnaissance/exemples_personnels.dart';
 import 'package:fikajiana/reconnaissance/lecteur.dart';
 import 'package:fikajiana/reconnaissance/modele.dart';
@@ -77,8 +78,11 @@ class Services {
       fichier: File('${dossier.path}/signes/exemples.json'),
     );
     unawaited(exemples.charger());
+    final classeur = ClasseurAppris(exemples: exemples);
+    // Le petit modèle par signe, s'il est embarqué : chargé une fois, en fond.
+    unawaited(ClasseurOnnx.charger().then((m) => classeur.modele = m));
     return Services(
-      classeur: ClasseurAppris(exemples: exemples),
+      classeur: classeur,
       modele: modele,
       lecteur: LecteurPix2Text(modele),
       moteur: MoteurGiac(),

@@ -37,6 +37,8 @@ flutter:
   assets:
     - assets/polices/OFL-Nunito.txt
     - assets/polices/OFL-Caveat.txt
+    # Le petit modèle par signe (ADR 0038, 0040) : absent, les gabarits lisent seuls.
+    - assets/modeles/
   fonts:
     - family: Nunito
       fonts:

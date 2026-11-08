@@ -604,10 +604,13 @@ class CalculFeuille extends ChangeNotifier {
     final lignes = grouperTraits(nouveaux);
     var toutesLues = true;
     for (final ligne in lignes) {
-      final hauteur = cadreDuGroupe(ligne).height;
-      for (final signe in signesDeLaLigne(ligne)) {
+      final signes = signesDeLaLigne(ligne);
+      for (final signe in signes) {
         if (dernier != null && signe.contains(dernier)) continue;
-        await classeur.preparer(signe, hauteurLigne: hauteur);
+        await classeur.preparer(
+          signe,
+          caseLigne: caseDansLaLigne(signe, signes),
+        );
       }
       if (finis) continue;
       if (avecClasseur(classeur, () => lireAuTrace(ligne)) == null) {
@@ -788,8 +791,14 @@ class CalculFeuille extends ChangeNotifier {
       .._oublierResultat();
     notifyListeners();
     try {
-      final chrono = Stopwatch()..start();
       final (trouves, calcules) = (classeur.trouves, classeur.calcules);
+      final (msModele, signesModele) = (
+        classeur.msModele,
+        classeur.signesModele,
+      );
+      // Le modèle par signe, s'il est là : ce qu'il n'a pas encore vu.
+      if (classeur.modele != null) await _preparerSignes(traits);
+      final chrono = Stopwatch()..start();
       // Ce qui sort d'une seule ligne se lit par morceaux (ADR 0029).
       final structuree = await avecClasseur(
         classeur,
@@ -869,7 +878,9 @@ class CalculFeuille extends ChangeNotifier {
         'tracé ${ms(tempsTrace)} ms '
         '(signes ${classeur.trouves - trouves} en cache, '
         '${classeur.calcules - calcules} calculés'
-        '${classeur.modele == null ? '' : ', modèle par signe'}), '
+        '${classeur.modele == null ? '' : ', modèle par signe '
+                  '${(classeur.msModele - msModele).toStringAsFixed(1)} ms '
+                  'pour ${classeur.signesModele - signesModele}'}), '
         'Pix2Text ${ms(tempsModele)} ms',
       );
       bloc
@@ -1040,7 +1051,25 @@ class CalculFeuille extends ChangeNotifier {
 
   /// Les meilleures lectures d'un signe lu au tracé.
   Future<Classement> autresSignes(BlocCalcul bloc, List<Trait> signe) =>
-      classeur.classer(signe, hauteurLigne: bloc.cadre.height);
+      classeur.classer(
+        signe,
+        caseLigne: caseDansLaLigne(signe, [
+          for (final (traits, _) in bloc.signesLus) traits,
+        ]),
+      );
+
+  /// Le modèle classe les signes de [traits] qu'il n'a pas encore vus.
+  Future<void> _preparerSignes(List<Trait> traits) async {
+    for (final ligne in grouperTraits(traits)) {
+      final signes = signesDeLaLigne(ligne);
+      for (final signe in signes) {
+        await classeur.preparer(
+          signe,
+          caseLigne: caseDansLaLigne(signe, signes),
+        );
+      }
+    }
+  }
 
   /// La personne dit ce qu'est [signe] : la ligne se relit, et l'exemple
   /// reste sur l'appareil pour les prochaines fois (ADR 0041).

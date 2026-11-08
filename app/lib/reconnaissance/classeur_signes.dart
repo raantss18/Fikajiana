@@ -4,6 +4,7 @@ import 'dart:ui';
 
 import 'package:fikajiana/comprendre/signes.dart';
 import 'package:fikajiana/encre/encre.dart';
+import 'package:fikajiana/reconnaissance/rendu_signe.dart';
 
 /// Les classes possibles d'un signe, de la plus probable à la moins, avec
 /// leur probabilité (de 0 à 1). Une classe s'écrit en LaTeX, comme la
@@ -18,10 +19,12 @@ typedef Classement = List<(String classe, double proba)>;
 abstract class ClasseurSignes {
   const new();
 
-  /// Les meilleures classes de [signe], au plus [combien].
+  /// Les meilleures classes de [signe], au plus [combien]. [caseLigne] :
+  /// la case de sa ligne ([caseDansLaLigne]), dont le modèle mesure le
+  /// signe (contrat v1, ADR 0040).
   Future<Classement> classer(
     List<Trait> signe, {
-    required double hauteurLigne,
+    required Rect caseLigne,
     int combien = 3,
   });
 
@@ -52,7 +55,7 @@ class ClasseurGabarits extends ClasseurSignes {
   @override
   Future<Classement> classer(
     List<Trait> signe, {
-    required double hauteurLigne,
+    required Rect caseLigne,
     int combien = 3,
   }) async => classerParGabarits(signe, combien: combien);
 
@@ -105,6 +108,12 @@ String cleDuSigne(List<Trait> traits) {
   ]..sort();
   return parts.join('|');
 }
+
+/// La case de [signe] parmi les [signes] de sa ligne (contrat v1).
+Rect caseDansLaLigne(List<Trait> signe, List<List<Trait>> signes) =>
+    caseDuSigne(dessinDe(signe), [
+      for (final s in signes) ...dessinDe(s),
+    ], hauteurMediane([for (final s in signes) dessinDe(s)]));
 
 const _cleZone = #fikajianaClasseurSignes;
 
