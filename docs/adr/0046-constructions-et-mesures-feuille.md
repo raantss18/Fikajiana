@@ -1,0 +1,9 @@
+# ADR 0046 — Constructions et mesures écrites sur la Feuille
+
+- **Date** : 2026-11-08 · **Statut** : accepté (tâche d'Antsa : compléter les constructions depuis la Feuille, au clavier et à la main)
+- **Lecture** (`objets.dart`) : `parallèle`, `perpendiculaire`, `bissectrice`, `tangente`, `symétrique`, `projeté`, `intersection`, `triangle`, `polygone`. Un argument est un point `A`, une droite `(AB)`/`[AB]`, ou un objet nommé `d`, `\mathcal{C}` (`ArgumentGeo`). `nom=` devant toute commande nomme le résultat (`d=(AB)`, `A'=…`). `tangente(f;2)` reste la tangente à une courbe : un nombre n'est pas un point.
+- **Construction** (`Atelier.construire`) : objets de la Figure liés à leurs parents (déplacer A met à jour). `(AB)` en argument est tracée, ou reprise si elle existe. Projeté = intersection de la droite et d'une perpendiculaire cachée. Deux tangentes si le point est hors du cercle. Un nom pris devient `X_1` (même règle que les courbes). Objet nommé absent ou de mauvais genre : rien ne change, la Feuille le dit (`placerConstruction`).
+- **Mesures** (`lecteur_latex.dart`) : `angle(A;B;C)`, `\widehat{ABC}`, `\angle ABC` = `acos` du produit scalaire normé ; `aire(ABC)` par la formule du lacet ; `périmètre(ABC)` = somme des côtés. Coordonnées passées en fractions (`0.5` → `1/2`) : Giac rend un résultat exact. En degrés, c'est Giac (`angle_radian`) qui convertit.
+- **Vérifié** : tests contre SymPy 1.14 (π/4, acos(√10/10), acos(−2√5/5), aire 6 et 13/2, périmètres 4+3√2+√10 et 4+7√2/2+√26/2) ; constructions contre des valeurs calculées à la main (`construire_feuille_test.dart`).
+- **Supposé** : Giac simplifie `acos(√2/2)` en `pi/4` (ou 45 en degrés) ; à voir sur l'appareil.
+- **Reste** : lecture manuscrite de ces mots longs ; résoudre `d` depuis la Feuille quand il n'a pas été placé.

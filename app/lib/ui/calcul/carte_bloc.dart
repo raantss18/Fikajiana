@@ -9,6 +9,7 @@ import 'package:fikajiana/reglages/reglages.dart';
 import 'package:fikajiana/ui/calcul/action_manuscrite.dart';
 import 'package:fikajiana/ui/calcul/marques_bloc.dart';
 import 'package:fikajiana/ui/calcul/panneau_saisie.dart';
+import 'package:fikajiana/ui/calcul/placer_construction.dart';
 import 'package:fikajiana/ui/calcul/signes_lus.dart';
 import 'package:fikajiana/ui/formule_affichee.dart';
 import 'package:fikajiana/ui/navigation/destination.dart';
@@ -514,7 +515,7 @@ class _BoutonPlacer extends StatelessWidget {
       final atelier = PorteeServices.de(context).atelier;
       objets.forEach(atelier.placerObjet);
       final c = commande;
-      if (c != null) atelier.construire(c);
+      if (c != null && !placerConstruction(context, atelier, c)) return;
       Navigator.of(context).push(RouteDestination(Destination.figure));
     },
   );
