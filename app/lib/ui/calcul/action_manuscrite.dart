@@ -22,7 +22,6 @@ class ActionManuscrite extends StatelessWidget {
   final String libelle;
   final VoidCallback surToucher;
 
-
   @override
   Widget build(BuildContext context) {
     return Semantics(
@@ -38,10 +37,7 @@ class ActionManuscrite extends StatelessWidget {
             constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppEspacement.sm),
-              child: Center(
-                widthFactor: 1,
-                child: MotManuscrit(mot: mot),
-              ),
+              child: Center(widthFactor: 1, child: MotManuscrit(mot: mot)),
             ),
           ),
         ),
