@@ -1,0 +1,20 @@
+[project]
+name = "fikajiana-plateforme"
+version = "0.1.0"
+description = "Récepteur de référence des dons d'écriture de Fikajiana (ADR 0042)"
+requires-python = ">=3.11"
+license = "GPL-3.0-or-later"
+dependencies = ["waitress>=3.0.2"]
+
+[project.optional-dependencies]
+s3 = ["boto3>=1.35"]
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

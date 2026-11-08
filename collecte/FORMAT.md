@@ -58,3 +58,9 @@ L'app de collecte écrit un fichier JSON par séance, nommé
   la première séance.
 - Les fichiers versés vont dans `donnees/ecriture/` (hors Git tant qu'Antsa ne les publie pas :
   `.gitignore`), un sous-dossier par personne.
+
+## Dons envoyés par Fikajiana (ADR 0042, 0043)
+
+Même format, réduit à une liste blanche (`plateforme/schema.py`) : **`auteur` est interdit** (un prénom),
+`contributeur` (identifiant tiré au hasard, 16 à 64 caractères `A-Z a-z 0-9 _ -`) est obligatoire,
+`version_app` est permis. Tout autre champ fait refuser le don.
