@@ -129,7 +129,9 @@ void main() {
     ) async {
       ChoixBloc? choix;
       await ouvrir(t, (c) => choix = c);
-      expect(find.text('Lu ainsi'), findsOneWidget);
+      // Le message s'écrit à la main, et se lit pour TalkBack.
+      expect(find.text('Lu ainsi'), findsNothing);
+      expect(find.bySemanticsLabel('Lu ainsi'), findsOneWidget);
       expect(find.text('x+'), findsOneWidget);
       // Aucun bouton imprimé : des mots manuscrits, de 48 dp au moins.
       expect(find.byType(FilledButton), findsNothing);
@@ -166,7 +168,7 @@ void main() {
       await t.tapAt(const Offset(390, 590));
       await t.pumpAndSettle();
       expect(choix, isNull);
-      expect(find.text('Lu ainsi'), findsNothing);
+      expect(find.bySemanticsLabel('Lu ainsi'), findsNothing);
     });
 
     testWidgets("s'ouvre au-dessus en bas de l'écran", (t) async {

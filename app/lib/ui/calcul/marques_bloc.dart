@@ -272,7 +272,23 @@ class _PanneauBloc extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(message, style: theme.textTheme.titleSmall),
+                  // À la main aussi, accents compris ; réduit s'il est long
+                  // (téléphone). TalkBack lit la phrase.
+                  Semantics(
+                    label: message,
+                    excludeSemantics: true,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: AlignmentDirectional.centerStart,
+                      child: EcritureManuscrite(
+                        // Le compositeur saute les espaces : `\,` les garde.
+                        latex: '\\text{${message.replaceAll(' ', r'\,\,\,')}}',
+                        couleur: theme.colorScheme.onSurface,
+                        hauteur: 26,
+                        repli: Text(message, style: theme.textTheme.titleSmall),
+                      ),
+                    ),
+                  ),
                   if (lecture != null) ...[
                     const SizedBox(height: AppEspacement.sm),
                     lecture!,
