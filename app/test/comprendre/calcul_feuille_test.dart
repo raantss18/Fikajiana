@@ -315,6 +315,28 @@ void main() {
       expect(bloc.ecriture(approcheVoulue: false, virgule: true), isNotNull);
     });
 
+    test('« pas de limite » seulement si la lecture est sûre', () async {
+      // Téléphone d'Antsa (1.0.6) : une ligne mal lue donnait « no limit ».
+      lecteur
+        ..reponse = r'\lim_{x \to 3} \frac{x^{2}-3}{x-3}='
+        ..plusieurs = [
+          r'\lim_{x \to 3} \frac{x^{2}-3}{x-3}=',
+          r'\lim_{x \to 3} \frac{x^{2}-5}{e^{x}-3}=',
+        ];
+      moteur.reponse = const ReponseGiac(
+        exact: 'infinity',
+        latex: r'\infty',
+        approche: '',
+      );
+      _trait(encre, 0, 0);
+      calcul.encreChangee();
+      await _attendre();
+      final bloc = calcul.blocs.single;
+      expect(bloc.sansLimite, isFalse);
+      expect(bloc.etat, EtatBloc.sansResultat);
+      expect(bloc.ecriture(approcheVoulue: false, virgule: true), isNull);
+    });
+
     test('1/0 reste sans résultat', () async {
       lecteur.reponse = r'\frac{1}{0}=';
       moteur.reponse = const ReponseGiac(
