@@ -4,10 +4,12 @@
 ///
 /// [fonctions] : les fonctions déjà définies au-dessus sur la feuille.
 String redresserLecture(String latex, {Set<String> fonctions = const {}}) {
-  var s = latex
-      .replaceAll(RegExp(r'\\right\s*\.'), '')
-      .replaceAll(RegExp(r'\\(?:left|right)\b'), '')
-      .trim();
+  var s = sansLeftRight(
+    latex.replaceAll(RegExp(r'\\right\s*\.'), ''),
+  ).trim();
+  // `… = .` : un point après le `=` final, lu par le modèle sur le produit
+  // de matrices d'Antsa (Pad 7) ; il empêchait tout calcul.
+  s = s.replaceFirst(RegExp(r'=\s*\.\s*$'), '=');
   s = _lambdaEnUn(s);
   s = _primes(s);
   s = _parentheseEnExposant(s);
@@ -20,6 +22,11 @@ String redresserLecture(String latex, {Set<String> fonctions = const {}}) {
   s = _pointEnFraction(s);
   return s;
 }
+
+/// Sans `\left` ni `\right`, mais `\rightarrow` reste : la limite mise au
+/// propre s'écrivait `xarrow3` (Pad 7 d'Antsa).
+String sansLeftRight(String latex) =>
+    latex.replaceAll(RegExp(r'\\(?:left|right)(?![a-zA-Z])'), '');
 
 /// `\varLambda + \varLambda` : le `1` qui monte de tout en bas puis
 /// redescend (téléphone d'Antsa). Un Λ majuscule n'a pas d'usage courant au

@@ -4,6 +4,8 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Un `A` écrit d'un seul trait se lit `A` (et plus `h`) ; une limite mise au propre garde sa flèche ; un produit de matrices suivi d'un point se calcule. / An `A` written in one stroke is read as `A` (no longer `h`); a tidied limit keeps its arrow; a matrix product followed by a dot is computed.
+
 - « Relire la feuille » ne colle plus une `lim` au produit de matrices écrit juste dessous. / "Read the sheet again" no longer merges a `lim` with the matrix product written just below it.
 - `e³ − 2e⁶ =` écrit avec des `e` cursifs se lit enfin `e`, et donne sa valeur. / `e³ − 2e⁶ =` written with cursive `e`s is now read as `e` and gets its value.
 

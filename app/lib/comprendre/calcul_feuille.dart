@@ -335,7 +335,7 @@ class BlocCalcul {
     if (_proprePour != cle) {
       _proprePour = cle;
       _propre = ecrireALaPlace(
-        lu.replaceAll(RegExp(r'\\(left|right)'), ''),
+        sansLeftRight(lu),
         cadre,
       );
     }
@@ -1210,7 +1210,7 @@ class CalculFeuille extends ChangeNotifier {
   /// La courbe de `(g(x))` : la définition de g écrite plus haut, telle
   /// quelle ; sinon `y=` l'expression en x.
   String? _courbeDe(BlocCalcul bloc, String suite) {
-    var dedans = suite.replaceAll(RegExp(r'\\(left|right)'), '').trim();
+    var dedans = sansLeftRight(suite).trim();
     while (dedans.startsWith('(') && dedans.endsWith(')')) {
       dedans = dedans.substring(1, dedans.length - 1).trim();
     }

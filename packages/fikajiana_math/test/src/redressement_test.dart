@@ -124,6 +124,29 @@ void main() {
       expect(redresserLecture(r'\log(2)'), r'\log(2)');
     });
 
+    test('feuille du Pad 7 (9 h 43) : \\rightarrow garde sa flèche', () {
+      expect(
+        sansLeftRight(r'\lim_{x \rightarrow 3}'),
+        r'\lim_{x \rightarrow 3}',
+      );
+      expect(sansLeftRight(r'\left( x \right)'), '( x )');
+      expect(
+        redresserLecture(r'\lim _ { x \rightarrow 1 } \frac{1}{x}='),
+        r'\lim _ { x \rightarrow 1 } \frac{1}{x}=',
+      );
+    });
+
+    test('feuille du Pad 7 (9 h 43) : le point après le = final', () {
+      expect(
+        redresserLecture(
+          r'\left( \begin{matrix} 1 \end{matrix} \right) '
+          r'\left( \begin{matrix} 2 \end{matrix} \right) = .',
+        ),
+        r'( \begin{matrix} 1 \end{matrix} ) ( \begin{matrix} 2 \end{matrix} ) =',
+      );
+      expect(redresserLecture('1,5=1.5'), '1,5=1.5');
+    });
+
     test('le 1 lu Λ', () {
       expect(redresserLecture(r'\varLambda + \varLambda'), '1+ 1');
       expect(redresserLecture(r'\Lambda 0 \times 3'), r'10 \times 3');

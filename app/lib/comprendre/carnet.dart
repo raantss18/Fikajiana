@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:fikajiana/comprendre/stockage_feuille.dart';
+import 'package:fikajiana_math/fikajiana_math.dart';
 import 'package:flutter/foundation.dart';
 
 /// Ce qu'on montre d'une feuille dans l'Historique.
@@ -270,7 +271,6 @@ String _nombre(Object? v) {
 
 /// Une écriture sans ses espaces ni ses habits : `A ( 1 ; 2 )` vaut `A(1;2)`,
 /// et `B(5,-4)` aussi bien que `B(5;-4)`.
-String _empreinte(String latex) => latex
-    .replaceAll(RegExp(r'\\(left|right)'), '')
+String _empreinte(String latex) => sansLeftRight(latex)
     .replaceAll(RegExp(r'\s'), '')
     .replaceAll(',', ';');
