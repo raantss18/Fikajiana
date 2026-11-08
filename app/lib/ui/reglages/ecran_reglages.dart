@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:fikajiana/a_propos/contact.dart';
 import 'package:fikajiana/dons/envoi_dons.dart';
 import 'package:fikajiana/l10n/l10n.dart';
 import 'package:fikajiana/mises_a_jour/mise_a_jour.dart';
@@ -257,6 +258,31 @@ class _SectionAPropos extends StatelessWidget {
           ),
           const SizedBox(height: AppEspacement.sm),
           SelectableText(l10n.aProposTexte),
+          const SizedBox(height: AppEspacement.sm),
+          // Les coordonnées d'Antsa : chaque toucher ouvre une autre app.
+          Text(
+            '${l10n.contactAutrice} ${Contact.nom}',
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
+          _Lien(
+            icone: Icons.mail_outline,
+            titre: l10n.contactCourriel,
+            detail: Contact.courriel,
+            lien: 'mailto:${Contact.courriel}',
+          ),
+          _Lien(
+            icone: Icons.code,
+            titre: l10n.contactDepot,
+            detail: Contact.depot.replaceFirst('https://', ''),
+            lien: Contact.depot,
+          ),
+          if (Contact.lienWhatsApp case final lien?)
+            _Lien(
+              icone: Icons.chat_outlined,
+              titre: l10n.contactWhatsApp,
+              detail: '+${Contact.whatsApp}',
+              lien: lien,
+            ),
           TextButton(
             onPressed: () => showLicensePage(
               context: context,
@@ -269,6 +295,39 @@ class _SectionAPropos extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Un lien d'À propos : son nom en toutes lettres, son dessin, et ce qu'il
+/// ouvre en petit. Ouvert seulement au toucher ; sans app pour l'ouvrir,
+/// on le dit.
+class _Lien extends StatelessWidget {
+  const new({
+    required this.icone,
+    required this.titre,
+    required this.detail,
+    required this.lien,
+  });
+
+  final IconData icone;
+  final String titre;
+  final String detail;
+  final String lien;
+
+  @override
+  Widget build(BuildContext context) => ListTile(
+    contentPadding: EdgeInsets.zero,
+    leading: Icon(icone),
+    title: Text(titre),
+    subtitle: Text(detail),
+    trailing: const Icon(Icons.open_in_new, size: 18),
+    onTap: () async {
+      final message = context.l10n.contactSansApp;
+      final messager = ScaffoldMessenger.of(context);
+      if (!await ouvrirLien(lien)) {
+        messager.showSnackBar(SnackBar(content: Text(message)));
+      }
+    },
+  );
 }
 
 /// Le choix du fond, avec son aperçu : dans les Réglages et sur la Feuille.

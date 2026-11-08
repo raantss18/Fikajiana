@@ -1,6 +1,7 @@
 package mg.fikajiana.app
 
 import android.app.ActivityManager
+import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.Context
 import android.content.Intent
@@ -109,6 +110,17 @@ class MainActivity : FlutterActivity() {
                             },
                             CODE_ENREGISTRER,
                         )
+                    }
+                    // Un lien des Réglages (courriel, dépôt, WhatsApp), au toucher seulement.
+                    "ouvrir" -> {
+                        val lien = Uri.parse(appel.argument<String>("lien")!!)
+                        val action = if (lien.scheme == "mailto") Intent.ACTION_SENDTO else Intent.ACTION_VIEW
+                        try {
+                            startActivity(Intent(action, lien).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                            resultat.success(true)
+                        } catch (e: ActivityNotFoundException) {
+                            resultat.success(false)
+                        }
                     }
                     else -> resultat.notImplemented()
                 }

@@ -4,6 +4,8 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Réglages, À propos : qui a conçu Fikajiana (Antsa Malala RANIRIAMANJAKA), un courriel à lui écrire et le code source, ouverts d'un toucher. / Settings, About: who designed Fikajiana (Antsa Malala RANIRIAMANJAKA), an email to write to her and the source code, opened with a tap.
+
 - Lois de probabilité écrites comme au tableau : X ∼ B(10 ; 0,3), N(μ ; σ²), Poisson, géométrique, exponentielle, uniforme ; P(X=3)=, P(X≤3)=, P(2≤X<5)=, E(X)=, V(X)=, σ(X)= et le seuil P(X≤k)≥0,95, à la main ou au clavier. / Probability distributions written as on the board: X ∼ B(10 ; 0.3), N(μ ; σ²), Poisson, geometric, exponential, uniform; P(X=3)=, P(X≤3)=, P(2≤X<5)=, E(X)=, V(X)=, σ(X)= and the threshold P(X≤k)≥0.95, by hand or keyboard.
 
 ## [1.1.1] — 2026-11-09
