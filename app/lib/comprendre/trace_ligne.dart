@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:fikajiana/comprendre/blocs.dart';
+import 'package:fikajiana/comprendre/signes.dart';
 import 'package:fikajiana/comprendre/structure.dart';
 import 'package:fikajiana/encre/encre.dart';
 import 'package:fikajiana/reconnaissance/classeur_signes.dart';
@@ -10,7 +11,8 @@ import 'package:fikajiana_math/fikajiana_math.dart';
 /// Une ligne lue sur son tracé seul, sans le modèle (ADR 0035, idée de
 /// Mikajy) : chiffres, capitales, minuscules usuelles et `π`, `+ − = × ( )`,
 /// exposants, `f'`, fractions, racines, virgule et point décimaux
-/// (ADR 0037). Quelques millisecondes au lieu de 300.
+/// (ADR 0037) ; `s o l r p q g h m w` et les noms de fonction `\sin`,
+/// `\ln`… (ADR 0046). Quelques millisecondes au lieu de 300.
 ///
 /// Rend `null` dès qu'un signe doute : le modèle lit alors la ligne entière.
 /// Une erreur coûte plus qu'un détour par le modèle.
@@ -256,7 +258,7 @@ Rect _cadreDe(List<Offset> s) => s
 
 /// Un signe de la ligne et ce qu'on en sait.
 class _Glyphe {
-  new(this.traits, {this.arcs = false, this.miette = false})
+  new(this.traits, {this.arcs = false, this.miette = false, this.mot = false})
     : cadre = cadreDuGroupe(traits);
 
   final List<Trait> traits;
@@ -267,6 +269,9 @@ class _Glyphe {
 
   /// Un point de stylet entre deux signes.
   final bool miette;
+
+  /// Un nom de fonction, `\sin` (ADR 0046).
+  final bool mot;
 
   /// Le signe décidé, ou `null`.
   String? signe;
@@ -313,7 +318,26 @@ bool _minusculeSimple(String s) => RegExp(r'^[a-z]$').hasMatch(s);
 
 /// Minuscules sans hampe ni jambage : leur hauteur est celle de la ligne
 /// basse.
-const _basses = {'a', 'c', 'e', 'n', 'u', 'v', 'x', 'z', r'\pi'};
+const _basses = {
+  'a',
+  'c',
+  'e',
+  'm',
+  'n',
+  'o',
+  'r',
+  's',
+  'u',
+  'v',
+  'w',
+  'x',
+  'z',
+  r'\pi',
+};
+
+/// Minuscules à jambage : elles descendent sous la ligne (ADR 0046). Le `y`
+/// garde sa règle (sa hauteur ne dit rien).
+const _jambages = {'g', 'p', 'q'};
 
 String? _ligne(List<Trait> nets, List<Trait> miettes, int minimum) {
   // Une barre de fraction qu'on n'a pas su lire : au modèle.
@@ -364,13 +388,33 @@ String? _ligne(List<Trait> nets, List<Trait> miettes, int minimum) {
       }
     }
   }
+  final mots = _mots(glyphes, miettes, hauteur);
+  if (mots == null) return null;
+  if (!identical(mots, glyphes)) {
+    glyphes
+      ..clear()
+      ..addAll(mots);
+  }
   for (final g in glyphes) {
     if (!_classer(g, hauteur)) return null;
   }
   if (!_niveaux(glyphes)) return null;
   if (!_trancher(glyphes)) return null;
   if (!_auNiveau(glyphes)) return null;
-  // `det`, `sin`, un mot : trois lettres de suite, c'est au modèle.
+  // Une fonction a son argument : `\sin(x)`, `\ln 2`, pas `\sin=`.
+  for (var i = 0; i < glyphes.length; i++) {
+    if (!glyphes[i].mot) continue;
+    final suite = i + 1 < glyphes.length ? glyphes[i + 1] : null;
+    final genre = suite == null ? null : _genre(suite);
+    if (suite == null ||
+        suite.haut ||
+        genre == _Genre.fermante ||
+        (genre == _Genre.operateur && suite.signe != '-')) {
+      return null;
+    }
+  }
+  // Trois lettres de suite hors des noms de fonction (ADR 0046) : un mot
+  // qu'on ne connaît pas, c'est au modèle.
   var suite = 0;
   for (var i = 0; i < glyphes.length; i++) {
     final lettre = _genre(glyphes[i]) == _Genre.lettre;
@@ -383,6 +427,7 @@ String? _ligne(List<Trait> nets, List<Trait> miettes, int minimum) {
 
 /// Ce que le tracé seul dit de [g] ; `false` s'il ne ressemble à rien.
 bool _classer(_Glyphe g, double hauteur) {
+  if (g.mot) return true;
   final c = g.cadre;
   if (g.miette || math.max(c.width, c.height) < 0.25 * hauteur) {
     g.petit = true;
@@ -476,7 +521,15 @@ bool _classer(_Glyphe g, double hauteur) {
     }
   }
   final lu = classeurCourant.signe(g.traits, hauteurLigne: hauteur);
-  if (lu == null) return g.petit;
+  if (lu == null) {
+    // Un trait droit et debout : `1`, `I` ou `l` (un `l` cursif, un `r`
+    // l'approchent), ou le `'` de `f'`, que la suite tranche.
+    if (traits.length == 1 && _droit(traits.single) && _debout(c)) {
+      g.candidats = const {'1': 0, 'I': 0};
+      return true;
+    }
+    return g.petit;
+  }
   _poser(g, lu);
   return true;
 }
@@ -500,6 +553,12 @@ bool _niveaux(List<_Glyphe> glyphes) {
     final c = g.cadre;
     if (g.petit && g.signe == null && g.candidats.isEmpty) {
       g.haut = ouvert;
+      continue;
+    }
+    if (g.mot) {
+      g.haut = false;
+      ouvert = false;
+      base = null;
       continue;
     }
     final op = g.signe != null && _operateur(g.signe!);
@@ -615,10 +674,10 @@ bool _trancher(List<_Glyphe> glyphes) {
           ((g.signe != null &&
                   (_genre(g) == _Genre.chiffre ||
                       RegExp(r'^[A-Z]$').hasMatch(g.signe!) ||
-                      {'b', 'd', 'f', 'k', 't'}.contains(g.signe))) ||
+                      {'b', 'd', 'f', 'h', 'k', 't'}.contains(g.signe))) ||
               (g.signe == null &&
                   g.candidats.keys.any(_chiffre) &&
-                  !g.candidats.keys.any(_minusculeSimple))))
+                  !g.candidats.keys.any(_basses.contains))))
         g.cadre.height,
   ]..sort();
   final reference = hauts.isEmpty ? null : hauts[hauts.length ~/ 2];
@@ -636,6 +695,33 @@ bool _trancher(List<_Glyphe> glyphes) {
       g.signe = r'\times';
     } else {
       g.candidats = {...g.candidats}..remove(r'\times');
+    }
+  }
+  if (!_jambage(glyphes)) return false;
+  // `5` ou `s`, `0` ou `o` : à la hauteur des signes hauts de la ligne, s'il
+  // y en a (ADR 0046).
+  if (reference != null) {
+    for (var i = 0; i < glyphes.length; i++) {
+      final g = glyphes[i];
+      if (g.signe != null || g.haut) continue;
+      final basse = g.candidats.keys.where(_basses.contains).firstOrNull;
+      if (basse == null || !g.candidats.keys.any(_chiffre)) continue;
+      // À côté d'un chiffre, un chiffre : `30`, même un `0` petit.
+      final (avant, apres) = _voisins(glyphes, i);
+      if ([avant, apres].any(_chiffreProbable)) {
+        continue;
+      }
+      final rapport = g.cadre.height / reference;
+      if (rapport <= 0.75) {
+        g.signe = basse;
+      } else if (rapport >= 0.9) {
+        g.candidats = {
+          for (final MapEntry(:key, :value) in g.candidats.entries)
+            if (!_minusculeSimple(key)) key: value,
+        };
+      } else {
+        return false;
+      }
     }
   }
   // Minuscule ou capitale, à la hauteur des signes hauts de la ligne.
@@ -688,7 +774,8 @@ bool _trancher(List<_Glyphe> glyphes) {
       final basse = lettres.where((v) => _basses.contains(v.signe)).firstOrNull;
       if (basse == null) return false;
       final rapport = g.cadre.height / basse.cadre.height;
-      final minuscule = g.candidats.keys.where(_minusculeSimple).firstOrNull;
+      // Une minuscule basse seulement : un `l` est aussi haut qu'un `1`.
+      final minuscule = g.candidats.keys.where(_basses.contains).firstOrNull;
       if (rapport >= 1.25) {
         g.signe = chiffre;
       } else if (rapport <= 1.15 && minuscule != null) {
@@ -706,8 +793,62 @@ bool _trancher(List<_Glyphe> glyphes) {
   return glyphes.every((g) => g.signe != null);
 }
 
+/// `9` ou `g`, `p` ou `P` : le jambage descend sous la ligne des autres
+/// signes. Une minuscule à jambage qui n'y descend pas, ou une ligne sans
+/// autre signe pour la situer : on doute (ADR 0046).
+bool _jambage(List<_Glyphe> glyphes) {
+  bool aJambage(_Glyphe g) =>
+      _jambages.contains(g.signe) ||
+      (g.signe == null && g.candidats.keys.any(_jambages.contains));
+  if (!glyphes.any(aJambage)) return true;
+  final pieds = <double>[];
+  final tailles = <double>[];
+  for (final g in glyphes) {
+    if (g.haut || g.petit || aJambage(g)) continue;
+    final genre = _genre(g);
+    final candidat =
+        g.signe == null &&
+        g.candidats.isNotEmpty &&
+        !g.candidats.keys.any((s) => s == 'y' || s == 'Y');
+    if (genre != _Genre.chiffre && genre != _Genre.lettre && !candidat) {
+      continue;
+    }
+    if (g.signe == 'y' || g.signe == 'f') continue;
+    pieds.add(g.cadre.bottom);
+    tailles.add(g.cadre.height);
+  }
+  if (pieds.isEmpty) return false;
+  pieds.sort();
+  tailles.sort();
+  final ligne = pieds[pieds.length ~/ 2];
+  final taille = tailles[tailles.length ~/ 2];
+  for (final g in glyphes) {
+    if (g.haut || !aJambage(g)) continue;
+    final descend = g.cadre.bottom > ligne + 0.25 * taille;
+    if (g.signe != null) {
+      if (!descend) return false;
+      continue;
+    }
+    final jambage = g.candidats.keys.firstWhere(_jambages.contains);
+    if (descend) {
+      g
+        ..signe = jambage
+        ..candidats = const {};
+    } else {
+      g.candidats = {
+        for (final MapEntry(:key, :value) in g.candidats.entries)
+          if (!_jambages.contains(key)) key: value,
+      };
+      if (g.candidats.isEmpty) return false;
+      if (g.candidats.length == 1) g.signe = g.candidats.keys.single;
+    }
+  }
+  return true;
+}
+
 /// Un signe qui tombe sous la ligne (le bas d'un `;`, un indice) : au
-/// modèle. Seuls `y`, `f`, la virgule et les parenthèses y descendent.
+/// modèle. Seuls `y`, `f`, `g`, `p`, `q`, la virgule et les parenthèses y
+/// descendent.
 bool _auNiveau(List<_Glyphe> glyphes) {
   final pieds = <double>[];
   final tailles = <double>[];
@@ -716,7 +857,9 @@ bool _auNiveau(List<_Glyphe> glyphes) {
     if (g.haut || (genre != _Genre.chiffre && genre != _Genre.lettre)) {
       continue;
     }
-    if (g.signe == 'y' || g.signe == 'f') continue;
+    if (g.signe == 'y' || g.signe == 'f' || _jambages.contains(g.signe)) {
+      continue;
+    }
     pieds.add(g.cadre.bottom);
     tailles.add(g.cadre.height);
   }
@@ -730,7 +873,9 @@ bool _auNiveau(List<_Glyphe> glyphes) {
     if (g.haut || (genre != _Genre.chiffre && genre != _Genre.lettre)) {
       continue;
     }
-    if (g.signe == 'y' || g.signe == 'f') continue;
+    if (g.signe == 'y' || g.signe == 'f' || _jambages.contains(g.signe)) {
+      continue;
+    }
     if (g.cadre.center.dy > ligne - 0.1 * taille) return false;
     if (g.cadre.bottom > ligne + 0.25 * taille) return false;
   }
@@ -740,6 +885,7 @@ bool _auNiveau(List<_Glyphe> glyphes) {
 String _ecrire(List<_Glyphe> glyphes) {
   final sortie = StringBuffer();
   var exposant = false;
+  var apresMot = false;
   for (final g in glyphes) {
     if (g.haut && !exposant) {
       sortie.write('^{');
@@ -752,13 +898,162 @@ String _ecrire(List<_Glyphe> glyphes) {
     if (!g.miette) _lus?.add((g.traits, signe));
     // `\pi x`, `\times x` : une commande ne se colle pas à une lettre.
     if (RegExp(r'\\[a-z]+$').hasMatch(sortie.toString()) &&
-        RegExp('^[A-Za-z]').hasMatch(signe)) {
+        RegExp(apresMot ? '^[A-Za-z0-9]' : '^[A-Za-z]').hasMatch(signe)) {
       sortie.write(' ');
     }
     sortie.write(signe);
+    apresMot = g.mot;
   }
   if (exposant) sortie.write('}');
   return sortie.toString();
+}
+
+/// Les fonctions écrites en toutes lettres, lues au tracé (ADR 0046).
+const Map<String, String> fonctionsEcrites = {
+  'sin': r'\sin',
+  'cos': r'\cos',
+  'tan': r'\tan',
+  'ln': r'\ln',
+  'log': r'\log',
+  'exp': r'\exp',
+  'lim': r'\lim',
+  'det': r'\det',
+};
+
+/// Au-delà, une lecture ne compte pas parmi les 3 meilleures d'un signe.
+const double _seuilMot = 1.6;
+
+/// Les lettres que [g] peut être dans un mot : ses 3 meilleures lectures,
+/// comme Mikajy, et leurs jumelles (`1` pour `l`, `0` pour `o`, `5` pour
+/// `s`). Avec un point au-dessus, seulement `i`.
+Set<String> _lettresPossibles(_Glyphe g, {required bool point}) {
+  final lettres = <String>{};
+  final impose = classeurCourant.impose(g.traits);
+  final classes = [
+    ?impose,
+    if (g.arcs) 'x',
+    for (final (classe, d) in classerSignesDebug(g.dessin).take(3))
+      if (d <= _seuilMot) classe,
+  ];
+  for (final classe in classes) {
+    for (final s in famillesDeSignes.firstWhere(
+      (f) => f.contains(classe),
+      orElse: () => {classe},
+    )) {
+      if (_minusculeSimple(s)) lettres.add(s);
+    }
+    if (classe == r'\times') lettres.add('x');
+  }
+  if (point) {
+    return lettres.contains('l') || lettres.contains('1') ? {'i'} : {};
+  }
+  // Un `i` sans son point : un `l`, ou rien.
+  return lettres..remove('i');
+}
+
+/// Remplace dans [glyphes] chaque nom de fonction ([fonctionsEcrites]) par
+/// un seul signe. Un mot n'est pris que si chacune de ses lettres est parmi
+/// les 3 meilleures lectures de son signe, et qu'aucun autre ne convient ;
+/// `null` quand deux mots se disputent les mêmes signes.
+List<_Glyphe>? _mots(
+  List<_Glyphe> glyphes,
+  List<Trait> miettes,
+  double hauteur,
+) {
+  // Le point d'un `i` : petit, au-dessus d'un signe voisin.
+  final points = <int, List<Trait>>{};
+  final pointsDe = <int, List<int>>{};
+  final pris = <int>{};
+  bool dessus(Rect point, Rect c) =>
+      point.center.dx >= c.left - 0.3 * hauteur &&
+      point.center.dx <= c.right + 0.3 * hauteur &&
+      point.bottom <= c.top + 0.1 * c.height &&
+      c.top - point.bottom < 0.8 * hauteur;
+  for (var i = 0; i < glyphes.length; i++) {
+    final g = glyphes[i];
+    if (math.max(g.cadre.width, g.cadre.height) > 0.4 * hauteur) continue;
+    for (final j in [i - 1, i + 1]) {
+      if (j < 0 || j >= glyphes.length || glyphes[j].miette) continue;
+      if (dessus(g.cadre, glyphes[j].cadre)) {
+        (points[j] ??= []).addAll(g.traits);
+        (pointsDe[j] ??= []).add(i);
+        pris.add(i);
+        break;
+      }
+    }
+  }
+  final restes = [
+    for (var i = 0; i < glyphes.length; i++)
+      if (!pris.contains(i)) i,
+  ];
+  for (final m in miettes) {
+    if (glyphes.any((g) => g.traits.any((t) => identical(t, m)))) continue;
+    for (final j in restes) {
+      if (!glyphes[j].miette && dessus(_c(m), glyphes[j].cadre)) {
+        (points[j] ??= []).add(m);
+        break;
+      }
+    }
+  }
+  final lettres = {
+    for (final j in restes)
+      if (!glyphes[j].miette)
+        j: _lettresPossibles(glyphes[j], point: points.containsKey(j)),
+  };
+  final sortie = <_Glyphe>[];
+  var trouve = false;
+  for (var k = 0; k < restes.length; k++) {
+    final debut = restes[k];
+    final candidats = <String>[];
+    for (final mot in fonctionsEcrites.keys) {
+      if (k + mot.length > restes.length) continue;
+      var ok = true;
+      for (var n = 0; n < mot.length && ok; n++) {
+        final j = restes[k + n];
+        final possibles = lettres[j];
+        ok = possibles != null && possibles.contains(mot[n]);
+        // Des lettres serrées, de même taille.
+        if (ok && n > 0) {
+          final avant = glyphes[restes[k + n - 1]].cadre;
+          final c = glyphes[j].cadre;
+          ok =
+              c.left - avant.right < 0.8 * hauteur &&
+              c.height < 2.6 * hauteur &&
+              (c.center.dy - avant.center.dy).abs() < 0.8 * hauteur;
+        }
+      }
+      if (ok) candidats.add(mot);
+    }
+    if (candidats.length > 1) return null;
+    // Un mot collé à une lettre de plus : un autre mot (`s` puis `ln`), au
+    // modèle.
+    if (candidats.isNotEmpty && k > 0) {
+      final avant = restes[k - 1];
+      final ecart = glyphes[debut].cadre.left - glyphes[avant].cadre.right;
+      if ((lettres[avant]?.isNotEmpty ?? false) && ecart < 0.8 * hauteur) {
+        return null;
+      }
+    }
+    if (candidats.isEmpty) {
+      // Le signe, et ses points s'il en a : ce n'était pas un `i` de mot.
+      sortie.addAll([
+        for (final i in [debut, ...?pointsDe[debut]]..sort()) glyphes[i],
+      ]);
+      continue;
+    }
+    final mot = candidats.single;
+    final traits = [
+      for (var n = 0; n < mot.length; n++) ...[
+        ...glyphes[restes[k + n]].traits,
+        ...?points[restes[k + n]],
+      ],
+    ];
+    sortie.add(_Glyphe(traits, mot: true)..signe = fonctionsEcrites[mot]);
+    trouve = true;
+    k += mot.length - 1;
+  }
+  // Sans mot, les points restent ce qu'ils étaient.
+  return trouve ? sortie : glyphes;
 }
 
 /// Les signes, de gauche à droite. Un plat ne rejoint un signe que s'il le
@@ -775,7 +1070,7 @@ List<List<Trait>> _grouper(List<Trait> traits) {
     List<Trait>? hote;
     for (final g in groupes.reversed) {
       final cg = cadreDuGroupe(g);
-      if (c.left > cg.right) continue;
+      if (c.left > cg.right && !accrocheAUneHampe(t, g)) continue;
       if (_plat(c)) {
         final platsSeuls = g.every((x) => _plat(_c(x)));
         final commun = math.min(c.right, cg.right) - math.max(c.left, cg.left);
@@ -795,7 +1090,8 @@ List<List<Trait>> _grouper(List<Trait> traits) {
           hote = g;
         }
       } else if (c.left < cg.right - 0.1 * math.min(c.width, cg.width) ||
-          (g.length == 1 && _plat(cg) && c.left < cg.right)) {
+          (g.length == 1 && _plat(cg) && c.left < cg.right) ||
+          accrocheAUneHampe(t, g)) {
         final commun = math.min(c.bottom, cg.bottom) - math.max(c.top, cg.top);
         // `x)` serrés (Pad 7) : la parenthèse fermante, bien plus haute,
         // reste à part.
@@ -815,6 +1111,31 @@ List<List<Trait>> _grouper(List<Trait> traits) {
     }
   }
   return groupes;
+}
+
+/// Le bras d'un `k`, le ventre d'un `b` ou d'un `h` tracés à part : un
+/// trait plus court qui touche, à droite, une hampe droite seule, sous son
+/// premier tiers. Sans lui, `k = 1` se lisait en morceaux (ADR 0046). Un
+/// exposant, plus haut, ou un signe voisin qui ne touche pas restent à part.
+bool accrocheAUneHampe(Trait t, List<Trait> groupe) {
+  if (groupe.length != 1) return false;
+  final hampe = groupe.single;
+  final h = _c(hampe);
+  final c = _c(t);
+  if (!_debout(h) || !_droit(hampe) || _plat(c)) return false;
+  if (c.height > 0.75 * h.height ||
+      c.left < h.left ||
+      c.center.dy < h.top + 0.35 * h.height ||
+      c.center.dy > h.bottom) {
+    return false;
+  }
+  final tolerance = math.max(2, 0.08 * h.height);
+  for (final p in t.points) {
+    for (final q in hampe.points) {
+      if ((p.position - q.position).distance <= tolerance) return true;
+    }
+  }
+  return false;
 }
 
 /// Un `x` en deux arcs dos à dos, `ɔ` puis `c` (Antsa, Pad 7). Pas quand

@@ -659,7 +659,9 @@ void main() {
       );
     });
 
-    test('un y cursif d’un trait, proche du g : au modèle', () {
+    // Depuis l'ADR 0046, le `g` est une vraie minuscule : ce `y` cursif
+    // l'emporte sur lui de 0,2 au moins, et n'est jamais un `9`.
+    test('un y cursif d’un trait, proche du g : un y, ni g ni 9', () {
       const y = <List<(double, double)>>[
         [
           (0, 0),
@@ -672,7 +674,10 @@ void main() {
           (.06, .9),
         ],
       ];
-      expect(reconnaitreSigne(dessin(_signe(y, 0, 0, 40, 40))), isNull);
+      final lu = reconnaitreSigne(dessin(_signe(y, 0, 0, 40, 40)))?.keys;
+      expect(lu, contains('y'));
+      expect(lu, isNot(contains('g')));
+      expect(lu, isNot(contains('9')));
     });
 
     test('un g n’est ni un 9 ni un q', () {
