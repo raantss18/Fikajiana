@@ -1,3 +1,4 @@
+import 'package:fikajiana_math/src/arithmetique.dart';
 import 'package:fikajiana_math/src/evaluateur.dart';
 import 'package:fikajiana_math/src/lecteur_latex.dart';
 import 'package:fikajiana_math/src/probabilites.dart';
@@ -146,6 +147,21 @@ Analyse analyserLatex(
   Map<String, (double, double)> vecteurs = const {},
   Map<String, String> valeurs = const {},
 }) {
+  // `A_5^2` : les arrangements du lycée (vague 2).
+  final arrangements = avecArrangements(latex);
+  if (arrangements != latex) {
+    return analyserLatex(
+      arrangements,
+      degres: degres,
+      definitions: definitions,
+      points: points,
+      vecteurs: vecteurs,
+      valeurs: valeurs,
+    );
+  }
+  // `division(17;5)`, `17 \equiv 2 [5]` (vague 2).
+  final arithmetique = analyserArithmetique(latex, valeurs: valeurs);
+  if (arithmetique != null) return arithmetique;
   // `X \sim B(10;0{,}3)`, puis `P(X\le3)=`, `E(X)=` (ADR 0052).
   final loi =
       analyserLoi(latex, valeurs: valeurs) ??

@@ -57,6 +57,10 @@ void main() {
       r'P\left(X\ge 8\right)=',
       r'\sigma\left(X\right)=',
       r'P\left(X\leqslant k\right)\geqslant 0{,}95',
+      // Vague 2 : congruences.
+      r'2^{10}\equiv 1\pmod{11}',
+      r'17\equiv 2\bmod 5',
+      r'\binom{10}{3}=',
     ]) {
       expect(ecrireResultat(texte, ecriture), isNotNull, reason: texte);
     }

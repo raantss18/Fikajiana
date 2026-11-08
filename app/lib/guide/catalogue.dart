@@ -401,6 +401,38 @@ List<EntreeGuide> catalogueGuide(AppLocalizations l10n) => [
   ),
   // Arithmétique.
   EntreeGuide(
+    cle: 'division',
+    famille: FamilleGuide.arithmetique,
+    titre: l10n.guideDivisionTitre,
+    phrase: l10n.guideDivisionPhrase,
+    motsCles: l10n.guideDivisionMots,
+    lignes: [r'\text{division}\left(17;5\right)'],
+  ),
+  EntreeGuide(
+    cle: 'congruence',
+    famille: FamilleGuide.arithmetique,
+    titre: l10n.guideCongruenceTitre,
+    phrase: l10n.guideCongruencePhrase,
+    motsCles: l10n.guideCongruenceMots,
+    lignes: [r'2^{10}\equiv 1\pmod{11}'],
+  ),
+  EntreeGuide(
+    cle: 'bezout',
+    famille: FamilleGuide.arithmetique,
+    titre: l10n.guideBezoutTitre,
+    phrase: l10n.guideBezoutPhrase,
+    motsCles: l10n.guideBezoutMots,
+    lignes: [r'\text{bezout}\left(12;18\right)'],
+  ),
+  EntreeGuide(
+    cle: 'arrangement',
+    famille: FamilleGuide.arithmetique,
+    titre: l10n.guideArrangementTitre,
+    phrase: l10n.guideArrangementPhrase,
+    motsCles: l10n.guideArrangementMots,
+    lignes: ['A_{5}^{2}=', r'\binom{5}{2}='],
+  ),
+  EntreeGuide(
     cle: 'pgcd',
     famille: FamilleGuide.arithmetique,
     titre: l10n.guidePgcdTitre,

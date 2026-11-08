@@ -276,12 +276,17 @@ Analyse? analyserProbabilite(
   var dedans = p[1]!;
   // `p(x)=x^2` reste une fonction : une probabilité porte un signe d'ordre.
   if (!_ordres.any(dedans.contains)) return null;
-  // La variable : la seule lettre déclarée comme loi (ou sa minuscule).
-  final lettres = RegExp('[A-Za-z]')
+  // La variable : la seule lettre déclarée comme loi. Sa minuscule ne
+  // compte que si aucune variable déclarée n'est écrite telle quelle :
+  // dans `P(Y≤t)=0,975`, t est le seuil, même si T est une loi (banc).
+  final toutes = RegExp('[A-Za-z]')
       .allMatches(dedans)
       .map((m) => m[0]!)
-      .where((n) => declaree(n) != null)
       .toSet();
+  final exactes = toutes.where((n) => Loi.lire(valeurs[n]) != null).toSet();
+  final lettres = exactes.isNotEmpty
+      ? exactes
+      : toutes.where((n) => declaree(n) != null).toSet();
   if ({for (final l in lettres) declaree(l)}.length != 1) return null;
   final nom = declaree(lettres.first)!;
   for (final l in lettres) {

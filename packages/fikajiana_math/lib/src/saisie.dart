@@ -62,6 +62,23 @@ Saisie lireSaisie(String texte) {
   ).hasMatch(propre)) {
     return Saisie(propre);
   }
+  // `17≡2[5]`, `17 equiv 2 mod 5` : une congruence.
+  final congruence = RegExp(
+    r'^(.+?)\s*(?:≡|\bequiv\b|\bcongru\b(?:\s*à)?)\s*(.+?)\s*'
+    r'(?:\[(.+)\]|\(\s*mod\s*(.+?)\s*\)|\bmod\s*(.+))$',
+  ).firstMatch(propre);
+  if (congruence != null) {
+    try {
+      String traduit(String t) => _Traducteur(_decouper(t.trim())).traduire();
+      final n = congruence[3] ?? congruence[4] ?? congruence[5]!;
+      return Saisie(
+        '${traduit(congruence[1]!)}\\equiv ${traduit(congruence[2]!)}'
+        '\\pmod{${traduit(n)}}',
+      );
+    } on _Refus catch (refus) {
+      return Saisie.refusee(refus.probleme, detail: refus.detail);
+    }
+  }
   // `X~B(10;0,3)`, `P(X<=3)=`, `E(X)=` : les lois de probabilité.
   try {
     final probabilite = _probabiliteTapee(propre);
@@ -174,7 +191,21 @@ String? _commandeDeCalcul(String texte) {
       !RegExp(
         r'^(moyenne|mean|mediane|median|variance|ecarttype|stddev|tangente)$',
       ).hasMatch(nom) &&
-      !const {'arrondi', 'round', 'pgcd', 'ppcm', 'gcd', 'lcm'}.contains(nom);
+      !const {
+        'arrondi',
+        'round',
+        'pgcd',
+        'ppcm',
+        'gcd',
+        'lcm',
+        'quotient',
+        'reste',
+        'remainder',
+        'perm',
+        'arrangement',
+        'division',
+        'bezout',
+      }.contains(nom);
   var morceaux = unSeul ? [dedans] : _separer(dedans, ';');
   if (!unSeul && morceaux.length == 1) morceaux = _separer(dedans, ',');
   if (nom == 'tangente') {
