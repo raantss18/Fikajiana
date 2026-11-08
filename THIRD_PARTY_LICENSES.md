@@ -20,3 +20,15 @@
 
 Le code initial de `app/` et `packages/fikajiana_math/` provient des gabarits de Very Good CLI
 (https://github.com/VeryGoodOpenSource/very_good_cli). Leur licence n'a pas été vérifiée : à confirmer.
+
+## Entraînement du modèle de signes (`entrainement/`, hors application)
+
+Outils sur l'ordinateur, non distribués avec l'app ; seuls les poids produits (`signes.onnx`) le seraient.
+
+| Composant | Licence | Usage | Source |
+|---|---|---|---|
+| PyTorch (CPU) | BSD-3-Clause | entraînement | https://github.com/pytorch/pytorch/blob/main/LICENSE |
+| ONNX, ONNX Runtime (Python) | Apache-2.0, MIT | export, vérification | https://github.com/onnx/onnx · https://github.com/microsoft/onnxruntime |
+| NumPy, Pillow, scikit-image, fontTools | BSD-3-Clause, MIT-CMU, BSD-3-Clause, MIT | rendu et squelette | https://numpy.org/doc/stable/license.html · https://github.com/python-pillow/Pillow/blob/main/LICENSE · https://github.com/scikit-image/scikit-image/blob/main/LICENSE.txt · https://github.com/fonttools/fonttools/blob/main/LICENSE |
+| Polices Caveat, Patrick Hand, Kalam, Klee One, Yomogi, Zen Kurenaido | SIL OFL 1.1 | signes synthétiques (images rendues, polices non distribuées) | `entrainement/SOURCES.md` |
+| MNIST, HASYv2 | CC BY-SA 3.0, ODbL 1.0 | **non utilisés** (voir `entrainement/SOURCES.md`) | — |
