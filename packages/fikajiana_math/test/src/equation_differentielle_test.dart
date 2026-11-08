@@ -11,12 +11,32 @@ void main() {
     expect(a.giac, 'y(x)=desolve((diff(y(x),x)-3*y(x))=(cos(x)),y(x))');
   });
 
-  test("y'(t) = t ; y'' + y = 0 refusé (Giac tombe)", () {
+  test("y'(t) = t", () {
     expect(
       analyserLatex("y'(t)=t").giac,
       'y(t)=desolve((diff(y(t),t))=(t),y(t))',
     );
-    expect(() => analyserLatex("y''+y=0"), throwsA(isA<ErreurLatex>()));
+  });
+
+  test("second ordre sans desolve (Giac tombe sur l'appareil)", () {
+    for (final l in ["y''+y=0", "y''-3y'+2y=e^{x}", r'y^{\prime\prime}+4y=x']) {
+      final g = analyserLatex(l).giac;
+      expect(g, startsWith('y(x)='), reason: l);
+      expect(g, isNot(contains('desolve')), reason: l);
+      expect(g, contains('c_0'), reason: l);
+      expect(g, contains('c_1'), reason: l);
+    }
+    // y'' + y = 0 : racines ±i, cos et sin, sans second membre.
+    final oscillant = analyserLatex("y''+y=0").giac;
+    expect(oscillant, contains('cos('));
+    expect(oscillant, isNot(contains('integrate')));
+    // Racine double : x·e^{rx}.
+    expect(analyserLatex("y''+2y'+y=0").giac, contains('x*exp('));
+  });
+
+  test('second ordre non linéaire ou à coefficients variables : refusé', () {
+    expect(() => analyserLatex("y''=y^{2}"), throwsA(isA<ErreurLatex>()));
+    expect(() => analyserLatex("y''+xy=0"), throwsA(isA<ErreurLatex>()));
   });
 
   test('sans dérivée, rien ne change', () {

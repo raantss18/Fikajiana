@@ -107,6 +107,10 @@ const List<(String, List<String>)> problemes = [
     [
       r'y ^ { 1 } - 3 y = \cos \left( x \right)',
       "y'+y=0",
+      "y''+y=0",
+      "y''+4y=x",
+      r"y''+y=\cos(x)",
+      "y''-3y'+2y=e^{x}",
       "y'=2y",
       "y'(t)=t",
       r'\left\{ \begin{matrix} x = \cos t \\ y = t \sin ( t ) \end{matrix} \right.',
