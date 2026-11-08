@@ -4,6 +4,8 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Équations différentielles du premier ordre (`y' − 3y = cos(x)`) résolues ; courbes paramétrées écrites avec une accolade tracées au lieu d'être « résolues » ; `uₙ₊₁ = …` écrit en deux temps reste une seule ligne. / First-order differential equations (`y' − 3y = cos(x)`) are solved; parametric curves written with a brace are plotted instead of "solved"; `uₙ₊₁ = …` written in two goes stays one line.
+
 - Un point `D(4,−8)` écrit à la main se lit ; une matrice non carrée n'a plus de « déterminant ». / A handwritten point `D(4,−8)` is read; a non-square matrix no longer gets a "determinant".
 
 - `résoudre(…)` écrit à la main résout l'équation entre parenthèses ; `f(x) = k(x)` entre deux fonctions de la feuille se résout ; `g(x) =` puis la suite écrite après une pause restent une seule ligne. / Handwritten `résoudre(…)` solves the equation in brackets; `f(x) = k(x)` between two functions of the sheet is solved; `g(x) =` followed after a pause by the rest stays a single line.

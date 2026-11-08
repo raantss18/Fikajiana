@@ -10,6 +10,10 @@ void main() {
       r'x=\cos(t),y=\sin(t)',
       r'r=1+\cos(\theta)',
       r'(t,t^2), t \in [0,1]',
+      // Avec une accolade, comme Antsa les écrit (Pad 7), tels que le
+      // modèle les lit.
+      r'\left\{ \begin{matrix} x = \cos t \\ y = \tan ( t ) \end{matrix} \right.',
+      r'\begin{cases}x=t+1\\y=t^{2}-1\end{cases}',
     ];
     for (final latex in courbes) {
       test('$latex se trace', () => expect(estCourbeSeule(latex), isTrue));
@@ -27,6 +31,9 @@ void main() {
       '2+3',
       '2+3=',
       'x^2+',
+      // Un vrai système reste à résoudre.
+      r'\begin{cases}x+y=3\\x-y=1\end{cases}',
+      r'\left\{ \begin{matrix} x = t + 1 \\ y + 2 - 1 \end{matrix} \right.',
     ];
     for (final latex in calculs) {
       test('$latex ne se réduit pas à une courbe', () {

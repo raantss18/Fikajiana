@@ -102,6 +102,21 @@ const List<(String, List<String>)> problemes = [
     'fonction logarithme',
     [r'k(x)=\ln(x)-x', "k'(x)=", "k'(x)=0", 'k(1)=', r'\lim_{x\to0^{+}}k(x)='],
   ),
+  (
+    'feuille d’Antsa, 15 h 14',
+    [
+      r'y ^ { 1 } - 3 y = \cos \left( x \right)',
+      "y'+y=0",
+      "y'=2y",
+      "y'(t)=t",
+      r'\left\{ \begin{matrix} x = \cos t \\ y = t \sin ( t ) \end{matrix} \right.',
+      r'\begin{cases}x=t+1\\y=t^{2}-1\end{cases}',
+      'u_{0}=2',
+      'u_{n+1}=3u_{n}-1',
+      'u_{4}=',
+      r'\text{résoudre}(x^{2}-4=0)',
+    ],
+  ),
 ];
 
 Future<void> main() async {
@@ -134,6 +149,7 @@ Future<void> main() async {
         'a': bloc.approche,
         'v': bloc.verite,
         't': bloc.texte(approcheVoulue: false, virgule: true),
+        'courbe': bloc.courbeSeule,
       };
       print('BANC ${jsonEncode(mesure)}');
     }

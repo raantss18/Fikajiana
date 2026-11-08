@@ -240,7 +240,7 @@ Courbe? _parametree(String latex, String texte, double? debut, double? fin) {
   } else if (interieur.startsWith('(') && interieur.endsWith(')')) {
     interieur = interieur.substring(1, interieur.length - 1);
   }
-  final morceaux = _couperVirgule(interieur);
+  final morceaux = _accolade(texte) ?? _couperVirgule(interieur);
   if (morceaux == null) return null;
   var (ex, ey) = morceaux;
   // La forme `x=…, y=…`.
@@ -264,6 +264,32 @@ Courbe? _parametree(String latex, String texte, double? debut, double? fin) {
     genre: GenreCourbe.parametree,
     debut: debut,
     fin: fin,
+  );
+}
+
+/// `{x = cos t ; y = t sin t}` écrit avec une accolade, comme au lycée
+/// (feuille d'Antsa, Pad 7) : les deux lignes, ou `null`. Avant, la feuille
+/// le résolvait comme un système (`t=t`).
+(String, String)? _accolade(String texte) {
+  final m = RegExp(
+    r'^\s*(?:\\left\s*)?\\?\{?\s*\\begin\{(matrix|cases|array)\}'
+    r'(?:\{[^{}]*\})?(.*)\\end\{\1\}\s*(?:\\right\s*\.)?\s*$',
+    dotAll: true,
+  ).firstMatch(sansLeftRight(texte.replaceAll(r'\right.', '')));
+  if (m == null) return null;
+  final lignes = [
+    for (final l in m[2]!.split(r'\\'))
+      if (l.trim().isNotEmpty) l.replaceAll('&', '').trim(),
+  ];
+  if (lignes.length != 2) return null;
+  final (x, y) = (lignes[0], lignes[1]);
+  if (!RegExp(r'^\{?\s*x\s*\}?\s*=').hasMatch(x) ||
+      !RegExp(r'^\{?\s*y\s*\}?\s*=').hasMatch(y)) {
+    return null;
+  }
+  return (
+    x.replaceAll(RegExp(r'^\{\s*x\s*\}'), 'x'),
+    y.replaceAll(RegExp(r'^\{\s*y\s*\}'), 'y'),
   );
 }
 

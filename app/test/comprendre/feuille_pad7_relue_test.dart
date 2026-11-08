@@ -9,6 +9,7 @@ import 'package:fikajiana/encre/encre.dart';
 import 'package:fikajiana/moteur/giac.dart';
 import 'package:fikajiana/moteur/moteur.dart';
 import 'package:fikajiana/reconnaissance/lecteur.dart';
+import 'package:flutter/painting.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // Les feuilles d'Antsa sur le Pad 7, relues après la 1.0.7 : ce qui y était
@@ -114,4 +115,16 @@ void main() {
       expect(lu, isNot(contains(r'\det')));
     },
   );
+
+  test('tête de définition : g(x)=, u_{n+1}= ; pas f(1)= ni u_{3}=', () {
+    bool tete(String latex) =>
+        BlocCalcul(cle: 't', cadre: Rect.zero, latex: latex).teteDeDefinition;
+    expect(tete('g(x)='), isTrue);
+    expect(tete('y^{(x)}='), isTrue);
+    expect(tete('u_{n+1}='), isTrue);
+    expect(tete('u _ { n + 1 } ='), isTrue);
+    expect(tete('f(1)='), isFalse);
+    expect(tete('u_{3}='), isFalse);
+    expect(tete("f'(x)="), isFalse);
+  });
 }

@@ -196,9 +196,10 @@ class BlocCalcul {
   /// `g(x) =` seul (ou `y^{(x)}=`, son `g` mal lu) : une définition qu'on
   /// est en train d'écrire, pas un calcul fini. La suite, écrite après une
   /// pause, la complète (feuille d'Antsa, Pad 7, 14 h 05).
-  bool get teteDeDefinition =>
-      RegExp(r'^[A-Za-z](?:\^\{?)?\(([a-z])\)\}?=$')
-          .hasMatch((latex ?? '').replaceAll(RegExp(r'\s'), ''));
+  /// `u_{n+1} =` aussi : le début d'une suite (feuille d'Antsa, 15 h 14).
+  bool get teteDeDefinition => RegExp(
+    r'^(?:[A-Za-z](?:\^\{?)?\(([a-z])\)\}?|[a-z]_\{?[a-z](?:[+-]\d)?\}?)=$',
+  ).hasMatch((latex ?? '').replaceAll(RegExp(r'\s'), ''));
 
   /// Un résultat se montre après un `=`, ou sous une équation ou un système.
   /// Une expression sans `=` ne demande rien.
@@ -425,8 +426,11 @@ class BlocCalcul {
         ecrireResultat(
           // Sous l'écriture, la valeur seule ne dirait pas ce qu'elle égale.
           // `2+2=5` est faux : le mot suit, sans `=` ; `premier(17) = vrai`.
-          (verite != null ? demandeResultat : egalAjoute) ||
-                  (finitParEgal && dessous)
+          // `y = …` (une équation différentielle résolue) dit déjà ce qu'il
+          // vaut : pas de `=` devant.
+          !RegExp('^[a-zA-Z]=').hasMatch(valeur) &&
+                  ((verite != null ? demandeResultat : egalAjoute) ||
+                      (finitParEgal && dessous))
               ? '${approche ? r'\approx ' : '='}$valeur'
               : valeur,
           ecriture,
