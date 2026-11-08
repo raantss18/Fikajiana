@@ -11,8 +11,9 @@
 2. **Plan d'abord**, puis une tranche verticale minimale, puis élargissement.
 3. **Rien casser.** Une décision = un ADR ≤ 15 lignes (`docs/adr/NNNN-titre.md`). Commits courts en français
    (Conventional Commits), chemins explicites (jamais `git add -A`), `main` toujours vert.
-4. **Ne jamais dire « fini » sans l'avoir fait tourner** : `flutter analyze`, tests, puis essai sur émulateur (téléphone **et** tablette,
-   portrait **et** paysage, chaque support) **et sur un appareil arm64 réel** : l'émulateur ne voit pas tout, capture à l'appui.
+4. **Ne jamais dire « fini » sans l'avoir fait tourner** : `flutter analyze`, tests, puis essai sur le Xiaomi Pad 7 (arm64 réel),
+   capture à l'appui : tablette en plein écran, et format téléphone en fenêtre flottante (`--windowingMode 5`), portrait **et**
+   paysage, chaque support. **Pas d'émulateur** : la mémoire de l'ordinateur ne suffit pas (Antsa, 2026-11-08).
 5. **Libre et 100 % hors ligne.** Licence du code : voir ADR 0001. Aucune dépendance non OSI (ni ML Kit, ni MyScript),
    modèles et poids sous licence compatible. Aucun compte, aucune pub, aucune télémétrie. L'encre ne quitte l'appareil
    qu'avec le consentement de la personne (case à cocher, révocable à tout moment), et seulement les lignes qu'elle a jugées
