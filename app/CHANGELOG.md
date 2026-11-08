@@ -4,6 +4,18 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+## [1.1.0] — 2026-11-08
+
+### Message fr
+
+Le résultat s'affiche presque aussitôt : une ligne lue sur son tracé se calcule en quelques dizaines de millisecondes. Quand un signe hésite, un pointillé discret dit « à confirmer », et la lecture se vérifie en arrière-plan, sans gêner l'écriture.
+
+### Message en
+
+The result appears almost at once: a line read from its strokes is computed in a few tens of milliseconds. When a sign is uncertain, a discreet dotted line says "to be confirmed", and the reading is checked in the background without disturbing your writing.
+
+### Changements
+
 - Une ligne dont un signe doute s'affiche et se calcule tout de suite d'après son tracé (un pointillé discret la marque) ; le modèle la confirme ou la corrige pendant une pause, sans gêner l'écriture. / A line with a doubtful sign is shown and computed at once from its strokes (a discreet dotted underline marks it); the model confirms or corrects it during a pause, without disturbing writing.
 
 ## [1.0.9] — 2026-11-08
