@@ -146,14 +146,14 @@ void main() {
         ligne(
           'a',
           const Rect.fromLTRB(20, 100, 120, 140),
-          r'A^{-1}=',
+          'A^{-1}=',
           resultat: _matrice3,
           type: 'matrice',
         ),
         ligne(
           'b',
           const Rect.fromLTRB(20, 150, 110, 190),
-          r'7^{9}=',
+          '7^{9}=',
           resultat: '40353607',
         ),
       ]);
@@ -176,7 +176,7 @@ void main() {
           ligne(
             'b',
             const Rect.fromLTRB(20, 140, 150, 180),
-            r'7^{9}=',
+            '7^{9}=',
             resultat: '40353607',
           ),
         ]);
@@ -260,7 +260,7 @@ void main() {
           resultat:
               r'\left(\begin{array}{cc}'
               '\n'
-              r'2 & 1'
+              '2 & 1'
               '\n'
               r'\end{array}\right)',
           type: 'systeme',
@@ -281,11 +281,11 @@ void main() {
       'ligne', () async {
     // `9²/2 =` écrit en ligne : la barre `/` est un grand trait. Dessous,
     // `7⁹ =`, dont le `7` a été lu à part et n'a rien donné.
-    final barre = const Rect.fromLTRB(60, 20, 80, 70);
-    final neuf = const Rect.fromLTRB(20, 30, 50, 70);
-    final egal1 = const Rect.fromLTRB(110, 40, 140, 52);
-    final sept = const Rect.fromLTRB(40, 82, 64, 112);
-    final suite = const Rect.fromLTRB(70, 76, 140, 112);
+    const barre = Rect.fromLTRB(60, 20, 80, 70);
+    const neuf = Rect.fromLTRB(20, 30, 50, 70);
+    const egal1 = Rect.fromLTRB(110, 40, 140, 52);
+    const sept = Rect.fromLTRB(40, 82, 64, 112);
+    const suite = Rect.fromLTRB(70, 76, 140, 112);
     calcul.chargerDocument([
       {
         ...ligne('a', neuf, r'\frac{9^{2}}{2}=', resultat: r'\frac{81}{2}'),
@@ -299,7 +299,7 @@ void main() {
     final idSept = calcul.blocs.last.traits.single;
     lecteur.selon = (traits) => switch (traits.length) {
       3 => r'\frac{9^{2}}{2}=',
-      2 => r'7^{9}=',
+      2 => '7^{9}=',
       _ => '',
     };
     moteur.reponse = (entree) => entree.contains('9')
