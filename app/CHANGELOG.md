@@ -4,6 +4,8 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Chaque ligne lue n'a plus qu'un petit bouton, posé sans rien couvrir : sa liste réunit juste, faux, corriger, les autres lectures, tracer ou placer, et ce qu'on peut en faire (résoudre, dériver…). Plus de pouces ni de mots qui se chevauchent sur les lignes voisines ; une ligne jugée juste porte une petite coche. / Each read line now has a single small button, placed without covering anything: its list gathers right, wrong, correct, the other readings, plot or place, and what can be done with it (solve, derive…). No more thumbs or words overlapping neighbouring lines; a line marked right shows a small tick.
+
 ## [1.1.0] — 2026-11-08
 
 ### Message fr

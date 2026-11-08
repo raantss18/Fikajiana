@@ -171,6 +171,21 @@ void main() {
       },
     );
 
+    test("une courbe y=… : dériver son expression, pas y'(x) (lu comme "
+        'une équation différentielle, Pad 7)', () async {
+      final b = await ligne('y=x^{2}');
+      expect(b.seTrace, isTrue);
+      final derivee = proposees(b)
+          .firstWhere((p) => p.$1 == GenreProposition.deriver)
+          .$2;
+      expect(derivee, r'\frac{d}{dx}\left(x^{2}\right)=');
+      // Même classe : aucune proposition ne se lit comme une équation
+      // différentielle.
+      for (final (_, latex) in proposees(b)) {
+        expect(latex, isNot(contains("y'")));
+      }
+    });
+
     test('une matrice carrée : déterminant, inverse ; pas une 2×3', () async {
       final a = await ligne(r'A=\begin{pmatrix}1&2\\3&4\end{pmatrix}');
       expect(proposees(a), [

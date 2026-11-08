@@ -22,16 +22,8 @@ class ActionManuscrite extends StatelessWidget {
   final String libelle;
   final VoidCallback surToucher;
 
-  /// La hauteur d'écriture, proche de celle des résultats courts.
-  static const double _hauteur = 30;
-
   @override
   Widget build(BuildContext context) {
-    final couleur = Theme.of(context).colorScheme.tertiary;
-    final ecrit = ecrireResultat(
-      '\\mathrm{$mot}',
-      const Rect.fromLTWH(0, 0, 0, _hauteur),
-    );
     return Semantics(
       button: true,
       label: libelle,
@@ -45,24 +37,43 @@ class ActionManuscrite extends StatelessWidget {
             constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppEspacement.sm),
-              child: Center(
-                widthFactor: 1,
-                child: ecrit == null
-                    // Un mot sans lettres manuscrites : le texte, par défaut.
-                    ? Text(
-                        mot,
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(color: couleur),
-                      )
-                    : CustomPaint(
-                        size: Size(ecrit.cadre.width, ecrit.cadre.height + 8),
-                        painter: _PeintreMot(ecrit, couleur),
-                      ),
-              ),
+              child: Center(widthFactor: 1, child: MotManuscrit(mot: mot)),
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Un mot d'action écrit à la main et souligné, sans rien à toucher : le
+/// dessin d'[ActionManuscrite], repris dans un menu.
+class MotManuscrit extends StatelessWidget {
+  const new({required this.mot, this.hauteur = 30, this.couleur, super.key});
+
+  final String mot;
+  final double hauteur;
+
+  /// Par défaut, la couleur des résultats.
+  final Color? couleur;
+
+  @override
+  Widget build(BuildContext context) {
+    final teinte = couleur ?? Theme.of(context).colorScheme.tertiary;
+    final ecrit = ecrireResultat(
+      '\\mathrm{$mot}',
+      Rect.fromLTWH(0, 0, 0, hauteur),
+    );
+    if (ecrit == null) {
+      // Un mot sans lettres manuscrites : le texte, par défaut.
+      return Text(
+        mot,
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(color: teinte),
+      );
+    }
+    return CustomPaint(
+      size: Size(ecrit.cadre.width, ecrit.cadre.height + 8),
+      painter: _PeintreMot(ecrit, teinte),
     );
   }
 }

@@ -780,14 +780,16 @@ class CalculFeuille extends ChangeNotifier {
     }
   }
 
-  /// Où poser 👍 et 👎 de chaque ligne jugeable, en coordonnées de page :
-  /// à gauche de la ligne, sinon dessous, dessus, ou après son résultat ;
-  /// jamais sur l'encre, un résultat ou les boutons d'une autre ligne
-  /// (téléphone d'Antsa en paysage : posés sur les bornes d'une limite).
-  /// Sans place libre, la ligne n'en a pas : ils se replient.
+  /// Où poser le bouton de chaque ligne écrite jugeable (ADR 0051), en
+  /// coordonnées de page : à gauche de la ligne, sinon dessous, dessus, ou
+  /// après son résultat ; jamais sur l'encre, un résultat, une ligne tapée
+  /// ou le bouton d'une autre ligne (téléphone d'Antsa : posés sur les
+  /// bornes d'une limite, puis les uns sur les autres). Sans place près
+  /// d'elle, on descend, puis on monte, jusqu'à en trouver une : chaque
+  /// ligne a son bouton.
   ///
-  /// [taille] : les deux boutons, en unités de page ; [gauche] : le bord
-  /// gauche de l'écran.
+  /// [taille] : le bouton, en unités de page ; [gauche] : le bord gauche de
+  /// l'écran.
   Map<BlocCalcul, Rect> placesJugement({
     required Size taille,
     required bool approcheVoulue,
@@ -804,12 +806,16 @@ class CalculFeuille extends ChangeNotifier {
       for (final b in ecrits)
         b: b.ecriture(approcheVoulue: approcheVoulue, virgule: virgule)?.cadre,
     };
+    const ecart = BlocCalcul._ecart;
     final obstacles = [
-      for (final b in ecrits) b.cadre,
+      for (final b in _blocs.values) b.cadre,
       ...resultats.values.nonNulls,
     ];
-    const ecart = BlocCalcul._ecart;
     final (l, h) = (taille.width, taille.height);
+    bool libre(Rect e) =>
+        e.left >= gauche &&
+        e.right <= _bordDroit &&
+        !obstacles.any((o) => o.inflate(ecart).overlaps(e));
     final places = <BlocCalcul, Rect>{};
     for (final b in ecrits.where((b) => b.jugeable)) {
       final c = b.cadre;
@@ -829,10 +835,27 @@ class CalculFeuille extends ChangeNotifier {
           Rect.fromLTWH(c.left, math.max(c.bottom, r.bottom) + ecart, l, h),
         ],
       ];
-      final place = essais.where((e) {
-        if (e.left < gauche || e.right > _bordDroit) return false;
-        return !obstacles.any((o) => o.inflate(ecart).overlaps(e));
-      }).firstOrNull;
+      var place = essais.where(libre).firstOrNull;
+      // Rien de libre tout près : plus bas, puis plus haut, sur la colonne
+      // de la ligne, juste à sa gauche ou contre le bord gauche.
+      final bas = math.max(c.bottom, r?.bottom ?? c.bottom);
+      for (var i = 0; place == null && i < 40; i++) {
+        final pas = i * (h / 2);
+        for (final x in <double>[
+          c.left,
+          c.left - l - ecart,
+          math.max(gauche, 0),
+        ]) {
+          final dessous = Rect.fromLTWH(x, bas + ecart + pas, l, h);
+          final dessus = Rect.fromLTWH(x, c.top - h - ecart - pas, l, h);
+          place = libre(dessous)
+              ? dessous
+              : libre(dessus)
+              ? dessus
+              : null;
+          if (place != null) break;
+        }
+      }
       if (place == null) continue;
       places[b] = place;
       obstacles.add(place);
@@ -1852,8 +1875,14 @@ class CalculFeuille extends ChangeNotifier {
       final v = analyse!.variableFonction ?? analyse.inconnues.firstOrNull;
       if (v != null && RegExp(r'^[A-Za-z]$').hasMatch(nom)) {
         final appel = '$nom\\left($v\\right)';
+        // `y'(x)=` se lirait comme une équation différentielle (`y(x)=C₀`,
+        // vu sur le Pad 7) : pour `y=…`, on dérive son expression.
+        final derivee = nom == 'y'
+            ? '\\frac{d}{d$v}\\left(${lu.substring(lu.indexOf('=') + 1)}'
+                  r'\right)='
+            : "$nom'($v)=";
         candidates.addAll([
-          Proposition(GenreProposition.deriver, "$nom'($v)="),
+          Proposition(GenreProposition.deriver, derivee),
           Proposition(GenreProposition.integrer, '\\int ${appel}d$v='),
           Proposition(GenreProposition.valeur, '$nom\\left(0\\right)='),
           Proposition(

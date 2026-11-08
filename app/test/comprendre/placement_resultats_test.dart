@@ -319,9 +319,9 @@ void main() {
     sansChevauchement();
   });
 
-  group('👍 et 👎', () {
-    // Deux boutons de 48 dp, à la vue de départ (zoom 1).
-    const taille = Size(96, 48);
+  group('le bouton de chaque ligne (ADR 0051)', () {
+    // Un bouton de 48 dp, à la vue de départ (zoom 1).
+    const taille = Size(48, 48);
 
     Map<BlocCalcul, Rect> places({double gauche = 0}) => calcul.placesJugement(
       taille: taille,
@@ -435,7 +435,39 @@ void main() {
       expect(p.keys.map((b) => b.cle), contains('long'));
     });
 
-    test('sans aucune place libre, ils se replient', () {
+    test('lignes serrées sur un téléphone : un bouton chacune, jamais l’un '
+        'sur l’autre ni sur l’encre (téléphone d’Antsa, 2026-11-08)', () {
+      // « solve factor derive limit plot » passait sur les lignes dessous,
+      // puis les pouces des lignes voisines se chevauchaient.
+      calcul
+        ..bordDroit = 364
+        ..chargerDocument([
+          ligne('a', const Rect.fromLTRB(20, 100, 300, 140), 'x^{2}-5x+6'),
+          ligne('b', const Rect.fromLTRB(20, 144, 300, 184), 'x^{2}-1'),
+          ligne(
+            'c',
+            const Rect.fromLTRB(20, 188, 300, 228),
+            'y=2x+1',
+            type: 'fonction',
+          ),
+          ligne(
+            'd',
+            const Rect.fromLTRB(20, 232, 300, 272),
+            '2+3=',
+            resultat: '5',
+          ),
+        ]);
+      final p = places();
+      libres(p);
+      expect(p, hasLength(4));
+      for (final zone in p.values) {
+        expect(zone.width, 48);
+        expect(zone.left, greaterThanOrEqualTo(0));
+        expect(zone.right, lessThanOrEqualTo(364));
+      }
+    });
+
+    test('sans place tout près, plus bas : chaque ligne a son bouton', () {
       // Une ligne entourée d'encre de tous côtés.
       calcul
         ..bordDroit = 400
@@ -453,7 +485,7 @@ void main() {
         ]);
       final p = places();
       libres(p);
-      expect(p.keys.map((b) => b.cle), isNot(contains('centre')));
+      expect(p.keys.map((b) => b.cle), contains('centre'));
     });
   });
 
