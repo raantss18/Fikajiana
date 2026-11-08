@@ -1,6 +1,7 @@
 # Format des données d'écriture (ADR 0038)
 
-Contrat commun entre l'app de collecte (`collecte/app/`), l'entraînement (`entrainement/`) et Fikajiana.
+Contrat commun entre Fikajiana (dons d'écriture, ADR 0042), la plateforme (`plateforme/`) et l'entraînement
+(`entrainement/`). L'app de collecte séparée a été retirée (ADR 0039, remplacée).
 Toute modification de ce fichier passe par un nouvel ADR.
 
 ## Un fichier par séance

@@ -1,6 +1,6 @@
 # ADR 0039 — L'app de collecte, à part de Fikajiana
 
-- **Date** : 2026-11-08 · **Statut** : accepté (suite de l'ADR 0038)
+- **Date** : 2026-11-08 · **Statut** : remplacé par l'ADR 0042 (app retirée du dépôt le 2026-11-08, à la demande d'Antsa : Fikajiana recueille elle-même l'écriture)
 - **Décision** : une petite app Flutter séparée, `collecte/app/`, paquet `mg.fikajiana.collecte`, nom « Fikajiana Écriture ». Elle n'installe ni ne modifie Fikajiana et ne dépend pas de son code.
 - **Données** : format `collecte/FORMAT.md`. Signes lus dans `collecte/classes.txt` et expressions dans `collecte/expressions.txt`, par des liens symboliques dans `assets/` (pas de copie à la main ; un test vérifie que le contenu est identique).
 - **Un raté** est enregistré (`rejete: true`) et le même signe est redemandé : le compteur n'avance pas.
