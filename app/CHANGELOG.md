@@ -4,6 +4,7 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- « Relire la feuille » ne colle plus une `lim` au produit de matrices écrit juste dessous. / "Read the sheet again" no longer merges a `lim` with the matrix product written just below it.
 - `e³ − 2e⁶ =` écrit avec des `e` cursifs se lit enfin `e`, et donne sa valeur. / `e³ − 2e⁶ =` written with cursive `e`s is now read as `e` and gets its value.
 
 ## [1.0.7] — 2026-11-08

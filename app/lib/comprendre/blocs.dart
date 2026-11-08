@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui';
 
+import 'package:fikajiana/comprendre/structure.dart';
 import 'package:fikajiana/encre/encre.dart';
 
 /// Écart maximal entre deux traits d'une même expression, en pixels de page.
@@ -216,6 +217,9 @@ bool estBorne(Rect bloc, List<Trait> traitsDuBloc, List<Trait> groupe) {
   final hauteur = math.max(bloc.height, _hauteurMinimale);
   // Quelques signes, pas une ligne : `x → 0` est plus large que `lim`.
   if (g.width > 2.5 * hauteur) return false;
+  // Une borne ne finit pas par `=` : c'est une ligne de calcul, comme la
+  // `lim` écrite au-dessus d'un produit de matrices (Pad 7 d'Antsa).
+  if (finitParEgal(groupe)) return false;
   // Mesuré au grand trait lui-même (un Σ, le `l` de lim, un ∫), pas au bloc
   // entier : la fraction écrite à côté descend plus bas que le signe.
   for (final t in traitsDuBloc) {
@@ -229,6 +233,9 @@ bool estBorne(Rect bloc, List<Trait> traitsDuBloc, List<Trait> groupe) {
     if (c.right < g.left - 0.3 * hauteur || c.left > g.right + 0.3 * hauteur) {
       continue;
     }
+    // Étroite au regard du grand trait lui-même : la hauteur du bloc, une
+    // matrice l'agrandit, et une ligne entière y passait.
+    if (g.width > 2.5 * c.height) continue;
     final dessus = g.bottom <= c.top + 0.15 * hauteur;
     final dessous = g.top >= c.bottom - 0.15 * hauteur;
     if (!dessus && !dessous) continue;

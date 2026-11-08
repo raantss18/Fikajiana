@@ -1495,9 +1495,11 @@ class CalculFeuille extends ChangeNotifier {
   /// Relit toute la feuille : après une mise à jour, tout peut mieux se lire.
   void relireTout() {
     // Ce qui n'a rien donné (une borne lue à part : `x → 0` sous `lim`,
-    // `n = 0` sous Σ, Pad 7 d'Antsa) cherche un bloc à rejoindre, en
-    // gardant son découpage d'origine : tout regrouper d'un coup fondait la
-    // page en une matrice. Les lignes tapées et corrigées ne bougent pas.
+    // `n = 0` sous Σ, Pad 7 d'Antsa) cherche un bloc à rejoindre, groupe par
+    // groupe, comme à l'écriture : tout regrouper d'un coup fondait la page
+    // en une matrice, et garder le bloc entier gardait aussi ce qu'une
+    // version d'avant avait collé (la lim et le produit de matrices écrit
+    // dessous). Les lignes tapées et corrigées ne bougent pas.
     final orphelins = [
       for (final b in _blocs.values)
         if (!b.estSaisie &&
@@ -1508,12 +1510,11 @@ class CalculFeuille extends ChangeNotifier {
     for (final b in orphelins) {
       _blocs.remove(b.cle);
     }
-    orphelins.sort((a, b) => b.cadre.height.compareTo(a.cadre.height));
-    for (final ancien in orphelins) {
-      final groupe = _traitsDe(ancien);
-      if (groupe.isEmpty) continue;
-      _rattacherGroupe(groupe);
-    }
+    [for (final ancien in orphelins) ...grouperTraits(_traitsDe(ancien))]
+      ..sort(
+        (a, b) => cadreDuGroupe(b).height.compareTo(cadreDuGroupe(a).height),
+      )
+      ..forEach(_rattacherGroupe);
     for (final bloc in _blocs.values) {
       if (!bloc.estSaisie) bloc._points = -1;
     }
