@@ -1,0 +1,7 @@
+# ADR 0047 — Feuilles du Pad 7 du 8 novembre : `lim` par morceaux, `=` final, points
+
+- **Date** : 2026-11-08 · **Statut** : accepté · suite des ADR 0029, 0035, 0046
+- **Contexte** : sur ses feuilles (1.0.5), `lim (eˣ−1)/(2x)` et `lim (3x−1)/(eˣ−1)` étaient coupées en blocs soulignés, `lim 1/(x−3)² =` perdait son `=` (pas de résultat écrit), `p(x)=…` sous un produit de matrices s'y collait, `B(2;−25)` perdait son moins, `C(2;7)` n'était pas vu comme un point.
+- **Décision** : flèche de `lim` courte acceptée, sa pointe doit enjamber la hampe (le `m` de lim n'en est pas une) ; un groupe écrit dessous dont chaque morceau est une borne ou un dénominateur sous une barre du bloc le rejoint (`completeDessous`) ; un groupe juste à gauche sur la même ligne aussi (`precede`), sauf s'il finit par `=` ; une borne est collée à son signe (écart ≤ sa hauteur) ; `finitParEgal` rend le `=` oublié par le modèle ; `;` cherché trait par trait si les signes se chevauchent ; une case lue `2 5` sans moins visible au tracé devient `-25`.
+- **Téléphone, 1.0.6** : une ligne de matrice toute plate (le pied d'un `1`) n'en fait pas une ; `lim` demande sa valeur sans `=` ; « pas de limite » seulement si le modèle relit la même ligne ; les mots de géométrie et `angle` se cherchent devant une parenthèse.
+- **Vérifié** : `feuille_pad7_8nov_test` sur ses traits (7 fixtures), suite `comprendre` verte. **Reste** : relue d'un coup (« Relire la feuille »), la 3ᵉ `lim` se colle au produit de matrices dessous (vu sur le Pad) ; `droite(A,B)` non lu ; essai complet au Pad 7.

@@ -165,6 +165,19 @@ bool prolonge(Rect bloc, Rect groupe, {required bool ferme}) {
   return memeLigne && ecart >= 0 && ecart <= 1.5 * hauteur;
 }
 
+/// Ce [groupe] commence le bloc, juste à sa gauche sur la même ligne :
+/// `lim` et la fraction qui le suit, écrits sans pause, se lisent par
+/// groupes et la fraction, plus haute, passe la première (Pad 7, ADR 0047).
+bool precede(Rect bloc, Rect groupe) {
+  final milieu = groupe.center.dy;
+  final hauteur = math.max(bloc.height, _hauteurMinimale);
+  final ecart = bloc.left - groupe.right;
+  return milieu >= bloc.top &&
+      milieu <= bloc.bottom &&
+      ecart >= 0 &&
+      ecart <= 1.5 * hauteur;
+}
+
 /// Une barre de fraction et son dénominateur, écrits sous un calcul déjà lu :
 /// `1 - 1/(-2)` puis, dessous, `—` et `4` (téléphone d'Antsa). Ils le
 /// prolongent : la barre est longue, juste sous le bloc, et tout le reste du
@@ -207,7 +220,12 @@ bool estBorne(Rect bloc, List<Trait> traitsDuBloc, List<Trait> groupe) {
   // entier : la fraction écrite à côté descend plus bas que le signe.
   for (final t in traitsDuBloc) {
     final c = _cadre(t);
-    if (c.height < 0.55 * hauteur) continue;
+    // Avec une fraction à côté, le bloc a deux étages : le `l` de `lim` n'en
+    // fait que la moitié, mais reste plus grand que la borne (ADR 0047).
+    if (c.height < 0.55 * hauteur &&
+        (c.height < 0.4 * hauteur || c.height < 1.1 * g.height)) {
+      continue;
+    }
     if (c.right < g.left - 0.3 * hauteur || c.left > g.right + 0.3 * hauteur) {
       continue;
     }
@@ -215,7 +233,64 @@ bool estBorne(Rect bloc, List<Trait> traitsDuBloc, List<Trait> groupe) {
     final dessous = g.top >= c.bottom - 0.15 * hauteur;
     if (!dessus && !dessous) continue;
     final ecart = dessus ? c.top - g.bottom : g.top - c.bottom;
-    if (ecart <= 0.6 * hauteur) return true;
+    // Collée à son signe : moins que sa propre hauteur. `p(x) = …` écrit sur
+    // la ligne sous un produit de matrices n'en est pas une (ADR 0047).
+    if (ecart <= 0.6 * hauteur && ecart <= math.max(0.8 * g.height, 12)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/// Ce qui s'écrit sous un calcul déjà lu, par morceaux : le dénominateur
+/// sous sa barre (`e^x − 1` sous `3x − 1`), la borne sous `lim`, ou une
+/// ligne qui porte les deux (`x → 0`, puis `2x` sous la barre ; Pad 7
+/// d'Antsa, lues à part et soulignées). Chaque morceau du groupe, séparé
+/// des autres par un blanc, est l'un ou l'autre (ADR 0047).
+bool completeDessous(Rect bloc, List<Trait> traitsDuBloc, List<Trait> groupe) {
+  final hauteur = math.max(bloc.height, _hauteurMinimale);
+  final morceaux = _morceaux(groupe, 0.25 * hauteur);
+  return morceaux.every(
+    (m) =>
+        estBorne(bloc, traitsDuBloc, m) ||
+        _sousUneBarre(traitsDuBloc, m, hauteur),
+  );
+}
+
+/// Les morceaux d'un groupe, de gauche à droite, séparés par plus de
+/// [blanc].
+List<List<Trait>> _morceaux(List<Trait> groupe, double blanc) {
+  final tries = groupe.toList()
+    ..sort((a, b) => _cadre(a).left.compareTo(_cadre(b).left));
+  final morceaux = <List<Trait>>[];
+  var droite = double.negativeInfinity;
+  for (final t in tries) {
+    final c = _cadre(t);
+    if (morceaux.isEmpty || c.left > droite + blanc) morceaux.add([]);
+    morceaux.last.add(t);
+    droite = math.max(droite, c.right);
+  }
+  return morceaux;
+}
+
+/// Juste sous une barre de fraction du bloc, dans sa largeur, sans rien du
+/// bloc entre elle et lui : un dénominateur écrit après coup.
+bool _sousUneBarre(List<Trait> traitsDuBloc, List<Trait> morceau, double h) {
+  final g = cadreDuGroupe(morceau);
+  for (final barre in traitsDuBloc) {
+    final c = _cadre(barre);
+    if (c.height > 0.25 * c.width || c.width < 0.8 * g.width) continue;
+    if (g.center.dx < c.left || g.center.dx > c.right) continue;
+    if (g.top < c.bottom - 0.15 * h || g.top - c.bottom > 0.6 * h) continue;
+    final entre = traitsDuBloc.any((t) {
+      final ct = _cadre(t);
+      return !identical(t, barre) &&
+          ct.top >= c.bottom - 2 &&
+          ct.bottom <= g.top + 2 &&
+          ct.right > g.left &&
+          ct.left < g.right;
+    });
+    if (!entre) return true;
   }
   return false;
 }

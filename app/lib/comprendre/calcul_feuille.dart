@@ -974,13 +974,18 @@ class CalculFeuille extends ChangeNotifier {
     // ligne du dessus, même s'il en est assez près (Pad 7 d'Antsa).
     final hote =
         ecrits
-            .where((b) => prolonge(b.cadre, cadre, ferme: b.finitParEgal))
+            .where(
+              (b) =>
+                  prolonge(b.cadre, cadre, ferme: b.finitParEgal) ||
+                  (precede(b.cadre, cadre) && !finitParEgal(groupe)),
+            )
             .firstOrNull ??
         ecrits
             .where(
               (b) =>
                   estDenominateur(b.cadre, groupe) ||
-                  estBorne(b.cadre, _traitsDe(b), groupe),
+                  estBorne(b.cadre, _traitsDe(b), groupe) ||
+                  completeDessous(b.cadre, _traitsDe(b), groupe),
             )
             .firstOrNull;
     final bloc =
@@ -1176,7 +1181,7 @@ class CalculFeuille extends ChangeNotifier {
       }
       return;
     }
-    final classes = classerMots(ecrit.mot);
+    final classes = classerMots(ecrit.mot, lexique: motsDevantParenthese);
     final suite = (await lireAuMieux(lecteur, ecrit.suite)).trim();
     if (bloc._version != version || !identical(_blocs[bloc.cle], bloc)) return;
     final candidats = [
@@ -1517,6 +1522,25 @@ class CalculFeuille extends ChangeNotifier {
     unawaited(_lireLesNouveaux());
   }
 
+  /// Une lecture qui n'est pas sûre : d'autres lectures déjà proposées, ou
+  /// le modèle, interrogé de nouveau, en voit une autre (ADR 0047).
+  Future<bool> _lectureDouteuse(BlocCalcul bloc) async {
+    if (bloc.estSaisie) return false;
+    if (bloc.autresLectures.isNotEmpty || bloc.lueParMorceaux) return true;
+    final lu = bloc.latex;
+    if (lu == null) return true;
+    try {
+      final lectures = await lecteur.lirePlusieurs(_traitsDe(bloc));
+      final vu = normaliserLatex(lu);
+      return lectures.isEmpty ||
+          lectures.any(
+            (l) => normaliserLatex(redresserEgal(_traitsDe(bloc), l)) != vu,
+          );
+    } on Object {
+      return true;
+    }
+  }
+
   Future<void> _calculer(BlocCalcul bloc, {bool propager = true}) async {
     final commande = lireCommande(bloc.latex ?? '');
     if (commande != null) {
@@ -1589,9 +1613,15 @@ class CalculFeuille extends ChangeNotifier {
         const {'undef', 'infinity'}.contains(exact)) {
       // Une limite qui n'existe pas (infini sans signe, ou rien) est une
       // réponse, pas une erreur (Pad 7 d'Antsa : `lim (x²−3)/(x−3)` en 3).
-      bloc
-        ..sansLimite = true
-        ..etat = EtatBloc.fait;
+      // Mais une ligne mal lue donne aussi « pas de limite » (téléphone
+      // d'Antsa, 1.0.6) : on ne l'écrit que si la lecture est sûre.
+      if (await _lectureDouteuse(bloc)) {
+        bloc.etat = EtatBloc.sansResultat;
+      } else {
+        bloc
+          ..sansLimite = true
+          ..etat = EtatBloc.fait;
+      }
     } else if (reponse.erreur != null ||
         // `infinity` sans signe : 1/0 n'a pas de valeur, ce n'est pas un résultat.
         const {'undef', 'infinity', ''}.contains(exact)) {

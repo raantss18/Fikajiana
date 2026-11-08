@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:fikajiana/comprendre/blocs.dart';
 import 'package:fikajiana/comprendre/structure.dart';
 import 'package:fikajiana/encre/encre.dart';
+import 'package:fikajiana_math/fikajiana_math.dart';
 
 /// Les mots de commande écrits à la main : `développer(…)`, `premier(17)`.
 ///
@@ -40,6 +41,17 @@ const motsDeCommande = [
   'discriminant',
   'tangente',
 ];
+
+/// Les mesures d'une figure, devant leurs points : `angle(E;F;D)` (ADR 0047).
+const motsDeMesure = ['angle', 'aire', 'perimetre'];
+
+/// Tous les mots qu'on écrit devant une parenthèse : calcul, construction,
+/// mesure. `angle` en cursive n'était pas lu (téléphone d'Antsa, 1.0.6).
+final List<String> motsDevantParenthese = {
+  ...motsDeCommande,
+  ...motsDeGeometrie,
+  ...motsDeMesure,
+}.toList();
 
 /// Les mots écrits seuls à côté d'une ligne : un ordre (`⇒ plot`) ou une
 /// note (`longueur`), jamais un calcul (Pad 7).

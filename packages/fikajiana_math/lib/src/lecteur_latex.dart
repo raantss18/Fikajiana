@@ -1511,6 +1511,9 @@ class LecteurLatex {
     _liees.add(variable);
     final corps = _somme();
     _liees.removeLast();
+    // Comme `det(…)` : `lim f(x)` sans `=` demande sa valeur (téléphone
+    // d'Antsa, 1.0.6 ; ADR 0047).
+    demandeResultat = true;
     return Terme(
       'limit(${corps.giac},$variable,${cible.giac}$cote)',
       symboles: {...corps.symboles, ...cible.symboles},
