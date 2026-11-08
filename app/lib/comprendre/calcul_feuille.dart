@@ -16,7 +16,7 @@ import 'package:fikajiana/moteur/giac.dart';
 import 'package:fikajiana/moteur/moteur.dart';
 import 'package:fikajiana/reconnaissance/classeur_appris.dart';
 import 'package:fikajiana/reconnaissance/classeur_signes.dart';
-import 'package:fikajiana/reconnaissance/exemples_personnels.dart';
+import 'package:fikajiana/reconnaissance/ecritures.dart';
 import 'package:fikajiana/reconnaissance/lecteur.dart';
 import 'package:fikajiana/reconnaissance/pix2text.dart' show normaliserLatex;
 import 'package:fikajiana_math/fikajiana_math.dart';
@@ -90,6 +90,7 @@ class BlocCalcul {
       ..verite = json['verite'] as bool?
       ..resultat = json['resultat'] as String?
       ..corrige = json['co'] as bool? ?? false
+      ..juge = json['ju'] as bool?
       ..sansLimite = json['sl'] as bool? ?? false
       ..approche = json['approche'] as String?
       ..inchange = json['inchange'] as bool? ?? false
@@ -211,6 +212,13 @@ class BlocCalcul {
 
   /// Corrigé à la main : « Relire la feuille » ne le regroupe pas.
   bool corrige = false;
+
+  /// Jugée par la personne : `true` (👍, ou corrigée), `false` (👎, en
+  /// attente de correction), `null` (pas jugée) (ADR 0042).
+  bool? juge;
+
+  /// Un signe vient d'être corrigé : la ligne relue sera l'exemple.
+  bool _retenirApresRelecture = false;
 
   /// Une limite demandée qui n'existe pas : la réponse est « pas de limite ».
   bool sansLimite = false;
@@ -419,6 +427,7 @@ class BlocCalcul {
     'resultat': resultat,
     'approche': approche,
     'co': corrige,
+    'ju': ?juge,
     'sl': sansLimite,
     'inchange': inchange,
     'points': _points,
@@ -468,7 +477,38 @@ class CalculFeuille extends ChangeNotifier {
     ClasseurAppris? classeur,
     bool Function()? degres,
   }) : degres = degres ?? (() => false),
-       classeur = classeur ?? ClasseurAppris(exemples: ExemplesPersonnels());
+       classeur = classeur ?? ClasseurAppris(ecritures: Ecritures());
+
+  /// Les signes lus de [bloc], avec la case de leur ligne.
+  List<SigneDeLigne> _signesAvecCase(BlocCalcul bloc) {
+    final signes = [for (final (t, _) in bloc.signesLus) t];
+    return [
+      for (final (t, l) in bloc.signesLus) (t, l, caseDansLaLigne(t, signes)),
+    ];
+  }
+
+  /// 👍 : la lecture de [bloc] est juste ; elle est gardée (et donnée si la
+  /// personne l'a accepté, ADR 0042).
+  Future<void> jugerJuste(BlocCalcul bloc) async {
+    final latex = bloc.latex;
+    final traits = _traitsDe(bloc);
+    if (latex == null || bloc.estSaisie || traits.isEmpty) return;
+    bloc.juge = true;
+    notifyListeners();
+    await classeur.ecritures?.jugerJuste(
+      traits,
+      latex,
+      cadreDuGroupe(traits),
+      _signesAvecCase(bloc),
+    );
+  }
+
+  /// 👎 : la lecture est fausse ; rien n'est gardé tant qu'elle n'est pas
+  /// corrigée.
+  void jugerFaux(BlocCalcul bloc) {
+    bloc.juge = false;
+    notifyListeners();
+  }
 
   final Encre encre;
   final Lecteur lecteur;
@@ -783,7 +823,11 @@ class CalculFeuille extends ChangeNotifier {
   Future<void> _lire(BlocCalcul bloc) async {
     final traits = _traitsDe(bloc);
     final version = ++bloc._version;
+    // Relue, la ligne n'est plus jugée ; sauf si elle vient d'être corrigée.
+    final retenir = bloc._retenirApresRelecture;
     bloc
+      ..juge = null
+      .._retenirApresRelecture = false
       .._points = _compterPoints(traits)
       ..cadre = cadreDuGroupe(traits)
       ..etat = EtatBloc.lecture
@@ -893,6 +937,20 @@ class CalculFeuille extends ChangeNotifier {
       await _calculer(bloc);
       if (structuree == null && bloc.etat == EtatBloc.nonCompris) {
         await _lireUnMot(bloc, traits, version);
+      }
+      // Un signe corrigé : la ligne relue est l'exemple (ADR 0042).
+      final latexLu = bloc.latex;
+      if (retenir &&
+          latexLu != null &&
+          bloc._version == version &&
+          identical(_blocs[bloc.cle], bloc)) {
+        bloc.juge = true;
+        await classeur.ecritures?.corrigerLigne(
+          traits,
+          latexLu,
+          cadreDuGroupe(traits),
+          signes: _signesAvecCase(bloc),
+        );
       }
     } on ModeleAbsent {
       bloc.etat = EtatBloc.sansModele;
@@ -1040,6 +1098,21 @@ class CalculFeuille extends ChangeNotifier {
 
   /// Toute lecture reste corrigeable : le calcul repart du texte corrigé.
   Future<void> corriger(BlocCalcul bloc, String latex) async {
+    if (!bloc.estSaisie) {
+      // La lecture était fausse : jamais gardée comme juste ; la ligne
+      // corrigée, elle, l'est (ADR 0042).
+      final traits = _traitsDe(bloc);
+      if (traits.isNotEmpty) {
+        bloc.juge = true;
+        unawaited(
+          classeur.ecritures?.corrigerLigne(
+            traits,
+            latex,
+            cadreDuGroupe(traits),
+          ),
+        );
+      }
+    }
     bloc
       ..note = null
       ..latex = latex
@@ -1078,7 +1151,14 @@ class CalculFeuille extends ChangeNotifier {
     List<Trait> signe,
     String classe,
   ) async {
-    await classeur.exemples?.ajouter(signe, classe);
+    bloc._retenirApresRelecture = true;
+    await classeur.ecritures?.corrigerSigne(
+      signe,
+      classe,
+      caseLigne: caseDansLaLigne(signe, [
+        for (final (t, _) in bloc.signesLus) t,
+      ]),
+    );
     classeur.oublier();
     relire(bloc);
   }

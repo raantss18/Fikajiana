@@ -6,6 +6,7 @@ import 'package:fikajiana/encre/encre.dart';
 import 'package:fikajiana/l10n/gen/app_localizations.dart';
 import 'package:fikajiana/moteur/giac.dart';
 import 'package:fikajiana/moteur/moteur.dart';
+import 'package:fikajiana/reconnaissance/ecritures.dart';
 import 'package:fikajiana/reconnaissance/lecteur.dart';
 import 'package:fikajiana/ui/calcul/signes_lus.dart';
 import 'package:flutter/material.dart';
@@ -100,7 +101,13 @@ void main() {
       await calcul.corrigerSigne(bloc, huit, '3');
       await Future<void>.delayed(const Duration(milliseconds: 200));
       expect(calcul.blocs.single.latex, r'30\times3');
-      expect(calcul.classeur.exemples!.liste.single.classe, '3');
+      expect(
+        [
+          for (final e in calcul.classeur.ecritures!.liste)
+            if (e.origine == Origine.correction && e.estSigne) e.attendu,
+        ],
+        ['3'],
+      );
     });
   });
 
@@ -162,6 +169,12 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Les signes lus'), findsNothing);
     final classe = premiere.value.replaceFirst('autre-signe-', '');
-    expect(calcul.classeur.exemples!.liste.single.classe, classe);
+    expect(
+      [
+        for (final e in calcul.classeur.ecritures!.liste)
+          if (e.origine == Origine.correction && e.estSigne) e.attendu,
+      ],
+      [classe],
+    );
   });
 }

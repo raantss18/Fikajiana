@@ -32,3 +32,13 @@ Outils sur l'ordinateur, non distribués avec l'app ; seuls les poids produits (
 | NumPy, Pillow, scikit-image, fontTools | BSD-3-Clause, MIT-CMU, BSD-3-Clause, MIT | rendu et squelette | https://numpy.org/doc/stable/license.html · https://github.com/python-pillow/Pillow/blob/main/LICENSE · https://github.com/scikit-image/scikit-image/blob/main/LICENSE.txt · https://github.com/fonttools/fonttools/blob/main/LICENSE |
 | Polices Caveat, Patrick Hand, Kalam, Klee One, Yomogi, Zen Kurenaido | SIL OFL 1.1 | signes synthétiques (images rendues, polices non distribuées) | `entrainement/SOURCES.md` |
 | MNIST, HASYv2 | CC BY-SA 3.0, ODbL 1.0 | **non utilisés** (voir `entrainement/SOURCES.md`) | — |
+
+## Plateforme des dons (`plateforme/`, côté serveur, hors application)
+
+Installés sur le serveur qui reçoit les dons (ADR 0042) ; rien n'est copié dans le dépôt ni dans l'app.
+
+| Composant | Licence | Usage | Source |
+|---|---|---|---|
+| Waitress | ZPL 2.1 | serveur HTTP (WSGI) | https://pypi.org/project/waitress/ |
+| boto3 (facultatif) | Apache-2.0 | stockage compatible S3 | https://github.com/boto/boto3/blob/develop/LICENSE |
+| Caddy (image `caddy:2.10`) | Apache-2.0 | HTTPS devant le récepteur | https://github.com/caddyserver/caddy/blob/master/LICENSE |

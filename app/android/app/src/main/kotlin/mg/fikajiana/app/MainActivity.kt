@@ -1,8 +1,11 @@
 package mg.fikajiana.app
 
 import android.app.ActivityManager
+import android.content.ClipData
 import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
@@ -42,6 +45,41 @@ class MainActivity : FlutterActivity() {
                     "version" -> resultat.success(info.versionName)
                     // Pour l'export des corrections au format de collecte (ADR 0039).
                     "modele" -> resultat.success(Build.MODEL)
+                    // Les dons consentis partent sur le Wi-Fi seulement, par défaut (ADR 0042).
+                    "reseau" -> {
+                        val gestion = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                        val capacites = gestion.getNetworkCapabilities(gestion.activeNetwork)
+                        resultat.success(
+                            mapOf(
+                                "connecte" to (capacites?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true),
+                                "nonFacture" to (capacites?.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED) == true),
+                            ),
+                        )
+                    }
+                    // L'écriture exportée (ADR 0042) : un dossier que `adb pull` lit, sans permission.
+                    "dossierEcritures" -> resultat.success(
+                        File(getExternalFilesDir(null) ?: filesDir, "ecritures").absolutePath,
+                    )
+                    // Le partage Android des fichiers exportés ; rien ne part sans le choix de la personne.
+                    "partager" -> {
+                        val uris = ArrayList<Uri>(
+                            appel.argument<List<String>>("chemins")!!.map {
+                                FileProvider.getUriForFile(this, "$packageName.updates", File(it))
+                            },
+                        )
+                        val envoi = if (uris.size == 1) {
+                            Intent(Intent.ACTION_SEND).putExtra(Intent.EXTRA_STREAM, uris[0])
+                        } else {
+                            Intent(Intent.ACTION_SEND_MULTIPLE).putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris)
+                        }
+                        envoi.type = "application/json"
+                        envoi.clipData = ClipData.newUri(contentResolver, "écriture", uris[0]).apply {
+                            uris.drop(1).forEach { addItem(ClipData.Item(it)) }
+                        }
+                        envoi.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        startActivity(Intent.createChooser(envoi, null))
+                        resultat.success(true)
+                    }
                     "installer" -> {
                         // Sans l'autorisation, on ouvre le réglage : l'utilisateur l'accorde puis recommence.
                         if (!packageManager.canRequestPackageInstalls()) {

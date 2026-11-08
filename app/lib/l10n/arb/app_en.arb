@@ -757,12 +757,66 @@
     "signesLusTitre": "Signs read",
     "signeLuToucher": "Touch for other readings of this sign",
     "signeLuAutres": "This sign could also be:",
-    "exporterCorrections": "Export my corrections",
-    "exporterCorrectionsAide": "The signs you corrected, in the collection format (CC0), for training. Nothing leaves without you.",
-    "aucuneCorrection": "No corrections yet",
-    "effacerCorrections": "Delete my corrections",
-    "effacerCorrectionsQuestion": "Forget all the signs you corrected on this device?",
     "effacer": "Delete",
+    "exporterEcritures": "Export my writing",
+    "exporterEcrituresAide": "{n} samples, {taille}, in the collection format (CC0), for training.",
+    "aucuneEcriture": "No writing kept yet",
+    "effacerEcritures": "Delete my writing",
+    "effacerEcrituresQuestion": "Forget all the writing kept on this device, corrections included?",
+    "ecrituresExportees": "Writing saved in {chemin}",
+    "@exporterEcrituresAide": {
+        "placeholders": {
+            "n": {
+                "type": "int"
+            },
+            "taille": {
+                "type": "String"
+            }
+        }
+    },
+    "@ecrituresExportees": {
+        "placeholders": {
+            "chemin": {
+                "type": "String"
+            }
+        }
+    },
+    "tailleKo": "{n} KB",
+    "tailleMo": "{n} MB",
+    "@tailleKo": {
+        "placeholders": {
+            "n": {
+                "type": "int"
+            }
+        }
+    },
+    "@tailleMo": {
+        "placeholders": {
+            "n": {
+                "type": "String"
+            }
+        }
+    },
+    "donsTitre": "Help improve recognition",
+    "donsExplication": "The lines you judge (👍, or 👎 then corrected) can be sent, without your name, to train handwriting reading. Nothing is sent without your consent, and you can change your mind at any time in Settings.",
+    "donsCase": "Help improve recognition",
+    "continuer": "Continue",
+    "donsWifi": "Wi-Fi only",
+    "donsAdresse": "Platform address",
+    "donsAdresseAide": "Empty: nothing is sent. https:// only.",
+    "donsEnAttente": "{n, plural, =0{No line waiting} =1{1 line waiting to be sent} other{{n} lines waiting to be sent}}",
+    "donsRetrait": "Ask to withdraw my donations",
+    "donsRetraitFait": "Withdrawal requested: your donations will be erased from the platform.",
+    "donsRetraitEchec": "The withdrawal could not be requested; try again with a network.",
+    "ligneJuste": "Reading is right",
+    "ligneFausse": "Reading is wrong: correct it",
+    "@donsEnAttente": {
+        "placeholders": {
+            "n": {
+                "type": "int"
+            }
+        }
+    },
     "guideRejouer": "write the example again",
     "guideTour": "Take the tour",
     "tourTitre": "The Fikajiana tour",
