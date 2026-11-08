@@ -66,8 +66,24 @@ void _trait(Encre encre, double x, double y) {
   }
 }
 
+/// La feuille dont [_attendre] guette la fin des lectures.
+CalculFeuille? _suivie;
+
+/// Laisse la lecture et le calcul se faire. Lue par tranches (le stylet
+/// passe entre deux), une ligne peut dépasser 30 ms sur une machine chargée :
+/// on attend alors qu'aucun bloc ne soit plus en lecture ni en calcul.
 Future<void> _attendre() async {
   await Future<void>.delayed(const Duration(milliseconds: 30));
+  for (var i = 0; i < 100; i++) {
+    final f = _suivie;
+    if (f == null ||
+        f.blocs.every(
+          (b) => b.etat != EtatBloc.lecture && b.etat != EtatBloc.calcul,
+        )) {
+      return;
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 10));
+  }
 }
 
 void main() {
@@ -80,7 +96,7 @@ void main() {
     encre = Encre();
     lecteur = _Lecteur('2+3=');
     moteur = _Moteur();
-    calcul = CalculFeuille(
+    _suivie = calcul = CalculFeuille(
       encre: encre,
       lecteur: lecteur,
       moteur: moteur,
@@ -274,7 +290,7 @@ void main() {
       expect(tiers.estApproche(approcheVoulue: true), isTrue);
       calcul.dispose();
       encre = Encre();
-      calcul = CalculFeuille(
+      _suivie = calcul = CalculFeuille(
         encre: encre,
         lecteur: lecteur,
         moteur: moteur,
@@ -759,7 +775,7 @@ void main() {
       final avecEgal = e.contours.length;
       calcul.dispose();
       encre = Encre();
-      calcul = CalculFeuille(
+      _suivie = calcul = CalculFeuille(
         encre: encre,
         lecteur: lecteur,
         moteur: moteur,

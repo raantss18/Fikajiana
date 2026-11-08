@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui';
 
@@ -1245,6 +1246,18 @@ List<(String, double)> classerSignesDebug(List<List<Offset>> traits) =>
     _distancesTrace(traits).entries.map((e) => (e.key, e.value)).toList()
       ..sort((a, b) => a.$2.compareTo(b.$2));
 
+/// Marque la zone d'une lecture par tranches (`ClasseurAppris.parTranches`) :
+/// une mesure qui manque y lève [MesureEnAttente] au lieu de se faire.
+const cleTranches = #fikajianaLectureParTranches;
+
+/// Une mesure qui manque pendant une lecture par tranches : [mesurer] la
+/// fait et la garde en cache ; la lecture repart ensuite du début.
+class MesureEnAttente implements Exception {
+  new(this.mesurer);
+
+  final void Function() mesurer;
+}
+
 /// Les derniers signes mesurés : la lecture d'une ligne demande deux fois
 /// les mêmes distances (le signe, puis ses 3 meilleures lectures pour les
 /// noms de fonction) ; c'était la moitié du temps du tracé sur le Pad 7.
@@ -1258,6 +1271,10 @@ Map<String, double> _distancesTrace(List<List<Offset>> traits) {
   ].join('|');
   final vue = _distancesVues.remove(cle);
   if (vue != null) return _distancesVues[cle] = vue;
+  // Lecture par tranches : la mesure se fait seule, hors de la lecture.
+  if (Zone.current[cleTranches] == true) {
+    throw MesureEnAttente(() => _distancesTrace(traits));
+  }
   final nuage = _normaliser(_reechantillonner(traits));
   final d = <String, double>{};
   for (final (s, modele, n) in _modelesTrace) {
@@ -1269,7 +1286,7 @@ Map<String, double> _distancesTrace(List<List<Offset>> traits) {
       _distance(nuage, modele) + penalite,
     );
   }
-  if (_distancesVues.length >= 256) {
+  if (_distancesVues.length >= 1024) {
     _distancesVues.remove(_distancesVues.keys.first);
   }
   return _distancesVues[cle] = Map.unmodifiable(d);

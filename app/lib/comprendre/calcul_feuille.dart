@@ -870,11 +870,15 @@ class CalculFeuille extends ChangeNotifier {
           signe,
           caseLigne: caseDansLaLigne(signe, signes),
         );
+        // Un signe à la fois : le trait suivant ne doit pas attendre.
+        await laisserPasser();
+        if (_ferme) return;
       }
       if (finis) continue;
-      if (avecClasseur(classeur, () => lireAuTrace(ligne)) == null) {
-        toutesLues = false;
-      }
+      final lue = await classeur.parTranches(
+        () => avecClasseur(classeur, () => lireAuTrace(ligne)),
+      );
+      if (lue == null) toutesLues = false;
     }
     final enAttente = _minuteur?.isActive ?? false;
     if (finis || _ferme || !toutesLues || !enAttente) return;
@@ -1087,12 +1091,20 @@ class CalculFeuille extends ChangeNotifier {
       );
       final tempsStructure = chrono.elapsedMicroseconds;
       // `AB =` : deux points de la feuille, lus à leur tracé (Pad 7).
+      // Lues par tranches (ClasseurAppris.parTranches) : le stylet passe
+      // entre deux signes mesurés.
+      final points = _contextePour(bloc).points.keys.toSet();
       final nomDePoints = structuree == null
-          ? lireNomDePoints(traits, _contextePour(bloc).points.keys.toSet())
+          ? await classeur.parTranches(
+              () =>
+                  avecClasseur(classeur, () => lireNomDePoints(traits, points)),
+            )
           : null;
       // Une ligne simple se lit sur son tracé, sans le modèle (ADR 0035).
       final detail = structuree == null && nomDePoints == null
-          ? avecClasseur(classeur, () => lireAuTraceDetaille(traits))
+          ? await classeur.parTranches(
+              () => avecClasseur(classeur, () => lireAuTraceDetaille(traits)),
+            )
           : null;
       var tracee = detail?.latex;
       final tempsTrace = chrono.elapsedMicroseconds - tempsStructure;
@@ -1107,9 +1119,11 @@ class CalculFeuille extends ChangeNotifier {
           redresserEgal(traits, await lecteur.lire(traits));
       if (structuree == null && nomDePoints == null && tracee == null) {
         final lu = latex;
-        latex = avecClasseur(
-          classeur,
-          () => redresserTan(traits, redresserLettres(traits, lu)),
+        latex = await classeur.parTranches(
+          () => avecClasseur(
+            classeur,
+            () => redresserTan(traits, redresserLettres(traits, lu)),
+          ),
         );
       }
       final tempsModele =
@@ -1152,12 +1166,17 @@ class CalculFeuille extends ChangeNotifier {
           : tracee != null
           ? 'tracé'
           : 'modèle';
+      // La structure vue, pour le journal : par tranches elle aussi, avec le
+      // cache du classeur (sans lui, ses signes se remesuraient tous).
+      final vue = await classeur.parTranches(
+        () => avecClasseur(classeur, () => trouverStructure(traits)),
+      );
+      if (bloc._version != version || !identical(_blocs[bloc.cle], bloc)) {
+        return;
+      }
       // Un print : c'est bien le journal local qu'on veut, rien d'autre.
       // ignore: avoid_print
-      print(
-        'fikajiana.lecture $voie (${trouverStructure(traits).runtimeType}) : '
-        '$latex',
-      );
+      print('fikajiana.lecture $voie (${vue.runtimeType}) : $latex');
       String ms(int us) => (us / 1000).toStringAsFixed(1);
       // Le temps de chaque voie, dans le même journal local.
       // ignore: avoid_print
@@ -1384,6 +1403,7 @@ class CalculFeuille extends ChangeNotifier {
           signe,
           caseLigne: caseDansLaLigne(signe, signes),
         );
+        await laisserPasser();
       }
     }
   }
