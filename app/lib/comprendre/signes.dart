@@ -1111,17 +1111,7 @@ const double _ecartMinuscule = 0.2;
 /// le détrône pas, une minuscule nettement plus proche le rend douteux.
 Map<String, double>? reconnaitreSigne(List<List<Offset>> traits) {
   if (_quatreOuvert(traits)) return const {'4': 0};
-  final nuage = _normaliser(_reechantillonner(traits));
-  final d = <String, double>{};
-  for (final (s, modele, n) in _modelesTrace) {
-    // Le nuage oublie les levers de stylo : un `t` (hampe et barre)
-    // ressemble à un `1`. Un modèle d'un autre nombre de traits paie.
-    final penalite = _penaliteTrait * (n - traits.length).abs();
-    d[s] = math.min(
-      d[s] ?? double.infinity,
-      _distance(nuage, modele) + penalite,
-    );
-  }
+  final d = _distancesTrace(traits);
   Map<String, double> famille(String s) => {
     for (final f in _famille(s))
       if (d.containsKey(f)) f: d[f]!,
@@ -1170,18 +1160,38 @@ Map<String, double>? reconnaitreSigne(List<List<Offset>> traits) {
 }
 
 /// Débogage : tous les signes et leur distance, du plus proche au plus loin.
-List<(String, double)> classerSignesDebug(List<List<Offset>> traits) {
+List<(String, double)> classerSignesDebug(List<List<Offset>> traits) =>
+    _distancesTrace(traits).entries.map((e) => (e.key, e.value)).toList()
+      ..sort((a, b) => a.$2.compareTo(b.$2));
+
+/// Les derniers signes mesurés : la lecture d'une ligne demande deux fois
+/// les mêmes distances (le signe, puis ses 3 meilleures lectures pour les
+/// noms de fonction) ; c'était la moitié du temps du tracé sur le Pad 7.
+final _distancesVues = <String, Map<String, double>>{};
+
+/// La distance de [traits] à chaque signe, au plus proche de ses modèles.
+Map<String, double> _distancesTrace(List<List<Offset>> traits) {
+  final cle = [
+    for (final t in traits)
+      '${t.length}:${t.first.dx},${t.first.dy}:${t.last.dx},${t.last.dy}',
+  ].join('|');
+  final vue = _distancesVues.remove(cle);
+  if (vue != null) return _distancesVues[cle] = vue;
   final nuage = _normaliser(_reechantillonner(traits));
   final d = <String, double>{};
   for (final (s, modele, n) in _modelesTrace) {
+    // Le nuage oublie les levers de stylo : un `t` (hampe et barre)
+    // ressemble à un `1`. Un modèle d'un autre nombre de traits paie.
     final penalite = _penaliteTrait * (n - traits.length).abs();
     d[s] = math.min(
       d[s] ?? double.infinity,
       _distance(nuage, modele) + penalite,
     );
   }
-  return d.entries.map((e) => (e.key, e.value)).toList()
-    ..sort((a, b) => a.$2.compareTo(b.$2));
+  if (_distancesVues.length >= 256) {
+    _distancesVues.remove(_distancesVues.keys.first);
+  }
+  return _distancesVues[cle] = Map.unmodifiable(d);
 }
 
 List<Offset> _reechantillonner(List<List<Offset>> traits) {
