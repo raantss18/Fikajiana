@@ -1,0 +1,37 @@
+import 'package:flutter/services.dart';
+
+/// Les coordonnées publiques d'Antsa, autrice de Fikajiana (demande
+/// d'Antsa, 2026-11-09). Rien ne part sans le geste de la personne : un
+/// toucher ouvre l'app de courriel, le navigateur ou WhatsApp.
+abstract final class Contact {
+  /// Son nom, tel qu'elle l'écrit.
+  static const nom = 'Antsa Malala RANIRIAMANJAKA';
+
+  /// Son courriel public.
+  static const courriel = 'raantss@gmail.com';
+
+  /// Le dépôt du code source (licence : ADR 0001).
+  static const depot = 'https://github.com/raantss18/Fikajiana';
+
+  /// Son numéro WhatsApp, chiffres seuls avec l'indicatif (`261…`) ;
+  /// `null` tant qu'Antsa ne l'a pas donné : l'entrée reste cachée.
+  static const String? whatsApp = null;
+
+  /// Le lien d'une discussion WhatsApp (<https://faq.whatsapp.com/5913398998672934>).
+  static String? get lienWhatsApp =>
+      whatsApp == null ? null : 'https://wa.me/$whatsApp';
+}
+
+const _systeme = MethodChannel('fikajiana/systeme');
+
+/// Ouvre [lien] (`mailto:`, `https:`) dans l'app qui sait le faire. `false`
+/// si aucune ne le peut (ou hors d'Android).
+Future<bool> ouvrirLien(String lien) async {
+  try {
+    return await _systeme.invokeMethod<bool>('ouvrir', {'lien': lien}) ?? false;
+  } on MissingPluginException {
+    return false;
+  } on PlatformException {
+    return false;
+  }
+}
