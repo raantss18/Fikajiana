@@ -35,7 +35,12 @@ class Analyse {
     this.nomValeur,
     this.demandeResultat = false,
     this.inconnueMatrice,
+    this.variableFonction,
   });
+
+  /// La variable de [nomFonction] quand elle n'est pas l'inconnue : `n` pour
+  /// le terme général `w_n` d'une suite récurrente.
+  final String? variableFonction;
 
   /// `X` pour `AX=B` : l'inconnue d'une équation matricielle, que [giac]
   /// calcule directement (`A^{-1}B`). Le résultat s'écrit `X = …`.
@@ -70,7 +75,10 @@ class Analyse {
   /// Pour les lignes suivantes, si c'est une définition.
   DefinitionFonction? get definition => nomFonction == null
       ? null
-      : DefinitionFonction(variable: inconnues.single, corps: corps!);
+      : DefinitionFonction(
+          variable: variableFonction ?? inconnues.single,
+          corps: corps!,
+        );
 }
 
 /// Une fonction définie plus haut sur la feuille : `f(x)=x+5`.
@@ -100,8 +108,10 @@ class DefinitionFonction {
     final derivee = primes == 1
         ? 'diff($corps,$variable)'
         : 'diff($corps,$variable,$primes)';
+    // `normal` : Giac rendait `3*x^2-3*2*x` pour la dérivée de
+    // `x^3-3x^2+2` (banc de la feuille, Pad 7).
     return argument == variable
-        ? derivee
+        ? 'normal($derivee)'
         : 'subst($derivee,$variable=$argument)';
   }
 }
@@ -144,7 +154,7 @@ Analyse analyserLatex(
   );
   final lecture = lecteur.lire();
   final suite = lecteur.suite;
-  if (suite != null) return _analyserSuite(lecture, suite);
+  if (suite != null) return _analyserSuite(lecture, suite, valeurs);
   final demande = lecteur.demandeResultat;
 
   if (lecture is LectureSysteme) {
@@ -197,9 +207,27 @@ Analyse analyserLatex(
       nomFonction: definition.substring(0, definition.indexOf('(')),
     );
   }
+  // `u_n=2n+3` : une suite donnée par son terme général, définie comme une
+  // fonction de n pour les lignes suivantes (`u_{10}=`, une somme).
+  final explicite = RegExp(r'^([a-zA-Z])_([a-z])$')
+      .firstMatch(expression.gauche.giac);
+  if (explicite != null &&
+      droite.symboles.contains(explicite[2]) &&
+      !droite.symboles.contains(expression.gauche.giac)) {
+    final (nom, rang) = (explicite[1]!, explicite[2]!);
+    return Analyse(
+      TypeExpression.fonction,
+      '$nom($rang):=${droite.giac}',
+      inconnues: [rang],
+      corps: droite.giac,
+      nomFonction: nom,
+    );
+  }
   // `a=2` : une valeur pour les lignes suivantes. x, y, z, t, r et θ restent
-  // des inconnues (choix d'Antsa, ADR 0024).
-  if (RegExp(r'^[a-df-hj-qsu-wA-Z]$').hasMatch(expression.gauche.giac) &&
+  // des inconnues (choix d'Antsa, ADR 0024). `w_0=2` aussi : le premier
+  // terme d'une suite écrite dessous.
+  if ((RegExp(r'^[a-df-hj-qsu-wA-Z]$').hasMatch(expression.gauche.giac) ||
+          RegExp(r'^[a-zA-Z]_\d+$').hasMatch(expression.gauche.giac)) &&
       droite.symboles.isEmpty) {
     return Analyse(
       TypeExpression.calcul,
@@ -256,7 +284,11 @@ Analyse analyserLatex(
 /// `u_{n+1}=a·u_n+b`, avec ou sans `u_0=1` dans un système : le terme général
 /// s'écrit directement. Pas de `rsolve` : sur `u_{n+2}=3u_{n+1}-2u_n`, Giac ne
 /// rend jamais la main, même arrêté (banc, ADR 0026). Le reste est refusé.
-Analyse _analyserSuite(Lecture lecture, String nom) {
+Analyse _analyserSuite(
+  Lecture lecture,
+  String nom,
+  Map<String, String> valeurs,
+) {
   final relations = switch (lecture) {
     LectureSysteme(:final relations) => [for (final r in relations) r.giac],
     LectureExpression(:final gauche, :final droite?, ordre: null) => [
@@ -292,15 +324,35 @@ Analyse _analyserSuite(Lecture lecture, String nom) {
   }
   final (a, unite) = _coefficient(corps, rang);
   final b = 'subst($corps,w=0)';
-  final premier = departs.isEmpty ? '0' : departs.single[1]!;
-  final valeur = departs.isEmpty ? '${nom}_$premier' : '(${departs.single[2]})';
+  // Sans premier terme sur la ligne : celui écrit plus haut (`w_0=2`), le
+  // plus petit rang d'abord.
+  final retenus = [
+    for (final MapEntry(:key) in valeurs.entries)
+      if (RegExp('^${nom}_(\\d+)\$').firstMatch(key) case final m?)
+        int.parse(m[1]!),
+  ]..sort();
+  final premier = departs.isNotEmpty
+      ? departs.single[1]!
+      : retenus.isNotEmpty
+      ? '${retenus.first}'
+      : '0';
+  final valeur = departs.isNotEmpty
+      ? '(${departs.single[2]})'
+      : retenus.isNotEmpty
+      ? '(${valeurs['${nom}_$premier']})'
+      : '${nom}_$premier';
   final ecart = '($rang-$premier)';
+  final general = unite
+      ? 'normal($valeur+($b)*$ecart)'
+      : 'normal(($a)^$ecart*($valeur-($b)/(1-($a)))+($b)/(1-($a)))';
+  // Le terme général sert aux lignes suivantes : `w_3=`, une somme.
   return Analyse(
     TypeExpression.suite,
-    unite
-        ? 'normal($valeur+($b)*$ecart)'
-        : 'normal(($a)^$ecart*($valeur-($b)/(1-($a)))+($b)/(1-($a)))',
+    general,
     inconnues: ['${nom}_$rang'],
+    corps: general,
+    nomFonction: nom,
+    variableFonction: rang,
   );
 }
 

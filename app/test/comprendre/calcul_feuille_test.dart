@@ -655,10 +655,23 @@ void main() {
       return calcul.blocs.last;
     }
 
+    test('suites sur plusieurs lignes (banc de la feuille, Pad 7)', () async {
+      await taper('u_{n}=2n+3', 0);
+      await taper('u_{10}=', 100);
+      expect(moteur.entrees.last, '(2*(10)+3)');
+      await taper(r'\sum_{n=0}^{10}u_{n}=', 200);
+      expect(moteur.entrees.last, 'sum((2*n+3),n,0,10)');
+      await taper('w_{0}=2', 300);
+      await taper('w_{n+1}=3w_{n}-4', 400);
+      expect(moteur.entrees.last, isNot(contains('w_0')));
+      await taper('w_{3}=', 500);
+      expect(moteur.entrees.last, contains('((3)-0)'));
+    });
+
     test("f'(x) calcule la dérivée de la ligne au-dessus", () async {
       await taper('f(x)=x+5', 0);
       await taper(r'f^{\prime}(x)', 100);
-      expect(moteur.entrees.last, 'diff(x+5,x)');
+      expect(moteur.entrees.last, 'normal(diff(x+5,x))');
       expect(calcul.blocs.last.demandeResultat, isTrue);
     });
 

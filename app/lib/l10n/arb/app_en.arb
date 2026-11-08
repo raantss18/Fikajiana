@@ -687,7 +687,7 @@
     "guideSystemePhrase": "A brace, one equation per line: the system is solved.",
     "guideSystemeMots": "system equations brace linear unknowns système",
     "guideSuiteTitre": "Recursive sequence",
-    "guideSuitePhrase": "Write the relation between uₙ₊₁ and uₙ: its general term is written in terms of n and u₀.",
+    "guideSuitePhrase": "Write u₀, then the relation between uₙ₊₁ and uₙ: its general term is written, and u₅ = gives its value. uₙ = 2n + 3 also defines a sequence, for u₁₀ =, a sum or a limit.",
     "guideSuiteMots": "sequence recurrence recursive general term arithmetic geometric suite",
     "guideMatriceTitre": "Matrix and determinant",
     "guideMatricePhrase": "Write a matrix in brackets or, on the keyboard, A=[1,2;3,4]. det(A) gives its determinant.",

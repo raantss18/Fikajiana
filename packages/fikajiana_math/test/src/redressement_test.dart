@@ -124,7 +124,7 @@ void main() {
       expect(redresserLecture(r'\log(2)'), r'\log(2)');
     });
 
-    test('feuille du Pad 7 (9 h 43) : \\rightarrow garde sa flèche', () {
+    test(r'feuille du Pad 7 (9 h 43) : \rightarrow garde sa flèche', () {
       expect(
         sansLeftRight(r'\lim_{x \rightarrow 3}'),
         r'\lim_{x \rightarrow 3}',

@@ -274,7 +274,7 @@ List<EntreeGuide> catalogueGuide(AppLocalizations l10n) => [
     titre: l10n.guideSuiteTitre,
     phrase: l10n.guideSuitePhrase,
     motsCles: l10n.guideSuiteMots,
-    lignes: ['u_{n+1}=2u_{n}+1'],
+    lignes: ['u_{0}=1', 'u_{n+1}=2u_{n}+1', 'u_{5}='],
   ),
   // Matrices.
   EntreeGuide(
