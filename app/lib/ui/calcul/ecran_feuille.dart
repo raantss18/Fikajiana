@@ -17,6 +17,7 @@ import 'package:fikajiana/reglages/support.dart';
 import 'package:fikajiana/ui/calcul/carte_bloc.dart';
 import 'package:fikajiana/ui/calcul/couche_resultats.dart';
 import 'package:fikajiana/ui/calcul/panneau_saisie.dart';
+import 'package:fikajiana/ui/calcul/placer_construction.dart';
 import 'package:fikajiana/ui/export.dart';
 import 'package:fikajiana/ui/guide/ecran_tour.dart';
 import 'package:fikajiana/ui/navigation/destination.dart';
@@ -299,8 +300,9 @@ class _EcranFeuilleState extends State<EcranFeuille> {
       final commande = bloc?.commande;
       if (bloc != null && commande != null) {
         bloc.aPlacer.forEach(services.atelier.placerObjet);
-        services.atelier.construire(commande);
-        Navigator.of(context).push(RouteDestination(Destination.figure));
+        if (placerConstruction(context, services.atelier, commande)) {
+          Navigator.of(context).push(RouteDestination(Destination.figure));
+        }
       }
       return;
     }
