@@ -154,7 +154,8 @@ void main() {
     });
 
     test('plusieurs mots : chacun doit y être', () {
-      expect(cles('matrice inverse'), ['inverse']);
+      // « Ce que la feuille propose » parle aussi de l'inverse d'une matrice.
+      expect(cles('matrice inverse'), ['inverse', 'propose']);
     });
 
     test('vide : tout ; rien de connu : rien', () {
