@@ -1,0 +1,23 @@
+{
+  "_note": "Signes isolés dans les traits réels d'Antsa (app/test/fixtures/), relevés à l'œil trait par trait le 2026-11-08. Seuls les signes sûrs ; l'écriture liée (developper, premier, longueur, det, lim) est laissée de côté. Indices = rang du trait dans le fichier.",
+  "pad7/AB_egal": [[[0, 1, 2], "A"], [[3], "B"], [[4, 5], "egal"]],
+  "pad7/derivee_f": [[[0], "f"], [[1], "prime"], [[2], "par_g"], [[3, 4], "x"], [[5], "par_d"], [[6, 7], "egal"]],
+  "pad7/det_2x2_40": [[[5], "par_g"], [[6], "8"], [[7], "moins"], [[8], "1"], [[9], "8"], [[10, 11], "4"], [[12], "par_d"], [[13, 14], "egal"]],
+  "pad7/det_3x3_72": [[[1], "par_g"], [[2], "1"], [[3], "2"], [[4], "3"], [[5], "1"], [[6], "moins"], [[7], "2"], [[8], "moins"], [[9, 10], "5"], [[11], "2"], [[12], "8"], [[13], "moins"], [[14, 15], "4"], [[16], "par_d"]],
+  "pad7/developper": [[[7], "par_g"], [[8], "par_g"], [[9], "2"], [[10, 11], "x"], [[12], "moins"], [[13, 14], "1"], [[15], "par_d"], [[16], "par_g"], [[17, 18], "x"], [[19], "moins"], [[20, 21], "4"], [[22], "par_d"], [[23], "par_d"]],
+  "pad7/e_x_egal_7": [[[0], "e"], [[1, 2], "x"], [[3, 4], "egal"], [[5, 6], "7"]],
+  "pad7/fleche_plot": [[[0, 1, 2], "implique"], [[4], "p"], [[5], "l"], [[6], "o"], [[3, 7, 8], "t"]],
+  "pad7/matrice_inverse": [[[0], "par_g"], [[1], "1"], [[2], "8"], [[3], "moins"], [[4, 5], "1"], [[6, 7], "7"], [[8], "par_d"], [[9], "moins"], [[10], "1"], [[11, 12], "egal"]],
+  "pad7/norme_AB": [[[0], "abs"], [[1], "abs"], [[2], "A"], [[3], "B"], [[6], "abs"], [[7], "abs"], [[8, 9], "egal"]],
+  "pad7/point_A": [[[0, 1, 2], "A"], [[3], "par_g"], [[4], "8"], [[5, 6, 11], "pointvirgule"], [[7], "moins"], [[8, 9], "1"], [[10], "par_d"]],
+  "pad7/point_B": [[[0, 1], "B"], [[2], "par_g"], [[3], "5"], [[4, 5, 8], "pointvirgule"], [[6], "8"], [[7], "par_d"]],
+  "pad7/premier_17": [[[0], "p"], [[10], "par_g"], [[11], "1"], [[12, 13], "7"], [[14], "par_d"]],
+  "pad7/puissances_de_10": [[[0, 1], "7"], [[2, 3], "4"], [[4, 5], "fois"], [[6], "1"], [[7], "0"], [[8], "moins"], [[9, 10], "4"], [[11, 12], "plus"], [[13], "8"], [[14], "5"], [[15, 16], "fois"], [[17], "1"], [[18], "0"], [[19], "8"], [[20, 21], "egal"]],
+  "pad7/trente_fois_8": [[[0], "3"], [[1], "0"], [[2, 3], "fois"], [[4], "8"]],
+  "pad7/vecteur_AB": [[[0, 1, 2, 4], "A"], [[3], "B"]],
+  "telephone/matrice_carre": [[[0], "par_g"], [[1], "3"], [[2], "moins"], [[3], "7"], [[4], "2"], [[5, 6], "4"], [[7], "par_d"], [[8], "2"], [[9, 10], "egal"]],
+  "telephone/point_A_1_moins_1": [[[0], "A"], [[1], "par_g"], [[2], "1"], [[3, 4], "pointvirgule"], [[5], "moins"], [[6], "1"], [[7], "par_d"]],
+  "telephone/point_A_3_moins_1": [[[0, 1], "A"], [[2], "par_g"], [[3], "3"], [[4, 5], "pointvirgule"], [[6], "moins"], [[7], "1"], [[8], "par_d"]],
+  "telephone/un_plus_un": [[[0], "1"], [[1, 2], "plus"], [[3], "1"]],
+  "telephone/un_plus_un_2": [[[0], "1"], [[1, 2], "plus"], [[3], "1"]]
+}

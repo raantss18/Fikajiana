@@ -25,3 +25,11 @@ release-out/
 
 # Écriture collectée (ADR 0038) : hors Git tant qu'Antsa ne la publie pas.
 /donnees/
+
+# Entraînement du modèle de signes : polices téléchargées, environnement et poids produits.
+# La version adoptée des poids sera ajoutée à part (décision à venir, ADR 0039).
+/entrainement/polices/
+/entrainement/.venv/
+/entrainement/sortie/
+/entrainement/**/__pycache__/
+/entrainement/.pytest_cache/
