@@ -4,6 +4,7 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Le Guide présente aussi les outils de la Feuille (👍/👎, corriger un signe, relire, gomme, fond, export…) et les réglages ; le tour montre les matrices, les sommes et limites, et comment juger une lecture. / The Guide also covers the Sheet tools (👍/👎, correcting a sign, re-reading, eraser, background, export…) and the settings; the tour shows matrices, sums and limits, and how to judge a reading.
 - La Feuille construit aussi parallèle, perpendiculaire, bissectrice, tangente, symétrique, projeté, intersection, triangle et polygone, et mesure angle(A;B;C)=, aire(ABC)= et périmètre(ABC)=, en valeur exacte. / The Sheet also builds parallels, perpendiculars, bisectors, tangents, reflections, projections, intersections, triangles and polygons, and measures angle(A;B;C)=, aire(ABC)= and périmètre(ABC)= exactly.
 - Sans attendre le modèle : `sin(x)`, `cos`, `tan`, `ln 2`, `log`, `exp`, `det` écrits à la main, et les minuscules `s o l r p q g h m w` ; `k = 1` sous un Σ se lit enfin. / Without waiting for the model: handwritten `sin(x)`, `cos`, `tan`, `ln 2`, `log`, `exp`, `det`, and the lowercase `s o l r p q g h m w`; `k = 1` under a Σ is finally read.
 
