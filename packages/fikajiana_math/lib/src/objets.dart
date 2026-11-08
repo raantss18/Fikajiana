@@ -49,18 +49,89 @@ enum GenreCommande {
 
   /// `mediatrice(A;B)`.
   mediatrice,
+
+  /// `parallèle((AB);C)`, `parallèle(d;C)` : par C, parallèle à la droite.
+  parallele,
+
+  /// `perpendiculaire((AB);C)` : par C, perpendiculaire à la droite.
+  perpendiculaire,
+
+  /// `bissectrice(A;B;C)` : de l'angle en B.
+  bissectrice,
+
+  /// `tangente(C;A)` : au cercle C, passant par A.
+  tangente,
+
+  /// `symétrique(A;B)` par rapport au point B, `symétrique(A;(BC))` par
+  /// rapport à la droite.
+  symetrique,
+
+  /// `projeté(A;(BC))` : projeté orthogonal de A sur la droite.
+  projete,
+
+  /// `I=intersection((AB);(CD))`.
+  intersection,
+
+  /// `triangle(A;B;C)`, `polygone(A;B;C;D)`.
+  polygone,
+}
+
+/// Ce dont part une construction : un point, une droite `(AB)` ou un objet
+/// déjà nommé dans la Figure (`d`, `\mathcal{C}`).
+sealed class ArgumentGeo {
+  const new();
+}
+
+/// Un point déclaré : `A`.
+class ArgPoint extends ArgumentGeo {
+  /// Crée l'argument.
+  const new(this.nom);
+
+  /// Son nom.
+  final String nom;
+}
+
+/// Une droite, un segment ou une demi-droite par deux points : `(AB)`.
+class ArgLigne extends ArgumentGeo {
+  /// Crée l'argument.
+  const new(this.genre, this.a, this.b);
+
+  /// [GenreCommande.droite], [GenreCommande.segment] ou
+  /// [GenreCommande.demiDroite].
+  final GenreCommande genre;
+
+  /// Le premier point.
+  final String a;
+
+  /// Le second point.
+  final String b;
+}
+
+/// Un objet nommé de la Figure : `d`, `\mathcal{C}`.
+class ArgNomme extends ArgumentGeo {
+  /// Crée l'argument.
+  const new(this.nom);
+
+  /// Son nom.
+  final String nom;
 }
 
 /// `cercle(A;2)`, `(AB)`, `[AB]`, `I=milieu(A;B)` : une construction écrite
 /// sur la Feuille, à faire dans la Figure avec des points déjà déclarés.
 class CommandeGeo {
   /// Crée la commande.
-  const new(this.genre, this.points, {this.rayon, this.nom});
+  const new(
+    this.genre,
+    this.points, {
+    this.rayon,
+    this.nom,
+    this.arguments = const [],
+  });
 
   /// Ce qu'elle construit.
   final GenreCommande genre;
 
-  /// Les noms des points dont elle part, dans l'ordre.
+  /// Les noms des points dont elle part, dans l'ordre, chacun une fois.
   final List<String> points;
 
   /// Le rayon d'un cercle de rayon donné.
@@ -68,6 +139,16 @@ class CommandeGeo {
 
   /// Le nom donné au résultat : `I` dans `I=milieu(A;B)`.
   final String? nom;
+
+  /// Dans l'ordre écrit, ce dont part une construction qui accepte autre
+  /// chose que des points (`parallèle(d;C)`) ; vide pour les autres.
+  final List<ArgumentGeo> arguments;
+
+  /// Les objets nommés dont elle part : ils doivent être dans la Figure.
+  List<String> get objets => [
+    for (final a in arguments)
+      if (a case ArgNomme(:final nom)) nom,
+  ];
 }
 
 final Map<String, GenreCommande> _motsCommandes = {
@@ -81,37 +162,74 @@ final Map<String, GenreCommande> _motsCommandes = {
   'médiatrice': GenreCommande.mediatrice,
 };
 
+/// Les commandes dont les arguments peuvent être des droites ou des noms,
+/// écrites sans accent ni tiret.
+const Map<String, GenreCommande> _motsConstructions = {
+  'parallele': GenreCommande.parallele,
+  'perpendiculaire': GenreCommande.perpendiculaire,
+  'bissectrice': GenreCommande.bissectrice,
+  'tangente': GenreCommande.tangente,
+  'symetrique': GenreCommande.symetrique,
+  'projete': GenreCommande.projete,
+  'projeteorthogonal': GenreCommande.projete,
+  'intersection': GenreCommande.intersection,
+  'triangle': GenreCommande.polygone,
+  'polygone': GenreCommande.polygone,
+};
+
+/// Les commandes de géométrie en toutes lettres, pour le Guide et la saisie.
+List<String> get motsDeGeometrie => [
+  ..._motsCommandes.keys.where((m) => !m.contains('-') && !m.contains('é')),
+  ..._motsConstructions.keys,
+];
+
+/// Un nom de résultat : `I`, `d`, `d_1`, `A'`.
+const _nomResultat = r"[A-Za-z](?:_\{?[0-9]+\}?|')?";
+
 /// La construction que dit [latex], ou `null`.
 CommandeGeo? lireCommande(String latex) {
   final s = latex
       .replaceAll(RegExp(r'\\(?:left|right)\b'), '')
       .replaceAllMapped(
-        RegExp(r'\\(?:mathrm|text|operatorname|mathit|rm)\s*\{([^{}]*)\}'),
+        RegExp(
+          r'\\(?:mathrm|text|operatorname|mathit|rm|mathcal|mathscr)\s*'
+          r'\{([^{}]*)\}',
+        ),
         (m) => m[1]!,
       )
       .replaceAll(r'\{', '{')
       .replaceAll(r'\}', '}')
+      .replaceAll(RegExp(r"\\prime|\^\{?'\}?"), "'")
       .replaceAll(RegExp(r'\s'), '');
-  // `(AB)`, `[AB]`, `[AB)` : l'écriture du cours.
-  final court = RegExp(r'^([(\[])([A-Z])([A-Z])([)\]])$').firstMatch(s);
-  if (court != null) {
-    final genre = switch ((court[1], court[4])) {
-      ('(', ')') => GenreCommande.droite,
-      ('[', ']') => GenreCommande.segment,
-      ('[', ')') => GenreCommande.demiDroite,
-      _ => null,
-    };
-    if (genre == null) return null;
-    return CommandeGeo(genre, [court[2]!, court[3]!]);
-  }
-  final m = RegExp(r'^(?:([A-Z])=)?([a-zéè\-]+)\(([A-Z])[;,|]?([A-Z]|[^)]+)\)$')
+  // `(AB)`, `[AB]`, `[AB)`, `d=(AB)` : l'écriture du cours.
+  final court = RegExp('^(?:($_nomResultat)=)?([(\\[])([A-Z])([A-Z])([)\\]])\$')
       .firstMatch(s);
+  if (court != null) {
+    final genre = _genreLigne(court[2]!, court[5]!);
+    if (genre == null) return null;
+    return CommandeGeo(genre, [court[3]!, court[4]!], nom: _nom(court[1]));
+  }
+  final general = RegExp('^(?:($_nomResultat)=)?([A-Za-zÀ-ÿ\\-]+)\\((.+)\\)\$')
+      .firstMatch(s);
+  if (general != null) {
+    final mot = general[2]!
+        .toLowerCase()
+        .replaceAll(RegExp('[éèêë]'), 'e')
+        .replaceAll('-', '');
+    final genre = _motsConstructions[mot];
+    if (genre != null) {
+      return _construction(genre, _separer(general[3]!), _nom(general[1]));
+    }
+  }
+  final m = RegExp(
+    '^(?:($_nomResultat)=)?([a-zéè\\-]+)\\(([A-Z])[;,|]?([A-Z]|[^)]+)\\)\$',
+  ).firstMatch(s);
   if (m == null) return null;
   var genre = _motsCommandes[m[2]!.toLowerCase()];
   if (genre == null) return null;
   final premier = m[3]!;
   final second = m[4]!;
-  final nom = m[1];
+  final nom = _nom(m[1]);
   if (RegExp(r'^[A-Z]$').hasMatch(second)) {
     return CommandeGeo(genre, [premier, second], nom: nom);
   }
@@ -121,6 +239,124 @@ CommandeGeo? lireCommande(String latex) {
   if (rayon == null || rayon <= 0) return null;
   genre = GenreCommande.cercleRayon;
   return CommandeGeo(genre, [premier], rayon: rayon, nom: nom);
+}
+
+/// `I`, `d_{1}` écrit `d_1`.
+String? _nom(String? brut) => brut?.replaceAll(RegExp('[{}]'), '');
+
+GenreCommande? _genreLigne(String ouvre, String ferme) =>
+    switch ((ouvre, ferme)) {
+      ('(', ')') => GenreCommande.droite,
+      ('[', ']') => GenreCommande.segment,
+      ('[', ')') => GenreCommande.demiDroite,
+      _ => null,
+    };
+
+/// Les arguments séparés par `;` (ou `,` à défaut), hors des parenthèses.
+List<String> _separer(String texte) {
+  List<String> couper(String separateurs) {
+    final morceaux = <String>[];
+    var profondeur = 0;
+    var debut = 0;
+    for (var i = 0; i < texte.length; i++) {
+      final c = texte[i];
+      if (c == '(' || c == '[' || c == '{') profondeur++;
+      if (c == ')' || c == ']' || c == '}') profondeur--;
+      if (profondeur == 0 && separateurs.contains(c)) {
+        morceaux.add(texte.substring(debut, i));
+        debut = i + 1;
+      }
+    }
+    return morceaux..add(texte.substring(debut));
+  }
+
+  final morceaux = couper(';|');
+  return morceaux.length > 1 ? morceaux : couper(',');
+}
+
+final _argPoint = RegExp(r"^[A-Z](?:_\{?[0-9]+\}?|')?$");
+final _argNomme = RegExp(r"^[A-Za-z](?:_\{?[0-9]+\}?|')?$");
+final _argLigne = RegExp(r'^([(\[])([A-Z])([A-Z])([)\]])$');
+
+/// Un point (`A`), une droite (`(AB)`), un nom (`d`), ou `null`.
+ArgumentGeo? _argument(String texte, {bool pointPossible = true}) {
+  final ligne = _argLigne.firstMatch(texte);
+  if (ligne != null) {
+    final genre = _genreLigne(ligne[1]!, ligne[4]!);
+    return genre == null ? null : ArgLigne(genre, ligne[2]!, ligne[3]!);
+  }
+  final nom = texte.replaceAll(RegExp('[{}]'), '');
+  if (pointPossible && _argPoint.hasMatch(texte)) return ArgPoint(nom);
+  if (_argNomme.hasMatch(texte)) return ArgNomme(nom);
+  return null;
+}
+
+CommandeGeo? _construction(
+  GenreCommande genre,
+  List<String> textes,
+  String? nom,
+) {
+  ArgPoint? point(String t) =>
+      _argPoint.hasMatch(t) ? ArgPoint(t.replaceAll(RegExp('[{}]'), '')) : null;
+  // Une droite : `(AB)`, ou un nom qui n'est pas celui d'un point.
+  ArgumentGeo? ligne(String t) => _argument(t, pointPossible: false);
+
+  final List<ArgumentGeo?> arguments;
+  switch (genre) {
+    case GenreCommande.parallele ||
+        GenreCommande.perpendiculaire ||
+        GenreCommande.projete:
+      if (textes.length != 2) return null;
+      // `parallèle((AB);C)` comme `parallèle(C;(AB))` : le point est celui
+      // qui en a la forme, la droite l'autre.
+      final (t0, t1) = (textes[0], textes[1]);
+      final pointDabord = genre == GenreCommande.projete
+          ? point(t0) != null
+          : _argLigne.hasMatch(t1) || (point(t0) != null && point(t1) == null);
+      arguments = pointDabord ? [ligne(t1), point(t0)] : [ligne(t0), point(t1)];
+    case GenreCommande.bissectrice:
+      if (textes.length != 3) return null;
+      arguments = textes.map(point).toList();
+    case GenreCommande.tangente:
+      // `tangente(f;2)` reste la tangente à une courbe : un nombre, pas un
+      // point.
+      if (textes.length != 2) return null;
+      arguments = [ligne(textes[0]), point(textes[1])];
+    case GenreCommande.symetrique:
+      if (textes.length != 2) return null;
+      final centre = point(textes[1]);
+      // Une minuscule seule est une droite nommée : `symétrique(A;d)`.
+      arguments = [point(textes[0]), centre ?? ligne(textes[1])];
+    case GenreCommande.intersection:
+      if (textes.length != 2) return null;
+      arguments = [ligne(textes[0]), ligne(textes[1])];
+    case GenreCommande.polygone:
+      // `triangle(ABC)` : les sommets collés.
+      final sommets =
+          textes.length == 1 && RegExp(r'^[A-Z]{3,}$').hasMatch(textes.single)
+          ? textes.single.split('')
+          : textes;
+      if (sommets.length < 3 || sommets.toSet().length != sommets.length) {
+        return null;
+      }
+      arguments = sommets.map(point).toList();
+    case _:
+      return null;
+  }
+  if (arguments.contains(null)) return null;
+  final args = arguments.cast<ArgumentGeo>();
+  final points = <String>[];
+  for (final a in args) {
+    switch (a) {
+      case ArgPoint(:final nom):
+        points.add(nom);
+      case ArgLigne(:final a, :final b):
+        points.addAll([a, b]);
+      case ArgNomme():
+        break;
+    }
+  }
+  return CommandeGeo(genre, points.toSet().toList(), nom: nom, arguments: args);
 }
 
 final _colonne = RegExp(
