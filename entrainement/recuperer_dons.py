@@ -255,7 +255,7 @@ def trier(lignes, dossier: pathlib.Path, etat: dict, classes: dict[str, str]) ->
     dons = []
     for ligne in lignes:
         if ligne.get("type") == "export":
-            entete = ligne
+            entete = entete or ligne  # un export par pages (Worker) : la première page fait foi
         elif ligne.get("type") == "retrait":
             retires.add(ligne["contributeur"])
         elif ligne.get("type") == "don":
@@ -331,16 +331,29 @@ def rapport_md(resultat: dict) -> str:
 
 
 def telecharger(adresse: str, jeton: str, depuis: str | None):
-    url = adresse.rstrip("/") + "/v1/export"
-    if depuis:
-        url += "?" + urllib.parse.urlencode({"depuis": depuis})
-    if not url.startswith("https://") and not url.startswith("http://127.0.0.1") and not url.startswith("http://localhost"):
+    """Les lignes de l'export. Le Worker (ADR 0045) répond par pages : une ligne {"type": "suite",
+    "apres": <clé>} demande la page suivante ; le récepteur Python répond en une fois."""
+    base = adresse.rstrip("/") + "/v1/export"
+    if not base.startswith("https://") and not base.startswith("http://127.0.0.1") and not base.startswith("http://localhost"):
         raise SystemExit("FIKA_DONS_ADRESSE doit commencer par https:// (le jeton ne passe jamais en clair)")
-    requete = urllib.request.Request(url, headers={"Authorization": f"Bearer {jeton}"})
-    with urllib.request.urlopen(requete, timeout=120) as reponse:
-        for brut in reponse:
-            if brut.strip():
-                yield json.loads(brut)
+    apres = None
+    for _ in range(100_000):
+        parametres = {k: v for k, v in (("depuis", depuis), ("apres", apres)) if v}
+        url = base + ("?" + urllib.parse.urlencode(parametres) if parametres else "")
+        requete = urllib.request.Request(url, headers={"Authorization": f"Bearer {jeton}", "User-Agent": "fikajiana-recuperer-dons"})
+        suite = None
+        with urllib.request.urlopen(requete, timeout=120) as reponse:
+            for brut in reponse:
+                if not brut.strip():
+                    continue
+                ligne = json.loads(brut)
+                if ligne.get("type") == "suite":
+                    suite = ligne["apres"]
+                else:
+                    yield ligne
+        if not suite or suite == apres:
+            return
+        apres = suite
 
 
 def main(argv=None) -> int:

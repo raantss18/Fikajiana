@@ -70,3 +70,16 @@ jobs:
         run: uv run --locked pytest -q
       - name: Image Docker
         run: docker build --build-arg S3=0 -f plateforme/Dockerfile -t fikajiana-dons .
+
+  worker:
+    name: Worker des dons (tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - name: Tests du Worker
+        working-directory: plateforme/worker
+        run: node --test test/*.test.mjs

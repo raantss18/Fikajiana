@@ -1,0 +1,21 @@
+# Worker Cloudflare du récepteur des dons (ADR 0045). Déployer : npx wrangler deploy
+name = "fikajiana-dons"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+workers_dev = true
+
+# Pas de journaux gardés chez Cloudflare par ce Worker (ils resteraient lisibles avec « wrangler tail »).
+[observability]
+enabled = false
+
+[[r2_buckets]]
+binding = "DONS"
+bucket_name = "fikajiana-dons"
+
+# 30 requêtes par minute et par IP, approximatif et compté par centre Cloudflare.
+[[ratelimits]]
+name = "LIMITEUR"
+namespace_id = "4401"
+simple = { limit = 30, period = 60 }
+
+# Secret à poser une fois (jamais dans ce fichier) : npx wrangler secret put FIKA_JETON_ADMIN
