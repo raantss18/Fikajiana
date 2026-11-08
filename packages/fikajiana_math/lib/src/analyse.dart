@@ -1,5 +1,6 @@
 import 'package:fikajiana_math/src/evaluateur.dart';
 import 'package:fikajiana_math/src/lecteur_latex.dart';
+import 'package:fikajiana_math/src/redressement.dart';
 
 /// Ce que l'écriture semble être.
 enum TypeExpression {
@@ -144,6 +145,26 @@ Analyse analyserLatex(
   Map<String, (double, double)> vecteurs = const {},
   Map<String, String> valeurs = const {},
 }) {
+  // `résoudre(f(x)=k(x))`, `résoudre(x^2-4)` : l'équation entre parenthèses
+  // (feuille d'Antsa, Pad 7) ; sans `=`, l'expression vaut 0.
+  final resoudre = RegExp(
+    r'^\s*(?:\\(?:operatorname\*?|mathrm|mathit|rm|text|textrm|textit)'
+    r'\s*\{\s*)?(?:r[ée]soudre|resoudre|solve)\s*\}?\s*\((.*)\)\s*=?\s*$',
+    dotAll: true,
+  ).firstMatch(sansLeftRight(latex));
+  if (resoudre != null) {
+    final dedans = resoudre[1]!.trim();
+    return analyserLatex(
+      RegExp(r'=|<|>|\\(?:leq|geq|le|ge|lt|gt)').hasMatch(dedans)
+          ? dedans
+          : '$dedans=0',
+      degres: degres,
+      definitions: definitions,
+      points: points,
+      vecteurs: vecteurs,
+      valeurs: valeurs,
+    );
+  }
   final lecteur = LecteurLatex(
     latex,
     degres: degres,
@@ -192,8 +213,17 @@ Analyse analyserLatex(
 
   final definition = expression.gauche.definitionDeFonction;
   // `f` est déjà définie : `f(x)=0` est une équation, `f(x)=2x` la redéfinit.
+  // `f(x)=k(x)`, f et k définies plus haut : une équation aussi (feuille
+  // d'Antsa, Pad 7), pas une nouvelle définition de f.
+  final aDroite = latex.substring(latex.indexOf('=') + 1);
+  final appelleUneFonction = definitions.keys.any(
+    (nom) =>
+        RegExp('(?<![a-zA-Z\\\\])$nom\\s*(?:\\\\left)?\\s*\\(')
+            .hasMatch(aDroite),
+  );
   final estEquation =
-      expression.gauche.fonctionDefinie && droite.symboles.isEmpty;
+      expression.gauche.fonctionDefinie &&
+      (droite.symboles.isEmpty || appelleUneFonction);
   if (definition != null && !estEquation) {
     final variable = definition.substring(
       definition.indexOf('(') + 1,

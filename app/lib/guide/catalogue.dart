@@ -235,6 +235,14 @@ List<EntreeGuide> catalogueGuide(AppLocalizations l10n) => [
     lignes: [r'\text{factoriser}\left(x^{2}-1\right)'],
   ),
   EntreeGuide(
+    cle: 'resoudre',
+    famille: FamilleGuide.fonctions,
+    titre: l10n.guideResoudreTitre,
+    phrase: l10n.guideResoudrePhrase,
+    motsCles: l10n.guideResoudreMots,
+    lignes: [r'\text{résoudre}\left(x^{2}-4=0\right)'],
+  ),
+  EntreeGuide(
     cle: 'simplifier',
     famille: FamilleGuide.fonctions,
     titre: l10n.guideSimplifierTitre,
