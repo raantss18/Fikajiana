@@ -271,6 +271,5 @@ String _nombre(Object? v) {
 
 /// Une écriture sans ses espaces ni ses habits : `A ( 1 ; 2 )` vaut `A(1;2)`,
 /// et `B(5,-4)` aussi bien que `B(5;-4)`.
-String _empreinte(String latex) => sansLeftRight(latex)
-    .replaceAll(RegExp(r'\s'), '')
-    .replaceAll(',', ';');
+String _empreinte(String latex) =>
+    sansLeftRight(latex).replaceAll(RegExp(r'\s'), '').replaceAll(',', ';');

@@ -334,10 +334,7 @@ class BlocCalcul {
     final cle = '$lu|$cadre';
     if (_proprePour != cle) {
       _proprePour = cle;
-      _propre = ecrireALaPlace(
-        sansLeftRight(lu),
-        cadre,
-      );
+      _propre = ecrireALaPlace(sansLeftRight(lu), cadre);
     }
     return _propre;
   }
