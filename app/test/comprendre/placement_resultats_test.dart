@@ -409,6 +409,32 @@ void main() {
       expect(p, hasLength(2));
     });
 
+    test('un résultat passé dessous : les boutons vont à côté de lui', () {
+      // Téléphone en portrait : la ligne touche le bord, `=33` dessous ; à
+      // gauche, rien ; dessous, le résultat ; dessus, une autre ligne.
+      calcul
+        ..bordDroit = 400
+        ..chargerDocument([
+          ligne(
+            'haut',
+            const Rect.fromLTRB(16, 20, 390, 100),
+            '2+3=',
+            etat: 'nonCompris',
+          ),
+          ligne(
+            'long',
+            const Rect.fromLTRB(16, 104, 396, 144),
+            '5+4+3+5+4+3+5+4=',
+            resultat: '33',
+          ),
+        ]);
+      final long = calcul.blocs.last;
+      expect(resultats()[long]!.top, greaterThan(long.cadre.bottom));
+      final p = places();
+      libres(p);
+      expect(p.keys.map((b) => b.cle), contains('long'));
+    });
+
     test('sans aucune place libre, ils se replient', () {
       // Une ligne entourée d'encre de tous côtés.
       calcul

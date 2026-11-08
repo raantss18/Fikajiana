@@ -708,7 +708,8 @@ class CalculFeuille extends ChangeNotifier {
     final places = <BlocCalcul, Rect>{};
     for (final b in ecrits.where((b) => b.jugeable)) {
       final c = b.cadre;
-      final apres = math.max(c.right, resultats[b]?.right ?? c.right);
+      final r = resultats[b];
+      final apres = math.max(c.right, r?.right ?? c.right);
       final essais = [
         Rect.fromLTWH(c.left - l - ecart, c.center.dy - h / 2, l, h),
         Rect.fromLTWH(c.left - l - ecart, c.top, l, h),
@@ -716,6 +717,12 @@ class CalculFeuille extends ChangeNotifier {
         Rect.fromLTWH(c.left, c.bottom + ecart, l, h),
         Rect.fromLTWH(c.left, c.top - h - ecart, l, h),
         Rect.fromLTWH(apres + ecart, c.center.dy - h / 2, l, h),
+        // Un résultat passé dessous (bord de l'écran) : à côté de lui, ou
+        // sous lui (téléphone en portrait).
+        if (r != null) ...[
+          Rect.fromLTWH(r.right + ecart, r.center.dy - h / 2, l, h),
+          Rect.fromLTWH(c.left, math.max(c.bottom, r.bottom) + ecart, l, h),
+        ],
       ];
       final place = essais.where((e) {
         if (e.left < gauche || e.right > _bordDroit) return false;
