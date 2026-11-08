@@ -162,6 +162,53 @@ void main() {
     }
   });
 
+  test('Relire la feuille défait la lim collée au produit de matrices '
+      'par une version d’avant', () async {
+    // La feuille d'Antsa (9 h 43) telle qu'enregistrée : la lim, le produit
+    // et p(x) dans un seul bloc, non compris.
+    final lim = _charger('lim_3x_sur_exp');
+    final produit = _charger('produit_matrices_et_p');
+    final encre = Encre()
+      ..chargerDocument([
+        for (final t in [...lim, ...produit]) t.versDocument(),
+      ]);
+    final calcul = CalculFeuille(
+      encre: encre,
+      lecteur: _Modele(const {}, sinon: r'\underbrace{\cup}'),
+      moteur: _Moteur(),
+      pause: Duration.zero,
+    );
+    addTearDown(calcul.dispose);
+    calcul
+      ..chargerDocument([
+        {
+          'cle': 'bloc-1-2559',
+          'g': 269.0,
+          'h': 652.0,
+          'd': 966.0,
+          'b': 1172.0,
+          'traits': [
+            for (final t in [...lim, ...produit]) t.id,
+          ],
+          'latex': r'\begin{matrix} \lim _ { x } \end{matrix}',
+          'etat': 'nonCompris',
+          'points': 1,
+        },
+      ])
+      ..relireTout();
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    final idsLim = _ids(lim);
+    expect(calcul.blocs.length, greaterThan(1));
+    for (final b in calcul.blocs) {
+      final dedans = b.traits.where(idsLim.contains).length;
+      expect(
+        dedans == 0 || dedans == b.traits.length,
+        isTrue,
+        reason: '${b.traits}',
+      );
+    }
+  });
+
   group('les points de la figure', () {
     test('C(2;7) : le `;` collé au 2, un petit trait dessous', () async {
       final traits = _charger('point_C_2_7');
