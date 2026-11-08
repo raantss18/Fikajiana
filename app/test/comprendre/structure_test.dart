@@ -93,6 +93,17 @@ void main() {
       expect(lu, r'\det \begin{pmatrix}1&-1&1\\1&-1&-1\\1&1&1\end{pmatrix}');
     });
 
+    test('A = devant une matrice la déclare, sans det (Pad 7)', () async {
+      matrice3();
+      final l = _Lecteur((t) {
+        if (t.length == 3 && _c0(t) < 80) return 'A =';
+        return '1 2 3';
+      });
+      final lu = await lireStructure(l, encre.traits);
+      expect(lu, startsWith(r'A=\begin{pmatrix}'));
+      expect(lu, isNot(contains(r'\det')));
+    });
+
     test('-2 -8 serrés restent deux cases', () {
       trait(0, 0, 10, 130);
       chiffre(20, 5);

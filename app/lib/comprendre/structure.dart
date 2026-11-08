@@ -570,6 +570,21 @@ List<List<Trait>> _fondre(List<List<Trait>> ligne, int colonnes) {
   return cases;
 }
 
+/// `A =` devant une matrice : la lettre déclarée, sinon `null`. Le `=` se
+/// voit au tracé (deux plats empilés en dernier) ; la lettre, lue par le
+/// modèle ou reconnue à son tracé.
+String? _declarationDeMatrice(String lu, List<Trait> tete) {
+  final propre = lu.replaceAll(RegExp(r'[\s{}]'), '');
+  final m = RegExp(r'^([A-Z])=$').firstMatch(propre);
+  if (m != null) return m[1];
+  if (tete.length < 3) return null;
+  final glyphes = _glyphes(tete);
+  if (glyphes.length != 2) return null;
+  if (_signeSimple(glyphes.last) != '=') return null;
+  final (lettre, ecart) = essayerCapitale(_dessin(glyphes.first));
+  return ecart < 1.5 ? lettre : null;
+}
+
 /// `d e t`, `\alpha +`, `c t +`, `\det` : le nom écrit devant une matrice.
 bool ressembleADet(String tete) {
   final t = tete.replaceAll(RegExp(r'\s'), '').replaceAll('+', '');
@@ -714,6 +729,11 @@ Future<String?> lireStructure(Lecteur lecteur, List<Trait> traits) async {
       final facteur = RegExp(
         r'^\s*[-+]?\s*(\d[\d\s.,]*|[a-zA-Z])?\s*(\\cdot|\\times)?\s*$',
       ).hasMatch(avant);
+      // `A =` devant : une matrice déclarée, jamais un `det` (Pad 7 d'Antsa :
+      // `A = (3×3)` donnait `= −1`). Une capitale seule, lue au tracé si le
+      // modèle hésite (`A=`, `\Lambda=`, `\alpha=`).
+      final declaration = _declarationDeMatrice(avant, tete);
+      if (declaration != null) return '$declaration=$matrice$apres';
       final nom = ressembleADet(avant) || !facteur ? r'\det ' : avant;
       return '$nom$matrice$apres';
   }
