@@ -56,6 +56,7 @@ Future<void> _lancer(
   WidgetTester t, {
   required Services services,
   Reglages? reglages,
+  bool consentement = false,
   Size taille = const Size(400, 800),
   Locale langue = const Locale('fr'),
 }) async {
@@ -64,7 +65,13 @@ Future<void> _lancer(
   t.platformDispatcher.localesTestValue = [langue];
   addTearDown(t.view.reset);
   addTearDown(t.platformDispatcher.clearAllTestValues);
-  await t.pumpWidget(App(services: services, reglages: reglages));
+  await t.pumpWidget(
+    App(
+      services: services,
+      reglages: reglages,
+      demanderConsentement: consentement,
+    ),
+  );
   await t.pumpAndSettle();
 }
 
@@ -106,6 +113,40 @@ void main() {
       expect(_proposition, findsNothing);
 
       modele.arriver();
+      await t.pumpAndSettle();
+      expect(_proposition, findsOneWidget);
+    });
+
+    testWidgets('la question des dons d’abord, le tour ensuite', (t) async {
+      await _lancer(
+        t,
+        services: _services(_Modele(EtatModele.present)),
+        reglages: Reglages(),
+        consentement: true,
+      );
+      expect(find.text('Continuer'), findsOneWidget);
+      expect(_proposition, findsNothing);
+
+      await t.tap(find.text('Continuer'));
+      await t.pumpAndSettle();
+      expect(_proposition, findsOneWidget);
+    });
+
+    testWidgets('le modèle arrive sur un autre écran : le tour attend', (
+      t,
+    ) async {
+      final modele = _Modele(EtatModele.absent);
+      await _lancer(t, services: _services(modele), reglages: Reglages());
+      final navigateur = t.state<NavigatorState>(find.byType(Navigator))
+        // La route ne finit qu'au retour : on ne l'attend pas.
+        ..push(MaterialPageRoute<void>(builder: (_) => const Scaffold()));
+      await t.pumpAndSettle();
+
+      modele.arriver();
+      await t.pumpAndSettle();
+      expect(_proposition, findsNothing);
+
+      navigateur.pop();
       await t.pumpAndSettle();
       expect(_proposition, findsOneWidget);
     });

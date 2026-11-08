@@ -109,6 +109,7 @@ class _EcranFeuilleState extends State<EcranFeuille> {
   }
 
   var _tourEnQuestion = false;
+  var _tourEnAttente = false;
 
   /// Une fois par version, quand le modèle est là : un petit tour des
   /// usages de base (ADR 0045).
@@ -122,6 +123,13 @@ class _EcranFeuilleState extends State<EcranFeuille> {
       if (!mounted || version == null || reglages.tourPropose == version) {
         return;
       }
+      // Une autre question (les dons, ADR 0042) ou un autre écran est
+      // devant : le tour attend que la Feuille revienne au premier plan.
+      if (!(ModalRoute.of(context)?.isCurrent ?? true)) {
+        _tourEnAttente = true;
+        return;
+      }
+      _tourEnAttente = false;
       reglages.noterTourPropose(version);
       final l10n = context.l10n;
       final oui = await showDialog<bool>(
@@ -156,6 +164,12 @@ class _EcranFeuilleState extends State<EcranFeuille> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    // De retour au premier plan : le tour en attente se propose.
+    if (_tourEnAttente && (ModalRoute.of(context)?.isCurrent ?? true)) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => unawaited(_proposerTour()),
+      );
+    }
     final degres = PorteeReglages.de(context).degres;
     final change = _degres != null && _degres != degres;
     _degres = degres;
