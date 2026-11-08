@@ -4,6 +4,7 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Historique : renommer un document (feuille et Figure), le supprimer avec « Annuler » pendant quelques secondes, trier par date ou par nom. / History: rename a document (sheet and Figure), delete it with "Undo" for a few seconds, sort by date or by name.
 - Choisir une ligne de la Feuille (Outils, puis la toucher ou l'entourer ; ou appui long sur son résultat) : la déplacer au doigt ou aux flèches, la dupliquer dessous, la supprimer (Annuler la rend), copier son LaTeX. / Select a line on the Sheet (Tools, then tap or circle it; or long-press its result): move it by dragging or with the arrows, duplicate it below, delete it (Undo brings it back), copy its LaTeX.
 
 ## [1.0.8] — 2026-11-08
