@@ -14,8 +14,10 @@
 4. **Ne jamais dire « fini » sans l'avoir fait tourner** : `flutter analyze`, tests, puis essai sur émulateur (téléphone **et** tablette,
    portrait **et** paysage, chaque support) **et sur un appareil arm64 réel** : l'émulateur ne voit pas tout, capture à l'appui.
 5. **Libre et 100 % hors ligne.** Licence du code : voir ADR 0001. Aucune dépendance non OSI (ni ML Kit, ni MyScript),
-   modèles et poids sous licence compatible. Aucun compte, aucune pub, aucune télémétrie ; l'encre ne quitte jamais l'appareil.
-   Seule exception : la recherche de mise à jour, à la demande (ADR 0015). Test réseau coupé avant chaque version.
+   modèles et poids sous licence compatible. Aucun compte, aucune pub, aucune télémétrie. L'encre ne quitte l'appareil
+   qu'avec le consentement de la personne (case à cocher, révocable à tout moment), et seulement les lignes qu'elle a jugées
+   (👍, ou 👎 corrigé), sans nom ni position (ADR 0042, décision d'Antsa 2026-11-08). Autre exception : la recherche de
+   mise à jour, à la demande (ADR 0015). Tout marche hors ligne ; test réseau coupé avant chaque version.
 6. **Aucun secret dans Git** (clés de signature dans `release-keys/`, ignoré).
 7. **Pas de copie** d'une app existante (nom, icônes, textes, captures). Code d'un tiers repris seulement si sa licence
    est compatible, noté dans `THIRD_PARTY_LICENSES.md`.
