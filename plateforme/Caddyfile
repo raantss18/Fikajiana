@@ -1,0 +1,12 @@
+# HTTPS automatique (Let's Encrypt) pour le nom de domaine donné dans .env (FIKA_DOMAINE).
+# Aucune directive `log` : Caddy n'écrit pas de journal d'accès, donc aucune IP n'est gardée.
+{$FIKA_DOMAINE} {
+	request_body {
+		max_size 3MB
+	}
+	reverse_proxy recepteur:8080
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		-Server
+	}
+}

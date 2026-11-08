@@ -1,0 +1,37 @@
+# Récepteur + Caddy (HTTPS automatique) sur un petit serveur.
+# 1. Copier `exemple.env` en `.env` et le remplir.  2. docker compose up -d --build
+services:
+  recepteur:
+    build:
+      context: ..
+      dockerfile: plateforme/Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      FIKA_DERRIERE_PROXY: "1"
+    volumes:
+      - dons:/donnees
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    # Pas de port publié : seul Caddy lui parle.
+
+  caddy:
+    image: caddy:2.10
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      FIKA_DOMAINE: ${FIKA_DOMAINE}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_donnees:/data
+      - caddy_config:/config
+    depends_on: [recepteur]
+
+volumes:
+  dons:
+  caddy_donnees:
+  caddy_config:
