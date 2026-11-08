@@ -426,8 +426,11 @@ class BlocCalcul {
         ecrireResultat(
           // Sous l'écriture, la valeur seule ne dirait pas ce qu'elle égale.
           // `2+2=5` est faux : le mot suit, sans `=` ; `premier(17) = vrai`.
-          (verite != null ? demandeResultat : egalAjoute) ||
-                  (finitParEgal && dessous)
+          // `y = …` (une équation différentielle résolue) dit déjà ce qu'il
+          // vaut : pas de `=` devant.
+          !RegExp('^[a-zA-Z]=').hasMatch(valeur) &&
+                  ((verite != null ? demandeResultat : egalAjoute) ||
+                      (finitParEgal && dessous))
               ? '${approche ? r'\approx ' : '='}$valeur'
               : valeur,
           ecriture,
