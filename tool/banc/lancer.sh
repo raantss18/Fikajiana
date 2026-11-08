@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # Lance le banc de calcul sur un appareil (ANDROID_SERIAL) et affiche ses lignes.
 # Il s'installe à côté de l'app (mg.fikajiana.app.banc), sur l'écran secondaire s'il y en a un.
-# Usage : tool/banc/lancer.sh [android-x64|android-arm64]
+# Usage : tool/banc/lancer.sh [android-x64|android-arm64] [banc/banc_calcul.dart|banc/banc_lecture.dart]
 set -euo pipefail
 cible=${1:-android-x64}
+banc=${2:-banc/banc_calcul.dart}
 cd "$(dirname "$0")/../../app"
-flutter build apk --release --target-platform "$cible" --split-per-abi --android-project-arg banc=1 -t banc/banc_calcul.dart | tail -1
+flutter build apk --release --target-platform "$cible" --split-per-abi --android-project-arg banc=1 -t "$banc" | tail -1
 case "$cible" in
   android-x64) apk=app-x86_64-release.apk ;;
   *) apk=app-arm64-v8a-release.apk ;;
