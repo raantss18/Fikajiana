@@ -4,6 +4,8 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Statistiques à deux variables : ajustement([1;2;3;4];[2;4;5;8]) donne la droite des moindres carrés et r (aussi exponentiel, logarithmique, puissance, degré 2), correlation et covariance ; quartiles(…) donne Q₁, la médiane et Q₃ comme au lycée. / Two-variable statistics: ajustement([1;2;3;4];[2;4;5;8]) gives the least-squares line and r (also exponential, logarithmic, power, degree 2), correlation and covariance; quartiles(…) gives Q₁, the median and Q₃ (French high-school definition).
+
 - Arithmétique : division(17;5) donne le quotient et le reste, bezout(12;18) les coefficients de Bézout, 17 ≡ 2 [5] dit vrai ou faux, et A₅² les arrangements ; à la main ou au clavier. / Arithmetic: division(17;5) gives the quotient and remainder, bezout(12;18) Bézout coefficients, 17 ≡ 2 [5] says true or false, and A₅² arrangements; by hand or keyboard.
 
 - Réglages, À propos : qui a conçu Fikajiana (Antsa Malala RANIRIAMANJAKA), un courriel à lui écrire et le code source, ouverts d'un toucher. / Settings, About: who designed Fikajiana (Antsa Malala RANIRIAMANJAKA), an email to write to her and the source code, opened with a tap.
