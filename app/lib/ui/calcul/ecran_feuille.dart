@@ -18,6 +18,7 @@ import 'package:fikajiana/ui/calcul/carte_bloc.dart';
 import 'package:fikajiana/ui/calcul/couche_resultats.dart';
 import 'package:fikajiana/ui/calcul/panneau_saisie.dart';
 import 'package:fikajiana/ui/export.dart';
+import 'package:fikajiana/ui/guide/ecran_tour.dart';
 import 'package:fikajiana/ui/navigation/destination.dart';
 import 'package:fikajiana/ui/navigation/page_destination.dart';
 import 'package:fikajiana/ui/reglages/ecran_reglages.dart';
@@ -101,6 +102,61 @@ class _EcranFeuilleState extends State<EcranFeuille> {
     if (_essais.enAttente) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _lancerEssai());
     }
+    // Après une mise à jour, le modèle déjà là : le tour se propose.
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => unawaited(_proposerTour()),
+    );
+  }
+
+  var _tourEnQuestion = false;
+  var _tourEnAttente = false;
+
+  /// Une fois par version, quand le modèle est là : un petit tour des
+  /// usages de base (ADR 0045).
+  Future<void> _proposerTour() async {
+    if (_tourEnQuestion || _modele.etat != EtatModele.present) return;
+    _tourEnQuestion = true;
+    try {
+      final services = PorteeServices.de(context);
+      final reglages = PorteeReglages.de(context);
+      final version = await services.lireVersion();
+      if (!mounted || version == null || reglages.tourPropose == version) {
+        return;
+      }
+      // Une autre question (les dons, ADR 0042) ou un autre écran est
+      // devant : le tour attend que la Feuille revienne au premier plan.
+      if (!(ModalRoute.of(context)?.isCurrent ?? true)) {
+        _tourEnAttente = true;
+        return;
+      }
+      _tourEnAttente = false;
+      reglages.noterTourPropose(version);
+      final l10n = context.l10n;
+      final oui = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          icon: const Icon(Icons.draw_outlined),
+          title: Text(l10n.tourProposeTitre),
+          content: Text(l10n.tourProposeTexte(version)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(l10n.tourPlusTard),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(l10n.guideTour),
+            ),
+          ],
+        ),
+      );
+      if (oui ?? false) {
+        if (!mounted) return;
+        await Navigator.of(context).push(RouteEcran((_) => const EcranTour()));
+      }
+    } finally {
+      _tourEnQuestion = false;
+    }
   }
 
   void _lancerEssai() => unawaited(_surEssai());
@@ -108,6 +164,12 @@ class _EcranFeuilleState extends State<EcranFeuille> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    // De retour au premier plan : le tour en attente se propose.
+    if (_tourEnAttente && (ModalRoute.of(context)?.isCurrent ?? true)) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => unawaited(_proposerTour()),
+      );
+    }
     final degres = PorteeReglages.de(context).degres;
     final change = _degres != null && _degres != degres;
     _degres = degres;
@@ -116,7 +178,10 @@ class _EcranFeuilleState extends State<EcranFeuille> {
   }
 
   void _surModele() {
-    if (_modele.etat == EtatModele.present) _calcul.modeleDisponible();
+    if (_modele.etat != EtatModele.present) return;
+    _calcul.modeleDisponible();
+    // Le modèle vient d'arriver : la première fois, le tour se propose.
+    unawaited(_proposerTour());
   }
 
   void _enregistrer() {

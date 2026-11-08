@@ -1,15 +1,14 @@
 import 'package:fikajiana/geometrie/atelier.dart';
 import 'package:fikajiana/guide/catalogue.dart';
 import 'package:fikajiana/l10n/l10n.dart';
-import 'package:fikajiana/ui/formule_affichee.dart';
+import 'package:fikajiana/ui/ecriture_animee.dart';
 import 'package:fikajiana/ui/geometrie/pictogrammes.dart';
+import 'package:fikajiana/ui/guide/ecran_tour.dart';
 import 'package:fikajiana/ui/navigation/destination.dart';
 import 'package:fikajiana/ui/navigation/page_destination.dart';
 import 'package:fikajiana/ui/services.dart';
 import 'package:fikajiana/ui/theme/espacement.dart';
-import 'package:fikajiana_math/fikajiana_math.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_math_fork/flutter_math.dart';
 
 /// Le Guide : tout ce que l'app sait faire, à chercher et à essayer
 /// (ADR 0036).
@@ -111,16 +110,30 @@ class _EcranGuideState extends State<EcranGuide> {
                           AppEspacement.lg,
                         ),
                         children: [
-                          if (requete.isEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                bottom: AppEspacement.sm,
-                              ),
-                              child: Text(
-                                l10n.guideIntro,
-                                style: theme.textTheme.bodyMedium,
+                          if (requete.isEmpty) ...[
+                            Text(
+                              l10n.guideIntro,
+                              style: theme.textTheme.bodyMedium,
+                            ),
+                            Align(
+                              alignment: AlignmentDirectional.centerStart,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: AppEspacement.sm,
+                                ),
+                                child: OutlinedButton.icon(
+                                  style: OutlinedButton.styleFrom(
+                                    minimumSize: const Size(48, 48),
+                                  ),
+                                  onPressed: () => Navigator.of(
+                                    context,
+                                  ).push(RouteEcran((_) => const EcranTour())),
+                                  icon: const Icon(Icons.draw_outlined),
+                                  label: Text(l10n.guideTour),
+                                ),
                               ),
                             ),
+                          ],
                           for (final famille in FamilleGuide.values)
                             ..._famille(famille, trouvees, theme, l10n),
                         ],
@@ -193,10 +206,13 @@ class _CarteEntree extends StatelessWidget {
               ),
             const SizedBox(height: AppEspacement.xxs),
             Text(entree.phrase, style: theme.textTheme.bodyMedium),
-            for (final ligne in entree.lignes)
+            if (entree.lignes.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: AppEspacement.sm),
-                child: _Formule(ligne),
+                child: EcritureAnimee(
+                  lignes: [for (final l in entree.lignes) LigneEcrite(l)],
+                  indiceRejouer: l10n.guideRejouer,
+                ),
               ),
             if (entree.essayable)
               Align(
@@ -218,32 +234,6 @@ class _CarteEntree extends StatelessWidget {
                 ),
               ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Une ligne de l'exemple, telle qu'elle s'écrit à la main ; TalkBack la lit
-/// telle qu'elle se tape.
-class _Formule extends StatelessWidget {
-  const new(this.latex);
-
-  final String latex;
-
-  @override
-  Widget build(BuildContext context) {
-    final style = Theme.of(context).textTheme.titleMedium;
-    return Semantics(
-      label: texteDepuisLatex(latex),
-      child: ExcludeSemantics(
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Math.tex(
-            pourAffichage(latex),
-            textStyle: style,
-            onErrorFallback: (_) => Text(latex, style: style),
-          ),
         ),
       ),
     );

@@ -816,5 +816,47 @@
                 "type": "int"
             }
         }
+    },
+    "guideRejouer": "write the example again",
+    "guideTour": "Take the tour",
+    "tourTitre": "The Fikajiana tour",
+    "tourEtape": "Step {n} of {total}",
+    "tourPasser": "Skip the tour",
+    "tourPrecedent": "Back",
+    "tourSuivant": "Next",
+    "tourCommencer": "Write on the sheet",
+    "tourOuvrirGuide": "Open the Guide",
+    "tourRejouer": "write again",
+    "tourCalculTitre": "Write a calculation",
+    "tourCalculPhrase": "Write with a stylus or a finger and end with = : the result is written next to it, by hand.",
+    "tourExactTitre": "Exact results",
+    "tourExactPhrase": "Fractions and roots stay exact. In Tools, the Exact values button switches to approximate ones.",
+    "tourEquationTitre": "Solve an equation",
+    "tourEquationPhrase": "Write the equation with its unknown: its solutions are written next to it.",
+    "tourFonctionTitre": "Define a function",
+    "tourFonctionPhrase": "Write f(x)=… : lower on the sheet, f(3) computes an image. Write plot next to it to see its curve.",
+    "tourFigureTitre": "Place points",
+    "tourFigurePhrase": "A(1;2) places point A: the Figure opens with it, and its tools build the rest.",
+    "tourSuiteTitre": "And everything else",
+    "tourSuitePhrase": "A mistake? A quick scribble erases it, Undo brings it back. Everything Fikajiana can do is in Menu › Guide.",
+    "tourProposeTitre": "A quick tour?",
+    "tourProposeTexte": "Fikajiana {version} is ready to read your handwriting. In one minute, see the basics on small examples.",
+    "tourPlusTard": "Later",
+    "@tourEtape": {
+        "placeholders": {
+            "n": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "@tourProposeTexte": {
+        "placeholders": {
+            "version": {
+                "type": "String"
+            }
+        }
     }
 }

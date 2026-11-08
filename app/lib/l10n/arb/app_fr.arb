@@ -546,5 +546,47 @@
     "donsRetraitFait": "Retrait demandé : vos dons seront effacés de la plateforme.",
     "donsRetraitEchec": "Le retrait n'a pas pu être demandé ; réessayez avec du réseau.",
     "ligneJuste": "Lecture juste",
-    "ligneFausse": "Lecture fausse : corriger"
+    "ligneFausse": "Lecture fausse : corriger",
+    "guideRejouer": "réécrire l'exemple",
+    "guideTour": "Faire le tour",
+    "tourTitre": "Le tour de Fikajiana",
+    "tourEtape": "Étape {n} sur {total}",
+    "tourPasser": "Passer le tour",
+    "tourPrecedent": "Précédent",
+    "tourSuivant": "Suivant",
+    "tourCommencer": "Écrire sur la feuille",
+    "tourOuvrirGuide": "Ouvrir le Guide",
+    "tourRejouer": "réécrire",
+    "tourCalculTitre": "Écrire un calcul",
+    "tourCalculPhrase": "Écrivez au stylet ou au doigt et finissez par = : le résultat s'écrit à côté, à la main.",
+    "tourExactTitre": "Des résultats exacts",
+    "tourExactPhrase": "Fractions et racines restent exactes. Dans Outils, Valeurs exactes passe aux valeurs approchées.",
+    "tourEquationTitre": "Résoudre une équation",
+    "tourEquationPhrase": "Écrivez l'équation avec son inconnue : ses solutions s'écrivent à côté.",
+    "tourFonctionTitre": "Définir une fonction",
+    "tourFonctionPhrase": "Écrivez f(x)=… : plus bas sur la feuille, f(3) calcule une image. Écrivez tracer à côté pour voir sa courbe.",
+    "tourFigureTitre": "Placer des points",
+    "tourFigurePhrase": "A(1;2) place le point A : la Figure s'ouvre avec lui, et ses outils construisent le reste.",
+    "tourSuiteTitre": "Et tout le reste",
+    "tourSuitePhrase": "Une erreur ? Un gribouillis rapide l'efface, Annuler le rattrape. Tout ce que Fikajiana sait faire est dans Menu › Guide.",
+    "tourProposeTitre": "Un petit tour ?",
+    "tourProposeTexte": "Fikajiana {version} est prête à lire votre écriture. En une minute, voyez les gestes de base sur de petits exemples.",
+    "tourPlusTard": "Plus tard",
+    "@tourEtape": {
+        "placeholders": {
+            "n": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "@tourProposeTexte": {
+        "placeholders": {
+            "version": {
+                "type": "String"
+            }
+        }
+    }
 }

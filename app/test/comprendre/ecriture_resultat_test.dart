@@ -84,6 +84,15 @@ void main() {
       r'S=\mathbb{R}',
       r'x=n\cdot \pi,\,n \in \mathbb{Z}',
       r'\left(\begin{array}{cc}1&2\\3&4\end{array}\right)',
+      // Le Guide et le tour (ADR 0045).
+      'u_{n+1}=2u_{n}+1',
+      r'\lim_{x\to0}\frac{\sin x}{x}',
+      r'\sum_{k=1}^{10}k^{2}',
+      r'\int_{0}^{1}x^{2}dx',
+      r'\|\vec{AB}\|',
+      r'\text{écart-type}',
+      r'\text{façon à là où ça}',
+      r'\begin{cases}x+y=3\\x-y=1\end{cases}',
     ]) {
       test(latex, () {
         final ecrit = ecrireResultat(latex, ecriture);
@@ -100,12 +109,39 @@ void main() {
       r'\left(\begin{array}{cc}1&2\\3&4',
       'Ω',
       r'\frac{1}{2',
+      // Un système sans fin, un indice sans base.
+      r'\begin{cases}x=1',
+      '_{2}',
       '',
     ]) {
       test('« $latex »', () {
         expect(ecrireResultat(latex, ecriture), isNull);
       });
     }
+  });
+
+  test('à l’échelle : en haut à gauche, un chiffre de la hauteur voulue', () {
+    final ecrit = ecrireALEchelle('7', 30)!;
+    expect(ecrit.cadre.top, closeTo(0, 3));
+    expect(ecrit.cadre.left, closeTo(0, 6));
+    expect(ecrit.cadre.height, closeTo(30, 6));
+  });
+
+  test('un indice descend, un exposant monte', () {
+    // Le haut est toujours en 0 : on compare où tombe la ligne de base.
+    final base = ecrireALEchelle('u', 30)!.cadre;
+    final indice = ecrireALEchelle('u_{n}', 30)!.cadre;
+    final exposant = ecrireALEchelle('u^{n}', 30)!.cadre;
+    expect(indice.top, closeTo(base.top, 2));
+    expect(indice.bottom, greaterThan(base.bottom + 3));
+    expect(exposant.height, greaterThan(base.height + 3));
+    expect(exposant.bottom, greaterThan(base.bottom + 3));
+  });
+
+  test('les bornes d’une somme sont dessous et dessus', () {
+    final seul = ecrireALEchelle(r'\sum', 30)!.cadre;
+    final borne = ecrireALEchelle(r'\sum_{k=1}^{10}', 30)!.cadre;
+    expect(borne.height, greaterThan(seul.height + 20));
   });
 
   test('le résultat se place à droite de l’écriture, à sa hauteur', () {

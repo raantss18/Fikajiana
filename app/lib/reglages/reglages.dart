@@ -13,6 +13,7 @@ const _cleDegres = 'degres';
 const _cleStyletConnu = 'stylet_connu';
 const _cleEcrireAuDoigt = 'ecrire_au_doigt';
 const _cleAuPropre = 'au_propre';
+const _cleTourPropose = 'tour_propose';
 const _cleDonner = 'dons_consentis';
 const _cleConsentementDemande = 'dons_consentement_demande';
 const _cleWifiSeulement = 'dons_wifi_seulement';
@@ -33,6 +34,7 @@ class Reglages extends ChangeNotifier {
     _styletConnu = stockage.getBool(_cleStyletConnu) ?? false;
     _ecrireAuDoigt = stockage.getBool(_cleEcrireAuDoigt) ?? false;
     _auPropre = stockage.getBool(_cleAuPropre) ?? true;
+    _tourPropose = stockage.getString(_cleTourPropose);
     _donner = stockage.getBool(_cleDonner) ?? false;
     _consentementDemande = stockage.getBool(_cleConsentementDemande) ?? false;
     _wifiSeulement = stockage.getBool(_cleWifiSeulement) ?? true;
@@ -119,6 +121,17 @@ class Reglages extends ChangeNotifier {
     _auPropre = valeur;
     notifyListeners();
     unawaited(stockage?.setBool(_cleAuPropre, valeur));
+  }
+
+  String? _tourPropose;
+
+  /// La version pour laquelle le tour a déjà été proposé (ADR 0045).
+  String? get tourPropose => _tourPropose;
+
+  void noterTourPropose(String version) {
+    if (version == _tourPropose) return;
+    _tourPropose = version;
+    unawaited(stockage?.setString(_cleTourPropose, version));
   }
 
   static Future<Reglages> charger() async =>

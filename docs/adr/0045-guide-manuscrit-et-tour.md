@@ -1,0 +1,9 @@
+# ADR 0045 — Guide écrit à la main, et tour après chaque mise à jour
+
+- **Date** : 2026-11-08 · **Statut** : accepté (demande d'Antsa : « le guide interactif doit être en manuscrit et bien animé ; après chaque mise à jour, première exécution, après téléchargement du modèle, proposer un tour des utilisations basiques avec des petits exemples »)
+- **Manuscrit** : les exemples du Guide ne sont plus des formules imprimées. Ils s'écrivent trait par trait, avec le compositeur des résultats (`ecriture_resultat.dart`, ADR 0034) ; le widget `EcritureAnimee` est commun au Guide et au tour. Un toucher réécrit l'exemple ; sans animation si l'appareil le demande.
+- **Compositeur étendu** : indices `u_{n}`, `\lim`, `\sum` et `\int` avec bornes, `\to`, `\vec`, `\|`, `\begin{cases}`, lettres accentuées (accent tracé sur la lettre de Caveat). Un résultat de Giac qui en contient s'écrit donc aussi à la main.
+- **Tour** : six étapes courtes (`app/lib/guide/tour.dart`) : calcul, résultats exacts, équation, fonction, points, puis le Guide. Chaque exemple s'écrit, puis son résultat dans la couleur des résultats. Ouvrable depuis le Guide.
+- **Quand** : une fois par version (`versionName` lu par le canal Android, retenu dans les réglages), et seulement quand le modèle est là : au démarrage après une mise à jour, ou dès la fin du premier téléchargement. Une question, « Plus tard » ou « Faire le tour » ; jamais imposé. Si la question des dons (ADR 0042) ou un autre écran est devant, le tour attend le retour sur la Feuille. Hors Android (tests, bureau), pas de version : pas de question.
+- **Vérifié** : chaque exemple du catalogue et du tour (fr, en) s'écrit à la main ; les résultats du tour sont recalculés dans `test/guide/tour_test.dart` ; proposition, parcours et tailles 360, 800 et paysage dans `test/ui/guide/ecran_tour_test.dart`.
+- **Reste** : essai sur le Pad 7 et le Poco (fluidité de l'animation, lisibilité des bornes et des indices).
