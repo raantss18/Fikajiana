@@ -237,6 +237,12 @@ class RepereBloc extends StatelessWidget {
     );
   }
 
+  /// Le coin de « tracer » ou « placer » et du crayon, à l'écran : à droite
+  /// de la ligne, ou dessous près du bord ([CalculFeuille.rangeeAction]).
+  Offset _coinRangee() =>
+      calcul.rangeeAction(bloc, 48 / vue.zoom).topLeft * vue.zoom +
+      vue.decalage;
+
   /// Le bouton des actions a trouvé sa place avec 👍 et 👎.
   bool _actionsAvecJugement(BuildContext context) =>
       calcul.actionsAuJugement(bloc) && _placeJugement(context) != null;
@@ -372,9 +378,10 @@ class RepereBloc extends StatelessWidget {
         final objet = bloc.objet;
         if (objet != null) {
           if (enExport) return const SizedBox.shrink();
+          final rangee = _coinRangee();
           return Positioned(
-            left: droite.dx + AppEspacement.sm,
-            top: droite.dy - 24,
+            left: rangee.dx,
+            top: rangee.dy,
             child: TraverseEcriture(
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -415,16 +422,19 @@ class RepereBloc extends StatelessWidget {
           if (enExport && !bloc.estSaisie) return const SizedBox.shrink();
           final dejaTracee = PorteeServices.de(context).courbes.liste
               .any((c) => c.latex == bloc.latex);
+          final rangee = enExport
+              ? droite + const Offset(AppEspacement.sm, -24)
+              : _coinRangee();
           return Positioned(
-            left: droite.dx + AppEspacement.sm,
-            top: droite.dy - 24,
+            left: rangee.dx,
+            top: rangee.dy,
             child: enExport
                 ? formule
                 : TraverseEcriture(
                     // Passe à la ligne plutôt que de sortir de l'écran.
                     child: ConstrainedBox(
                       constraints: BoxConstraints(
-                        maxWidth: _largeurLibre(context, droite.dx),
+                        maxWidth: _largeurLibre(context, rangee.dx),
                       ),
                       child: Wrap(
                         crossAxisAlignment: WrapCrossAlignment.center,

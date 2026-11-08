@@ -780,6 +780,23 @@ class CalculFeuille extends ChangeNotifier {
     }
   }
 
+  /// Où s'écrivent « tracer » ou « placer » et le crayon d'une courbe ou
+  /// d'un point, pour des cibles de hauteur [hauteur] (coordonnées de page) :
+  /// à droite de la ligne, ou dessous quand le bord de la page est trop près
+  /// (téléphone en portrait, Pad 7 : le crayon sortait de l'écran).
+  Rect rangeeAction(BlocCalcul bloc, double hauteur) {
+    const ecart = BlocCalcul._ecart;
+    final c = bloc.cadre;
+    final droite = Rect.fromLTWH(
+      c.right + ecart,
+      c.center.dy - hauteur / 2,
+      4.5 * hauteur,
+      hauteur,
+    );
+    if (droite.right <= _bordDroit) return droite;
+    return Rect.fromLTWH(c.left, c.bottom + ecart, 4.5 * hauteur, hauteur);
+  }
+
   /// Où poser 👍 et 👎 de chaque ligne jugeable, en coordonnées de page :
   /// à gauche de la ligne, sinon dessous, dessus, ou après son résultat ;
   /// jamais sur l'encre, un résultat ou les boutons d'une autre ligne
@@ -813,16 +830,11 @@ class CalculFeuille extends ChangeNotifier {
     final obstacles = [
       for (final b in ecrits) b.cadre,
       ...resultats.values.nonNulls,
-      // « tracer » ou « placer » et le crayon, à droite d'une courbe ou d'un
-      // point : 👍 et 👎 s'y posaient (vu sur le Pad 7, format téléphone).
+      // « tracer » ou « placer » et le crayon d'une courbe ou d'un point :
+      // 👍 et 👎 s'y posaient (vu sur le Pad 7, format téléphone).
       for (final b in ecrits)
         if (b.etat == EtatBloc.fait && (b.seTrace || b.objet != null))
-          Rect.fromLTWH(
-            b.cadre.right + ecart,
-            b.cadre.center.dy - taille.height / 2,
-            4.5 * taille.height,
-            taille.height,
-          ),
+          rangeeAction(b, taille.height),
     ];
     final h = taille.height;
     final places = <BlocCalcul, Rect>{};
@@ -844,6 +856,9 @@ class CalculFeuille extends ChangeNotifier {
           Rect.fromLTWH(r.right + ecart, r.center.dy - h / 2, l, h),
           Rect.fromLTWH(c.left, math.max(c.bottom, r.bottom) + ecart, l, h),
         ],
+        // « tracer » passé sous une courbe (téléphone en portrait) : sous lui.
+        if (b.etat == EtatBloc.fait && (b.seTrace || b.objet != null))
+          Rect.fromLTWH(c.left, rangeeAction(b, h).bottom + ecart, l, h),
       ];
       final place = essais.where((e) {
         if (e.left < gauche || e.right > _bordDroit) return false;

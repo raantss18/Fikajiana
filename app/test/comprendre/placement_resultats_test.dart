@@ -457,6 +457,79 @@ void main() {
       expect(calcul.actionsAuJugement(c), isFalse);
     });
 
+    test('une courbe : pas sur « tracer » et le crayon, à sa droite '
+        '(Pad 7, format téléphone)', () {
+      calcul
+        ..bordDroit = 400
+        ..chargerDocument([
+          ligne(
+            'c',
+            const Rect.fromLTRB(20, 100, 120, 150),
+            'y=2x+1',
+            type: 'fonction',
+          ),
+        ]);
+      final c = calcul.blocs.single;
+      expect(c.seTrace, isTrue);
+      final zone = places()[c];
+      expect(zone, isNotNull);
+      final tracer = Rect.fromLTWH(
+        c.cadre.right,
+        c.cadre.center.dy - 24,
+        216,
+        48,
+      );
+      expect(zone!.overlaps(tracer), isFalse);
+    });
+
+    test('une courbe près du bord droit : « tracer » et le crayon passent '
+        'dessous, sans 👍 ni 👎 dessus (téléphone en portrait, Pad 7)', () {
+      calcul
+        ..bordDroit = 364
+        ..chargerDocument([
+          ligne(
+            'c',
+            const Rect.fromLTRB(150, 200, 260, 260),
+            'y=x',
+            type: 'fonction',
+          ),
+        ]);
+      final c = calcul.blocs.single;
+      final rangee = calcul.rangeeAction(c, 48);
+      expect(rangee.top, greaterThan(c.cadre.bottom));
+      expect(rangee.left, c.cadre.left);
+      final zone = places()[c];
+      expect(zone, isNotNull);
+      expect(zone!.overlaps(rangee), isFalse);
+      expect(zone.overlaps(c.cadre), isFalse);
+    });
+
+    test('une courbe au bord gauche sous une autre ligne : 👍 et 👎 sous '
+        '« tracer », sans se replier (Pad 7, format téléphone)', () {
+      calcul
+        ..bordDroit = 364
+        ..chargerDocument([
+          ligne(
+            'haut',
+            const Rect.fromLTRB(20, 130, 300, 190),
+            'x^{2}-1',
+            etat: 'nonCompris',
+          ),
+          ligne(
+            'c',
+            const Rect.fromLTRB(20, 200, 300, 260),
+            'y=x',
+            type: 'fonction',
+          ),
+        ]);
+      final c = calcul.blocs.firstWhere((b) => b.cle == 'c');
+      final rangee = calcul.rangeeAction(c, 48);
+      final p = places();
+      libres(p);
+      expect(p[c], isNotNull);
+      expect(p[c]!.top, greaterThan(rangee.bottom));
+    });
+
     test('sans aucune place libre, ils se replient', () {
       // Une ligne entourée d'encre de tous côtés.
       calcul

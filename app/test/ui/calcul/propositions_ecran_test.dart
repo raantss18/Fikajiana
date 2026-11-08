@@ -59,6 +59,7 @@ void main() {
       }
     });
     final bloc = calcul.blocs.single;
+    var touches = 0;
     final poses = <String>[];
     final vue = VueFeuille();
     addTearDown(vue.dispose);
@@ -78,7 +79,7 @@ void main() {
                     bloc: bloc,
                     calcul: calcul,
                     vue: vue,
-                    surTouche: () {},
+                    surTouche: () => touches++,
                     surEffacer: () {},
                     surProposer: poses.add,
                   ),
@@ -114,6 +115,9 @@ void main() {
     // Le toucher ouvre le menu : chaque action, nommée pour TalkBack.
     await t.tap(bouton);
     await t.pumpAndSettle();
+    // Le point laissé dans l'encre par ce toucher s'efface dès l'ouverture :
+    // sinon il se lisait comme une ligne non comprise (Pad 7).
+    expect(touches, 1);
     for (final nom in [
       "Résoudre : écrire l'équation dessous",
       'Dériver : écrire la dérivée dessous',
@@ -173,9 +177,10 @@ void main() {
     );
     addTearDown(calcul.dispose);
     await t.runAsync(() async {
+      // Une ligne de la hauteur d'une écriture : 60 px.
       encre.commencer(const PointEncre(140, 100, 0.1));
       for (var i = 1; i < 6; i++) {
-        encre.prolonger(PointEncre(140 + i * 4.0, 100, 0.1));
+        encre.prolonger(PointEncre(140 + i * 4.0, 100 + i * 12.0, 0.1));
       }
       encre.terminer();
       calcul.encreChangee();
