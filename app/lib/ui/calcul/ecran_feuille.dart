@@ -18,6 +18,7 @@ import 'package:fikajiana/ui/calcul/carte_bloc.dart';
 import 'package:fikajiana/ui/calcul/couche_resultats.dart';
 import 'package:fikajiana/ui/calcul/panneau_saisie.dart';
 import 'package:fikajiana/ui/calcul/placer_construction.dart';
+import 'package:fikajiana/ui/calcul/selection_bloc.dart';
 import 'package:fikajiana/ui/export.dart';
 import 'package:fikajiana/ui/guide/ecran_tour.dart';
 import 'package:fikajiana/ui/navigation/destination.dart';
@@ -28,6 +29,7 @@ import 'package:fikajiana/ui/theme/espacement.dart';
 import 'package:fikajiana/ui/theme/marque.dart';
 import 'package:fikajiana_math/fikajiana_math.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 const double _ecartSaisies = 64;
 
@@ -68,6 +70,12 @@ class _EcranFeuilleState extends State<EcranFeuille> {
   final _vue = VueFeuille();
   var _gomme = false;
   var _outilsOuverts = false;
+
+  /// On choisit une ligne pour la déplacer, la dupliquer, l'effacer.
+  var _selection = false;
+
+  /// La clé de la ligne choisie.
+  String? _choisi;
   final GlobalKey _image = GlobalKey();
   var _enExport = false;
   bool? _degres;
@@ -200,7 +208,7 @@ class _EcranFeuilleState extends State<EcranFeuille> {
   /// Une rature a effacé : un geste si rapide doit pouvoir se rattraper.
   void _surRature() => _proposerAnnuler(context.l10n.ratureFaite);
 
-  void _proposerAnnuler(String message) {
+  void _proposerAnnuler(String message, {VoidCallback? annuler}) {
     final l10n = context.l10n;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
@@ -218,10 +226,129 @@ class _EcranFeuilleState extends State<EcranFeuille> {
           ),
           action: SnackBarAction(
             label: l10n.annuler,
-            onPressed: () {
-              _encre.annuler();
-              _surEncre();
-            },
+            onPressed:
+                annuler ??
+                () {
+                  _encre.annuler();
+                  _surEncre();
+                },
+          ),
+        ),
+      );
+  }
+
+  bool get _virgule => Localizations.localeOf(context).languageCode == 'fr';
+
+  BlocCalcul? get _blocChoisi =>
+      _calcul.blocs.where((b) => b.cle == _choisi).firstOrNull;
+
+  /// Entre dans le choix d'une ligne, avec [bloc] déjà choisi s'il y en a un.
+  void _choisir(BlocCalcul? bloc) => setState(() {
+    _selection = true;
+    _outilsOuverts = false;
+    _gomme = false;
+    _choisi = bloc?.cle;
+  });
+
+  void _terminerSelection() => setState(() {
+    _selection = false;
+    _choisi = null;
+  });
+
+  Rect? _zoneChoisie(Reglages reglages) {
+    final bloc = _blocChoisi;
+    if (bloc == null) return null;
+    return _calcul.zoneDe(
+      bloc,
+      approcheVoulue: reglages.approche,
+      virgule: _virgule,
+    );
+  }
+
+  /// La ligne choisie bouge de [delta] (page). [debut] : une étape à annuler.
+  void _deplacerChoisi(Offset delta, {bool debut = true}) {
+    final bloc = _blocChoisi;
+    if (bloc == null) return;
+    if (bloc.estSaisie) {
+      _calcul.deplacerSaisie(bloc, delta);
+      setState(() {});
+      return;
+    }
+    // Pendant un glisser, les traits suivent le doigt sans s'animer.
+    _encre.deplacerTraits(
+      bloc.traits,
+      delta,
+      nouvelleEtape: debut,
+      animer: false,
+    );
+    _surEncre();
+  }
+
+  /// La copie se pose dessous, à la première place libre.
+  void _dupliquerChoisi(Reglages reglages) {
+    final bloc = _blocChoisi;
+    if (bloc == null) return;
+    final zone = _calcul.zoneDe(
+      bloc,
+      approcheVoulue: reglages.approche,
+      virgule: _virgule,
+    );
+    final autres = [
+      for (final b in _calcul.blocs)
+        _calcul.zoneDe(b, approcheVoulue: reglages.approche, virgule: _virgule),
+    ];
+    var delta = Offset(0, zone.height + AppEspacement.md);
+    for (var i = 0; i < 100; i++) {
+      final place = zone.shift(delta).inflate(AppEspacement.xxs);
+      if (!autres.any(place.overlaps)) break;
+      delta += Offset(0, zone.height / 2 + AppEspacement.sm);
+    }
+    final copies = bloc.estSaisie
+        ? const <int, int>{}
+        : _encre.copierTraits(bloc.traits, delta);
+    final copie = _calcul.dupliquer(bloc, delta, copies: copies);
+    _surEncre();
+    setState(() => _choisi = copie.cle);
+    _annoncer(context.l10n.selectionDupliquee);
+  }
+
+  /// Efface [bloc] ; Annuler le rend.
+  void _effacerBloc(BlocCalcul bloc) {
+    if (bloc.cle == _choisi) _choisi = null;
+    if (bloc.estSaisie) {
+      final json = bloc.versJson();
+      _calcul.retirer(bloc);
+      setState(() {});
+      _proposerAnnuler(
+        context.l10n.blocEfface,
+        annuler: () => _calcul.remettre(json),
+      );
+      return;
+    }
+    _encre.retirerTraits(bloc.traits);
+    _surEncre();
+    _proposerAnnuler(context.l10n.blocEfface);
+  }
+
+  Future<void> _copierLatex() async {
+    final latex = _blocChoisi?.latex;
+    if (latex == null || latex.trim().isEmpty) return;
+    await Clipboard.setData(ClipboardData(text: latex.trim()));
+    if (mounted) _annoncer(context.l10n.selectionLatexCopie);
+  }
+
+  void _annoncer(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+          margin: const EdgeInsets.only(
+            left: AppEspacement.sm,
+            right: 72,
+            bottom: AppEspacement.sm,
           ),
         ),
       );
@@ -408,6 +535,17 @@ class _EcranFeuilleState extends State<EcranFeuille> {
       ..bordDroit = MediaQuery.sizeOf(context).width - AppEspacement.sm
       ..auPropre = reglages.auPropre;
     _vue.borner(MediaQuery.sizeOf(context).width, coin: _coin);
+    // ← quitte d'abord le choix d'une ligne.
+    return PopScope(
+      canPop: !_selection,
+      onPopInvokedWithResult: (sorti, _) {
+        if (!sorti && _selection) _terminerSelection();
+      },
+      child: _page(context, reglages, l10n),
+    );
+  }
+
+  Widget _page(BuildContext context, Reglages reglages, AppLocalizations l10n) {
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -479,15 +617,8 @@ class _EcranFeuilleState extends State<EcranFeuille> {
                           _encre.retirerPointDuToucher();
                           _surEncre();
                         },
-                        surEffacer: () {
-                          if (bloc.estSaisie) {
-                            _calcul.retirer(bloc);
-                            return;
-                          }
-                          _encre.retirerTraits(bloc.traits);
-                          _surEncre();
-                          _proposerAnnuler(context.l10n.blocEfface);
-                        },
+                        surEffacer: () => _effacerBloc(bloc),
+                        surChoisir: () => _choisir(bloc),
                       ),
                     if (_calcul.modeleManquant && !_enExport)
                       Positioned(
@@ -519,6 +650,64 @@ class _EcranFeuilleState extends State<EcranFeuille> {
         ),
         if (_encre.estVide && _calcul.blocs.isEmpty)
           _Invitation(support: reglages.support),
+        if (_selection && !_enExport)
+          ListenableBuilder(
+            listenable: _calcul,
+            builder: (context, _) => CoucheSelection(
+              vue: _vue,
+              zone: _zoneChoisie(reglages),
+              surToucher: (point) => setState(
+                () => _choisi = _calcul
+                    .blocSous(
+                      point,
+                      approcheVoulue: reglages.approche,
+                      virgule: _virgule,
+                    )
+                    ?.cle,
+              ),
+              surDeplacer: _deplacerChoisi,
+            ),
+          ),
+        if (_selection && !_enExport)
+          Positioned(
+            // Sous la bascule et le Menu, au milieu.
+            top: 64,
+            left: AppEspacement.sm,
+            right: AppEspacement.sm,
+            child: SafeArea(
+              bottom: false,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 560),
+                  child: ListenableBuilder(
+                    listenable: _calcul,
+                    builder: (context, _) {
+                      final bloc = _blocChoisi;
+                      final enCours =
+                          bloc?.etat == EtatBloc.lecture ||
+                          bloc?.etat == EtatBloc.calcul;
+                      final latex = bloc?.latex?.trim() ?? '';
+                      return BarreSelection(
+                        choisie: bloc != null,
+                        surDeplacer: (sens) =>
+                            _deplacerChoisi(sens / _vue.zoom),
+                        surDupliquer: bloc == null || enCours
+                            ? null
+                            : () => _dupliquerChoisi(reglages),
+                        surSupprimer: () {
+                          if (bloc != null) _effacerBloc(bloc);
+                        },
+                        surCopierLatex: latex.isEmpty
+                            ? null
+                            : () => unawaited(_copierLatex()),
+                        surTerminer: _terminerSelection,
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+          ),
         if (!_enExport)
           Positioned(
             // À gauche du Menu, en haut à droite (Antsa).
@@ -576,6 +765,9 @@ class _EcranFeuilleState extends State<EcranFeuille> {
                   setState(() => _outilsOuverts = false);
                   _calcul.relireTout();
                 },
+                surSelection: _calcul.blocs.isEmpty
+                    ? null
+                    : () => _choisir(null),
                 peutExporter: !_encre.estVide || _calcul.blocs.isNotEmpty,
                 surExporter: (format) => unawaited(
                   exporter(
@@ -654,6 +846,7 @@ class _Outils extends StatelessWidget {
     required this.surGomme,
     required this.surChangement,
     required this.surRelire,
+    required this.surSelection,
     required this.peutExporter,
     required this.surExporter,
   });
@@ -669,6 +862,7 @@ class _Outils extends StatelessWidget {
   final ValueChanged<bool> surGomme;
   final VoidCallback surChangement;
   final VoidCallback surRelire;
+  final VoidCallback? surSelection;
 
   Offset _centre(BuildContext context) {
     final taille = MediaQuery.sizeOf(context);
@@ -730,6 +924,7 @@ class _Outils extends StatelessWidget {
             ? (valeur) => _agir(() => reglages.ecrireAuDoigt = valeur)
             : null,
       ),
+      ligne(Icons.highlight_alt, l10n.selectionner, surSelection),
       ligne(Icons.refresh, l10n.relireFeuille, surRelire),
       ligne(
         Icons.undo,

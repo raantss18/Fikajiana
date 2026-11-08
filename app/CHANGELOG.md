@@ -4,6 +4,8 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Choisir une ligne de la Feuille (Outils, ou appui long sur son résultat) : la déplacer au doigt ou aux flèches, la dupliquer dessous, la supprimer (Annuler la rend), copier son LaTeX. / Select a line on the Sheet (Tools, or long-press its result): move it by dragging or with the arrows, duplicate it below, delete it (Undo brings it back), copy its LaTeX.
+
 ## [1.0.8] — 2026-11-08
 
 ### Message fr

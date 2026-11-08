@@ -1442,6 +1442,91 @@ class CalculFeuille extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Ce qu'occupe [bloc] sur la page : son écriture et son résultat. Une
+  /// ligne tapée vit sous sa position, dans la largeur de sa carte.
+  Rect zoneDe(
+    BlocCalcul bloc, {
+    required bool approcheVoulue,
+    required bool virgule,
+  }) {
+    var zone = bloc.estSaisie
+        ? bloc.cadre.topLeft & const Size(480, 64)
+        : bloc.cadre;
+    final ecrit = bloc.ecriture(
+      approcheVoulue: approcheVoulue,
+      virgule: virgule,
+    );
+    if (ecrit != null) zone = zone.expandToInclude(ecrit.cadre);
+    return zone;
+  }
+
+  /// La ligne sous [point] (coordonnées de la page), la plus petite si
+  /// plusieurs s'y croisent ; [marge] élargit chaque zone.
+  BlocCalcul? blocSous(
+    Offset point, {
+    required bool approcheVoulue,
+    required bool virgule,
+    double marge = 8,
+  }) {
+    BlocCalcul? choisi;
+    double? aire;
+    for (final bloc in _blocs.values) {
+      final zone = zoneDe(
+        bloc,
+        approcheVoulue: approcheVoulue,
+        virgule: virgule,
+      ).inflate(marge);
+      if (!zone.contains(point)) continue;
+      final a = zone.width * zone.height;
+      if (aire == null || a < aire) (choisi, aire) = (bloc, a);
+    }
+    return choisi;
+  }
+
+  /// Une ligne tapée change de place ; une ligne écrite suit ses traits.
+  void deplacerSaisie(BlocCalcul bloc, Offset delta) {
+    if (!bloc.estSaisie || delta == Offset.zero) return;
+    bloc
+      ..cadre = bloc.cadre.shift(delta)
+      .._ecritPour = null;
+    notifyListeners();
+  }
+
+  /// Une copie de [bloc], décalée de [delta], avec ce qu'il a déjà lu et
+  /// calculé : rien à relire. [copies] : l'identifiant de chaque trait copié,
+  /// déjà dans l'encre.
+  BlocCalcul dupliquer(
+    BlocCalcul bloc,
+    Offset delta, {
+    Map<int, int> copies = const {},
+  }) {
+    final json = bloc.versJson();
+    final cadre = bloc.cadre.shift(delta);
+    final traits = [for (final id in bloc.traits) ?copies[id]];
+    final cle = bloc.estSaisie
+        ? 'saisie-${DateTime.now().microsecondsSinceEpoch}-${_compteur++}'
+        : 'bloc-${_compteur++}-${traits.firstOrNull ?? 0}';
+    final copie = BlocCalcul.depuisJson({
+      ...json,
+      'cle': cle,
+      'traits': traits,
+      'g': cadre.left,
+      'h': cadre.top,
+      'd': cadre.right,
+      'b': cadre.bottom,
+    });
+    _blocs[cle] = copie;
+    notifyListeners();
+    return copie;
+  }
+
+  /// Remet une ligne retirée (annuler), telle que [BlocCalcul.versJson].
+  void remettre(Map<String, dynamic> json) {
+    final bloc = BlocCalcul.depuisJson(json);
+    _blocs[bloc.cle] = bloc;
+    notifyListeners();
+  }
+
   void arreter() => moteur.interrompre();
 
   /// Le mode d'angle a changé : tout se recalcule depuis ce qui a été lu.

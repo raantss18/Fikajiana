@@ -106,6 +106,105 @@ void main() {
 
   tearDown(() => calcul.dispose());
 
+  group('choisir une ligne', () {
+    Future<BlocCalcul> ligneEcrite() async {
+      _trait(encre, 0, 0);
+      encre.terminer();
+      calcul.encreChangee();
+      await _attendre();
+      return calcul.blocs.single;
+    }
+
+    test('la ligne sous un toucher, résultat compris', () async {
+      final bloc = await ligneEcrite();
+      final centre = bloc.cadre.center;
+      expect(
+        calcul.blocSous(centre, approcheVoulue: false, virgule: true),
+        same(bloc),
+      );
+      expect(
+        calcul.blocSous(
+          const Offset(0, 900),
+          approcheVoulue: false,
+          virgule: true,
+        ),
+        isNull,
+      );
+    });
+
+    test('déplacée, elle garde sa lecture, et Annuler la remet', () async {
+      final bloc = await ligneEcrite();
+      final avant = bloc.cadre;
+      final lectures = lecteur.lectures;
+      encre.deplacerTraits(bloc.traits, const Offset(100, 50));
+      calcul.encreChangee();
+      await _attendre();
+      expect(calcul.blocs.single.cadre, avant.shift(const Offset(100, 50)));
+      expect(calcul.blocs.single.latex, '2+3=');
+      expect(lecteur.lectures, lectures);
+      encre.annuler();
+      calcul.encreChangee();
+      await _attendre();
+      expect(calcul.blocs.single.cadre, avant);
+    });
+
+    test('un glisser ne laisse qu’une étape à annuler', () async {
+      final bloc = await ligneEcrite();
+      final avant = bloc.cadre;
+      encre
+        ..deplacerTraits(bloc.traits, const Offset(5, 0))
+        ..deplacerTraits(bloc.traits, const Offset(5, 0), nouvelleEtape: false)
+        ..deplacerTraits(bloc.traits, const Offset(5, 0), nouvelleEtape: false)
+        ..annuler();
+      calcul.encreChangee();
+      await _attendre();
+      expect(calcul.blocs.single.cadre, avant);
+    });
+
+    test('dupliquée, la copie a déjà son résultat, sans relire', () async {
+      final bloc = await ligneEcrite();
+      final lectures = lecteur.lectures;
+      final entrees = moteur.entrees.length;
+      const delta = Offset(0, 120);
+      final copies = encre.copierTraits(bloc.traits, delta);
+      final copie = calcul.dupliquer(bloc, delta, copies: copies);
+      calcul.encreChangee();
+      await _attendre();
+      expect(calcul.blocs, hasLength(2));
+      expect(copie.traits, copies.values.toSet());
+      expect(copie.traits.intersection(bloc.traits), isEmpty);
+      expect(copie.cadre, bloc.cadre.shift(delta));
+      expect(copie.resultat, bloc.resultat);
+      expect(copie.etat, EtatBloc.fait);
+      expect(lecteur.lectures, lectures);
+      expect(moteur.entrees, hasLength(entrees));
+      // Annuler retire la copie, l'originale reste.
+      encre.annuler();
+      calcul.encreChangee();
+      await _attendre();
+      expect(calcul.blocs.single, same(bloc));
+    });
+
+    test('une ligne tapée se déplace, se duplique, se remet', () async {
+      await calcul.saisir('2+3=', Offset.zero);
+      final bloc = calcul.blocs.single;
+      calcul.deplacerSaisie(bloc, const Offset(10, 20));
+      expect(bloc.cadre.topLeft, const Offset(10, 20));
+      final copie = calcul.dupliquer(bloc, const Offset(0, 80));
+      expect(copie.estSaisie, isTrue);
+      expect(copie.cadre.topLeft, const Offset(10, 100));
+      expect(copie.resultat, bloc.resultat);
+      final json = bloc.versJson();
+      calcul.retirer(bloc);
+      expect(calcul.blocs, [copie]);
+      calcul.remettre(json);
+      expect(
+        calcul.blocs.map((b) => b.cle),
+        containsAll([bloc.cle, copie.cle]),
+      );
+    });
+  });
+
   group('les fonctions de la feuille', () {
     test('une définition ne va pas à Giac', () async {
       await calcul.saisir('y=2x+1', Offset.zero);
