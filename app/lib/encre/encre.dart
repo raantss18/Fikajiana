@@ -72,6 +72,17 @@ class Trait {
     _termine = true;
   }
 
+  /// Une copie de [source] faite de [points], sous un nouvel identifiant :
+  /// une ligne dupliquée à côté de l'originale.
+  new copie(Trait source, this.points)
+    : id = _idSuivant++,
+      stylo = source.stylo,
+      auStylet = source.auStylet,
+      _lisses = [] {
+    points.forEach(_ajouterLisse);
+    _termine = true;
+  }
+
   /// Identifiant stable : désigne ce trait dans un bloc et dans la sauvegarde.
   final int id;
   static int _idSuivant = 0;
@@ -306,6 +317,52 @@ class Encre {
       }
     }
     surDeplacement?.call(paires);
+  }
+
+  /// Déplace les traits [ids] de [delta] (une ligne choisie qu'on bouge).
+  ///
+  /// [nouvelleEtape] : faux pendant un glisser, dont seul le début laisse une
+  /// étape à annuler. [animer] : les traits glissent jusqu'à leur place.
+  void deplacerTraits(
+    Set<int> ids,
+    Offset delta, {
+    bool nouvelleEtape = true,
+    bool animer = true,
+  }) {
+    if (delta == Offset.zero || !_traits.any((t) => ids.contains(t.id))) {
+      return;
+    }
+    if (nouvelleEtape) _memoriser();
+    final paires = <(Trait, Trait)>[];
+    for (var i = 0; i < _traits.length; i++) {
+      final t = _traits[i];
+      if (!ids.contains(t.id)) continue;
+      final deplace = Trait.deplace(t, [
+        for (final p in t.points)
+          PointEncre(p.x + delta.dx, p.y + delta.dy, p.pression),
+      ]);
+      paires.add((t, deplace));
+      _traits[i] = deplace;
+    }
+    if (animer) surDeplacement?.call(paires);
+  }
+
+  /// Copie les traits [ids], décalés de [delta]. S'annule. Rend, pour chaque
+  /// trait copié, l'identifiant de sa copie.
+  Map<int, int> copierTraits(Set<int> ids, Offset delta) {
+    final sources = _traits.where((t) => ids.contains(t.id)).toList();
+    if (sources.isEmpty) return const {};
+    _memoriser();
+    final copies = <int, int>{};
+    for (final t in sources) {
+      final copie = Trait.copie(t, [
+        for (final p in t.points)
+          PointEncre(p.x + delta.dx, p.y + delta.dy, p.pression),
+      ]);
+      copies[t.id] = copie.id;
+      _traits.add(copie);
+    }
+    return copies;
   }
 
   /// Retire les traits qui passent à moins de [rayon] de [position].

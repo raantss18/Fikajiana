@@ -359,7 +359,7 @@ class BlocCalcul {
     // donne rien ne cache jamais l'écriture (téléphone d'Antsa : `A(3;-1)`
     // remplacé par `+(3i-1)`).
     if (!_compris) return null;
-    final cle = '$lu|$cadre';
+    final cle = '$lu|${cleDeRect(cadre)}';
     if (_proprePour != cle) {
       _proprePour = cle;
       _propre = ecrireALaPlace(sansLeftRight(lu), cadre);
@@ -408,7 +408,9 @@ class BlocCalcul {
               .ecriture(approcheVoulue: approcheVoulue, virgule: virgule)
               ?.cadre,
       ];
-      final cle = '$approche$valeur|$cadre|$hauteurLigne|$pris';
+      final cle =
+          '$approche$valeur|${cleDeRect(cadre)}|$hauteurLigne|'
+          '${pris.map(cleDeRect).join(';')}';
       if (_ecritPour != cle) {
         _ecritPour = cle;
         _ecrit = _placer(valeur, pris, approche: approche);
@@ -579,6 +581,11 @@ class BlocCalcul {
     'note': ?note,
   };
 }
+
+/// Un rectangle en texte, pour une clé de cache. Jamais `'$rect'` : en
+/// version publiée, `Rect.toString()` rend « Instance of 'Rect' », et le
+/// cache ne voyait plus rien bouger (Pad 7, 2026-11-08).
+String cleDeRect(Rect r) => '${r.left},${r.top},${r.right},${r.bottom}';
 
 /// `list[-1.41421356237,1.41421356237]` de Giac, en LaTeX et abrégé.
 String _ensembleApproche(String approche) {
@@ -1439,6 +1446,125 @@ class CalculFeuille extends ChangeNotifier {
 
   void retirer(BlocCalcul bloc) {
     _blocs.remove(bloc.cle);
+    notifyListeners();
+  }
+
+  /// Ce qu'occupe [bloc] sur la page : son écriture et son résultat. Une
+  /// ligne tapée vit sous sa position, dans la largeur de sa carte.
+  Rect zoneDe(
+    BlocCalcul bloc, {
+    required bool approcheVoulue,
+    required bool virgule,
+  }) {
+    var zone = bloc.estSaisie
+        ? bloc.cadre.topLeft & const Size(480, 64)
+        : bloc.cadre;
+    final ecrit = bloc.ecriture(
+      approcheVoulue: approcheVoulue,
+      virgule: virgule,
+    );
+    if (ecrit != null) zone = zone.expandToInclude(ecrit.cadre);
+    return zone;
+  }
+
+  /// La ligne sous [point] (coordonnées de la page), la plus petite si
+  /// plusieurs s'y croisent ; [marge] élargit chaque zone.
+  BlocCalcul? blocSous(
+    Offset point, {
+    required bool approcheVoulue,
+    required bool virgule,
+    double marge = 8,
+  }) {
+    BlocCalcul? choisi;
+    double? aire;
+    for (final bloc in _blocs.values) {
+      final zone = zoneDe(
+        bloc,
+        approcheVoulue: approcheVoulue,
+        virgule: virgule,
+      ).inflate(marge);
+      if (!zone.contains(point)) continue;
+      final a = zone.width * zone.height;
+      if (aire == null || a < aire) (choisi, aire) = (bloc, a);
+    }
+    return choisi;
+  }
+
+  /// La ligne que [lasso] entoure (coordonnées de la page) : celle dont la
+  /// plus grande part de la zone est dedans, au moins la moitié.
+  BlocCalcul? blocEntoure(
+    List<Offset> lasso, {
+    required bool approcheVoulue,
+    required bool virgule,
+  }) {
+    if (lasso.length < 3) return null;
+    final chemin = Path()..addPolygon(lasso, true);
+    BlocCalcul? choisi;
+    var meilleure = 0.5;
+    for (final bloc in _blocs.values) {
+      final zone = zoneDe(
+        bloc,
+        approcheVoulue: approcheVoulue,
+        virgule: virgule,
+      );
+      // Une grille de 5 × 5 points dans la zone : la part entourée.
+      var dedans = 0;
+      for (var i = 0; i < 5; i++) {
+        for (var j = 0; j < 5; j++) {
+          final p = Offset(
+            zone.left + zone.width * (i + 0.5) / 5,
+            zone.top + zone.height * (j + 0.5) / 5,
+          );
+          if (chemin.contains(p)) dedans++;
+        }
+      }
+      final part = dedans / 25;
+      if (part >= meilleure) (choisi, meilleure) = (bloc, part);
+    }
+    return choisi;
+  }
+
+  /// Une ligne tapée change de place ; une ligne écrite suit ses traits.
+  void deplacerSaisie(BlocCalcul bloc, Offset delta) {
+    if (!bloc.estSaisie || delta == Offset.zero) return;
+    bloc
+      ..cadre = bloc.cadre.shift(delta)
+      .._ecritPour = null;
+    notifyListeners();
+  }
+
+  /// Une copie de [bloc], décalée de [delta], avec ce qu'il a déjà lu et
+  /// calculé : rien à relire. [copies] : l'identifiant de chaque trait copié,
+  /// déjà dans l'encre.
+  BlocCalcul dupliquer(
+    BlocCalcul bloc,
+    Offset delta, {
+    Map<int, int> copies = const {},
+  }) {
+    final json = bloc.versJson();
+    final cadre = bloc.cadre.shift(delta);
+    final traits = [for (final id in bloc.traits) ?copies[id]];
+    final cle = bloc.estSaisie
+        ? 'saisie-${DateTime.now().microsecondsSinceEpoch}-${_compteur++}'
+        : 'bloc-${_compteur++}-${traits.firstOrNull ?? 0}';
+    final copie = BlocCalcul.depuisJson({
+      ...json,
+      'cle': cle,
+      'traits': traits,
+      'g': cadre.left,
+      'h': cadre.top,
+      'd': cadre.right,
+      'b': cadre.bottom,
+    });
+    _blocs[cle] = copie;
+    notifyListeners();
+    return copie;
+  }
+
+  /// Remet une ligne retirée (annuler), telle que [BlocCalcul.versJson].
+  void remettre(Map<String, dynamic> json) {
+    final bloc = BlocCalcul.depuisJson(json);
+    _blocs[bloc.cle] = bloc;
     notifyListeners();
   }
 

@@ -29,6 +29,7 @@ class RepereBloc extends StatelessWidget {
     required this.vue,
     required this.surTouche,
     required this.surEffacer,
+    this.surChoisir,
     this.enExport = false,
     super.key,
   });
@@ -45,6 +46,9 @@ class RepereBloc extends StatelessWidget {
 
   /// « Effacer » dans le panneau d'une écriture à vérifier.
   final VoidCallback surEffacer;
+
+  /// Appui long : la ligne est choisie (déplacer, dupliquer, effacer).
+  final VoidCallback? surChoisir;
 
   Future<void> _corriger(BuildContext context) async {
     surTouche();
@@ -100,6 +104,15 @@ class RepereBloc extends StatelessWidget {
       case null:
         break;
     }
+  }
+
+  VoidCallback? get _choisirAuLong {
+    final choisir = surChoisir;
+    if (choisir == null || enExport) return null;
+    return () {
+      surTouche();
+      choisir();
+    };
   }
 
   @override
@@ -229,6 +242,7 @@ class RepereBloc extends StatelessWidget {
         vue: vue,
         libelle: l10n.corriger,
         surToucher: () => unawaited(_corriger(context)),
+        surAppuiLong: _choisirAuLong,
       );
     }
 
@@ -484,6 +498,7 @@ class RepereBloc extends StatelessWidget {
           constraints: const BoxConstraints(maxWidth: 480, minHeight: 48),
           child: InkWell(
             onTap: () => unawaited(_corriger(context)),
+            onLongPress: _choisirAuLong,
             child: Center(widthFactor: 1, child: contenu),
           ),
         ),
@@ -639,12 +654,14 @@ class _Zone extends StatelessWidget {
     required this.vue,
     required this.libelle,
     required this.surToucher,
+    this.surAppuiLong,
   });
 
   final Rect cadre;
   final VueFeuille vue;
   final String libelle;
   final VoidCallback surToucher;
+  final VoidCallback? surAppuiLong;
 
   @override
   Widget build(BuildContext context) {
@@ -661,6 +678,7 @@ class _Zone extends StatelessWidget {
           // Le stylet passe aussi à la feuille : on rature un résultat.
           behavior: HitTestBehavior.translucent,
           onTap: surToucher,
+          onLongPress: surAppuiLong,
           child: SizedBox(
             width: largeur < 48 ? 48 : largeur,
             height: hauteur < 48 ? 48 : hauteur,

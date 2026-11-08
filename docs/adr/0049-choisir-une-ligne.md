@@ -1,0 +1,8 @@
+# ADR 0049 — Choisir une ligne de la Feuille : un outil, pas un geste d'écriture
+
+- **Date** : 2026-11-08 · **Statut** : accepté
+- **Contexte** : Antsa veut sélectionner un bloc pour le déplacer, le dupliquer, le supprimer, copier son LaTeX, et aussi le choisir en l'entourant. Sur la Feuille, l'appui long immobile du stylet sert déjà à redresser un trait en forme nette (`formerDernierTrait`), et un cercle tracé est de l'écriture (`0`, `o`, parenthèses).
+- **Décision** : un outil « Choisir une ligne » (Outils) pose une couche au-dessus de la Feuille : toucher ou entourer (lasso, au moins la moitié de la zone dedans) choisit ; glisser la ligne choisie la déplace (une seule étape à annuler) ; deux doigts font défiler. L'appui long sur un résultat y entre aussi. Barre en toutes lettres (Dupliquer, Supprimer, Copier le LaTeX, Terminer) et quatre flèches, alternative au glisser (WCAG 2.2, 2.5.7). La copie reprend la lecture et le calcul de l'originale : rien à relire. ← quitte l'outil.
+- **Écarté** : un lasso au stylet pendant l'écriture (prendrait des `0` pour des sélections).
+- **Vu en route** : en version publiée, `Rect.toString()` rend « Instance of 'Rect' ». Les clés de cache `'$lu|$cadre'` ne changeaient donc jamais : l'écriture au propre restait à l'ancienne place, et un résultat ne se replaçait pas quand les lignes d'avant bougeaient. Clés écrites avec `cleDeRect`.
+- **Vérifié** : Pad 7 `8df629a`, plein écran paysage, téléphone portrait et paysage (fenêtre flottante) : choisir, lasso, glisser, flèches, Dupliquer, Supprimer puis Annuler, Copier le LaTeX. Tests : `selection_ecran_test`, `calcul_feuille_test`, `encre_test`. **Supposé** : une ligne déplacée au-dessus d'une définition n'est pas recalculée (l'ordre de la feuille compte, ADR 0029).

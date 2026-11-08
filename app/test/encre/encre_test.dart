@@ -9,6 +9,35 @@ void main() {
   const loin = PointEncre(100, 100, 1);
 
   group('Encre', () {
+    test('copier des traits : nouveaux identifiants, décalés, annulable', () {
+      final encre = Encre()
+        ..commencer(a)
+        ..prolonger(b);
+      final source = encre.traits.single;
+      final copies = encre.copierTraits({source.id}, const Offset(5, 5));
+      expect(encre.traits, hasLength(2));
+      final copie = encre.traits.last;
+      expect(copies, {source.id: copie.id});
+      expect(copie.id, isNot(source.id));
+      expect(copie.points.first.position, const Offset(5, 5));
+      encre.annuler();
+      expect(encre.traits.single, same(source));
+    });
+
+    test('déplacer des traits garde leur identifiant', () {
+      final encre = Encre()
+        ..commencer(a)
+        ..prolonger(b);
+      final id = encre.traits.single.id;
+      encre.deplacerTraits({id}, const Offset(1, 2));
+      expect(encre.traits.single.id, id);
+      expect(encre.traits.single.points.last.position, const Offset(11, 22));
+      encre
+        ..deplacerTraits({id}, Offset.zero)
+        ..annuler();
+      expect(encre.traits.single.points.last.position, const Offset(10, 20));
+    });
+
     test('annuler et refaire reviennent exactement au même état', () {
       final encre = Encre()
         ..commencer(a)
