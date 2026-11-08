@@ -184,8 +184,17 @@ const _autresFonctions = {'det': 'det', 'arg': 'arg', 'Re': 're', 'Im': 'im'};
 
 /// Écrits lettre après lettre, ils ne valent un nom que devant `(` : `det`
 /// peut aussi être le produit de trois lettres.
-final List<String> _nomsDevantParenthese = [...nomsDeCalcul, 'arg', 'Re', 'Im']
-  ..sort((a, b) => b.length - a.length);
+final List<String> _nomsDevantParenthese = [
+  ...nomsDeCalcul,
+  ..._mesures,
+  'arg',
+  'Re',
+  'Im',
+]..sort((a, b) => b.length - a.length);
+
+/// Les mesures d'une figure entre points déclarés : `angle(A;B;C)`,
+/// `aire(ABC)`, `perimetre(ABC)`.
+const _mesures = {'angle', 'aire', 'perimetre'};
 
 /// Noms que l'écriture sans barre oblique peut donner, lettre après lettre.
 const _nomsEnLettres = [
@@ -265,6 +274,8 @@ final _listeStatistique = RegExp(
 
 List<_Jeton> _decouper(String texte) {
   final latex = texte
+      // `périmètre` : le lecteur ne connaît que les lettres sans accent.
+      .replaceAll(RegExp('p[ée]rim[eè]tre'), 'perimetre')
       // `1{,}5` : c'est ainsi que l'app écrit elle-même une virgule décimale.
       .replaceAll(RegExp(r'\{\s*,\s*\}'), ',')
       .replaceAllMapped(
@@ -864,6 +875,82 @@ class LecteurLatex {
     return (q.$1 - p.$1, q.$2 - p.$2);
   }
 
+  /// Les sommets d'une mesure : `(A;B;C)`, `(ABC)`, `{ABC}` ou `ABC`.
+  List<String> _sommets() {
+    final ferme = _prendre('(')
+        ? ')'
+        : _prendre('{')
+        ? '}'
+        : null;
+    final noms = <String>[];
+    while (_courant.genre == _Genre.lettre ||
+        _courant.est(';') ||
+        _courant.est(',')) {
+      if (_courant.genre == _Genre.lettre) noms.add(_courant.texte);
+      _i++;
+      if (ferme == null && noms.length == 3) break;
+    }
+    if (ferme != null) _attendre(ferme);
+    for (final n in noms) {
+      if (!points.containsKey(n)) throw ErreurLatex('point inconnu : $n');
+    }
+    return noms;
+  }
+
+  /// `angle(A;B;C)`, `\widehat{ABC}` : l'angle géométrique en B, de 0 à
+  /// 180°. `aire(ABC)`, `perimetre(ABC)` : du polygone. Valeurs exactes
+  /// quand les coordonnées le sont : Giac simplifie.
+  Terme _mesure(String nom) {
+    final sommets = _sommets();
+    demandeResultat = true;
+    String c(String n, int i) {
+      final p = points[n]!;
+      return _exact(i == 0 ? p.$1 : p.$2);
+    }
+
+    if (nom == 'angle' || nom == 'widehat') {
+      if (sommets.length != 3) throw ErreurLatex('$nom attend trois points');
+      final [a, b, s] = sommets;
+      final (u, v) = (_ecart(b, a), _ecart(b, s));
+      if ((u.$1 == 0 && u.$2 == 0) || (v.$1 == 0 && v.$2 == 0)) {
+        throw const ErreurLatex('angle sans côté');
+      }
+      String d(String p, String q, int i) => '(${c(q, i)}-${c(p, i)})';
+      final (ux, uy, vx, vy) = (d(b, a, 0), d(b, a, 1), d(b, s, 0), d(b, s, 1));
+      // Giac rend des degrés quand le réglage le demande (angle_radian).
+      return Terme(
+        'acos(($ux*$vx+$uy*$vy)/'
+        '(sqrt($ux^2+$uy^2)*sqrt($vx^2+$vy^2)))',
+      );
+    }
+    if (sommets.length < 3) throw ErreurLatex('$nom attend trois points');
+    final n = sommets.length;
+    String x(int i) => c(sommets[i % n], 0);
+    String y(int i) => c(sommets[i % n], 1);
+    if (nom == 'aire') {
+      // Formule du lacet : la moitié de la somme des déterminants.
+      final termes = [
+        for (var i = 0; i < n; i++) '(${x(i)}*${y(i + 1)}-${x(i + 1)}*${y(i)})',
+      ];
+      return Terme('abs(${termes.join('+')})/2');
+    }
+    final cotes = [
+      for (var i = 0; i < n; i++)
+        'sqrt((${x(i + 1)}-${x(i)})^2+(${y(i + 1)}-${y(i)})^2)',
+    ];
+    return Terme(cotes.join('+'));
+  }
+
+  /// `0.5` s'écrit `(1/2)` : Giac garde alors un résultat exact.
+  static String _exact(double v) {
+    if (v == v.roundToDouble()) return '(${v.toInt()})';
+    for (var q = 2; q <= 1000; q++) {
+      final p = (v * q).roundToDouble();
+      if ((v * q - p).abs() < 1e-9) return '(${p.toInt()}/$q)';
+    }
+    return '($v)';
+  }
+
   static String _nombre(double v) =>
       v == v.roundToDouble() ? v.toInt().toString() : v.toString();
 
@@ -1036,6 +1123,7 @@ class LecteurLatex {
       }
       return Terme('${_statistiques[nom]}($liste)');
     }
+    if (_mesures.contains(nom) || nom == 'widehat') return _mesure(nom);
     if (nom == 'discriminant') return _discriminant();
     if (nom == 'tangente') return _tangente();
     switch (nom) {

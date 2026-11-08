@@ -145,15 +145,15 @@ void main() {
           langue: langue,
         );
         // Tout le catalogue défile, sans erreur de mise en page, jusqu’aux
-        // gestes, la dernière famille.
+        // Réglages et documents, la dernière famille.
         final liste = find.byType(ListView);
-        for (var i = 0; i < 80; i++) {
+        for (var i = 0; i < 120; i++) {
           await t.drag(liste, const Offset(0, -400));
           await t.pump();
         }
         await t.pumpAndSettle();
         expect(t.takeException(), isNull);
-        expect(find.byKey(const ValueKey('guide.mainLevee')), findsOneWidget);
+        expect(find.byKey(const ValueKey('guide.tour')), findsOneWidget);
         // Les boutons Essayer font au moins 48 dp.
         for (final e in t.widgetList<FilledButton>(find.byType(FilledButton))) {
           expect(t.getSize(find.byWidget(e)).height, greaterThanOrEqualTo(48));
