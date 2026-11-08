@@ -127,4 +127,37 @@ void main() {
     expect(tete('u_{3}='), isFalse);
     expect(tete("f'(x)="), isFalse);
   });
+
+  test('{x = ; y = t²} puis t×sin(t) écrit après : une seule courbe', () async {
+    // Feuille de 15 h 14 : la fin de la première ligne, écrite après la
+    // pause, faisait un autre bloc, lu comme une flèche.
+    final traits = _charger('param_t_sin_t');
+    const lu =
+        r'\left\{ \begin{matrix} x = t \times \sin ( t ) \\ y = t ^ { 2 } '
+        r'\end{matrix} \right.';
+    final blocs = await _ecrire(traits, _Modele({_ids(traits): lu}));
+    expect(blocs, hasLength(1));
+    // La barre haute de son `t` n'est pas une flèche de vecteur.
+    expect(trouverStructure(traits), isNot(isA<StructureFleche>()));
+    expect(blocs.single.courbeSeule, isTrue);
+  });
+
+  test('y = t·sin(t) lu tan(t) : le point du i le corrige', () {
+    final traits = _charger('param_cos_t_sin_t');
+    const lu =
+        r'\left\{ \begin{matrix} x = \cos t \\ y = \tan \left( t \right) '
+        r'\end{matrix} \right.';
+    expect(redresserTan(traits, lu), contains(r'y = t\sin \left( t \right)'));
+    // Sans le point du i (ajouté après coup par Antsa), rien ne change.
+    final sansPoint = [
+      for (final t in traits)
+        if (t.id != 4842) t,
+    ];
+    expect(redresserTan(sansPoint, lu), lu);
+    // Un sin déjà lu explique le point.
+    expect(
+      redresserTan(traits, r'x = \cos t , y = t \sin ( t )'),
+      r'x = \cos t , y = t \sin ( t )',
+    );
+  });
 }

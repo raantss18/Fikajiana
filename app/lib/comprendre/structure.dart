@@ -168,6 +168,25 @@ StructureFleche? _fleche(List<Trait> traits) {
     }
     // Le trait du haut d'un `=` n'a qu'un trait plat dessous.
     if (!lettres) continue;
+    // Une lettre qui monte nettement au-dessus du trait le traverse : c'est
+    // la barre d'un `t` (feuille d'Antsa, `x = t×sin(t)`), pas une flèche.
+    // Une pointe traverse aussi la barre, mais elle est petite : seul un
+    // trait haut comme les lettres compte.
+    final hauteursLettres = [
+      for (final t in dessous)
+        if (!_plat(_c(t))) _c(t).height,
+    ]..sort();
+    final lettre = hauteursLettres.isEmpty
+        ? 0.0
+        : hauteursLettres[hauteursLettres.length ~/ 2];
+    final traverse = [...dessous, ...pointes].any((t) {
+      final c = _c(t);
+      return !_plat(c) &&
+          c.height >= 0.8 * lettre &&
+          f.center.dy - c.top > 0.25 * c.height &&
+          c.bottom - f.center.dy > 0.25 * c.height;
+    });
+    if (traverse) continue;
     // Rien au-dessus sauf la pointe, près du bout droit : sinon, une fraction.
     final pointeAuBout = pointes.every((p) {
       final c = _c(p);
@@ -1259,6 +1278,45 @@ String redresserLettres(List<Trait> traits, String latex) {
   }
   sortie.write(latex.substring(depuis));
   return sortie.toString();
+}
+
+/// `y = t·sin(t)` lu `y = \tan(t)` : le `s` et le `i` d'Antsa, tracés d'un
+/// seul trait, ressemblent à un `a` (Pad 7, 15 h 14). Mais le `i` a son point,
+/// que `tan` n'a pas : un petit trait au-dessus d'une lettre, que la lecture
+/// n'explique par aucun `i`, `j` ou `\sin`. Alors `\tan` est `t\sin`.
+String redresserTan(List<Trait> traits, String latex) {
+  final tan = RegExp(r'\\tan(?![a-zA-Z])');
+  if (!tan.hasMatch(latex) || traits.isEmpty) return latex;
+  // La hauteur des lettres, sans les traits plats (`=`, barres de `t`).
+  final hauteurs = [
+    for (final t in traits)
+      if (!_plat(_c(t))) _c(t).height,
+  ]..sort();
+  if (hauteurs.isEmpty) return latex;
+  final h = hauteurs[hauteurs.length ~/ 2];
+  bool petit(Rect c) => math.max(c.width, c.height) < 0.45 * h;
+  var points = 0;
+  for (final t in traits) {
+    final p = _c(t);
+    if (!petit(p)) continue;
+    // Une lettre juste dessous, que le point coiffe.
+    final dessous = traits.any((u) {
+      final c = _c(u);
+      return !identical(u, t) &&
+          !petit(c) &&
+          !_plat(c) &&
+          p.center.dx >= c.left - 0.2 * h &&
+          p.center.dx <= c.right + 0.2 * h &&
+          p.center.dy < c.top + 0.25 * c.height &&
+          c.center.dy - p.center.dy < 1.5 * h;
+    });
+    if (dessous) points++;
+  }
+  final expliques = RegExp(r'\\sin|(?<![a-zA-Z\\])[ij](?![a-zA-Z])')
+      .allMatches(latex)
+      .length;
+  if (points <= expliques) return latex;
+  return latex.replaceFirst(tan, r't\sin');
 }
 
 /// `AB =` : deux capitales seules, que le modèle lit `λ·β` (Pad 7). Si les
