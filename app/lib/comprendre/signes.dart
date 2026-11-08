@@ -384,6 +384,21 @@ const Map<String, List<_Dessin>> _lettres = {
       [(0, 1), (.5, 0), (1, 1)],
       [(.2, .6), (.8, .6)],
     ],
+    // D'un seul trait : la jambe gauche descendue puis remontée, la droite,
+    // puis la barre en revenant (le `A` d'Antsa, Pad 7, lu `h` sans ce
+    // modèle ; relevé sur son trait, simplifié).
+    [
+      [
+        (0.38, 0.01),
+        (0.20, 1.00),
+        (0.27, 0.05),
+        (1.00, 0.94),
+        (0.89, 0.79),
+        (0.67, 0.71),
+        (0.20, 0.67),
+        (0.00, 0.72),
+      ],
+    ],
   ],
   'B': [
     [
