@@ -4,6 +4,18 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+## [1.1.1] — 2026-11-09
+
+### Message fr
+
+Chaque ligne n'a plus qu'un seul petit bouton, qui ouvre une liste : juste, faux, corriger, autres lectures, tracer ou placer, et les actions (résoudre, dériver, intégrer…). Plus rien ne se chevauche sur la Feuille ; une coche ou une croix montre la ligne jugée.
+
+### Message en
+
+Each line now has a single small button that opens one list: right, wrong, correct, other readings, plot or place, and the actions (solve, differentiate, integrate…). Nothing overlaps on the Sheet anymore; a tick or a cross shows a judged line.
+
+### Changements
+
 - Chaque ligne lue n'a plus qu'un petit bouton, posé sans rien couvrir : sa liste réunit juste, faux, corriger, les autres lectures, tracer ou placer, et ce qu'on peut en faire (résoudre, dériver…). Plus de pouces ni de mots qui se chevauchent sur les lignes voisines ; une ligne jugée juste porte une petite coche. / Each read line now has a single small button, placed without covering anything: its list gathers right, wrong, correct, the other readings, plot or place, and what can be done with it (solve, derive…). No more thumbs or words overlapping neighbouring lines; a line marked right shows a small tick.
 
 ## [1.1.0] — 2026-11-08
