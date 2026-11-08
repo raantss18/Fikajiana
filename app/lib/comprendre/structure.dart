@@ -773,9 +773,11 @@ Future<String?> lireStructure(Lecteur lecteur, List<Trait> traits) async {
       :final exposant,
     ):
       final lignes = <String>[];
+      var carree = true;
       for (final ligne in cases) {
         final valeurs = await _lireLigne(lecteur, ligne);
         if (valeurs == null) return null;
+        carree = carree && valeurs.length == cases.length;
         lignes.add(valeurs.join('&'));
       }
       final matrice = '\\begin{pmatrix}${lignes.join(r'\\')}\\end{pmatrix}';
@@ -797,6 +799,9 @@ Future<String?> lireStructure(Lecteur lecteur, List<Trait> traits) async {
       // modèle hésite (`A=`, `\Lambda=`, `\alpha=`).
       final declaration = _declarationDeMatrice(avant, tete);
       if (declaration != null) return '$declaration=$matrice$apres';
+      // Un déterminant n'existe que pour une matrice carrée : devant une
+      // matrice 2×3, le nom mal lu (le `M` d'Antsa, Pad 7) donnait `= −6`.
+      if (!carree) return '${facteur ? avant : ''}$matrice$apres';
       final nom = ressembleADet(avant) || !facteur ? r'\det ' : avant;
       return '$nom$matrice$apres';
   }

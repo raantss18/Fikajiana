@@ -4,6 +4,8 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Un point `D(4,−8)` écrit à la main se lit ; une matrice non carrée n'a plus de « déterminant ». / A handwritten point `D(4,−8)` is read; a non-square matrix no longer gets a "determinant".
+
 - `résoudre(…)` écrit à la main résout l'équation entre parenthèses ; `f(x) = k(x)` entre deux fonctions de la feuille se résout ; `g(x) =` puis la suite écrite après une pause restent une seule ligne. / Handwritten `résoudre(…)` solves the equation in brackets; `f(x) = k(x)` between two functions of the sheet is solved; `g(x) =` followed after a pause by the rest stays a single line.
 
 - Les suites sur plusieurs lignes se calculent : `uₙ = 2n + 3` puis `u₁₀ =`, une somme ou une limite ; `w₀ = 2` puis `wₙ₊₁ = 3wₙ − 4` puis `w₃ =`. Les dérivées s'écrivent simplifiées, `1/e` au lieu de « inv(e¹) », et la lecture au tracé est plus rapide. / Sequences over several lines are computed: `uₙ = 2n + 3` then `u₁₀ =`, a sum or a limit; `w₀ = 2` then `wₙ₊₁ = 3wₙ − 4` then `w₃ =`. Derivatives are simplified, `1/e` instead of "inv(e¹)", and stroke reading is faster.

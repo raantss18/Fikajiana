@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:fikajiana/comprendre/calcul_feuille.dart';
 import 'package:fikajiana/comprendre/mots.dart';
+import 'package:fikajiana/comprendre/structure.dart';
 import 'package:fikajiana/comprendre/trace_ligne.dart';
 import 'package:fikajiana/encre/encre.dart';
 import 'package:fikajiana/moteur/giac.dart';
@@ -68,6 +69,8 @@ Future<List<BlocCalcul>> _ecrire(List<Trait> traits, Lecteur lecteur) async {
   return calcul.blocs.toList();
 }
 
+Set<int> _ids(List<Trait> traits) => {for (final t in traits) t.id};
+
 void main() {
   test('g(x) = puis x − 1/x écrit après une pause : une seule ligne', () async {
     // Feuille de 14 h 05 : `g(x) =` lu `y^{(x)}=` fermait la ligne, et la
@@ -99,4 +102,16 @@ void main() {
     expect(classes.first.$1, 'résoudre', reason: '$classes');
     expect(motSur(classes), 'résoudre', reason: '$classes');
   });
+
+  test(
+    'M devant une matrice 2×3 : jamais un det (feuille de 15 h 14)',
+    () async {
+      final traits = _charger('M_matrice_2x3');
+      expect(trouverStructure(traits), isA<StructureMatrice>());
+      // Le modèle lisait le M comme un mot quelconque, devenu `det` : `= −6`.
+      final lu = await lireStructure(_Modele({_ids(traits): '1 3 5'}), traits);
+      expect(lu, isNotNull);
+      expect(lu, isNot(contains(r'\det')));
+    },
+  );
 }

@@ -104,6 +104,28 @@ void main() {
       expect(lu, isNot(contains(r'\det')));
     });
 
+    test('pas de det devant une matrice 2×3 (le M d’Antsa, Pad 7)', () async {
+      trait(0, 40, 20, 40);
+      trait(30, 45, 10, 35);
+      trait(80, 0, 12, 135); // (
+      chiffre(110, 10);
+      chiffre(215, 10);
+      chiffre(300, 10);
+      chiffre(110, 75);
+      chiffre(215, 75);
+      chiffre(300, 75);
+      trait(350, 0, -12, 135); // )
+      final s = trouverStructure(encre.traits)! as StructureMatrice;
+      expect(s.cases, hasLength(2));
+      final l = _Lecteur((t) {
+        if (t.length == 2 && _c0(t) < 80) return r'\Kappa';
+        return '1 2 3';
+      });
+      final lu = await lireStructure(l, encre.traits);
+      expect(lu, isNot(contains(r'\det')));
+      expect(lu, r'\begin{pmatrix}1&1&1\\1&1&1\end{pmatrix}');
+    });
+
     test('-2 -8 serrés restent deux cases', () {
       trait(0, 0, 10, 130);
       chiffre(20, 5);
