@@ -19,27 +19,71 @@ import 'package:fikajiana_math/fikajiana_math.dart';
 String? lireAuTrace(List<Trait> traits) => lireAuTraceDetaille(traits)?.latex;
 
 /// Une ligne lue au tracé, et chacun de ses signes : ses traits et ce qu'on
-/// y a lu, de gauche à droite (ADR 0041).
-typedef LectureTrace = ({String latex, List<(List<Trait>, String)> signes});
+/// y a lu, de gauche à droite (ADR 0041). `doute` : un signe au moins a été
+/// tranché sans certitude (lecture indulgente, ADR 0050) ; `surs` sont les
+/// signes lus sans doute, dans l'ordre.
+typedef LectureTrace = ({
+  String latex,
+  List<(List<Trait>, String)> signes,
+  bool doute,
+  List<String> surs,
+});
 
 /// Les signes lus par la lecture en cours.
 List<(List<Trait>, String)>? _lus;
 
+/// La lecture en cours tranche les signes douteux au lieu de renoncer.
+var _indulgent = false;
+
+/// Les signes de la lecture en cours tranchés sans certitude.
+Set<_Glyphe>? _douteux;
+
 /// Comme [lireAuTrace], avec les signes lus : toucher l'un d'eux propose
 /// d'autres lectures.
-LectureTrace? lireAuTraceDetaille(List<Trait> traits) {
-  final avant = _lus;
+///
+/// [indulgent] : un signe que seule sa hauteur départage (`0` ou `o`, `2`
+/// ou `z`, `1` ou `l`) est tranché au plus probable au lieu de rendre
+/// `null` ; la lecture rendue le dit alors (`doute`). Ce qui
+/// ne se lit pas du tout (une structure, un signe inconnu) rend toujours
+/// `null` (ADR 0050).
+LectureTrace? lireAuTraceDetaille(
+  List<Trait> traits, {
+  bool indulgent = false,
+}) {
+  final avant = (_lus, _indulgent, _douteux);
   final lus = _lus = [];
+  final douteux = _douteux = {};
+  _indulgent = indulgent;
   try {
     final latex = _lireLigne(traits);
     if (latex == null) return null;
     lus.sort(
       (a, b) => cadreDuGroupe(a.$1).left.compareTo(cadreDuGroupe(b.$1).left),
     );
-    return (latex: latex, signes: lus);
+    final traitsDouteux = {for (final g in douteux) ...g.traits};
+    return (
+      latex: latex,
+      signes: lus,
+      doute: douteux.isNotEmpty,
+      surs: [
+        for (final (t, signe) in lus)
+          if (!t.any(traitsDouteux.contains)) signe,
+      ],
+    );
   } finally {
-    _lus = avant;
+    _lus = avant.$1;
+    _indulgent = avant.$2;
+    _douteux = avant.$3;
   }
+}
+
+/// En lecture indulgente, [g] prend [signe] et la ligne est marquée
+/// douteuse ; sinon `false` : la lecture renonce.
+bool _trancherSansCertitude(_Glyphe g, String? signe) {
+  if (!_indulgent || signe == null) return false;
+  g.signe = signe;
+  _douteux?.add(g);
+  return true;
 }
 
 /// Les signes d'une ligne, comme la lecture au tracé les découpe.
@@ -528,6 +572,11 @@ bool _classer(_Glyphe g, double hauteur) {
       g.candidats = const {'1': 0, 'I': 0};
       return true;
     }
+    // Indulgente : le gabarit le plus proche, marqué douteux.
+    if (!g.petit &&
+        _trancherSansCertitude(g, signeLePlusProche(dessinDe(g.traits)))) {
+      return true;
+    }
     return g.petit;
   }
   _poser(g, lu);
@@ -719,7 +768,10 @@ bool _trancher(List<_Glyphe> glyphes) {
           for (final MapEntry(:key, :value) in g.candidats.entries)
             if (!_minusculeSimple(key)) key: value,
         };
-      } else {
+      } else if (!_trancherSansCertitude(
+        g,
+        g.candidats.keys.where(_chiffre).firstOrNull,
+      )) {
         return false;
       }
     }
@@ -742,7 +794,7 @@ bool _trancher(List<_Glyphe> glyphes) {
       g.signe = minuscule;
     } else if (rapport >= 0.9 && capitale != null) {
       g.signe = capitale;
-    } else {
+    } else if (!_trancherSansCertitude(g, minuscule)) {
       return false;
     }
   }
@@ -772,7 +824,10 @@ bool _trancher(List<_Glyphe> glyphes) {
         continue;
       }
       final basse = lettres.where((v) => _basses.contains(v.signe)).firstOrNull;
-      if (basse == null) return false;
+      if (basse == null) {
+        if (_trancherSansCertitude(g, chiffre)) continue;
+        return false;
+      }
       final rapport = g.cadre.height / basse.cadre.height;
       // Une minuscule basse seulement : un `l` est aussi haut qu'un `1`.
       final minuscule = g.candidats.keys.where(_basses.contains).firstOrNull;
@@ -780,7 +835,7 @@ bool _trancher(List<_Glyphe> glyphes) {
         g.signe = chiffre;
       } else if (rapport <= 1.15 && minuscule != null) {
         g.signe = minuscule;
-      } else {
+      } else if (!_trancherSansCertitude(g, chiffre)) {
         return false;
       }
     }

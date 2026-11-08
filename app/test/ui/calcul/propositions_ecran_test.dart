@@ -103,5 +103,37 @@ void main() {
     }
     await t.tap(find.byTooltip("Résoudre : écrire l'équation dessous"));
     expect(poses, [r'\text{résoudre}\left(x^{2}-5x+6=0\right)']);
+
+    // À confirmer : un pointillé que TalkBack nomme ; il part ensuite.
+    expect(find.bySemanticsLabel('Lecture à confirmer'), findsNothing);
+    bloc.aConfirmer = true;
+    calcul.notifyListeners();
+    await t.pumpWidget(
+      PorteeServices(
+        services: Services.enMemoire(),
+        child: PorteeReglages(
+          reglages: Reglages(),
+          child: MaterialApp(
+            locale: const Locale('fr'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: Stack(
+                children: [
+                  RepereBloc(
+                    bloc: bloc,
+                    calcul: calcul,
+                    vue: vue,
+                    surTouche: () {},
+                    surEffacer: () {},
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    expect(find.bySemanticsLabel('Lecture à confirmer'), findsOneWidget);
   });
 }

@@ -1264,6 +1264,24 @@ class MesureEnAttente implements Exception {
 final _distancesVues = <String, Map<String, double>>{};
 
 /// La distance de [traits] à chaque signe, au plus proche de ses modèles.
+/// Le gabarit le plus proche de [traits], sans exiger d'écart avec le
+/// suivant : une lecture indulgente le prend en le marquant douteux
+/// (ADR 0050). `null` s'il est plus loin que le seuil de son genre.
+String? signeLePlusProche(List<List<Offset>> traits) {
+  final d = _distancesTrace(traits);
+  String? proche;
+  for (final MapEntry(:key, :value) in d.entries) {
+    if (proche == null || value < d[proche]!) proche = key;
+  }
+  if (proche == null) return null;
+  final seuil = _estChiffre(proche)
+      ? _seuilTrace
+      : _estMinuscule(proche)
+      ? _seuilMinuscule
+      : _seuil;
+  return d[proche]! <= seuil ? proche : null;
+}
+
 Map<String, double> _distancesTrace(List<List<Offset>> traits) {
   final cle = [
     for (final t in traits)

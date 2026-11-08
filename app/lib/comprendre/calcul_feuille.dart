@@ -97,6 +97,7 @@ class BlocCalcul {
       ..hauteurLigne = (json['hl'] as num?)?.toDouble()
       ..demandeResultat = json['dr'] as bool? ?? false
       ..lueParMorceaux = json['lm'] as bool? ?? false
+      ..aConfirmer = json['ac'] as bool? ?? false
       ..inconnueMatrice = json['im'] as String?
       ..note = json['note'] as String?
       .._points = json['points'] as int? ?? 0;
@@ -164,6 +165,14 @@ class BlocCalcul {
   /// Lue par morceaux : ce qui a été compris se montre, un chiffre peut être
   /// faux et le résultat avec lui.
   bool lueParMorceaux = false;
+
+  /// Lue au tracé avec un signe douteux : affichée et calculée tout de
+  /// suite, le modèle la confirme en arrière-plan (ADR 0050).
+  bool aConfirmer = false;
+
+  /// Les signes que le tracé a lus sans doute : une autre lecture doit les
+  /// garder pour remplacer celle-ci.
+  List<String> signesSurs = const [];
 
   /// Un mot écrit à côté d'une ligne, `longueur` : une note, pas un calcul
   /// à signaler (Pad 7).
@@ -577,6 +586,7 @@ class BlocCalcul {
     'hl': ?hauteurLigne,
     if (demandeResultat) 'dr': true,
     if (lueParMorceaux) 'lm': true,
+    if (aConfirmer) 'ac': true,
     'im': ?inconnueMatrice,
     'note': ?note,
   };
@@ -594,6 +604,21 @@ String _ensembleApproche(String approche) {
       .split(',')
       .map(abregerApproche);
   return '\\{${valeurs.join(',')}\\}';
+}
+
+/// Les signes sûrs du tracé se retrouvent, dans l'ordre, dans [latex] :
+/// une lecture du modèle qui les contredit ne remplace pas (ADR 0050).
+bool accordeAuxSignesSurs(List<String> surs, String latex) {
+  final plat = normaliserLatex(latex);
+  var depuis = 0;
+  for (final signe in surs) {
+    final cle = signe.replaceAll(RegExp(r'[{}\\]'), '');
+    if (cle.isEmpty) continue;
+    final ici = plat.indexOf(cle, depuis);
+    if (ici < 0) return false;
+    depuis = ici + cle.length;
+  }
+  return true;
 }
 
 /// Ce que la feuille propose de faire d'une ligne comprise (Antsa).
@@ -658,8 +683,19 @@ class CalculFeuille extends ChangeNotifier {
     this.pauseConnue = const Duration(milliseconds: 400),
     ClasseurAppris? classeur,
     bool Function()? degres,
+    this.calmeAvantConfirmation = const Duration(milliseconds: 600),
+    LectureTrace? Function(List<Trait>)? traceIndulgent,
   }) : degres = degres ?? (() => false),
+       traceIndulgent =
+           traceIndulgent ??
+           ((traits) => lireAuTraceDetaille(traits, indulgent: true)),
        classeur = classeur ?? ClasseurAppris(ecritures: Ecritures());
+
+  /// Le stylet au repos depuis ce temps : le modèle peut confirmer une ligne.
+  final Duration calmeAvantConfirmation;
+
+  /// La lecture au tracé qui tranche les signes douteux (ADR 0050).
+  final LectureTrace? Function(List<Trait>) traceIndulgent;
 
   /// Les signes lus de [bloc], avec la case de leur ligne.
   List<SigneDeLigne> _signesAvecCase(BlocCalcul bloc) {
@@ -1103,6 +1139,7 @@ class CalculFeuille extends ChangeNotifier {
   }
 
   Future<void> _lire(BlocCalcul bloc) async {
+    final premier = Stopwatch()..start();
     final traits = _traitsDe(bloc);
     final version = ++bloc._version;
     // Relue, la ligne n'est plus jugée ; sauf si elle vient d'être corrigée.
@@ -1112,6 +1149,8 @@ class CalculFeuille extends ChangeNotifier {
       .._retenirApresRelecture = false
       .._points = _compterPoints(traits)
       ..cadre = cadreDuGroupe(traits)
+      ..aConfirmer = false
+      ..signesSurs = const []
       ..etat = EtatBloc.lecture
       ..note = null
       .._oublierResultat();
@@ -1147,7 +1186,17 @@ class CalculFeuille extends ChangeNotifier {
               () => avecClasseur(classeur, () => lireAuTraceDetaille(traits)),
             )
           : null;
-      var tracee = detail?.latex;
+      // Un signe douteux : lue quand même, affichée tout de suite, et
+      // confirmée par le modèle en arrière-plan (ADR 0050).
+      final indulgente =
+          structuree == null && nomDePoints == null && detail == null
+          ? await classeur.parTranches(
+              () => avecClasseur(classeur, () => traceIndulgent(traits)),
+            )
+          : null;
+      final lecture =
+          detail ?? (indulgente?.doute ?? false ? indulgente : null);
+      var tracee = lecture?.latex;
       final tempsTrace = chrono.elapsedMicroseconds - tempsStructure;
       // `4=0` : personne n'écrit cela ; c'est `n = 0` mal vu (Pad 7).
       if (tracee != null && RegExp(r'^\d+=\d*$').hasMatch(tracee)) {
@@ -1175,7 +1224,11 @@ class CalculFeuille extends ChangeNotifier {
       final fonctions = _definitionsPour(bloc).keys.toSet();
       bloc
         ..autresLectures = const []
-        ..signesLus = tracee == null ? const [] : detail!.signes;
+        ..signesLus = tracee == null ? const [] : lecture!.signes
+        ..aConfirmer = tracee != null && detail == null
+        ..signesSurs = tracee != null && detail == null
+            ? lecture!.surs
+            : const [];
       // Une lecture qui étonne : on en demande d'autres (ADR 0028). Ce coût
       // n'est payé que dans le doute.
       if (structuree == null &&
@@ -1205,7 +1258,7 @@ class CalculFeuille extends ChangeNotifier {
       final voie = structuree != null
           ? 'structure'
           : tracee != null
-          ? 'tracé'
+          ? (bloc.aConfirmer ? 'tracé à confirmer' : 'tracé')
           : 'modèle';
       // La structure vue, pour le journal : par tranches elle aussi, avec le
       // cache du classeur (sans lui, ses signes se remesuraient tous).
@@ -1239,6 +1292,17 @@ class CalculFeuille extends ChangeNotifier {
         // Un nom se vérifie à l'œil ; les chiffres d'une matrice, moins.
         ..lueParMorceaux = structuree?.contains('matrix') ?? false;
       await _calculer(bloc);
+      // Le temps jusqu'au premier résultat montré (cible : < 100 ms au tracé).
+      // ignore: avoid_print
+      print(
+        'fikajiana.lecture premier résultat en '
+        '${premier.elapsedMilliseconds} ms ($voie)',
+      );
+      if (bloc.aConfirmer &&
+          bloc._version == version &&
+          identical(_blocs[bloc.cle], bloc)) {
+        _demanderConfirmation(bloc);
+      }
       if (structuree == null && bloc.etat == EtatBloc.nonCompris) {
         await _lireUnMot(bloc, traits, version);
       }
@@ -1262,6 +1326,129 @@ class CalculFeuille extends ChangeNotifier {
       bloc.etat = EtatBloc.erreur;
     }
     if (!_ferme) notifyListeners();
+  }
+
+  /// Les lignes à confirmer, la plus récente en dernier.
+  final _aConfirmer = <String>[];
+  var _confirmationEnCours = false;
+
+  void _demanderConfirmation(BlocCalcul bloc) {
+    _aConfirmer
+      ..remove(bloc.cle)
+      ..add(bloc.cle);
+    unawaited(_confirmer());
+  }
+
+  /// Le modèle relit les lignes à confirmer, une à la fois, la plus récente
+  /// d'abord, quand le stylet est au repos et qu'aucune lecture n'est en
+  /// cours. L'inférence tourne hors du fil de l'interface (file de tâches du
+  /// greffon) : écrire reste fluide (ADR 0050).
+  Future<void> _confirmer() async {
+    if (_confirmationEnCours) return;
+    _confirmationEnCours = true;
+    try {
+      while (_aConfirmer.isNotEmpty && !_ferme) {
+        while (!_ferme &&
+            (_enCours ||
+                DateTime.now().difference(_dernierTrait) <
+                    calmeAvantConfirmation)) {
+          await Future<void>.delayed(const Duration(milliseconds: 100));
+        }
+        if (_ferme || _aConfirmer.isEmpty) return;
+        final bloc = _blocs[_aConfirmer.removeLast()];
+        if (bloc == null || !bloc.aConfirmer || bloc.corrige) continue;
+        await _confirmerUne(bloc);
+      }
+    } finally {
+      _confirmationEnCours = false;
+    }
+  }
+
+  Future<void> _confirmerUne(BlocCalcul bloc) async {
+    final version = bloc._version;
+    final avant = bloc.latex;
+    final traits = _traitsDe(bloc);
+    if (avant == null || traits.isEmpty) return;
+    final debut = DateTime.now();
+    bool perimee() =>
+        _ferme ||
+        bloc._version != version ||
+        !identical(_blocs[bloc.cle], bloc) ||
+        bloc.corrige;
+    // L'encre a bougé depuis : la ligne va peut-être changer. On la remet
+    // en file plutôt que de remplacer avec une lecture périmée.
+    bool encreBougee() {
+      if (!_dernierTrait.isAfter(debut)) return false;
+      if (!perimee()) _demanderConfirmation(bloc);
+      return true;
+    }
+
+    final chrono = Stopwatch()..start();
+    String lu;
+    try {
+      lu = await lecteur.lire(traits);
+    } on Object {
+      // Sans modèle, la lecture au tracé reste ; la marque aussi.
+      return;
+    }
+    final msModele = chrono.elapsedMilliseconds;
+    // La ligne a changé, ou la personne l'a corrigée : on oublie.
+    if (perimee() || encreBougee()) return;
+    final redresse = await classeur.parTranches(
+      () => avecClasseur(
+        classeur,
+        () => redresserTan(
+          traits,
+          redresserLettres(traits, redresserEgal(traits, lu)),
+        ),
+      ),
+    );
+    if (perimee() || encreBougee()) return;
+    final fonctions = _definitionsPour(bloc).keys.toSet();
+    final propose = redresserLecture(redresse, fonctions: fonctions);
+    String issue;
+    if (normaliserLatex(propose) == normaliserLatex(avant)) {
+      issue = 'confirmée';
+      // À plausibilité égale, le modèle l'emporte : le tracé a douté.
+    } else if (plausibilite(propose, fonctions: fonctions) >=
+            plausibilite(avant, fonctions: fonctions) &&
+        accordeAuxSignesSurs(bloc.signesSurs, propose) &&
+        _comprise(bloc, propose)) {
+      bloc.latex = propose;
+      await _calculer(bloc);
+      if (perimee()) return;
+      if (bloc.etat == EtatBloc.fait) {
+        issue = 'remplacée';
+        bloc.autresLectures = [avant, ...bloc.autresLectures];
+      } else {
+        // Le calcul échoue : la lecture au tracé revient.
+        bloc.latex = avant;
+        await _calculer(bloc);
+        if (perimee()) return;
+        issue = 'gardée (calcul)';
+        bloc.autresLectures = [propose, ...bloc.autresLectures];
+      }
+    } else {
+      issue = 'gardée';
+      bloc.autresLectures = [propose, ...bloc.autresLectures];
+    }
+    bloc.aConfirmer = false;
+    // Le journal local de l'appareil, comme pour la lecture.
+    // ignore: avoid_print
+    print(
+      'fikajiana.lecture confirmation en ${chrono.elapsedMilliseconds} ms '
+      '(modèle $msModele ms) : $issue ($propose)',
+    );
+    notifyListeners();
+  }
+
+  bool _comprise(BlocCalcul bloc, String latex) {
+    try {
+      analyserPour(bloc, latex);
+      return true;
+    } on Object {
+      return false;
+    }
   }
 
   /// `premier(17)` en cursive : le modèle ne lit pas les mots. Le mot se
@@ -1420,6 +1607,8 @@ class CalculFeuille extends ChangeNotifier {
     bloc
       ..note = null
       ..latex = latex
+      // Corrigée : la personne a tranché, le modèle ne la remplace plus.
+      ..aConfirmer = false
       ..corrige = !bloc.estSaisie
       .._oublierResultat();
     await _calculer(bloc);
@@ -2027,6 +2216,11 @@ class CalculFeuille extends ChangeNotifier {
       }
     }
     _retirerTraitsDisparus();
+    // Ce qui attendait sa confirmation la reçoit, en arrière-plan.
+    for (final bloc in _blocs.values) {
+      if (bloc.aConfirmer && !bloc.estSaisie) _aConfirmer.add(bloc.cle);
+    }
+    if (_aConfirmer.isNotEmpty) unawaited(_confirmer());
     // Les voisins se connaissent dès l'ouverture : sinon chaque résultat se
     // posait comme si la ligne était seule sur la page.
     _placerResultats();
