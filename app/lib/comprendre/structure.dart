@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:fikajiana/comprendre/blocs.dart';
 import 'package:fikajiana/comprendre/mots.dart';
 import 'package:fikajiana/comprendre/signes.dart';
+import 'package:fikajiana/comprendre/trace_ligne.dart';
 import 'package:fikajiana/encre/encre.dart';
 import 'package:fikajiana/reconnaissance/classeur_signes.dart';
 import 'package:fikajiana/reconnaissance/lecteur.dart';
@@ -675,14 +676,20 @@ Future<String?> lireStructure(Lecteur lecteur, List<Trait> traits) async {
           .allMatches(somme.replaceAll(RegExp(r'\\[a-zA-Z]+'), ' '))
           .map((m) => m[0]!)
           .toSet();
+      // La borne du bas, coupée à son `=` : `k = 1`, même serrés (ADR 0046).
+      final borne = _borneDuBas(bas);
+      final glyphesBas = _glyphes(bas);
+      final traitsIndice = borne?.indice ?? glyphesBas.first;
       final indice = lettres.length == 1
           ? lettres.single
-          : _lettreMinuscule(await lecteur.lireCourt(_glyphes(bas).first));
+          : _indiceAuTrace(traitsIndice) ??
+                _lettreMinuscule(await lecteur.lireCourt(traitsIndice));
       if (indice == null) return null;
-      // La borne du bas : `n = 0`, les chiffres après le `=` au tracé.
-      final glyphesBas = _glyphes(bas);
+      // Les chiffres après le `=`, au tracé ; le modèle sinon.
       final debut =
-          _bornesAuTrace(glyphesBas.skip(1).toList()) ??
+          (borne != null
+              ? borne.debut
+              : _bornesAuTrace(glyphesBas.skip(1).toList())) ??
           _borneDuModele(await lecteur.lireCourt(bas));
       if (debut == null) return null;
       final fin = haut.isEmpty
@@ -740,6 +747,69 @@ Future<String?> lireStructure(Lecteur lecteur, List<Trait> traits) async {
 }
 
 /// Une capitale lue par le modèle : `β` est un `B` mal lu.
+/// `k = 1` : l'indice et la valeur de part et d'autre du `=` (deux plats
+/// l'un sur l'autre). Couper au `=` plutôt que par signes qui se
+/// chevauchent : un `=` serré contre le `k` s'y collait, et un `k` en deux
+/// traits se coupait en deux (`L=1-L`, Pad 7). `null` sans `=` net ;
+/// `debut` est `null` si la valeur ne se lit pas au tracé.
+({List<Trait> indice, String? debut})? _borneDuBas(List<Trait> bas) {
+  final hauteur = cadreDuGroupe(bas).height;
+  final plats = [
+    for (final t in bas)
+      if (_plat(_c(t)) && _c(t).height <= 0.3 * hauteur) t,
+  ];
+  List<Trait>? egal;
+  for (var i = 0; i < plats.length && egal == null; i++) {
+    for (var j = i + 1; j < plats.length; j++) {
+      final (a, b) = (_c(plats[i]), _c(plats[j]));
+      final commun = math.min(a.right, b.right) - math.max(a.left, b.left);
+      final ecart = (a.center.dy - b.center.dy).abs();
+      if (commun > 0.5 * math.min(a.width, b.width) &&
+          ecart > 2 &&
+          ecart < 1.2 * math.max(a.width, b.width)) {
+        egal = [plats[i], plats[j]];
+        break;
+      }
+    }
+  }
+  if (egal == null) return null;
+  final milieu = cadreDuGroupe(egal).center.dx;
+  final indice = <Trait>[];
+  final valeur = <Trait>[];
+  for (final t in bas) {
+    if (egal.contains(t)) continue;
+    (_c(t).center.dx < milieu ? indice : valeur).add(t);
+  }
+  if (indice.isEmpty || valeur.isEmpty) return null;
+  final moins = _signeMoins(valeur);
+  final chiffres = [
+    for (final g in _glyphes([
+      for (final t in valeur)
+        if (!moins.contains(t)) t,
+    ]))
+      classeurCourant.chiffre(g),
+  ];
+  final debut = chiffres.isEmpty || chiffres.contains(null)
+      ? null
+      : '${moins.isEmpty ? '' : '-'}${chiffres.join()}';
+  return (indice: indice, debut: debut);
+}
+
+/// L'indice d'une somme lu au tracé : une seule minuscule, sûre.
+String? _indiceAuTrace(List<Trait> traits) {
+  final lu = classeurCourant.signe(
+    traits,
+    hauteurLigne: cadreDuGroupe(traits).height,
+  );
+  if (lu == null) return null;
+  final minuscules = lu.keys.where((s) => RegExp(r'^[a-z]$').hasMatch(s));
+  // `l` et `1`, `o` et `0` : un indice ne s'écrit pas ainsi.
+  if (minuscules.length != 1 || lu.keys.any(_estChiffreSeul)) return null;
+  return minuscules.single;
+}
+
+bool _estChiffreSeul(String s) => RegExp(r'^[0-9]$').hasMatch(s);
+
 /// Après le `=` d'une borne : les chiffres, lus au tracé ; `null` sinon.
 String? _bornesAuTrace(List<List<Trait>> glyphes) {
   // Le `=` (deux plats) ou `:` écrit vite, puis les chiffres.
@@ -847,8 +917,10 @@ List<List<Trait>> _glyphes(List<Trait> traits) {
   for (final t in tries) {
     if (groupes.isNotEmpty &&
         // Deux lettres écrites serrées se touchent presque : il faut qu'elles
-        // se chevauchent vraiment pour faire un seul signe.
-        _c(t).left <= cadreDuGroupe(groupes.last).right) {
+        // se chevauchent vraiment pour faire un seul signe ; ou le bras d'un
+        // `k` qui touche sa hampe (ADR 0046).
+        (_c(t).left <= cadreDuGroupe(groupes.last).right ||
+            accrocheAUneHampe(t, groupes.last))) {
       groupes.last.add(t);
     } else {
       groupes.add([t]);
