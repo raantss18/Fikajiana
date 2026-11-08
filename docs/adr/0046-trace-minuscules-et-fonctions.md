@@ -1,0 +1,9 @@
+# ADR 0046 — Lecture au tracé : minuscules `s o l r p q g h m w`, noms de fonction, borne `k = 1`
+
+- **Date** : 2026-11-08 · **Statut** : accepté · complète les ADR 0035, 0037 et 0041
+- **Contexte** : `m h g q` n'étaient que des leurres (un `h` d'Antsa se lisait `1`, son `o` un `0`) ; `sin`, `ln` allaient au modèle ; sous un Σ, `k = 1` se lisait `L=1-L` (le `k` en deux traits coupé, le `=` serré collé au `k`).
+- **Décision** : `s o l r p q g h m w` sont des minuscules lues (gabarits, formes cursives relevées sur la séance d'Antsa, CC0). Jumeaux tranchés au contexte : `5 S s`, `0 O o` à la hauteur des signes hauts, chiffre si un chiffre est collé ; `9 g`, `p P` au jambage (sous la ligne des autres signes ; sans ligne pour situer : doute) ; `1 I l` : `l` seulement dans un mot. Une capitale doit aussi battre les chiffres (`S` lu `G`).
+- **Mots** : `sin cos tan ln log exp lim det` se lisent si chaque lettre est parmi les 3 meilleures lectures de son signe (comme Mikajy), le `i` avec son point ; deux mots possibles, une lettre collée devant, ou pas d'argument après : au modèle. Le mot s'écrit `\sin(x)`, `\ln 2`.
+- **Borne** : coupée à son `=` (deux plats empilés), l'indice lu au tracé ; un trait plus court qui touche une hampe droite sous son premier tiers la rejoint (`accrocheAUneHampe`, tracé et structures).
+- **Mesure** (séance d'Antsa, 102 signes, Poco, `mesure_seance_test`) : justes 11 → 13, à trancher au contexte 13 → 20, doutes 47 → 46, faux seuls 31 → 23 ; sur les 10 minuscules visées : 0 juste et 6 faux → 3 justes, 5 au contexte, 1 doute, 1 faux (son `q`, un bâton, qui doute en ligne). Fixtures `pad7` et `telephone` : 6 lignes lues au tracé, 0 fausse, avant comme après.
+- **Supposé** : les formes cursives tiennent pour d'autres mains ; la mesure est optimiste (formes relevées sur cette séance). **Reste** : `s l g m` absents de la séance ; essai au Pad 7 et au téléphone.
