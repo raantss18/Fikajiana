@@ -19,7 +19,7 @@ COPY plateforme/schema.py plateforme/stockage.py plateforme/recepteur.py ./
 # Utilisateur sans droits ; seuls les dons sont écrits, dans /donnees.
 RUN useradd --system --uid 10001 --no-create-home dons && mkdir /donnees && chown dons /donnees
 USER dons
-ENV FIKA_DOSSIER=/donnees FIKA_PORT=8080 PATH=/app/.venv/bin:$PATH PYTHONUNBUFFERED=1
+ENV FIKA_DOSSIER=/donnees PATH=/app/.venv/bin:$PATH PYTHONUNBUFFERED=1
 VOLUME /donnees
 EXPOSE 8080
 HEALTHCHECK --interval=60s --timeout=5s CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/v1/sante', timeout=4)"]

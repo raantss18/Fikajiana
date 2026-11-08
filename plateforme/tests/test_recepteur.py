@@ -184,3 +184,34 @@ def test_dossier_refuse_les_cles_hors_racine(dossier):
     st = stockage.StockageDossier(dossier)
     with pytest.raises(ValueError):
         st.ecrire("../evasion.json", b"{}")
+
+
+def test_ip_derriere_deux_proxys(dossier, horloge):
+    # Ex. : X-Forwarded-For = <inventé>, <client>, <répartiteur> ; le client est le 2e en partant de la droite.
+    app = recepteur.Recepteur(stockage.StockageDossier(dossier), debit=1, derriere_proxy=2, horloge=horloge)
+    ent = {"X-Forwarded-For": "1.1.1.1, 192.0.2.5, 35.1.1.1"}
+    assert appeler(app, "POST", "/v1/dons", seance(), entetes=ent)["statut"] == 201
+    ent = {"X-Forwarded-For": "9.9.9.9, 192.0.2.5, 35.1.1.2"}
+    assert appeler(app, "POST", "/v1/dons", seance(), entetes=ent)["statut"] == 429
+    ent = {"X-Forwarded-For": "192.0.2.6, 35.1.1.1"}
+    assert appeler(app, "POST", "/v1/dons", seance(), entetes=ent)["statut"] == 201
+
+
+def test_mon_ip_avec_jeton_seulement(dossier, horloge):
+    app = recepteur.Recepteur(stockage.StockageDossier(dossier), jeton_admin=JETON, derriere_proxy=1, horloge=horloge)
+    ent = {"X-Forwarded-For": "9.9.9.9, 192.0.2.5"}
+    assert appeler(app, "GET", "/v1/mon-ip", entetes=ent)["statut"] == 401
+    r = appeler(app, "GET", "/v1/mon-ip", entetes={**ent, "Authorization": f"Bearer {JETON}"})
+    assert r["statut"] == 200 and json.loads(r["corps"]) == {"ip": "192.0.2.5", "adresses_relayees": 2}
+
+
+def test_port_de_cloud_run(monkeypatch, tmp_path):
+    import waitress
+
+    vu = {}
+    monkeypatch.setattr(waitress, "serve", lambda app, **k: vu.update(k))
+    monkeypatch.delenv("FIKA_PORT", raising=False)
+    monkeypatch.setenv("PORT", "9090")
+    monkeypatch.setenv("FIKA_DOSSIER", str(tmp_path))
+    recepteur.servir()
+    assert vu["port"] == 9090

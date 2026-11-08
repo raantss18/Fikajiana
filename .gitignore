@@ -43,3 +43,4 @@ release-out/
 /plateforme/dons-recus/
 /plateforme/**/__pycache__/
 /plateforme/.pytest_cache/
+/plateforme/cloudrun.env.yaml

@@ -27,8 +27,8 @@ que « POST /v1/dons 201 3 ms » : ni IP, ni contenu. Caddy, devant lui, n'écri
 
 ## Installer
 
-Voir `HEBERGER.md` : trois options comparées, et le pas-à-pas pour un petit serveur loué
-(`docker compose up -d --build`). Le choix de l'hébergement vous revient.
+Voir `HEBERGER.md` : trois options comparées, et deux pas-à-pas : **Cloud Run + Cloudflare R2**
+(gratuit, choisi par Antsa le 2026-11-08) et un petit serveur loué (`docker compose up -d --build`).
 
 Pour essayer sur son ordinateur, sans Docker :
 
@@ -47,7 +47,7 @@ Réglages (variables d'environnement, voir `exemple.env`) :
 | `FIKA_DOSSIER` | Dossier des dons (par défaut `dons-recus`, `/donnees` dans Docker). |
 | `FIKA_S3_SEAU` (+ `FIKA_S3_ADRESSE`, `FIKA_S3_REGION`, `FIKA_S3_PREFIXE`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`) | Ranger les dons dans un stockage objet compatible S3 au lieu du disque. |
 | `FIKA_DEBIT`, `FIKA_FENETRE` | Envois permis par adresse IP et par fenêtre (30 par 60 s). |
-| `FIKA_DERRIERE_PROXY` | `1` derrière Caddy (déjà mis dans `compose.yaml`). |
+| `FIKA_DERRIERE_PROXY` | Nombre d'adresses ajoutées par les proxys de confiance dans `X-Forwarded-For` : `1` derrière Caddy (déjà dans `compose.yaml`) ; sur Cloud Run, à régler avec `/v1/mon-ip` (`HEBERGER.md`). |
 
 L'app ne contient **aucun secret** : seul le serveur connaît le jeton d'export.
 
@@ -99,6 +99,7 @@ Si quelqu'un écrit pour demander le retrait (par exemple après avoir désinsta
 | `POST /v1/retrait`, `{"contributeur": "<id>"}` | `202 {"retire": n}` |
 | `GET /v1/export?depuis=<date ISO>`, `Authorization: Bearer <jeton>` | `200`, une ligne JSON par élément : en-tête, retraits, dons |
 | `GET /v1/sante` | `200 {"ok": true}` |
+| `GET /v1/mon-ip`, `Authorization: Bearer <jeton>` | `200 {"ip": …}` : l'adresse comptée pour l'appelant (réglage, rien n'est gardé) |
 
 Écarts avec `collecte/FORMAT.md` : `auteur` est refusé (un prénom), `contributeur` (16 à 64 caractères
 `A-Z a-z 0-9 _ -`) est obligatoire, `version_app` est permis.
@@ -119,7 +120,7 @@ Si quelqu'un écrit pour demander le retrait (par exemple après avoir désinsta
 
 ## Vérifié / Supposé / Reste à tester
 
-- **Vérifié** (le 2026-11-08) : 65 tests du récepteur (`cd plateforme && uv run pytest`) : schéma
+- **Vérifié** (le 2026-11-08) : 70 tests du récepteur (`cd plateforme && uv run pytest`) : schéma
   valide et invalide, champs en trop, JSON strict, taille, débit et oubli des IP, retrait, export
   avec jeton seulement, stockage S3 simulé, Waitress réel (corps en morceaux, corps trop gros).
   Tests de la récupération (`cd entrainement && uv run pytest tests/test_recuperer_dons.py`) : tri,
