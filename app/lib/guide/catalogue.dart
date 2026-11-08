@@ -195,6 +195,14 @@ List<EntreeGuide> catalogueGuide(AppLocalizations l10n) => [
     lignes: [r'\cos\left(\pi\right)=', r'\ln\left(1\right)='],
   ),
   EntreeGuide(
+    cle: 'equadiff',
+    famille: FamilleGuide.equations,
+    titre: l10n.guideEquadiffTitre,
+    phrase: l10n.guideEquadiffPhrase,
+    motsCles: l10n.guideEquadiffMots,
+    lignes: [r"y'-3y=\cos(x)"],
+  ),
+  EntreeGuide(
     cle: 'derivee',
     famille: FamilleGuide.fonctions,
     titre: l10n.guideDeriveeTitre,
@@ -533,6 +541,14 @@ List<EntreeGuide> catalogueGuide(AppLocalizations l10n) => [
     phrase: l10n.guideGeoPerimetrePhrase,
     motsCles: l10n.guideGeoPerimetreMots,
     lignes: [_triangleA, _triangleB, _triangleC, 'périmètre(ABC)='],
+  ),
+  EntreeGuide(
+    cle: 'parametree',
+    famille: FamilleGuide.courbes,
+    titre: l10n.guideParametreeTitre,
+    phrase: l10n.guideParametreePhrase,
+    motsCles: l10n.guideParametreeMots,
+    lignes: [r'\begin{cases}x=\cos(t)\\y=\sin(2t)\end{cases}'],
   ),
   // Courbes nommées.
   EntreeGuide(

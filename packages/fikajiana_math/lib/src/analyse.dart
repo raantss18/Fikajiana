@@ -145,6 +145,9 @@ Analyse analyserLatex(
   Map<String, (double, double)> vecteurs = const {},
   Map<String, String> valeurs = const {},
 }) {
+  // `y'-3y=cos(x)` : une équation différentielle (feuille d'Antsa, Pad 7).
+  final differentielle = _equationDifferentielle(latex, degres: degres);
+  if (differentielle != null) return differentielle;
   // `résoudre(f(x)=k(x))`, `résoudre(x^2-4)` : l'équation entre parenthèses
   // (feuille d'Antsa, Pad 7) ; sans `=`, l'expression vaut 0.
   final resoudre = RegExp(
@@ -308,6 +311,61 @@ Analyse analyserLatex(
     'solve(${expression.gauche.giac}=${droite.giac},$variable)',
     inconnues: [variable],
     membres: (expression.gauche.giac, droite.giac),
+  );
+}
+
+/// `y' - 3y = \cos(x)`, `y'' + y = 0` : y fonction de x (ou de t), sans
+/// `y(` écrit ; le modèle lit `y^{1}` pour `y'`. Giac la résout
+/// (`desolve`), constantes comprises ; `null` si ce n'en est pas une.
+Analyse? _equationDifferentielle(String ecrit, {required bool degres}) {
+  // `y'(t)` et `y(t)` : la variable écrite, qu'on retire.
+  final avecVariable = RegExp(
+    r"(?<![a-zA-Z\\])(y\s*(?:'+|\^\s*\{?\s*(?:\\prime\s*)+\}?)?)\s*\(\s*([xt])\s*\)",
+  );
+  final primeEcrit = RegExp(r"(?<![a-zA-Z\\])y\s*(?:'|\^\s*\{?\s*\\prime)")
+      .hasMatch(ecrit);
+  final latex = primeEcrit
+      ? ecrit.replaceAllMapped(avecVariable, (m) => m[1]!)
+      : ecrit;
+  if (RegExp(r'(?<![a-zA-Z\\])y\s*\(').hasMatch(latex)) return null;
+  const libre = r'(?<![a-zA-Z\\])y\s*';
+  final seconde = RegExp(
+    libre + r"(?:''|\^\s*\{\s*(?:\\prime\s*\\prime|'')\s*\})",
+  );
+  final premiere = RegExp(
+    libre + r"(?:'|\^\s*\{?\s*(?:\\prime|'|1(?!\d))\s*\}?)",
+  );
+  if (!premiere.hasMatch(latex) && !seconde.hasMatch(latex)) return null;
+  // Le second ordre fait tomber Giac sur l'appareil (récursion sans fin dans
+  // `operator_minus`, banc de la feuille, Pad 7) : refusé, l'app ne plante
+  // pas.
+  if (seconde.hasMatch(latex)) {
+    throw const ErreurLatex('équation différentielle du second ordre');
+  }
+  final texte = latex
+      .replaceAll(seconde, r' \phi ')
+      .replaceAll(premiere, r' \mu ');
+  final Analyse a;
+  try {
+    a = analyserLatex(texte, degres: degres);
+  } on ErreurLatex {
+    return null;
+  }
+  final (gauche, droite) = a.membres ?? (a.giac, '0');
+  final ensemble = '$gauche $droite';
+  final v =
+      RegExp(r'\bt\b').hasMatch(ensemble) &&
+          !RegExp(r'\bx\b').hasMatch(ensemble)
+      ? 't'
+      : 'x';
+  String fonction(String s) => s
+      .replaceAll(RegExp(r'\by\b'), 'y($v)')
+      .replaceAll(RegExp(r'\bmu\b'), 'diff(y($v),$v)')
+      .replaceAll(RegExp(r'\bphi\b'), 'diff(y($v),$v,2)');
+  return Analyse(
+    TypeExpression.calcul,
+    'y($v)=desolve((${fonction(gauche)})=(${fonction(droite)}),y($v))',
+    demandeResultat: true,
   );
 }
 

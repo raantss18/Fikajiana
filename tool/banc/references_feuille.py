@@ -81,4 +81,18 @@ note(p, "k'(x)=0", solve(sp.diff(kk, x), x))
 note(p, "k(1)=", kk.subs(x, 1))
 note(p, r"\lim_{x\to0^{+}}k(x)=", limit(kk, x, 0, "+"))
 
+# Feuille d'Antsa, 15 h 14 : équations différentielles (constante C0) et suite.
+yf = sp.Function("y")
+t = sp.symbols("t")
+p = "feuille d’Antsa, 15 h 14"
+note(p, r"y ^ { 1 } - 3 y = \cos \left( x \right)", sp.dsolve(yf(x).diff(x) - 3 * yf(x) - sp.cos(x)).rhs)
+note(p, "y'+y=0", sp.dsolve(yf(x).diff(x) + yf(x)).rhs)
+note(p, "y'=2y", sp.dsolve(yf(x).diff(x) - 2 * yf(x)).rhs)
+note(p, "y'(t)=t", sp.dsolve(yf(t).diff(t) - t).rhs)
+u4 = 2
+for _ in range(4):
+    u4 = 3 * u4 - 1
+note(p, "u_{4}=", u4)
+note(p, r"\text{résoudre}(x^{2}-4=0)", solve(x**2 - 4, x))
+
 print(json.dumps(ref, ensure_ascii=False, indent=1))

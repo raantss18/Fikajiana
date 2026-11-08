@@ -47,7 +47,9 @@ String latexLisible(String latex) => latex
       RegExp(r'\\mathrm\{inv\}\\left\(((?:(?!\\left|\\right).)*)\\right\)'),
       (m) => '\\frac{1}{${m[1]}}',
     )
-    .replaceAll(RegExp(r'e\^\{1\}(?![0-9])'), 'e');
+    .replaceAll(RegExp(r'e\^\{1\}(?![0-9])'), 'e')
+    // La constante d'une équation différentielle : `C_{0}`, pas `c\_0`.
+    .replaceAllMapped(RegExp(r'\\mathrm\{c\\_(\d+)\}'), (m) => 'C_{${m[1]}}');
 
 /// Réponse de Giac à [calculerGiac].
 class ReponseGiac {

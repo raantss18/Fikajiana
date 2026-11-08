@@ -13,4 +13,8 @@ void main() {
     expect(latexLisible(r'-\frac{2}{e^{1}}+1'), r'-\frac{2}{e}+1');
     expect(latexLisible('e^{12}'), 'e^{12}');
   });
+
+  test('la constante de desolve s’écrit C_{0}', () {
+    expect(latexLisible(r'y(x)=(\mathrm{c\_0} e^{-x})'), 'y(x)=(C_{0} e^{-x})');
+  });
 }
