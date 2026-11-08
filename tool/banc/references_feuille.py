@@ -148,4 +148,24 @@ U = st.Uniform("U", 0, 10)
 nombre(p, r"P(2\le U\le5)=", st.cdf(U)(5) - st.cdf(U)(2))
 nombre(p, r"P(U\le t)=0{,}3", 3)
 
+# Vague 2 : arithmétique (SymPy et Python, sans le lecteur de l'app).
+p = "arithmétique"
+q, r = divmod(17, 5)  # Python : reste toujours >= 0 pour un diviseur > 0
+ref[f"{p} | \\text{{division}}(17;5)"] = [q, r]
+q, r = divmod(-17, 5)
+ref[f"{p} | \\text{{division}}(-17;5)"] = [q, r]
+ref[f"{p} | \\text{{quotient}}(47;6)="] = 47 // 6
+ref[f"{p} | \\text{{reste}}(47;6)="] = 47 % 6
+ref[f"{p} | \\text{{reste}}(-17;5)="] = -17 % 5
+for a, b in [(12, 18), (240, 46)]:
+    u, v, d = sp.gcdex(a, b)
+    assert a * u + b * v == d
+    ref[f"{p} | \\text{{bezout}}({a};{b})"] = [int(d)]
+ref[f"{p} | 17\\equiv2[5]"] = (17 - 2) % 5 == 0
+ref[f"{p} | 17\\equiv3[5]"] = (17 - 3) % 5 == 0
+ref[f"{p} | 2^{{10}}\\equiv1\\pmod{{11}}"] = (2**10 - 1) % 11 == 0
+ref[f"{p} | A_{{5}}^{{2}}="] = int(sp.ff(5, 2))
+ref[f"{p} | \\binom{{10}}{{3}}="] = int(sp.binomial(10, 3))
+ref[f"{p} | 6!="] = int(sp.factorial(6))
+
 print(json.dumps(ref, ensure_ascii=False, indent=1))

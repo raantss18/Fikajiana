@@ -157,6 +157,25 @@ const List<(String, List<String>)> problemes = [
       r'P(U\le t)=0{,}3',
     ],
   ),
+  // Vague 2 : arithmétique et dénombrement.
+  (
+    'arithmétique',
+    [
+      r'\text{division}(17;5)',
+      r'\text{division}(-17;5)',
+      r'\text{quotient}(47;6)=',
+      r'\text{reste}(47;6)=',
+      r'\text{reste}(-17;5)=',
+      r'\text{bezout}(12;18)',
+      r'\text{bezout}(240;46)',
+      r'17\equiv2[5]',
+      r'17\equiv3[5]',
+      r'2^{10}\equiv1\pmod{11}',
+      'A_{5}^{2}=',
+      r'\binom{10}{3}=',
+      '6!=',
+    ],
+  ),
 ];
 
 Future<void> main() async {

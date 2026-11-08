@@ -41,6 +41,11 @@ const motsDeCommande = [
   'ppcm',
   'discriminant',
   'tangente',
+  // `quotient` : trop proche de `premier` à la silhouette (mots_test) ;
+  // il reste au clavier, et lu par le modèle.
+  'reste',
+  'division',
+  'bezout',
 ];
 
 /// Les mesures d'une figure, devant leurs points : `angle(E;F;D)` (ADR 0047).

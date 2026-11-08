@@ -184,6 +184,16 @@ void main() {
       );
     });
 
+    test('le seuil t reste t même si T est une loi (banc, Pad 7)', () {
+      final valeurs = {
+        ...apres(r'T\sim\mathcal{G}(0{,}2)'),
+        ...apres(r'Y\sim\mathcal{N}(100;15^{2})'),
+      };
+      final a = analyserLatex(r'P(Y\le t)=0{,}975', valeurs: valeurs);
+      expect(a.inconnues, ['t']);
+      expect(a.giac, contains('normald_icdf'));
+    });
+
     test('jamais si x vaut déjà autre chose, ni pour une fonction p', () {
       final avecX = {...x, 'x': '2'};
       expect(

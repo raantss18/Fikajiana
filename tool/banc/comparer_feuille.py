@@ -50,14 +50,25 @@ for ligne in sys.stdin:
     attendu = refs.get(cle)
     if filtre and filtre not in mesure["p"]:
         continue
-    if not isinstance(attendu, (int, float)):
+    lus = nombres(mesure)
+
+    def vu(x):
+        return any(abs(v - x) <= 1e-6 * max(1.0, abs(x)) for v in lus)
+
+    if isinstance(attendu, bool):
+        ok = mesure.get("v") is attendu
+    elif isinstance(attendu, (int, float)):
+        ok = vu(attendu)
+    elif isinstance(attendu, list) and all(isinstance(x, (int, float)) for x in attendu):
+        # Plusieurs valeurs (q et r ; le pgcd de Bézout) : toutes affichées.
+        ok = all(vu(x) for x in attendu)
+    else:
         continue
-    ok = any(abs(v - attendu) <= 1e-6 * max(1.0, abs(attendu)) for v in nombres(mesure))
     if ok:
         justes += 1
     else:
         faux += 1
-    print(f"{'JUSTE' if ok else 'FAUX '} {cle} : attendu {attendu}, lu {mesure.get('t')!r} "
+    print(f"{'JUSTE' if ok else 'FAUX '} {cle} : attendu {attendu}, lu {mesure.get('t')!r} v={mesure.get('v')} "
           f"(état {mesure.get('etat')}, {mesure.get('ms')} ms)")
 print(f"{justes} justes, {faux} faux")
 sys.exit(1 if faux else 0)

@@ -2,6 +2,7 @@
 library;
 
 export 'src/analyse.dart';
+export 'src/arithmetique.dart';
 export 'src/evaluateur.dart';
 export 'src/geometrie.dart';
 export 'src/objets.dart';

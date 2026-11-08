@@ -4,6 +4,8 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Arithmétique : division(17;5) donne le quotient et le reste, bezout(12;18) les coefficients de Bézout, 17 ≡ 2 [5] dit vrai ou faux, et A₅² les arrangements ; à la main ou au clavier. / Arithmetic: division(17;5) gives the quotient and remainder, bezout(12;18) Bézout coefficients, 17 ≡ 2 [5] says true or false, and A₅² arrangements; by hand or keyboard.
+
 - Réglages, À propos : qui a conçu Fikajiana (Antsa Malala RANIRIAMANJAKA), un courriel à lui écrire et le code source, ouverts d'un toucher. / Settings, About: who designed Fikajiana (Antsa Malala RANIRIAMANJAKA), an email to write to her and the source code, opened with a tap.
 
 - Lois de probabilité écrites comme au tableau : X ∼ B(10 ; 0,3), N(μ ; σ²), Poisson, géométrique, exponentielle, uniforme ; P(X=3)=, P(X≤3)=, P(2≤X<5)=, E(X)=, V(X)=, σ(X)= et le seuil P(X≤k)≥0,95, à la main ou au clavier. / Probability distributions written as on the board: X ∼ B(10 ; 0.3), N(μ ; σ²), Poisson, geometric, exponential, uniform; P(X=3)=, P(X≤3)=, P(2≤X<5)=, E(X)=, V(X)=, σ(X)= and the threshold P(X≤k)≥0.95, by hand or keyboard.

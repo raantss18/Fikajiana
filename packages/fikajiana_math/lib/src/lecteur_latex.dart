@@ -131,6 +131,13 @@ const _fonctionsADeux = {
   'ppcm': 'lcm',
   'arrondi': 'round',
   'round': 'round',
+  // Division euclidienne (vague 2, docs/recherche/couverture-calcul.md).
+  'quotient': 'iquo',
+  'reste': 'irem',
+  'remainder': 'irem',
+  // Arrangements : A_n^k au lycée.
+  'perm': 'perm',
+  'arrangement': 'perm',
 };
 
 /// Ce qu'on demande à Giac de faire d'une expression ; la réponse s'affiche
@@ -167,6 +174,8 @@ final Set<String> nomsDeCalcul = {
   ..._fonctionsADeux.keys,
   'discriminant',
   'tangente',
+  'division',
+  'bezout',
 };
 
 /// `Développer`, `écart-type` : le nom tel que le lecteur le connaît.

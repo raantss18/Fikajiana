@@ -248,6 +248,12 @@ final Map<String, _Glyphe> _glyphes = {
       ..._arc(0.44, 0.64, 0.13, 0.08, _pi, 0),
     ],
   ]),
+  // 17 ≡ 2 (mod 5) : trois traits.
+  '≡': _Glyphe(0.6, [
+    _l([0.04, 0.48, 0.56, 0.48]),
+    _l([0.04, 0.62, 0.56, 0.62]),
+    _l([0.04, 0.76, 0.56, 0.76]),
+  ]),
   // σ(X), l'écart type : un rond et sa queue.
   'σ': _Glyphe(0.64, [
     _arc(0.28, 0.73, 0.22, 0.26, -_pi / 2, 3 * _pi / 2),
@@ -662,6 +668,15 @@ class _Compositeur {
       'approx' => _lettre('≈'),
       'geq' || 'ge' || 'geqslant' => _lettre('≥'),
       'sim' => _lettre('∼'),
+      'equiv' => _lettre('≡'),
+      'bmod' || 'mod' => _mot('mod'),
+      'pmod' => _rangee([
+        _lettre('('),
+        _mot('mod'),
+        const _Boite(0.3, 0, 0, []),
+        _groupe(),
+        _lettre(')'),
+      ]),
       'sigma' => _lettre('σ'),
       'mathcal' || 'mathscr' => _groupe(),
       'emptyset' => _lettre('∅'),
@@ -998,7 +1013,7 @@ const double _hauteurMax = 90;
 EcritureResultat? ecrireALaPlace(String latex, Rect ecriture) {
   final _Boite boite;
   try {
-    boite = _Compositeur(_matricesSimples(latex)).composer();
+    boite = _Compositeur(_matricesSimples(_binomes(latex))).composer();
   } on _NonPrisEnCharge {
     return null;
   }
@@ -1026,7 +1041,7 @@ EcritureResultat? ecrireALEchelle(
 }) {
   final _Boite boite;
   try {
-    boite = _Compositeur(_matricesSimples(latex)).composer();
+    boite = _Compositeur(_matricesSimples(_binomes(latex))).composer();
   } on _NonPrisEnCharge {
     return null;
   }
@@ -1047,6 +1062,13 @@ String _matricesSimples(String latex) => latex
     .replaceAll(RegExp(r'\\end\{array\}\s*\\right\)'), r'\end{pmatrix}')
     .replaceAll('\n', ' ');
 
+/// `\binom{10}{3}` : une colonne entre grandes parenthèses, comme une matrice
+/// (vague 2, combinaisons écrites à la main).
+String _binomes(String latex) => latex.replaceAllMapped(
+  RegExp(r'\\[dt]?binom\s*\{([^{}]*)\}\s*\{([^{}]*)\}'),
+  (m) => '\\begin{pmatrix}${m[1]}\\\\${m[2]}\\end{pmatrix}',
+);
+
 /// Compose [latex] à droite de [ecriture], ou [dessous], à la taille de
 /// l'écriture. Rend `null` si ce résultat ne sait pas s'écrire à la main.
 /// [reduction] l'écrit plus petit, quand la place manque.
@@ -1059,7 +1081,7 @@ EcritureResultat? ecrireResultat(
 }) {
   final _Boite boite;
   try {
-    boite = _Compositeur(_matricesSimples(latex)).composer();
+    boite = _Compositeur(_matricesSimples(_binomes(latex))).composer();
   } on _NonPrisEnCharge {
     return null;
   }
