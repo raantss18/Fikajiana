@@ -1,8 +1,9 @@
 import 'dart:async';
 
+import 'package:fikajiana/dons/envoi_dons.dart';
 import 'package:fikajiana/l10n/l10n.dart';
 import 'package:fikajiana/mises_a_jour/mise_a_jour.dart';
-import 'package:fikajiana/reconnaissance/exemples_personnels.dart';
+import 'package:fikajiana/reconnaissance/ecritures.dart';
 import 'package:fikajiana/reconnaissance/modele.dart';
 import 'package:fikajiana/reglages/reglages.dart';
 import 'package:fikajiana/reglages/support.dart';
@@ -56,7 +57,7 @@ class EcranReglages extends StatelessWidget {
           ),
           const Divider(),
           const _SectionModele(),
-          const _ExporterCorrections(),
+          const _Dons(),
           const Divider(),
           const _SectionMiseAJour(),
           const Divider(),
@@ -281,20 +282,32 @@ class ListeSupports extends StatelessWidget {
   }
 }
 
-/// « Exporter mes corrections » : les signes corrigés, au format de
-/// `collecte/FORMAT.md`, là où la personne choisit (ADR 0041).
-class _ExporterCorrections extends StatelessWidget {
+/// Les dons d'écriture (ADR 0042) : le consentement, où et quand ils
+/// partent, ce qui attend ; l'export et l'effacement.
+class _Dons extends StatefulWidget {
   const new();
 
-  Future<void> _effacer(
-    BuildContext context,
-    ExemplesPersonnels exemples,
-  ) async {
+  @override
+  State<_Dons> createState() => _DonsState();
+}
+
+class _DonsState extends State<_Dons> {
+  late final _adresse = TextEditingController(
+    text: PorteeReglages.de(context).adressePlateforme,
+  );
+
+  @override
+  void dispose() {
+    _adresse.dispose();
+    super.dispose();
+  }
+
+  Future<void> _effacer(Ecritures ecritures) async {
     final l10n = context.l10n;
     final oui = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        content: Text(l10n.effacerCorrectionsQuestion),
+        content: Text(l10n.effacerEcrituresQuestion),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -307,39 +320,153 @@ class _ExporterCorrections extends StatelessWidget {
         ],
       ),
     );
-    if (oui ?? false) await exemples.toutEffacer();
+    if (oui ?? false) await ecritures.toutEffacer();
+  }
+
+  Future<void> _retrait(EnvoiDons dons) async {
+    final messager = ScaffoldMessenger.of(context);
+    final l10n = context.l10n;
+    final fait = await dons.demanderRetrait();
+    messager.showSnackBar(
+      SnackBar(
+        content: Text(fait ? l10n.donsRetraitFait : l10n.donsRetraitEchec),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final exemples = PorteeServices.de(context).classeur.exemples;
-    if (exemples == null) return const SizedBox.shrink();
+    final theme = Theme.of(context);
+    final reglages = PorteeReglages.de(context);
+    final services = PorteeServices.de(context);
+    final ecritures = services.classeur.ecritures;
+    final dons = services.dons;
+    if (ecritures == null) return const SizedBox.shrink();
     return ListenableBuilder(
-      listenable: exemples,
+      listenable: ecritures,
       builder: (context, _) {
-        final vide = exemples.liste.isEmpty;
+        final n = ecritures.liste.length;
+        final vide = n == 0;
         return Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            SwitchListTile(
+              title: Text(l10n.donsCase),
+              subtitle: Text(l10n.donsExplication),
+              value: reglages.donner,
+              onChanged: (v) => reglages.donner = v,
+            ),
+            SwitchListTile(
+              title: Text(l10n.donsWifi),
+              value: reglages.wifiSeulement,
+              onChanged: reglages.donner
+                  ? (v) => reglages.wifiSeulement = v
+                  : null,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppEspacement.md),
+              child: TextField(
+                controller: _adresse,
+                keyboardType: TextInputType.url,
+                autocorrect: false,
+                decoration: InputDecoration(
+                  labelText: l10n.donsAdresse,
+                  helperText: l10n.donsAdresseAide,
+                  hintText: 'https://',
+                ),
+                onChanged: (v) => reglages.adressePlateforme = v,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(AppEspacement.md),
+              child: Text(
+                l10n.donsEnAttente(ecritures.lignesEnAttente),
+                style: theme.textTheme.bodyMedium,
+              ),
+            ),
+            if (dons != null && dons.adresse != null)
+              ListTile(
+                leading: const Icon(Icons.undo),
+                title: Text(l10n.donsRetrait),
+                onTap: () => unawaited(_retrait(dons)),
+              ),
             ListTile(
               leading: const Icon(Icons.upload_file_outlined),
-              title: Text(l10n.exporterCorrections),
+              title: Text(l10n.exporterEcritures),
               subtitle: Text(
-                vide ? l10n.aucuneCorrection : l10n.exporterCorrectionsAide,
+                vide
+                    ? l10n.aucuneEcriture
+                    : l10n.exporterEcrituresAide(
+                        n,
+                        ecritures.octets < 1000000
+                            ? l10n.tailleKo((ecritures.octets / 1000).ceil())
+                            : l10n.tailleMo(
+                                (ecritures.octets / 1e6).toStringAsFixed(1),
+                              ),
+                      ),
               ),
               enabled: !vide,
-              onTap: () => unawaited(exporterCorrections(context, exemples)),
+              onTap: () =>
+                  unawaited(exporterEcritures(context, ecritures, auteur: '')),
             ),
             if (!vide)
               ListTile(
                 leading: const Icon(Icons.delete_outline),
-                title: Text(l10n.effacerCorrections),
-                onTap: () => unawaited(_effacer(context, exemples)),
+                title: Text(l10n.effacerEcritures),
+                onTap: () => unawaited(_effacer(ecritures)),
               ),
           ],
         );
       },
     );
   }
+}
+
+/// Une seule fois (après la mise à jour qui l'apporte, ou au premier
+/// lancement) : la question des dons, la case **non cochée** (ADR 0042).
+Future<void> demanderConsentement(BuildContext context) async {
+  final reglages = PorteeReglages.de(context);
+  if (reglages.consentementDemande) return;
+  var coche = false;
+  await showModalBottomSheet<void>(
+    context: context,
+    isDismissible: false,
+    enableDrag: false,
+    useSafeArea: true,
+    isScrollControlled: true,
+    builder: (context) {
+      final l10n = context.l10n;
+      final theme = Theme.of(context);
+      return StatefulBuilder(
+        builder: (context, changer) => Padding(
+          padding: const EdgeInsets.all(AppEspacement.lg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(l10n.donsTitre, style: theme.textTheme.titleLarge),
+              const SizedBox(height: AppEspacement.sm),
+              Text(l10n.donsExplication),
+              const SizedBox(height: AppEspacement.sm),
+              CheckboxListTile(
+                key: const ValueKey('consentement-case'),
+                value: coche,
+                title: Text(l10n.donsCase),
+                controlAffinity: ListTileControlAffinity.leading,
+                onChanged: (v) => changer(() => coche = v ?? false),
+              ),
+              const SizedBox(height: AppEspacement.sm),
+              FilledButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(l10n.continuer),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+  reglages.donner = coche;
 }

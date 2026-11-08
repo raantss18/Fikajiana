@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Seulement pour le modèle (ADR 0016) et les mises à jour (ADR 0015), à la demande. -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Savoir s'il y a du Wi-Fi avant d'envoyer des dons consentis (ADR 0042). -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
     <application
         android:label="Fikajiana"

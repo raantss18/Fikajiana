@@ -1,3 +1,4 @@
+import 'package:fikajiana/dons/envoi_dons.dart';
 import 'package:fikajiana/reglages/reglages.dart';
 import 'package:fikajiana/ui/app.dart';
 import 'package:fikajiana/ui/services.dart';
@@ -10,8 +11,20 @@ Future<void> main() async {
   LicenseRegistry.addLicense(_licencesDesPolices);
   // La feuille va jusqu'au bord, sous les barres du système.
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  final reglages = await Reglages.charger();
+  final services = await Services.charger();
+  // Les dons consentis (ADR 0042) : rien ne part sans « oui » ni adresse.
+  final ecritures = services.classeur.ecritures;
+  if (ecritures != null) {
+    services.dons = EnvoiDons(
+      ecritures: ecritures,
+      reglages: reglages,
+      infos: infosAndroid,
+      reseau: reseauAndroid,
+    )..demarrer();
+  }
   runApp(
-    App(reglages: await Reglages.charger(), services: await Services.charger()),
+    App(reglages: reglages, services: services, demanderConsentement: true),
   );
 }
 

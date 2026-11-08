@@ -70,6 +70,7 @@ class _EcranFeuilleState extends State<EcranFeuille> {
   var _enExport = false;
   bool? _degres;
   bool get _degresVus => _degres ?? false;
+
   late final CalculFeuille _calcul;
   late final ModeleOcr _modele;
   late final EssaiGuide _essais;

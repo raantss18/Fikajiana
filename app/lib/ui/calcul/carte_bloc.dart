@@ -103,6 +103,78 @@ class RepereBloc extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final repere = _repere(context);
+    final jugement = _jugement(context);
+    if (jugement == null) return repere;
+    return Positioned.fill(child: Stack(children: [repere, jugement]));
+  }
+
+  /// 👍 et 👎 à gauche d'une ligne lue (ADR 0042) : discrets, cibles de
+  /// 48 dp. 👍 garde la lecture comme juste ; 👎 ouvre sa correction.
+  Widget? _jugement(BuildContext context) {
+    final lisible = switch (bloc.etat) {
+      EtatBloc.fait ||
+      EtatBloc.nonCompris ||
+      EtatBloc.sansResultat ||
+      EtatBloc.erreur ||
+      EtatBloc.arrete => true,
+      _ => false,
+    };
+    if (enExport || bloc.estSaisie || bloc.latex == null || !lisible) {
+      return null;
+    }
+    const largeur = 2 * 48.0;
+    final gauche = bloc.cadre.centerLeft * vue.zoom + vue.decalage;
+    final dessous = bloc.cadre.bottomLeft * vue.zoom + vue.decalage;
+    // À gauche de la ligne ; sous elle s'il n'y a pas la place.
+    final position = gauche.dx - largeur - AppEspacement.xxs >= 0
+        ? Offset(gauche.dx - largeur - AppEspacement.xxs, gauche.dy - 24)
+        : dessous;
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final discret = theme.colorScheme.onSurfaceVariant;
+    final choisi = theme.colorScheme.primary;
+    final juge = bloc.juge;
+    return Positioned(
+      left: position.dx,
+      top: position.dy,
+      child: TraverseEcriture(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              key: ValueKey('juste-${bloc.cle}'),
+              tooltip: l10n.ligneJuste,
+              iconSize: 18,
+              isSelected: juge ?? false,
+              color: discret,
+              selectedIcon: Icon(Icons.thumb_up, color: choisi),
+              icon: const Icon(Icons.thumb_up_outlined),
+              onPressed: () {
+                surTouche();
+                unawaited(calcul.jugerJuste(bloc));
+              },
+            ),
+            IconButton(
+              key: ValueKey('faux-${bloc.cle}'),
+              tooltip: l10n.ligneFausse,
+              iconSize: 18,
+              isSelected: juge == false,
+              color: discret,
+              selectedIcon: Icon(Icons.thumb_down, color: choisi),
+              icon: const Icon(Icons.thumb_down_outlined),
+              onPressed: () {
+                calcul.jugerFaux(bloc);
+                unawaited(_corriger(context));
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _repere(BuildContext context) {
     final contenu = _contenu(context);
     final objets = bloc.aPlacer;
     final commande = bloc.commande;

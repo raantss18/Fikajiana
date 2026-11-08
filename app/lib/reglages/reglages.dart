@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:math';
 
 import 'package:fikajiana/reglages/support.dart';
 import 'package:flutter/widgets.dart';
@@ -11,6 +13,11 @@ const _cleDegres = 'degres';
 const _cleStyletConnu = 'stylet_connu';
 const _cleEcrireAuDoigt = 'ecrire_au_doigt';
 const _cleAuPropre = 'au_propre';
+const _cleDonner = 'dons_consentis';
+const _cleConsentementDemande = 'dons_consentement_demande';
+const _cleWifiSeulement = 'dons_wifi_seulement';
+const _cleAdresse = 'dons_adresse';
+const _cleContributeur = 'dons_contributeur';
 
 /// Réglages de l'utilisateur, gardés sur l'appareil seulement.
 class Reglages extends ChangeNotifier {
@@ -26,6 +33,80 @@ class Reglages extends ChangeNotifier {
     _styletConnu = stockage.getBool(_cleStyletConnu) ?? false;
     _ecrireAuDoigt = stockage.getBool(_cleEcrireAuDoigt) ?? false;
     _auPropre = stockage.getBool(_cleAuPropre) ?? true;
+    _donner = stockage.getBool(_cleDonner) ?? false;
+    _consentementDemande = stockage.getBool(_cleConsentementDemande) ?? false;
+    _wifiSeulement = stockage.getBool(_cleWifiSeulement) ?? true;
+    _adresse = stockage.getString(_cleAdresse) ?? '';
+    _contributeur = stockage.getString(_cleContributeur) ?? '';
+  }
+
+  // Dons d'écriture (ADR 0042) : rien ne part sans « oui » ni adresse.
+
+  var _donner = false;
+
+  /// « Aider à améliorer la reconnaissance » : les lignes jugées partent
+  /// vers la plateforme. Non par défaut.
+  bool get donner => _donner;
+
+  set donner(bool valeur) {
+    _consentementDemande = true;
+    unawaited(stockage?.setBool(_cleConsentementDemande, true));
+    if (valeur == _donner) {
+      notifyListeners();
+      return;
+    }
+    _donner = valeur;
+    notifyListeners();
+    unawaited(stockage?.setBool(_cleDonner, valeur));
+  }
+
+  var _consentementDemande = false;
+
+  /// La question a déjà été posée (une seule fois).
+  bool get consentementDemande => _consentementDemande;
+
+  var _wifiSeulement = true;
+
+  /// N'envoyer que sur un réseau non facturé (Wi-Fi).
+  bool get wifiSeulement => _wifiSeulement;
+
+  set wifiSeulement(bool valeur) {
+    if (valeur == _wifiSeulement) return;
+    _wifiSeulement = valeur;
+    notifyListeners();
+    unawaited(stockage?.setBool(_cleWifiSeulement, valeur));
+  }
+
+  var _adresse = '';
+
+  /// L'adresse de la plateforme ; vide, rien ne part.
+  String get adressePlateforme => _adresse;
+
+  set adressePlateforme(String valeur) {
+    final net = valeur.trim();
+    if (net == _adresse) return;
+    _adresse = net;
+    notifyListeners();
+    unawaited(stockage?.setString(_cleAdresse, net));
+  }
+
+  var _contributeur = '';
+
+  /// L'identifiant au hasard des dons, tiré au premier besoin ; il sert au
+  /// retrait, et n'est lié à rien d'autre.
+  String get contributeur {
+    if (_contributeur.isEmpty) nouveauContributeur();
+    return _contributeur;
+  }
+
+  /// Un nouvel identifiant : après un retrait, les dons suivants ne sont
+  /// plus liés aux anciens.
+  void nouveauContributeur() {
+    final hasard = Random.secure();
+    _contributeur = base64Url
+        .encode(List.generate(16, (_) => hasard.nextInt(256)))
+        .replaceAll('=', '');
+    unawaited(stockage?.setString(_cleContributeur, _contributeur));
   }
 
   var _auPropre = true;
