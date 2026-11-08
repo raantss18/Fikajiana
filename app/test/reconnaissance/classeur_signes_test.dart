@@ -45,7 +45,7 @@ void main() {
     test('classe du plus probable au moins probable', () async {
       final classes = await const ClasseurGabarits().classer(
         signes.last,
-        hauteurLigne: 40,
+        caseLigne: const Rect.fromLTWH(0, 0, 100, 40),
       );
       expect(classes, hasLength(3));
       expect(classes.first.$1, '8');
@@ -69,7 +69,13 @@ void main() {
   group('ClasseurAppris', () {
     test('un signe déjà classé se relit dans le cache', () async {
       final c = ClasseurAppris();
-      expect(await c.preparer(signes.last, hauteurLigne: 40), isTrue);
+      expect(
+        await c.preparer(
+          signes.last,
+          caseLigne: const Rect.fromLTWH(0, 0, 100, 40),
+        ),
+        isTrue,
+      );
       expect(c.connu(signes.last), isTrue);
       final avant = c.trouves;
       expect(c.signe(signes.last, hauteurLigne: 40), {
@@ -88,11 +94,11 @@ void main() {
         '4': closeTo(0.03, 1e-9),
       });
       expect(
-        ClasseurAppris.deciderProbas(const [('4', 0.8), ('1', 0.1)]),
+        ClasseurAppris.deciderProbas(const [('4', 0.6), ('1', 0.1)]),
         isNull,
       );
       expect(
-        ClasseurAppris.deciderProbas(const [('4', 0.92), ('1', 0.5)]),
+        ClasseurAppris.deciderProbas(const [('4', 0.75), ('1', 0.5)]),
         isNull,
       );
       expect(ClasseurAppris.deciderProbas(const []), isNull);
@@ -122,7 +128,10 @@ void main() {
       expect(exemples.reconnaitre(ailleurs), 'B');
       final c = ClasseurAppris(exemples: exemples);
       expect(c.impose(ailleurs), 'B');
-      final classes = await c.classer(ailleurs, hauteurLigne: 40);
+      final classes = await c.classer(
+        ailleurs,
+        caseLigne: const Rect.fromLTWH(0, 0, 100, 40),
+      );
       expect(classes.first, ('B', 1.0));
     });
 

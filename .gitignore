@@ -33,3 +33,6 @@ release-out/
 /entrainement/sortie/
 /entrainement/**/__pycache__/
 /entrainement/.pytest_cache/
+
+# Petit modèle par signe : embarqué à la construction, hors Git tant qu'une version n'est pas adoptée.
+/app/assets/modeles/signes*
