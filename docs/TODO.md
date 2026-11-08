@@ -27,6 +27,8 @@
 
 Déjà livré ce jour : rature et stylet (0.6.1), lueur et trait ondulé (0.7.1), main qui défile (0.7.2). Fusionné, pas encore publié : saisie naturelle, mémoire de la feuille, `det`, points et vecteurs, calcul formel de la PR 29 (0.8.0).
 
+13. 🔄 **Petit modèle par signe** (ADR 0038, décision d'Antsa 2026-11-08) : app de collecte (tablette et téléphone), entraînement en une commande, intégration dans Fikajiana. Antsa fournit ses écritures.
+
 ## 0. Erreurs signalées
 
 - 🔄 2026-11-07 : Pad 7 d'Antsa, vrai stylet, 1.0.4 : `Σ_{n=1}^{8} 3/n = 2283/280` juste (bornes rattachées) ; `lim_{x→3} (x²−3)/(x−3) =` bien lu mais souligné sans résultat : Giac répond `infinity` (pas de limite) et l'app le traitait en erreur. Corrigé : « pas de limite » écrit à la main (`sansLimite`), `1/0` reste sans résultat. Vu aussi : après `adb install -r` de deux APK coup sur coup, le modèle de lecture manquait et s'est retéléchargé (cause inconnue, à surveiller). Test : `calcul_feuille_test`.
