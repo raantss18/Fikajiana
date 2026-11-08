@@ -1,4 +1,4 @@
-# ADR 0039 — Contrat du modèle de signes et données d'entraînement
+# ADR 0040 — Contrat du modèle de signes et données d'entraînement
 
 - **Date** : 2026-11-08 · **Statut** : accepté (suite de l'ADR 0038)
 - **Contexte** : l'entraînement (`entrainement/`) et l'app doivent voir exactement la même image d'un signe ; sans écriture collectée, il faut des données de départ libres.

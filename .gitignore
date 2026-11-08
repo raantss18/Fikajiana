@@ -27,7 +27,7 @@ release-out/
 /donnees/
 
 # Entraînement du modèle de signes : polices téléchargées, environnement et poids produits.
-# La version adoptée des poids sera ajoutée à part (décision à venir, ADR 0039).
+# La version adoptée des poids sera ajoutée à part (décision à venir, ADR 0040).
 /entrainement/polices/
 /entrainement/.venv/
 /entrainement/sortie/

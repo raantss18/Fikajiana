@@ -27,8 +27,8 @@
 
 Déjà livré ce jour : rature et stylet (0.6.1), lueur et trait ondulé (0.7.1), main qui défile (0.7.2). Fusionné, pas encore publié : saisie naturelle, mémoire de la feuille, `det`, points et vecteurs, calcul formel de la PR 29 (0.8.0).
 
-13. 🔄 **Petit modèle par signe** (ADR 0038, décision d'Antsa 2026-11-08) : app de collecte (tablette et téléphone), entraînement en une commande, intégration dans Fikajiana. Antsa fournit ses écritures.
-    Entraînement en une commande fait (`uv run entrainement/entrainer.py`, ADR 0039, contrat `entrainement/CONTRAT.md`) : polices OFL + fixtures, test sur police et séances jamais vues. ⏳ Relancer dès qu'Antsa dépose ses séances dans `donnees/ecriture/` ; vérifier le rendu Skia = Pillow ; choisir la version adoptée des poids.
+13. 🔄 **Petit modèle par signe** (ADR 0038, décision d'Antsa 2026-11-08) : app de collecte (tablette et téléphone), entraînement en une commande, intégration dans Fikajiana. Antsa fournit ses écritures. App de collecte faite (`collecte/app/`, ADR 0039, `collecte/LISEZMOI.md`) ; reste : les séances d'Antsa, l'essai sur le téléphone.
+    Entraînement en une commande fait (`uv run entrainement/entrainer.py`, ADR 0040, contrat `entrainement/CONTRAT.md`) : polices OFL + fixtures, test sur police et séances jamais vues. ⏳ Relancer dès qu'Antsa dépose ses séances dans `donnees/ecriture/` ; vérifier le rendu Skia = Pillow ; choisir la version adoptée des poids.
 
 ## 0. Erreurs signalées
 

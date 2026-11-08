@@ -1,7 +1,7 @@
 # Entraîner le modèle de signes
 
 Un petit réseau lit un signe isolé (chiffre, lettre, opérateur) à partir de son image 32×32 et de
-cinq mesures du tracé (ADR 0038, 0039). Tout se fait sur l'ordinateur, sans GPU, en une commande.
+cinq mesures du tracé (ADR 0038, 0040). Tout se fait sur l'ordinateur, sans GPU, en une commande.
 
 ## Quand de nouvelles écritures arrivent
 

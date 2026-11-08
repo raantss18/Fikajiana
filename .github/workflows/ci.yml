@@ -46,6 +46,13 @@ jobs:
           dart format --set-exit-if-changed lib test
           dart analyze
           very_good dart test
+      - name: Collecte
+        working-directory: collecte/app
+        run: |
+          flutter pub get
+          dart format --set-exit-if-changed lib test
+          flutter analyze
+          very_good test
 
   entrainement:
     name: Entraînement du modèle de signes (tests)
