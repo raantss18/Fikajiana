@@ -18,6 +18,7 @@ String redresserLecture(String latex, {Set<String> fonctions = const {}}) {
   s = _matriceEnBinome(s);
   s = _teteDeDeterminant(s);
   s = _pointEnFraction(s);
+  s = _teteDePoint(s);
   return s;
 }
 
@@ -25,6 +26,23 @@ String redresserLecture(String latex, {Set<String> fonctions = const {}}) {
 /// propre s'écrivait `xarrow3` (Pad 7 d'Antsa).
 String sansLeftRight(String latex) =>
     latex.replaceAll(RegExp(r'\\(?:left|right)(?![a-zA-Z])'), '');
+
+/// `\mathtt{D}(4,-8)`, `\supset(4,-8)` : le `D` d'Antsa devant un point
+/// (Pad 7). Une police autour d'une seule capitale ne change pas la lettre ;
+/// `⊃` devant deux nombres n'a pas d'autre sens qu'un `D` mal lu.
+String _teteDePoint(String s) {
+  final t = s.replaceAllMapped(
+    RegExp(r'\\math(?:tt|bf|sf|rm|it|cal)\s*\{\s*([A-Za-z])\s*\}'),
+    (m) => m[1]!,
+  );
+  return t.replaceFirstMapped(
+    RegExp(
+      r'^\s*\\supset\s*(\(\s*-?\s*\d+(?:[.,]\d+)?\s*[,;]\s*-?\s*\d+'
+      r'(?:[.,]\d+)?\s*\))\s*$',
+    ),
+    (m) => 'D${m[1]}',
+  );
+}
 
 /// `\varLambda + \varLambda` : le `1` qui monte de tout en bas puis
 /// redescend (téléphone d'Antsa). Un Λ majuscule n'a pas d'usage courant au
