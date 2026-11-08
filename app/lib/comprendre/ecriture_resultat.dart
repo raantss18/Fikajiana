@@ -984,9 +984,14 @@ EcritureResultat? ecrireALaPlace(String latex, Rect ecriture) {
 }
 
 /// [latex] écrit à la main, la hauteur d'un chiffre valant [echelle], le
-/// haut à gauche en (0, 0) : pour le Guide et le tour. `null` si la main ne
-/// sait pas l'écrire.
-EcritureResultat? ecrireALEchelle(String latex, double echelle) {
+/// haut à gauche en (0, 0), ou la ligne d'écriture commençant en
+/// [ligneDeBase] : pour le Guide et le tour. `null` si la main ne sait pas
+/// l'écrire.
+EcritureResultat? ecrireALEchelle(
+  String latex,
+  double echelle, {
+  Offset? ligneDeBase,
+}) {
   final _Boite boite;
   try {
     boite = _Compositeur(_matricesSimples(latex)).composer();
@@ -994,7 +999,11 @@ EcritureResultat? ecrireALEchelle(String latex, double echelle) {
     return null;
   }
   if (boite.traces.isEmpty) return null;
-  return _tracer(boite, echelle, Offset(0, boite.haut * echelle));
+  return _tracer(
+    boite,
+    echelle,
+    ligneDeBase ?? Offset(0, boite.haut * echelle),
+  );
 }
 
 /// Giac écrit une matrice `\left(\begin{array}{cc}…\end{array}\right)`.

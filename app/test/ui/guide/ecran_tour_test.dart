@@ -248,6 +248,42 @@ void main() {
     expect(find.bySemanticsLabel('2+3= 5'), findsOneWidget);
   });
 
+  testWidgets(
+    'après un Σ et ses bornes, le résultat a la taille d’un chiffre',
+    (t) async {
+      // Vu sur le Pad 7 : `385` s'écrivait à la hauteur du Σ et de ses bornes.
+      await t.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: EcritureAnimee(
+              lignes: [LigneEcrite(r'\sum_{k=1}^{10}k^{2}=', '385')],
+              hauteurChiffre: 30,
+            ),
+          ),
+        ),
+      );
+      final peintre =
+          t
+                  .widget<CustomPaint>(
+                    find.descendant(
+                      of: find.byType(EcritureAnimee),
+                      matching: find.byType(CustomPaint),
+                    ),
+                  )
+                  .painter!
+              as PeintreEcriture;
+      final resultat = peintre.morceaux.singleWhere((m) => m.resultat);
+      final ecrit = peintre.morceaux.singleWhere((m) => !m.resultat);
+      expect(resultat.ecrit.cadre.height, lessThan(30 * 1.1));
+      // Sur la même ligne : le résultat ne descend pas sous le Σ.
+      expect(
+        resultat.ecrit.cadre.bottom,
+        lessThanOrEqualTo(ecrit.ecrit.cadre.bottom),
+      );
+      await t.pumpAndSettle();
+    },
+  );
+
   testWidgets('animations coupées : tout est écrit d’emblée', (t) async {
     await t.pumpWidget(
       const MaterialApp(
