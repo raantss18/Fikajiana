@@ -4,6 +4,8 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- « Relire la feuille » ne colle plus une `lim` au produit de matrices écrit juste dessous. / "Read the sheet again" no longer merges a `lim` with the matrix product written just below it.
+
 ## [1.0.7] — 2026-11-08
 
 ### Message fr

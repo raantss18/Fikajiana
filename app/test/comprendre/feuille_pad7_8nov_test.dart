@@ -21,7 +21,7 @@ List<Trait> _charger(String nom) => [
 
 /// Le modèle : une lecture par morceau, reconnu à ses traits.
 class _Modele extends Lecteur {
-  new(this.lectures);
+  new(this.lectures, {this.sinon = r'\varLambda'});
 
   /// Ce qu'il lit d'un morceau dont tous les traits sont dans la clé.
   final Map<Set<int>, String> lectures;
@@ -32,8 +32,11 @@ class _Modele extends Lecteur {
     for (final MapEntry(:key, :value) in lectures.entries) {
       if (key.containsAll(ids)) return value;
     }
-    return r'\varLambda';
+    return sinon;
   }
+
+  /// Ce qu'il lit du reste.
+  final String sinon;
 }
 
 class _Moteur implements Moteur {
@@ -46,13 +49,18 @@ class _Moteur implements Moteur {
 }
 
 /// Écrit [traits] comme Antsa, par paquets (une pause entre deux numéros de
-/// traits qui ne se suivent pas), et rend les blocs de la feuille.
-Future<List<BlocCalcul>> _ecrire(List<Trait> traits) async {
+/// traits qui ne se suivent pas), et rend les blocs de la feuille. Avec
+/// [relire], « Relire la feuille » passe ensuite.
+Future<List<BlocCalcul>> _ecrire(
+  List<Trait> traits, {
+  bool relire = false,
+  String sinon = r'\varLambda',
+}) async {
   final tries = traits.toList()..sort((a, b) => a.id.compareTo(b.id));
   final encre = Encre();
   final calcul = CalculFeuille(
     encre: encre,
-    lecteur: _Modele(const {}),
+    lecteur: _Modele(const {}, sinon: sinon),
     moteur: _Moteur(),
     pause: Duration.zero,
   );
@@ -64,6 +72,10 @@ Future<List<BlocCalcul>> _ecrire(List<Trait> traits) async {
     encre.chargerDocument(docs);
     calcul.encreChangee();
     await Future<void>.delayed(const Duration(milliseconds: 20));
+  }
+  if (relire) {
+    calcul.relireTout();
+    await Future<void>.delayed(const Duration(milliseconds: 50));
   }
   return calcul.blocs.toList();
 }
@@ -119,6 +131,35 @@ void main() {
 
   test('p(x) écrit sous un produit de matrices : deux calculs', () async {
     expect(await _ecrire(_charger('produit_matrices_et_p')), hasLength(2));
+  });
+
+  test('Relire la feuille : la lim reste hors du produit de matrices '
+      'écrit dessous', () async {
+    final lim = _charger('lim_3x_sur_exp');
+    final produit = _charger('produit_matrices_et_p');
+    // Les deux seuls, puis la feuille entière d'Antsa (9 h 43).
+    final toute = _charger('feuille_8nov_0943');
+    for (final traits in [
+      [...lim, ...produit],
+      toute,
+    ]) {
+      // Rien n'est compris : tout cherche un bloc à rejoindre.
+      final blocs = await _ecrire(
+        traits,
+        relire: true,
+        sinon: r'\underbrace{\cup}',
+      );
+      final idsLim = _ids(lim);
+      for (final b in blocs) {
+        // Un bloc est tout entier de la lim, ou tout entier hors d'elle.
+        final dedans = b.traits.where(idsLim.contains).length;
+        expect(
+          dedans == 0 || dedans == b.traits.length,
+          isTrue,
+          reason: '${b.traits}',
+        );
+      }
+    }
   });
 
   group('les points de la figure', () {
