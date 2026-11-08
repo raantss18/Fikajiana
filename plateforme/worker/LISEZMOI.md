@@ -55,7 +55,8 @@ npx wrangler deploy
 
 ## Vérifié / Supposé / Reste à tester
 
-- **Vérifié** : voir `../HEBERGER.md`, section « Option retenue ».
+- **Vérifié** : essai réel le 2026-11-08 (don, refus, taille, export à jeton, retrait, 410, limite de
+  débit, récupération) : `../HEBERGER.md`, section « Option retenue ». 19 tests (`npm test`).
 - **Supposé** : une séance de 2 Mo tient dans les 10 ms de calcul (non mesuré ; une séance réelle pèse
   bien moins).
 - **Reste à tester** : l'envoi depuis l'app ; le temps de calcul sur les plus gros envois.
