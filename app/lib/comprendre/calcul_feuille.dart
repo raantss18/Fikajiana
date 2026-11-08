@@ -1073,6 +1073,10 @@ class CalculFeuille extends ChangeNotifier {
           nomDePoints ??
           tracee ??
           redresserEgal(traits, await lecteur.lire(traits));
+      if (structuree == null && nomDePoints == null && tracee == null) {
+        final lu = latex;
+        latex = avecClasseur(classeur, () => redresserLettres(traits, lu));
+      }
       final tempsModele =
           chrono.elapsedMicroseconds - tempsStructure - tempsTrace;
       if (bloc._version != version || !identical(_blocs[bloc.cle], bloc)) {
