@@ -549,6 +549,9 @@ StructureMatrice? _matrice(List<Trait> traits) {
     lignes.last.add(t);
   }
   if (lignes.length < 2) return null;
+  // Une ligne faite de traits plats n'est qu'un pied ou un tiret : `f(1)=`
+  // au `1` à pied (téléphone d'Antsa) n'est pas une matrice (ADR 0047).
+  if (lignes.any((l) => l.every((t) => _plat(_c(t))))) return null;
 
   final hauteur = _mediane(
     dedans.map(_c).where((c) => !_plat(c)).map((c) => c.height),

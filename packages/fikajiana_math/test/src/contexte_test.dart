@@ -7,6 +7,12 @@ void main() {
   const points = {'A': (1.0, 2.0), 'B': (5.0, -4.0)};
   Analyse lire(String latex) => analyserLatex(latex, points: points);
 
+  test('lim sans = demande sa valeur, comme det (ADR 0047)', () {
+    final a = analyserLatex(r'\lim_{x \to 0} f(x)');
+    expect(a.giac, startsWith('limit('));
+    expect(a.demandeResultat, isTrue);
+  });
+
   group('entre deux points de la feuille', () {
     test('le vecteur AB se calcule', () {
       final a = lire(r'\overrightarrow{AB}');

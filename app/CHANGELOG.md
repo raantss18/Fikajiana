@@ -4,6 +4,7 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- `f(1)=`, `lim f(x)` sans `=` et `angle(E;F;D)` écrits à la main se lisent ; « pas de limite » n'apparaît plus sur une ligne mal lue. / Handwritten `f(1)=`, `lim f(x)` without `=` and `angle(E;F;D)` are read; "no limit" no longer appears on a misread line.
 - `lim` écrite par morceaux (borne, puis dénominateur) reste un seul calcul ; le `=` haut n'est plus perdu ; `B(2;-25)` et `C(2;7)` se lisent justes. / A `lim` written in pieces (bound, then denominator) stays one calculation; a raised `=` is no longer lost; `B(2;-25)` and `C(2;7)` are read correctly.
 - Le Guide présente aussi les outils de la Feuille (👍/👎, corriger un signe, relire, gomme, fond, export…) et les réglages ; le tour montre les matrices, les sommes et limites, et comment juger une lecture. / The Guide also covers the Sheet tools (👍/👎, correcting a sign, re-reading, eraser, background, export…) and the settings; the tour shows matrices, sums and limits, and how to judge a reading.
 - La Feuille construit aussi parallèle, perpendiculaire, bissectrice, tangente, symétrique, projeté, intersection, triangle et polygone, et mesure angle(A;B;C)=, aire(ABC)= et périmètre(ABC)=, en valeur exacte. / The Sheet also builds parallels, perpendiculars, bisectors, tangents, reflections, projections, intersections, triangles and polygons, and measures angle(A;B;C)=, aire(ABC)= and périmètre(ABC)= exactly.
