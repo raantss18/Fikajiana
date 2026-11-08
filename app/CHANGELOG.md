@@ -4,6 +4,18 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+## [1.0.9] — 2026-11-08
+
+### Message fr
+
+Une ligne comprise propose à côté, écrit à la main, ce qu'on peut en faire : résoudre, dériver, intégrer, factoriser, tracer, limite. On peut choisir une ligne pour la déplacer, la dupliquer, la supprimer ou copier son LaTeX. L'Historique renomme et supprime les documents avec « Annuler », la langue se choisit dans les Réglages, et les panneaux de correction s'écrivent à la main.
+
+### Message en
+
+A line that is understood offers, handwritten next to it, what you can do with it: solve, differentiate, integrate, factor, plot, limit. You can pick a line to move it, duplicate it, delete it or copy its LaTeX. History renames and deletes documents with "Undo", the language is chosen in Settings, and correction panels are handwritten.
+
+### Changements
+
 - Plus d'actions proposées à côté d'une ligne comprise : factoriser, développer, limite en +∞ d'une expression ; valeur en 0, tangente en 0, limite d'une fonction ; inverse d'une matrice. Les mots passent à la ligne au lieu de sortir de l'écran. / More suggested actions next to an understood line: factor, expand, limit at +∞ of an expression; value at 0, tangent at 0, limit of a function; inverse of a matrix. The words wrap instead of leaving the screen.
 - Une ligne comprise sans = propose à côté, écrit à la main, ce qu'on peut en faire : résoudre ou dériver une expression, dériver ou intégrer une fonction, le déterminant d'une matrice ; un toucher écrit la ligne dessous. / A line understood without = suggests next to it, handwritten, what can be done with it: solve or derive an expression, derive or integrate a function, a matrix's determinant; a tap writes the line below.
 - Le panneau d'une ligne à vérifier s'écrit à la main comme le reste de la Feuille : relire, effacer, corriger, et les autres lectures possibles. / The panel of a line to check is handwritten like the rest of the Sheet: reread, erase, correct, and the other possible readings.
