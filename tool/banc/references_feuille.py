@@ -89,6 +89,10 @@ note(p, r"y ^ { 1 } - 3 y = \cos \left( x \right)", sp.dsolve(yf(x).diff(x) - 3 
 note(p, "y'+y=0", sp.dsolve(yf(x).diff(x) + yf(x)).rhs)
 note(p, "y'=2y", sp.dsolve(yf(x).diff(x) - 2 * yf(x)).rhs)
 note(p, "y'(t)=t", sp.dsolve(yf(t).diff(t) - t).rhs)
+note(p, "y''+y=0", sp.dsolve(yf(x).diff(x, 2) + yf(x)).rhs)
+note(p, "y''+4y=x", sp.dsolve(yf(x).diff(x, 2) + 4 * yf(x) - x).rhs)
+note(p, r"y''+y=\cos(x)", sp.dsolve(yf(x).diff(x, 2) + yf(x) - sp.cos(x)).rhs)
+note(p, "y''-3y'+2y=e^{x}", sp.dsolve(yf(x).diff(x, 2) - 3 * yf(x).diff(x) + 2 * yf(x) - sp.exp(x)).rhs)
 u4 = 2
 for _ in range(4):
     u4 = 3 * u4 - 1

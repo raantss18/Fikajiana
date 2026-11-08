@@ -336,12 +336,7 @@ Analyse? _equationDifferentielle(String ecrit, {required bool degres}) {
     libre + r"(?:'|\^\s*\{?\s*(?:\\prime|'|1(?!\d))\s*\}?)",
   );
   if (!premiere.hasMatch(latex) && !seconde.hasMatch(latex)) return null;
-  // Le second ordre fait tomber Giac sur l'appareil (récursion sans fin dans
-  // `operator_minus`, banc de la feuille, Pad 7) : refusé, l'app ne plante
-  // pas.
-  if (seconde.hasMatch(latex)) {
-    throw const ErreurLatex('équation différentielle du second ordre');
-  }
+  final ordre2 = seconde.hasMatch(latex);
   final texte = latex
       .replaceAll(seconde, r' \phi ')
       .replaceAll(premiere, r' \mu ');
@@ -362,11 +357,109 @@ Analyse? _equationDifferentielle(String ecrit, {required bool degres}) {
       .replaceAll(RegExp(r'\by\b'), 'y($v)')
       .replaceAll(RegExp(r'\bmu\b'), 'diff(y($v),$v)')
       .replaceAll(RegExp(r'\bphi\b'), 'diff(y($v),$v,2)');
+  if (ordre2) {
+    return _secondOrdre('($gauche)-($droite)', v);
+  }
   return Analyse(
     TypeExpression.calcul,
     'y($v)=desolve((${fonction(gauche)})=(${fonction(droite)}),y($v))',
     demandeResultat: true,
   );
+}
+
+/// `a·y'' + b·y' + c·y = f(x)`, a, b, c constants : `desolve` du second ordre
+/// fait tomber Giac sur l'appareil (récursion sans fin dans `operator_minus`,
+/// même pour `y''+y=0`, banc du Pad 7). La solution s'écrit ici : équation
+/// caractéristique, puis une solution particulière par variation des
+/// constantes, que Giac intègre. Le reste est refusé.
+Analyse _secondOrdre(String p, String v) {
+  // [p] s'écrit avec `phi` (y''), `mu` (y'), `y` ; P(φ, μ, ψ) en x.
+  String en(num phi, num mu, num y) => p
+      .replaceAll(RegExp(r'\bphi\b'), '($phi)')
+      .replaceAll(RegExp(r'\bmu\b'), '($mu)')
+      .replaceAll(RegExp(r'\by\b'), '($y)');
+  double val(String g, double x) {
+    try {
+      return compilerFonction(g, variable: v)(x);
+    } on ErreurEvaluation {
+      throw const ErreurLatex('équation différentielle non lue');
+    }
+  }
+
+  double coef(num phi, num mu, num y, double x) =>
+      val(en(phi, mu, y), x) - val(en(0, 0, 0), x);
+  const xs = [0.37, 1.61];
+  final (a, b, c) = (
+    coef(1, 0, 0, xs[0]),
+    coef(0, 1, 0, xs[0]),
+    coef(0, 0, 1, xs[0]),
+  );
+  // Linéaire, à coefficients constants : sinon, pas de formule.
+  for (final x in xs) {
+    final ok = [
+      (coef(1, 0, 0, x) - a).abs(),
+      (coef(0, 1, 0, x) - b).abs(),
+      (coef(0, 0, 1, x) - c).abs(),
+      (coef(2, 0, 0, x) - 2 * a).abs(),
+      (coef(0, 2, 0, x) - 2 * b).abs(),
+      (coef(0, 0, 2, x) - 2 * c).abs(),
+      (coef(1, 1, 1, x) - a - b - c).abs(),
+    ].every((e) => e < 1e-9);
+    if (!ok || a.abs() < 1e-12) {
+      throw const ErreurLatex('équation différentielle non linéaire');
+    }
+  }
+  final (ra, rb, rc) = (_rationnel(a), _rationnel(b), _rationnel(c));
+  if (ra == null || rb == null || rc == null) {
+    throw const ErreurLatex('coefficients non rationnels');
+  }
+  final d = b * b - 4 * a * c;
+  final alpha = 'normal(-($rb)/(2*($ra)))';
+  final String y1;
+  final String y2;
+  if (d.abs() < 1e-12) {
+    y1 = 'exp($alpha*$v)';
+    y2 = '$v*exp($alpha*$v)';
+  } else if (d > 0) {
+    final racine = 'sqrt(($rb)^2-4*($ra)*($rc))';
+    y1 = 'exp(normal((-($rb)+$racine)/(2*($ra)))*$v)';
+    y2 = 'exp(normal((-($rb)-$racine)/(2*($ra)))*$v)';
+  } else {
+    final beta = 'normal(sqrt(4*($ra)*($rc)-($rb)^2)/(2*abs($ra)))';
+    y1 = 'exp($alpha*$v)*cos($beta*$v)';
+    y2 = 'exp($alpha*$v)*sin($beta*$v)';
+  }
+  // Le second membre : f = −P(0, 0, 0).
+  final f = '-(${en(0, 0, 0)})';
+  final homogene = 'c_0*($y1)+c_1*($y2)';
+  final constant =
+      (val(en(0, 0, 0), xs[0]) - val(en(0, 0, 0), xs[1])).abs() < 1e-12 &&
+      val(en(0, 0, 0), xs[0]).abs() < 1e-12;
+  if (constant) {
+    return Analyse(
+      TypeExpression.calcul,
+      'y($v)=$homogene',
+      demandeResultat: true,
+    );
+  }
+  final w = '(($y1)*diff($y2,$v)-diff($y1,$v)*($y2))';
+  final particuliere =
+      '-($y1)*integrate(($y2)*($f)/(($ra)*$w),$v)'
+      '+($y2)*integrate(($y1)*($f)/(($ra)*$w),$v)';
+  return Analyse(
+    TypeExpression.calcul,
+    'y($v)=$homogene+simplify($particuliere)',
+    demandeResultat: true,
+  );
+}
+
+/// [x] en fraction simple, `(n/d)` avec d ≤ 24 ; `null` sinon.
+String? _rationnel(double x) {
+  for (var d = 1; d <= 24; d++) {
+    final n = (x * d).round();
+    if ((x * d - n).abs() < 1e-9) return d == 1 ? '($n)' : '($n/$d)';
+  }
+  return null;
 }
 
 /// `u_{n+1}=a·u_n+b`, avec ou sans `u_0=1` dans un système : le terme général

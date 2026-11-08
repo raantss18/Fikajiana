@@ -675,7 +675,7 @@
     "guideFactoriserPhrase": "factoriser(…) or factor(…) writes an expression as a product.",
     "guideFactoriserMots": "factor factorise factorize factoriser",
     "guideEquadiffTitre": "Differential equation",
-    "guideEquadiffPhrase": "y' − 3y = cos(x): the general solution is written, with its constant C₀. First order only for now.",
+    "guideEquadiffPhrase": "y' − 3y = cos(x): the general solution is written, with its constant C₀. First order, and second order with constant coefficients: y'' + y = cos(x).",
     "guideEquadiffMots": "differential equation derivative y prime ode desolve",
     "guideParametreeTitre": "Parametric curve",
     "guideParametreePhrase": "Write x and y in terms of t, one under the other with a brace: the curve is plotted.",
