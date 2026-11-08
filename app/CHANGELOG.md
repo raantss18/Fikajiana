@@ -4,6 +4,18 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+## [1.0.8] — 2026-11-08
+
+### Message fr
+
+Les équations différentielles se résolvent (premier ordre, et second ordre à coefficients constants), et les suites s'écrivent sur plusieurs lignes : uₙ, u₁₀, sommes et limites. L'écriture se lit mieux : e³ − 2e⁶, résoudre(…), points, A d'un seul trait, vos 3, 5 et 8. Le stylet reste fluide pendant que l'app lit.
+
+### Message en
+
+Differential equations are solved (first order, and second order with constant coefficients), and sequences can be written over several lines: uₙ, u₁₀, sums and limits. Handwriting is read better: e³ − 2e⁶, solve(…), points, a one-stroke A, your 3, 5 and 8. The pen stays smooth while the app reads.
+
+### Changements
+
 - Le stylet ne perd plus ses points pendant que l'app lit une ligne ou relit la feuille : écrire reste fluide. / The pen no longer loses points while the app reads a line or rereads the sheet: writing stays smooth.
 
 - Équations différentielles du second ordre à coefficients constants résolues (`y'' + y = cos x`) ; `t·sin(t)` n'est plus lu `tan(t)` ; une courbe paramétrée avec `t × sin(t)` n'est plus prise pour un vecteur ; des chiffres d'Antsa (5, 8, 3) mieux lus. / Constant-coefficient second-order differential equations are solved (`y'' + y = cos x`); `t·sin(t)` is no longer read as `tan(t)`; a parametric curve with `t × sin(t)` is no longer taken for a vector; some of Antsa's digits (5, 8, 3) are read better.
