@@ -504,6 +504,28 @@ class _Compositeur {
         _i++;
         return _rangee(boites);
       }
+      if (c == '_') {
+        _i++;
+        if (boites.isEmpty) throw const _NonPrisEnCharge();
+        final indice = _deplacer(_groupe(), Offset.zero, 0.62);
+        final base = boites.removeLast();
+        const descente = 0.22;
+        boites.add(
+          _Boite(
+            base.largeur + 0.04 + indice.largeur,
+            math.max(base.haut, indice.haut - descente),
+            math.max(base.bas, descente + indice.bas),
+            [
+              ...base.traces,
+              ..._deplacer(
+                indice,
+                Offset(base.largeur + 0.04, descente),
+              ).traces,
+            ],
+          ),
+        );
+        continue;
+      }
       if (c == '^') {
         _i++;
         if (boites.isEmpty) throw const _NonPrisEnCharge();
@@ -540,10 +562,42 @@ class _Compositeur {
     return _element();
   }
 
+  static const _accents = {
+    'é': ('e', '´'),
+    'è': ('e', '`'),
+    'ê': ('e', '^'),
+    'à': ('a', '`'),
+    'â': ('a', '^'),
+    'ù': ('u', '`'),
+    'û': ('u', '^'),
+    'ô': ('o', '^'),
+    'î': ('i', '^'),
+    'ç': ('c', '¸'),
+  };
+
+  /// La lettre et son accent, tracé à la main au-dessus (ou dessous, pour
+  /// la cédille) : la police n'a pas les lettres accentuées.
+  _Boite _accentuer(_Boite b, String accent) {
+    final x = b.largeur / 2;
+    final y = -b.haut - 0.1;
+    final trait = switch (accent) {
+      '´' => _l([x - 0.06, y, x + 0.1, y - 0.2]),
+      '`' => _l([x + 0.06, y, x - 0.1, y - 0.2]),
+      '^' => _l([x - 0.13, y, x, y - 0.18, x + 0.13, y]),
+      _ => _l([x, 0.02, x + 0.08, 0.14, x - 0.05, 0.24]),
+    };
+    return accent == '¸'
+        ? _Boite(b.largeur, b.haut, math.max(b.bas, 0.26), [...b.traces, trait])
+        : _Boite(b.largeur, b.haut + 0.32, b.bas, [...b.traces, trait]);
+  }
+
   /// Dans `\mathbb{R}`, les lettres sont les ensembles tracés (ℝ, ℤ).
   var _ensemble = false;
 
   _Boite _lettre(String c) {
+    if (_accents[c] case (final base, final accent)) {
+      return _accentuer(_lettre(base), accent);
+    }
     final police = _ensemble ? null : _lettreCaveat(c == '-' ? '−' : c);
     if (police != null) return police;
     final g = _glyphes[c];
@@ -575,6 +629,8 @@ class _Compositeur {
       final signe = _s[_i++];
       return signe == '{' || signe == '}'
           ? _lettre(signe)
+          : signe == '|'
+          ? _rangee([_lettre('|'), _lettre('|')])
           : signe == ','
           ? const _Boite(0.1, 0, 0, [])
           : throw const _NonPrisEnCharge();
@@ -603,9 +659,87 @@ class _Compositeur {
       'times' => _lettre('×'),
       'prime' => _lettre("'"),
       'det' => _mot('det'),
+      'lim' => _bornes(_mot('lim')),
+      'sum' => _bornes(_somme),
+      'int' => _bornes(_integrale),
+      'to' || 'rightarrow' => _fleche,
+      'vec' => _vecteur(),
       'left' || 'right' => const _Boite(0, 0, 0, []),
       _ => throw const _NonPrisEnCharge(),
     };
+  }
+
+  /// `Σ`, plus grand qu'un chiffre, ses bornes dessous et dessus.
+  static final _somme = _Boite(0.8, 1.2, 0.2, [
+    _l([0.72, -1.15, 0.06, -1.15, 0.44, -0.48, 0.06, 0.2, 0.74, 0.2]),
+  ]);
+
+  static final _integrale = _Boite(0.46, 1.3, 0.35, [
+    _l([0.44, -1.18, 0.38, -1.3, 0.3, -1.24, 0.24, -0.5, 0.18, 0.24]),
+    _l([0.18, 0.24, 0.1, 0.35, 0.02, 0.26]),
+  ]);
+
+  static final _fleche = _Boite(0.84, 0.6, 0, [
+    _l([0.06, -0.42, 0.76, -0.42]),
+    _l([0.54, -0.6, 0.78, -0.42, 0.54, -0.24]),
+  ]);
+
+  /// Les bornes d'un `lim`, d'un `Σ` ou d'une intégrale, écrites
+  /// dessous et dessus, plus petites.
+  _Boite _bornes(_Boite signe) {
+    _Boite? dessous;
+    _Boite? dessus;
+    while (true) {
+      _espaces();
+      if (_fini) break;
+      if (_s[_i] == '_' && dessous == null) {
+        _i++;
+        dessous = _deplacer(_groupe(), Offset.zero, 0.6);
+      } else if (_s[_i] == '^' && dessus == null) {
+        _i++;
+        dessus = _deplacer(_groupe(), Offset.zero, 0.6);
+      } else {
+        break;
+      }
+    }
+    if (dessous == null && dessus == null) return signe;
+    final largeur = [
+      signe.largeur,
+      dessous?.largeur ?? 0,
+      dessus?.largeur ?? 0,
+    ].reduce(math.max);
+    const ecart = 0.14;
+    double milieu(_Boite b) => (largeur - b.largeur) / 2;
+    return _Boite(
+      largeur,
+      signe.haut + (dessus == null ? 0 : ecart + dessus.haut + dessus.bas),
+      signe.bas + (dessous == null ? 0 : ecart + dessous.haut + dessous.bas),
+      [
+        ..._deplacer(signe, Offset(milieu(signe), 0)).traces,
+        if (dessous != null)
+          ..._deplacer(
+            dessous,
+            Offset(milieu(dessous), signe.bas + ecart + dessous.haut),
+          ).traces,
+        if (dessus != null)
+          ..._deplacer(
+            dessus,
+            Offset(milieu(dessus), -signe.haut - ecart - dessus.bas),
+          ).traces,
+      ],
+    );
+  }
+
+  /// `\vec{AB}` : la flèche tracée au-dessus des lettres.
+  _Boite _vecteur() {
+    final corps = _groupe();
+    final y = -corps.haut - 0.2;
+    final fin = corps.largeur + 0.04;
+    return _Boite(corps.largeur + 0.08, corps.haut + 0.36, corps.bas, [
+      ...corps.traces,
+      _l([0, y, fin, y]),
+      _l([fin - 0.16, y - 0.12, fin, y, fin - 0.16, y + 0.12]),
+    ]);
   }
 
   /// Le nom d'une fonction : ses lettres, l'une après l'autre.
@@ -653,10 +787,11 @@ class _Compositeur {
   /// `\begin{pmatrix}a&b\\c&d\end{pmatrix}` : ses cases écrites à la main,
   /// entre deux grandes parenthèses tracées (Antsa : pas de matrice imprimée).
   _Boite _matrice() {
-    const debut = '{pmatrix}';
+    final systeme = _s.startsWith('{cases}', _i);
+    final debut = systeme ? '{cases}' : '{pmatrix}';
     if (!_s.startsWith(debut, _i)) throw const _NonPrisEnCharge();
     _i += debut.length;
-    const fin = r'\end{pmatrix}';
+    final fin = '\\end$debut';
     final bout = _s.indexOf(fin, _i);
     if (bout < 0) throw const _NonPrisEnCharge();
     final lignes = [
@@ -693,7 +828,10 @@ class _Compositeur {
         traces.addAll(
           _deplacer(
             c,
-            Offset(x + (largeurs[j] - c.largeur) / 2, y + hauts[i]),
+            Offset(
+              x + (systeme ? 0 : (largeurs[j] - c.largeur) / 2),
+              y + hauts[i],
+            ),
           ).traces,
         );
         x += largeurs[j] + ecart;
@@ -710,6 +848,17 @@ class _Compositeur {
           h + (b - h) * k / 12,
         ),
     ];
+    if (systeme) {
+      // Un système : une seule accolade, à gauche, les lignes calées à gauche.
+      final m = (h + b) / 2;
+      return _Boite(largeur - bord + 0.1, -h, b, [
+        _l([
+          0.36, h, 0.24, h + 0.08, 0.22, m - 0.12, //
+          0.06, m, 0.22, m + 0.12, 0.24, b - 0.08, 0.36, b,
+        ]),
+        ...traces,
+      ]);
+    }
     return _Boite(largeur, -h, b, [
       parenthese(0.26, 1),
       parenthese(largeur - 0.26, -1),
@@ -832,6 +981,20 @@ EcritureResultat? ecrireALaPlace(String latex, Rect ecriture) {
     ecriture.center.dy + (boite.haut - boite.bas) / 2 * echelle,
   );
   return _tracer(boite, echelle, origine);
+}
+
+/// [latex] écrit à la main, la hauteur d'un chiffre valant [echelle], le
+/// haut à gauche en (0, 0) : pour le Guide et le tour. `null` si la main ne
+/// sait pas l'écrire.
+EcritureResultat? ecrireALEchelle(String latex, double echelle) {
+  final _Boite boite;
+  try {
+    boite = _Compositeur(_matricesSimples(latex)).composer();
+  } on _NonPrisEnCharge {
+    return null;
+  }
+  if (boite.traces.isEmpty) return null;
+  return _tracer(boite, echelle, Offset(0, boite.haut * echelle));
 }
 
 /// Giac écrit une matrice `\left(\begin{array}{cc}…\end{array}\right)`.

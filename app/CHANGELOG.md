@@ -4,6 +4,7 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Le Guide écrit ses exemples à la main, trait par trait. Après chaque mise à jour, une fois le modèle là, un petit tour montre les gestes de base sur des exemples. / The Guide writes its examples by hand, stroke by stroke. After each update, once the model is there, a short tour shows the basics on small examples.
 - Le petit modèle par signe, s'il est embarqué, lit un signe que le tracé seul ne reconnaît pas. / The small per-sign model, when bundled, reads a sign the strokes alone do not recognise.
 
 - Chaque signe se lit dès qu'il est écrit : une ligne déjà comprise se lit plus vite à la pause. / Each sign is read as soon as it is written: a line already understood is read faster at the pause.

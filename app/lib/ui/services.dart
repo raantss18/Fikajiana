@@ -12,6 +12,7 @@ import 'package:fikajiana/reconnaissance/classeur_onnx.dart';
 import 'package:fikajiana/reconnaissance/exemples_personnels.dart';
 import 'package:fikajiana/reconnaissance/lecteur.dart';
 import 'package:fikajiana/reconnaissance/modele.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -27,6 +28,7 @@ class Services {
     required this.graphes,
     required this.figures,
     ClasseurAppris? classeur,
+    this.lireVersion = _versionAndroid,
   }) : classeur = classeur ?? ClasseurAppris(exemples: ExemplesPersonnels()) {
     // Une courbe `C : …` et un objet de la Figure n'ont jamais le même nom.
     courbes.nomsPris = () => atelier.figure.noms;
@@ -107,8 +109,22 @@ class Services {
   /// petit modèle quand il sera embarqué, ADR 0038).
   final ClasseurAppris classeur;
 
+  /// La version installée, `null` hors d'Android : le tour se propose
+  /// une fois par version (ADR 0045).
+  final Future<String?> Function() lireVersion;
+
   /// Ce que le Guide demande de poser sur la Feuille.
   final essais = EssaiGuide();
+}
+
+Future<String?> _versionAndroid() async {
+  try {
+    return await const MethodChannel('fikajiana/systeme')
+        .invokeMethod<String>('version');
+  } on Object {
+    // Pas de canal hors d'Android (tests, bureau) : pas de tour proposé.
+    return null;
+  }
 }
 
 class PorteeServices extends InheritedWidget {

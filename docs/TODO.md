@@ -22,6 +22,7 @@
 10. ✅ **Au propre, main levée, courbes nommées** (demandes d'Antsa, ADR 0033), vus sur le Pad 7 au stylet simulé ; reste un vrai stylet.
 11. ✅ **Matrices déclarées sur la Feuille** (demande d'Antsa) : `A=[1,2;3,4]`, `det(A)`, `A^{-1}`, `AX=B` (X = A⁻¹B), banc 165/165 sur le Pad 7 ; `B=[5;6]` déclare B sans rien placer, matrices écrites à la taille de la ligne.
 12. ✅ **Guide interactif** (demande d'Antsa) : entrée « Guide » du Menu, catalogue par familles (`app/lib/guide/catalogue.dart`), recherche sans accent, « Essayer » pose l'exemple sur la Feuille ou ouvre la Figure avec l'outil (ADR 0036). Reste : essai sur le Pad 7 et le Poco.
+    🔄 Exemples écrits à la main et animés, tour de six étapes proposé une fois par version quand le modèle est là, ouvrable depuis le Guide (demande d'Antsa, 2026-11-08, ADR 0045). Reste : essai sur le Pad 7 et le Poco.
 11 bis. 🔄 **Idées de Mikajy** (ADR 0034, 0035) : police Caveat, `≈` pour une valeur approchée, lecture plus vive après un `=` faits. Lecture au tracé étendue (ADR 0037) : minuscules a b c d e f k n t u v x y z, π, `f'`, `\frac`, `\sqrt`, virgule et point décimaux, leurres `m n h g q` ; fixtures lues au tracé 5 → 6, fausses 2 → 0. Reste : la mesurer sur le Pad 7 et le téléphone ; `s`, `o`, `l`, `ln`, `sin` ; d'autres mains. Toucher un signe et apprendre des corrections : faits (ADR 0041).
 12. ⏳ **Essai réseau coupé sur le Pad 7** : manque pour 0.7.1 et 0.7.2 (mode avion à activer par Antsa).
 

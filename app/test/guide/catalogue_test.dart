@@ -1,4 +1,5 @@
 import 'package:fikajiana/comprendre/calcul_feuille.dart';
+import 'package:fikajiana/comprendre/ecriture_resultat.dart';
 import 'package:fikajiana/encre/encre.dart';
 import 'package:fikajiana/geometrie/atelier.dart';
 import 'package:fikajiana/guide/catalogue.dart';
@@ -52,6 +53,14 @@ void main() {
           );
           expect(e.phrase, isNotEmpty);
           expect(e.essayable, isTrue);
+        }
+      });
+
+      test('chaque exemple s’écrit à la main, sans formule imprimée', () {
+        for (final e in catalogue) {
+          for (final ligne in e.lignes) {
+            expect(ecrireALEchelle(ligne, 26), isNotNull, reason: ligne);
+          }
         }
       });
 

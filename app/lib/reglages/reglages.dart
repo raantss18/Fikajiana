@@ -11,6 +11,7 @@ const _cleDegres = 'degres';
 const _cleStyletConnu = 'stylet_connu';
 const _cleEcrireAuDoigt = 'ecrire_au_doigt';
 const _cleAuPropre = 'au_propre';
+const _cleTourPropose = 'tour_propose';
 
 /// Réglages de l'utilisateur, gardés sur l'appareil seulement.
 class Reglages extends ChangeNotifier {
@@ -26,6 +27,18 @@ class Reglages extends ChangeNotifier {
     _styletConnu = stockage.getBool(_cleStyletConnu) ?? false;
     _ecrireAuDoigt = stockage.getBool(_cleEcrireAuDoigt) ?? false;
     _auPropre = stockage.getBool(_cleAuPropre) ?? true;
+    _tourPropose = stockage.getString(_cleTourPropose);
+  }
+
+  String? _tourPropose;
+
+  /// La version pour laquelle le tour a déjà été proposé (ADR 0045).
+  String? get tourPropose => _tourPropose;
+
+  void noterTourPropose(String version) {
+    if (version == _tourPropose) return;
+    _tourPropose = version;
+    unawaited(stockage?.setString(_cleTourPropose, version));
   }
 
   var _auPropre = true;
