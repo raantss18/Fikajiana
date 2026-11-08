@@ -357,48 +357,148 @@ class BlocCalcul {
         ? texte(approcheVoulue: approcheVoulue, virgule: virgule)
         : null;
     if (valeur == null) return null;
+    // Une ligne relue pendant ce placement : son résultat d'avant suffit.
+    if (_enPlacement) return _ecrit;
     final approche = v == null && estApproche(approcheVoulue: approcheVoulue);
-    final cle = '$approche$valeur';
-    if (_ecritPour != cle) {
-      _ecritPour = cle;
-      _ecrit = _placer(valeur, approche: approche);
+    _enPlacement = true;
+    try {
+      // Les résultats des lignes d'avant sont posés : celui-ci les évite
+      // (Pad 7 d'Antsa : `= 81/2` écrit sur `7⁹ = 40353607`).
+      final pris = [
+        for (final autre in _avant)
+          ?autre
+              .ecriture(approcheVoulue: approcheVoulue, virgule: virgule)
+              ?.cadre,
+      ];
+      final cle = '$approche$valeur|$cadre|$hauteurLigne|$pris';
+      if (_ecritPour != cle) {
+        _ecritPour = cle;
+        _ecrit = _placer(valeur, pris, approche: approche);
+      }
+    } finally {
+      _enPlacement = false;
     }
     return _ecrit;
   }
 
+  /// Les lignes placées avant celle-ci : de haut en bas, puis de gauche à
+  /// droite. Leur résultat est posé d'abord.
+  List<BlocCalcul> _avant = const [];
+  bool _enPlacement = false;
+
   /// À droite après un `=`, dessous pour une équation ; de l'autre côté si la
-  /// place est prise, et à la place voulue si les deux le sont.
-  EcritureResultat? _placer(String valeur, {bool approche = false}) {
-    EcritureResultat? essai({required bool dessous}) => ecrireResultat(
-      // Sous l'écriture, la valeur seule ne dirait pas ce qu'elle égale.
-      // `2+2=5` est faux : le mot suit, sans `=` ; `premier(17) = vrai`.
-      (verite != null ? demandeResultat : egalAjoute) ||
-              (finitParEgal && dessous)
-          ? '${approche ? r'\approx ' : '='}$valeur'
-          : valeur,
-      // Au propre, l'écriture est plus courte : le résultat la suit.
-      (_auPropreActif
-              ? auPropre()?.cadre.expandToInclude(
-                  Rect.fromLTWH(cadre.left, cadre.top, 0, cadre.height),
-                )
-              : null) ??
-          cadre,
-      dessous: dessous,
-      hauteurLigne: hauteurLigne,
+  /// place est prise ; sinon décalé le long de sa ligne, puis plus petit.
+  /// Jamais sur l'encre ni le résultat d'une autre ligne quand une place
+  /// libre existe ; sinon là où il gêne le moins.
+  EcritureResultat? _placer(
+    String valeur,
+    List<Rect> pris, {
+    bool approche = false,
+  }) {
+    final obstacles = [..._voisins, ...pris];
+    // Au propre, l'écriture est plus courte : le résultat la suit.
+    final ecriture =
+        (_auPropreActif
+            ? auPropre()?.cadre.expandToInclude(
+                Rect.fromLTWH(cadre.left, cadre.top, 0, cadre.height),
+              )
+            : null) ??
+        cadre;
+    EcritureResultat? essai({required bool dessous, double reduction = 1}) =>
+        ecrireResultat(
+          // Sous l'écriture, la valeur seule ne dirait pas ce qu'elle égale.
+          // `2+2=5` est faux : le mot suit, sans `=` ; `premier(17) = vrai`.
+          (verite != null ? demandeResultat : egalAjoute) ||
+                  (finitParEgal && dessous)
+              ? '${approche ? r'\approx ' : '='}$valeur'
+              : valeur,
+          ecriture,
+          dessous: dessous,
+          hauteurLigne: hauteurLigne,
+          reduction: reduction,
+        );
+    final cotes = [resultatDessous, !resultatDessous];
+    EcritureResultat? moinsGenant;
+    var moindre = double.infinity;
+    for (final reduction in _reductions) {
+      final essais = [
+        for (final dessous in cotes)
+          (dessous, essai(dessous: dessous, reduction: reduction)),
+      ];
+      // Les deux côtés à leur place, puis décalés : une place libre de
+      // l'autre côté vaut mieux qu'un résultat qui glisse.
+      for (final decale in [false, true]) {
+        for (final (dessous, e) in essais) {
+          if (e == null) return null;
+          final decalages = _decalages(e.cadre, ecriture, dessous: dessous);
+          for (final d in decale ? decalages.skip(1) : decalages.take(1)) {
+            final gene = _gene(e.cadre.shift(d), obstacles);
+            if (gene == 0) return e.decale(d);
+            if (gene < moindre) {
+              moindre = gene;
+              moinsGenant = e.decale(d);
+            }
+          }
+        }
+      }
+    }
+    return moinsGenant;
+  }
+
+  /// Plus petit, mais lisible : jamais sous la hauteur minimale d'une
+  /// écriture (`ecrireResultat`), et une matrice garde la moitié de sa
+  /// taille.
+  static const _reductions = [1.0, 0.8, 0.65, 0.5];
+
+  /// Où glisser le résultat sans quitter sa ligne : à droite, vers le haut
+  /// ou le bas, en touchant toujours la hauteur de la ligne ; dessous, vers
+  /// la droite, sans dépasser la fin de la ligne.
+  static Iterable<Offset> _decalages(
+    Rect zone,
+    Rect ecriture, {
+    required bool dessous,
+  }) sync* {
+    yield Offset.zero;
+    final pas = math.max<double>(
+      4,
+      0.2 * math.min(zone.height, ecriture.height),
     );
-    final dessous = resultatDessous;
-    final voulu = essai(dessous: dessous);
-    if (voulu == null || !_gene(voulu.cadre)) return voulu;
-    final autre = essai(dessous: !dessous);
-    return autre != null && !_gene(autre.cadre) ? autre : voulu;
+    for (var k = 1; k <= 12; k++) {
+      if (dessous) {
+        final dx = k * pas;
+        if (zone.left + dx > ecriture.right) return;
+        yield Offset(dx, 0);
+      } else {
+        for (final dy in [-k * pas, k * pas]) {
+          final z = zone.shift(Offset(0, dy));
+          if (z.top < ecriture.bottom && z.bottom > ecriture.top) {
+            yield Offset(0, dy);
+          }
+        }
+      }
+    }
   }
 
   /// Le bord droit de la page : un résultat qui le dépasse sort de l'écran
   /// (vu sur le Pad 7 avec `développer(…)`).
   double _bordDroit = double.infinity;
 
-  bool _gene(Rect zone) =>
-      zone.right > _bordDroit || _voisins.any(zone.deflate(1).overlaps);
+  /// L'écart gardé autour de ce qui est écrit : un résultat ne le touche pas.
+  static const _ecart = 3.0;
+
+  /// Combien [zone] gêne : 0 si elle est libre et sur la page.
+  double _gene(Rect zone, List<Rect> obstacles) {
+    var gene = zone.right > _bordDroit
+        ? (zone.right - _bordDroit) * zone.height
+        : 0.0;
+    for (final o in obstacles) {
+      final autour = o.inflate(_ecart);
+      if (!autour.overlaps(zone)) continue;
+      final commun = autour.intersect(zone);
+      gene += math.max(1, commun.width * commun.height);
+    }
+    return gene;
+  }
 
   void _oublierResultat() {
     sansLimite = false;
@@ -570,6 +670,13 @@ class CalculFeuille extends ChangeNotifier {
           .._auPropreActif = _auPropre
           .._ecritPour = null;
       }
+      // Une ligne arrivée après le dernier changement de largeur (document
+      // ouvert, nouvelle ligne) connaît aussi le bord de la page.
+      if (bloc._bordDroit != _bordDroit) {
+        bloc
+          .._bordDroit = _bordDroit
+          .._ecritPour = null;
+      }
       final dessous = Rect.fromLTWH(
         bloc.cadre.left,
         bloc.cadre.bottom,
@@ -592,6 +699,17 @@ class CalculFeuille extends ChangeNotifier {
           .._voisins = voisins
           .._ecritPour = null;
       }
+    }
+    // L'ordre où les résultats se posent : de haut en bas, puis de gauche à
+    // droite. Chacun évite ceux d'avant.
+    final ordre = _blocs.values.where((b) => !b.estSaisie).toList()
+      ..sort(
+        (a, b) => a.cadre.top != b.cadre.top
+            ? a.cadre.top.compareTo(b.cadre.top)
+            : a.cadre.left.compareTo(b.cadre.left),
+      );
+    for (var i = 0; i < ordre.length; i++) {
+      ordre[i]._avant = ordre.sublist(0, i);
     }
   }
 
@@ -778,11 +896,20 @@ class CalculFeuille extends ChangeNotifier {
   /// Un groupe de traits rejoint le bloc qu'il prolonge, ou en fait un.
   void _rattacherGroupe(List<Trait> groupe) {
     final cadre = cadreDuGroupe(groupe);
-    final hote = _blocs.values.where((b) => !b.estSaisie).where((b) {
-      return prolonge(b.cadre, cadre, ferme: b.finitParEgal) ||
-          estDenominateur(b.cadre, groupe) ||
-          estBorne(b.cadre, _traitsDe(b), groupe);
-    }).firstOrNull;
+    final ecrits = _blocs.values.where((b) => !b.estSaisie).toList();
+    // Sa propre ligne d'abord : un bout de `7⁹ =` n'est pas une borne de la
+    // ligne du dessus, même s'il en est assez près (Pad 7 d'Antsa).
+    final hote =
+        ecrits
+            .where((b) => prolonge(b.cadre, cadre, ferme: b.finitParEgal))
+            .firstOrNull ??
+        ecrits
+            .where(
+              (b) =>
+                  estDenominateur(b.cadre, groupe) ||
+                  estBorne(b.cadre, _traitsDe(b), groupe),
+            )
+            .firstOrNull;
     final bloc =
         hote ??
         BlocCalcul(cle: 'bloc-${_compteur++}-${groupe.first.id}', cadre: cadre);
@@ -1433,6 +1560,9 @@ class CalculFeuille extends ChangeNotifier {
       }
     }
     _retirerTraitsDisparus();
+    // Les voisins se connaissent dès l'ouverture : sinon chaque résultat se
+    // posait comme si la ligne était seule sur la page.
+    _placerResultats();
   }
 
   @override

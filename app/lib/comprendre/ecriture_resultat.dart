@@ -892,6 +892,23 @@ class EcritureResultat {
   final List<Path> contours;
   final Rect cadre;
 
+  /// Le même résultat, déplacé de [d] : pour le poser là où la place est
+  /// libre sans le recomposer.
+  EcritureResultat decale(Offset d) => d == Offset.zero
+      ? this
+      : EcritureResultat(
+          [for (final c in contours) c.shift(d)],
+          cadre.shift(d),
+          traces: [
+            for (final t in traces)
+              [
+                for (final p in t)
+                  PointVector(p.x + d.dx, p.y + d.dy, p.pressure),
+              ],
+          ],
+          taille: taille,
+        );
+
   /// Le chemin de la plume, trait par trait, pour le voir s'écrire.
   final List<List<PointVector>> traces;
   final double taille;
@@ -1008,11 +1025,13 @@ String _matricesSimples(String latex) => latex
 
 /// Compose [latex] à droite de [ecriture], ou [dessous], à la taille de
 /// l'écriture. Rend `null` si ce résultat ne sait pas s'écrire à la main.
+/// [reduction] l'écrit plus petit, quand la place manque.
 EcritureResultat? ecrireResultat(
   String latex,
   Rect ecriture, {
   bool dessous = false,
   double? hauteurLigne,
+  double reduction = 1,
 }) {
   final _Boite boite;
   try {
@@ -1031,7 +1050,7 @@ EcritureResultat? ecrireResultat(
   // Une matrice garde des chiffres de la taille de l'écriture : elle déborde
   // la ligne plutôt que de rapetisser (vu sur le Pad 7, illisible).
   final mesure = latex.contains(r'\begin{') ? math.min(total, 1.6) : total;
-  final echelle = ((reference * 0.8) / mesure).clamp(
+  final echelle = ((reference * 0.8 * reduction) / mesure).clamp(
     _hauteurMin / total,
     _hauteurMax,
   );
