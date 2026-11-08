@@ -4,6 +4,8 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Une ligne dont un signe doute s'affiche et se calcule tout de suite d'après son tracé (un pointillé discret la marque) ; le modèle la confirme ou la corrige pendant une pause, sans gêner l'écriture. / A line with a doubtful sign is shown and computed at once from its strokes (a discreet dotted underline marks it); the model confirms or corrects it during a pause, without disturbing writing.
+
 ## [1.0.9] — 2026-11-08
 
 ### Message fr

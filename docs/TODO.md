@@ -47,6 +47,10 @@ Déjà livré ce jour : rature et stylet (0.6.1), lueur et trait ondulé (0.7.1)
 6. ✅ **Liste des objets de la Figure** (cap n° 9) : faite depuis longtemps, revue sur le Pad 7, passée à ✅.
 7. ✅ **Plus d'actions proposées** (choix d'Antsa, suite du point 5) : `factoriser` (somme où la variable monte en puissance), `développer` (parenthèses), `limite` en +∞ d'une expression ; `valeur` en 0, `tangente` en 0, `limite` d'une fonction ; `inverse` d'une matrice carrée. Mots qui passent à la ligne. Vu sur le Pad 7 : `limite` pose `lim (X−1) = +∞`. ⏳ Système de deux équations écrites sur deux lignes (non fait : une accolade le résout déjà) ; point et borne choisis par la personne (on corrige la ligne posée).
 
+## Fluidité (accord d'Antsa, 2026-11-08)
+
+1. ✅ **Lecture au tracé affichée, Pix2Text en arrière-plan** (ADR 0050) : une ligne dont un signe doute s'affiche en quelques ms avec un pointillé « à confirmer », le modèle la relit pendant une pause et la remplace seulement s'il fait mieux ; jamais après une correction. Pad 7 : `x+1` 849 ms → 36 ms. ⏳ Vrai stylet ; part réelle des lignes d'Antsa concernées (8 → 9 lignes sur 58 fixtures : ses lignes difficiles échouent sur la structure, pas sur un signe).
+
 ## 0. Erreurs signalées
 
 - ✅ 2026-11-08 : PR #96 fusionnée avec « Analyse et tests » en échec (`catalogue_test` : la recherche « matrice inverse » trouve aussi la nouvelle entrée « Ce que la feuille propose », ce qui est juste). Causes : seuls les tests touchés avaient tourné avant la PR, et `gh pr checks --watch` suivi de `gh pr merge` fusionne même quand un contrôle échoue (pas de protection de branche). Corrigé : test mis à jour ; désormais la suite entière tourne avant chaque PR, et la fusion ne se fait qu'après lecture d'un résultat `pass` partout. Même classe cherchée : les PR #90 à #95 avaient bien tous leurs contrôles verts.

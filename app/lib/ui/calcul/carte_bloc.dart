@@ -177,8 +177,36 @@ class RepereBloc extends StatelessWidget {
   Widget build(BuildContext context) {
     final repere = _repere(context);
     final jugement = _jugement(context);
-    if (jugement == null) return repere;
-    return Positioned.fill(child: Stack(children: [repere, jugement]));
+    final marque = _marqueAConfirmer(context);
+    if (jugement == null && marque == null) return repere;
+    return Positioned.fill(
+      child: Stack(children: [repere, ?jugement, ?marque]),
+    );
+  }
+
+  /// Lue au tracé avec un signe douteux : un pointillé discret sous la
+  /// ligne, le temps que le modèle confirme (ADR 0050). TalkBack le dit.
+  Widget? _marqueAConfirmer(BuildContext context) {
+    if (enExport || !bloc.aConfirmer || bloc.etat != EtatBloc.fait) {
+      return null;
+    }
+    final bas = bloc.cadre.bottomLeft * vue.zoom + vue.decalage;
+    final largeur = math.max(24, bloc.cadre.width * vue.zoom);
+    return Positioned(
+      left: bas.dx,
+      top: bas.dy + 4,
+      child: IgnorePointer(
+        child: Semantics(
+          label: context.l10n.lectureAConfirmer,
+          child: CustomPaint(
+            size: Size(largeur.toDouble(), 6),
+            painter: _PeintrePointille(
+              Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   /// 👍 et 👎 à gauche d'une ligne lue (ADR 0042) : discrets, cibles de
@@ -873,3 +901,21 @@ Future<String?> demanderLatex(
   analyser: analyser,
   enTete: enTete,
 );
+
+/// Un pointillé : « à confirmer ».
+class _PeintrePointille extends CustomPainter {
+  const new(this.couleur);
+
+  final Color couleur;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final point = Paint()..color = couleur.withValues(alpha: 0.7);
+    for (var x = 2.0; x < size.width; x += 8) {
+      canvas.drawCircle(Offset(x, size.height / 2), 1.5, point);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_PeintrePointille ancien) => ancien.couleur != couleur;
+}

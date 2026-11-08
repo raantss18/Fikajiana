@@ -84,7 +84,16 @@ void main() {
           (60, 30, 80, 30),
         ]);
         calcul.encreChangee();
-        await Future<void>.delayed(const Duration(milliseconds: 30));
+        // Jusqu'à la fin de la lecture (le tracé indulgent est tenté avant
+        // le modèle, ADR 0050) : un délai fixe était fragile.
+        for (var i = 0; i < 200; i++) {
+          await Future<void>.delayed(const Duration(milliseconds: 10));
+          if (calcul.blocs.isNotEmpty &&
+              calcul.blocs.single.etat != EtatBloc.lecture &&
+              calcul.blocs.single.etat != EtatBloc.calcul) {
+            break;
+          }
+        }
 
         final bloc = calcul.blocs.single;
         expect(bloc.latex, r'\frac{1}{3}=');
