@@ -58,11 +58,11 @@ void main() {
   });
 
   group('consentement (ADR 0042)', () {
-    test('par défaut : non, Wi-Fi seulement, aucune adresse', () {
+    test('par défaut : non, Wi-Fi seulement, la plateforme d’Antsa', () {
       expect(reglages.donner, isFalse);
       expect(reglages.consentementDemande, isFalse);
       expect(reglages.wifiSeulement, isTrue);
-      expect(reglages.adressePlateforme, isEmpty);
+      expect(reglages.adressePlateforme, adresseDonsParDefaut);
     });
 
     testWidgets('la question, case non cochée ; Continuer sans cocher : non', (
@@ -110,7 +110,9 @@ void main() {
     });
 
     test('sans adresse, rien ne part', () async {
-      reglages.donner = true;
+      reglages
+        ..donner = true
+        ..adressePlateforme = '';
       expect(await envoi().envoyer(), BilanEnvoi.rien);
       expect(envois, isEmpty);
     });
