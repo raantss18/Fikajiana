@@ -8,7 +8,8 @@ import 'package:flutter/material.dart';
 const double pasSelection = 24;
 
 /// Par-dessus la Feuille pendant qu'on choisit une ligne : toucher choisit,
-/// glisser la ligne choisie la déplace, glisser ailleurs fait défiler.
+/// entourer choisit aussi (demande d'Antsa), glisser la ligne choisie la
+/// déplace ; à deux doigts, la page défile et se zoome.
 ///
 /// [zone] : ce qu'occupe la ligne choisie sur la page, ou `null`.
 class CoucheSelection extends StatefulWidget {
@@ -16,6 +17,7 @@ class CoucheSelection extends StatefulWidget {
     required this.vue,
     required this.zone,
     required this.surToucher,
+    required this.surEntourer,
     required this.surDeplacer,
     super.key,
   });
@@ -26,6 +28,9 @@ class CoucheSelection extends StatefulWidget {
   /// Un toucher, en coordonnées de la page.
   final ValueChanged<Offset> surToucher;
 
+  /// Un lasso fermé, en coordonnées de la page.
+  final ValueChanged<List<Offset>> surEntourer;
+
   /// La ligne choisie glisse de ce décalage (page) ; `debut` au premier pas.
   final void Function(Offset delta, {required bool debut}) surDeplacer;
 
@@ -33,10 +38,74 @@ class CoucheSelection extends StatefulWidget {
   State<CoucheSelection> createState() => _CoucheSelectionState();
 }
 
+enum _Geste { porte, entoure, vue }
+
 class _CoucheSelectionState extends State<CoucheSelection> {
-  /// Le glisser en cours porte la ligne choisie (sinon, la page).
-  var _porte = false;
+  _Geste? _geste;
   var _debut = true;
+  var _echelle = 1.0;
+
+  /// Le dernier point suivi : le premier pas compte depuis le doigt posé,
+  /// seuil de glisser compris.
+  Offset _dernier = Offset.zero;
+
+  /// Où le dernier doigt s'est posé.
+  Offset _pose = Offset.zero;
+
+  /// Le lasso en cours, en coordonnées de l'écran.
+  var _lasso = <Offset>[];
+
+  void _commencer(ScaleStartDetails d) {
+    final vue = widget.vue;
+    _echelle = 1;
+    _debut = true;
+    _dernier = d.pointerCount > 1 ? d.localFocalPoint : _pose;
+    if (d.pointerCount > 1) {
+      _geste = _Geste.vue;
+      return;
+    }
+    final z = widget.zone;
+    if (z != null && z.inflate(12).contains(vue.versPage(_pose))) {
+      _geste = _Geste.porte;
+      return;
+    }
+    _geste = _Geste.entoure;
+    setState(() => _lasso = [_pose, d.localFocalPoint]);
+  }
+
+  void _suivre(ScaleUpdateDetails d) {
+    final vue = widget.vue;
+    final delta = d.localFocalPoint - _dernier;
+    _dernier = d.localFocalPoint;
+    // Un second doigt arrive : la page bouge, le lasso s'oublie.
+    if (d.pointerCount > 1 && _geste != _Geste.vue) {
+      _geste = _Geste.vue;
+      setState(() => _lasso = []);
+    }
+    switch (_geste) {
+      case _Geste.vue:
+        vue.glisser(delta);
+        if (d.scale > 0 && d.scale != _echelle) {
+          vue.zoomer(d.scale / _echelle, d.localFocalPoint);
+          _echelle = d.scale;
+        }
+      case _Geste.porte:
+        widget.surDeplacer(delta / vue.zoom, debut: _debut);
+        _debut = false;
+      case _Geste.entoure:
+        setState(() => _lasso = [..._lasso, d.localFocalPoint]);
+      case null:
+        break;
+    }
+  }
+
+  void _finir(ScaleEndDetails d) {
+    if (_geste == _Geste.entoure && _lasso.length >= 3) {
+      widget.surEntourer([for (final p in _lasso) widget.vue.versPage(p)]);
+    }
+    _geste = null;
+    if (_lasso.isNotEmpty) setState(() => _lasso = []);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,27 +115,25 @@ class _CoucheSelectionState extends State<CoucheSelection> {
     return Stack(
       fit: StackFit.expand,
       children: [
-        GestureDetector(
+        Listener(
+          onPointerDown: (e) => _pose = e.localPosition,
           behavior: HitTestBehavior.opaque,
-          // La ligne suit le doigt depuis où il s'est posé, seuil compris.
-          dragStartBehavior: DragStartBehavior.down,
-          onTapUp: (d) => widget.surToucher(vue.versPage(d.localPosition)),
-          onPanStart: (d) {
-            final z = widget.zone;
-            _porte =
-                z != null &&
-                z.inflate(12).contains(vue.versPage(d.localPosition));
-            _debut = true;
-          },
-          onPanUpdate: (d) {
-            if (!_porte) {
-              vue.glisser(d.delta);
-              return;
-            }
-            widget.surDeplacer(d.delta / vue.zoom, debut: _debut);
-            _debut = false;
-          },
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            // La ligne suit le doigt depuis où il s'est posé, seuil compris.
+            dragStartBehavior: DragStartBehavior.down,
+            onTapUp: (d) => widget.surToucher(vue.versPage(d.localPosition)),
+            onScaleStart: _commencer,
+            onScaleUpdate: _suivre,
+            onScaleEnd: _finir,
+          ),
         ),
+        if (_lasso.length > 1)
+          IgnorePointer(
+            child: CustomPaint(
+              painter: _PeintreLasso(_lasso, couleurs.primary),
+            ),
+          ),
         if (zone != null)
           ListenableBuilder(
             listenable: vue,
@@ -133,13 +200,22 @@ class BarreSelection extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Semantics(
-              liveRegion: true,
-              child: Text(
-                choisie ? l10n.selectionChoisie : l10n.selectionAide,
-                textAlign: TextAlign.center,
+            // Sur un écran bas (téléphone en paysage), le cadre suffit : la
+            // phrase reste pour TalkBack.
+            if (choisie && MediaQuery.sizeOf(context).height < 520)
+              Semantics(
+                liveRegion: true,
+                label: l10n.selectionChoisie,
+                child: const SizedBox.shrink(),
+              )
+            else
+              Semantics(
+                liveRegion: true,
+                child: Text(
+                  choisie ? l10n.selectionChoisie : l10n.selectionAide,
+                  textAlign: TextAlign.center,
+                ),
               ),
-            ),
             const SizedBox(height: AppEspacement.xxs),
             Wrap(
               alignment: WrapAlignment.center,
@@ -194,4 +270,31 @@ class BarreSelection extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Le lasso tracé autour d'une ligne, fermé en pointillé vers son départ.
+class _PeintreLasso extends CustomPainter {
+  const new(this.points, this.couleur);
+
+  final List<Offset> points;
+  final Color couleur;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final trait = Paint()
+      ..color = couleur
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..strokeJoin = StrokeJoin.round;
+    canvas
+      ..drawPath(Path()..addPolygon(points, false), trait)
+      ..drawLine(
+        points.last,
+        points.first,
+        trait..color = couleur.withValues(alpha: 0.4),
+      );
+  }
+
+  @override
+  bool shouldRepaint(_PeintreLasso ancien) => true;
 }

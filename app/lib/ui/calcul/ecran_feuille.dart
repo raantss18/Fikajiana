@@ -265,6 +265,17 @@ class _EcranFeuilleState extends State<EcranFeuille> {
     );
   }
 
+  /// La barre va du côté où il reste le plus de place autour de la ligne
+  /// choisie (Pad 7 : en haut, elle la couvrait).
+  bool _barreEnBas(Reglages reglages) {
+    final zone = _zoneChoisie(reglages);
+    if (zone == null) return false;
+    final hauteur = MediaQuery.sizeOf(context).height;
+    final haut = zone.top * _vue.zoom + _vue.decalage.dy;
+    final bas = zone.bottom * _vue.zoom + _vue.decalage.dy;
+    return hauteur - 72 - bas > haut - 64;
+  }
+
   /// La ligne choisie bouge de [delta] (page). [debut] : une étape à annuler.
   void _deplacerChoisi(Offset delta, {bool debut = true}) {
     final bloc = _blocChoisi;
@@ -665,17 +676,28 @@ class _EcranFeuilleState extends State<EcranFeuille> {
                     )
                     ?.cle,
               ),
+              surEntourer: (lasso) => setState(
+                () => _choisi = _calcul
+                    .blocEntoure(
+                      lasso,
+                      approcheVoulue: reglages.approche,
+                      virgule: _virgule,
+                    )
+                    ?.cle,
+              ),
               surDeplacer: _deplacerChoisi,
             ),
           ),
         if (_selection && !_enExport)
           Positioned(
-            // Sous la bascule et le Menu, au milieu.
-            top: 64,
+            // Sous la bascule et le Menu, au milieu ; en bas, au-dessus des
+            // boutons, quand la ligne choisie est en haut (vu sur le Pad 7 :
+            // la barre la couvrait).
+            top: _barreEnBas(reglages) ? null : 64,
+            bottom: _barreEnBas(reglages) ? 72 : null,
             left: AppEspacement.sm,
             right: AppEspacement.sm,
             child: SafeArea(
-              bottom: false,
               child: Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 560),

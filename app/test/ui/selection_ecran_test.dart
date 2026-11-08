@@ -28,7 +28,10 @@ void main() {
     await t.pumpFikajiana();
     await ecrire(t);
     await choisirUneLigne(t);
-    expect(find.text('Touchez une ligne pour la choisir.'), findsOneWidget);
+    expect(
+      find.text('Touchez ou entourez une ligne pour la choisir.'),
+      findsOneWidget,
+    );
     expect(find.text('Dupliquer'), findsNothing);
 
     // Toucher l'écriture la choisit : elle s'entoure, la barre s'étend.
@@ -72,13 +75,44 @@ void main() {
     await t.tap(find.text('Supprimer'));
     await t.pumpAndSettle();
     expect(find.text('Écriture effacée'), findsOneWidget);
-    expect(find.text('Touchez une ligne pour la choisir.'), findsOneWidget);
+    expect(
+      find.text('Touchez ou entourez une ligne pour la choisir.'),
+      findsOneWidget,
+    );
     await t.tap(find.text('Annuler'));
     await t.pumpAndSettle();
 
     await t.tap(find.text('Terminer'));
     await t.pumpAndSettle();
     expect(find.byType(BarreSelection), findsNothing);
+  });
+
+  testWidgets('entourer une ligne la choisit', (t) async {
+    await t.pumpFikajiana();
+    await ecrire(t);
+    await choisirUneLigne(t);
+    final g = await t.startGesture(const Offset(120, 360));
+    for (final p in const [
+      Offset(260, 360),
+      Offset(260, 440),
+      Offset(120, 440),
+      Offset(118, 365),
+    ]) {
+      await g.moveTo(p);
+      await t.pump();
+    }
+    await g.up();
+    await t.pumpAndSettle();
+    expect(find.textContaining('Ligne choisie'), findsOneWidget);
+  });
+
+  testWidgets('entourer le vide ne choisit rien', (t) async {
+    await t.pumpFikajiana();
+    await ecrire(t);
+    await choisirUneLigne(t);
+    await t.dragFrom(const Offset(100, 600), const Offset(150, 50));
+    await t.pumpAndSettle();
+    expect(find.textContaining('Ligne choisie'), findsNothing);
   });
 
   testWidgets('← quitte le choix sans quitter la Feuille', (t) async {

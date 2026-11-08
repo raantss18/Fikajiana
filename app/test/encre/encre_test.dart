@@ -32,8 +32,9 @@ void main() {
       encre.deplacerTraits({id}, const Offset(1, 2));
       expect(encre.traits.single.id, id);
       expect(encre.traits.single.points.last.position, const Offset(11, 22));
-      encre.deplacerTraits({id}, Offset.zero);
-      encre.annuler();
+      encre
+        ..deplacerTraits({id}, Offset.zero)
+        ..annuler();
       expect(encre.traits.single.points.last.position, const Offset(10, 20));
     });
 

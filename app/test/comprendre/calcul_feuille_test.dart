@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:fikajiana/comprendre/blocs.dart';
 import 'package:fikajiana/comprendre/calcul_feuille.dart';
@@ -129,6 +130,37 @@ void main() {
           virgule: true,
         ),
         isNull,
+      );
+    });
+
+    test('entourée, elle est choisie ; à moitié, non', () async {
+      final bloc = await ligneEcrite();
+      final z = bloc.cadre.inflate(10);
+      final autour = [z.topLeft, z.topRight, z.bottomRight, z.bottomLeft];
+      expect(
+        calcul.blocEntoure(autour, approcheVoulue: false, virgule: true),
+        same(bloc),
+      );
+      final moitie = [z.topLeft, z.topCenter, z.bottomCenter, z.bottomLeft];
+      expect(
+        calcul.blocEntoure(
+          [for (final p in moitie) p - Offset(z.width * 0.2, 0)],
+          approcheVoulue: false,
+          virgule: true,
+        ),
+        isNull,
+      );
+    });
+
+    test('le cache ne dépend jamais de Rect.toString()', () {
+      // En version publiée, `'$rect'` vaut « Instance of 'Rect' ».
+      final source = File('lib/comprendre/calcul_feuille.dart')
+          .readAsStringSync();
+      expect(source, isNot(contains(r'|$cadre')));
+      expect(source, isNot(contains(r'|$pris')));
+      expect(
+        cleDeRect(const Rect.fromLTRB(1, 2, 3, 4)),
+        isNot(cleDeRect(const Rect.fromLTRB(1, 2, 3, 5))),
       );
     });
 
