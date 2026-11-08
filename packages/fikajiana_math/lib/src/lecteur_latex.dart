@@ -1020,6 +1020,21 @@ class LecteurLatex {
         _i += 2;
         return Terme('$combinaison(${indice.giac},$haut)');
       }
+      // `u_{10}`, `u_n` d'une suite définie plus haut (`u_n=2n+3`, ou son
+      // terme général) : sa valeur.
+      final suiteDefinie = definitions[nom];
+      if (suiteDefinie != null) {
+        demandeResultat = true;
+        return Terme(
+          suiteDefinie.appel(indice.giac),
+          symboles: {...indice.symboles, ...suiteDefinie.symboles}
+            ..remove(indice.symboles.isEmpty ? suiteDefinie.variable : ''),
+          fonctionDefinie: true,
+        );
+      }
+      // `w_0=2` écrit plus haut.
+      final retenue = valeurs['${nom}_${indice.giac}'];
+      if (retenue != null) return Terme('($retenue)');
       // `u_{n+1}` dit une suite. Tout le texte sera relu par [analyserLatex].
       if (RegExp(r'^[a-z][+-]\d+$').hasMatch(indice.giac)) {
         suite = nom;

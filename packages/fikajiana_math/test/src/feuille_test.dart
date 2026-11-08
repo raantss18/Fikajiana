@@ -18,13 +18,13 @@ void main() {
         r'f ^ { \prime } ( x )',
       ]) {
         final a = lire(ecrit);
-        expect(a.giac, 'diff(x+5,x)', reason: ecrit);
+        expect(a.giac, 'normal(diff(x+5,x))', reason: ecrit);
         expect(a.demandeResultat, isTrue);
       }
     });
     test("f''(x) dérive deux fois", () {
-      expect(lire("f''(x)").giac, 'diff(x+5,x,2)');
-      expect(lire(r'f^{\prime\prime}(x)').giac, 'diff(x+5,x,2)');
+      expect(lire("f''(x)").giac, 'normal(diff(x+5,x,2))');
+      expect(lire(r'f^{\prime\prime}(x)').giac, 'normal(diff(x+5,x,2))');
     });
     test("f'(2) dérive puis remplace", () {
       expect(lire("f'(2)").giac, 'subst(diff(x+5,x),x=2)');

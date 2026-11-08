@@ -455,7 +455,7 @@
     "guideSystemePhrase": "Une accolade, une équation par ligne : le système est résolu.",
     "guideSystemeMots": "système équations accolade linéaire inconnues",
     "guideSuiteTitre": "Suite par récurrence",
-    "guideSuitePhrase": "Écrivez la relation entre uₙ₊₁ et uₙ : son terme général s'écrit en fonction de n et de u₀.",
+    "guideSuitePhrase": "Écrivez u₀, puis la relation entre uₙ₊₁ et uₙ : son terme général s'écrit, et u₅ = donne sa valeur. uₙ = 2n + 3 définit aussi une suite, pour u₁₀ =, une somme ou une limite.",
     "guideSuiteMots": "suite récurrence terme général arithmétique géométrique",
     "guideMatriceTitre": "Matrice et déterminant",
     "guideMatricePhrase": "Une matrice s'écrit entre parenthèses ou, au clavier, A=[1,2;3,4]. det(A) donne son déterminant.",

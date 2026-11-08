@@ -1,0 +1,143 @@
+// Un banc : il écrit dans le journal, rien d'autre.
+// ignore_for_file: avoid_print
+
+// Banc de la feuille : des problèmes en plusieurs étapes (matrices, suites,
+// fonctions), ligne après ligne sur une même feuille, avec le vrai Giac, et
+// le temps de chaque étape. Les lignes sont celles qu'une lecture juste
+// donnerait ; l'écriture à la main se mesure à part (banc_lecture).
+//
+// Lancer sur un appareil : tool/banc/lancer.sh android-arm64
+// banc/banc_feuille.dart. Les valeurs attendues viennent de SymPy
+// (tool/banc/references_feuille.py) ; ce banc écrit ce que rend la feuille,
+// la comparaison se fait sur l'ordinateur.
+
+import 'dart:convert';
+
+import 'package:fikajiana/comprendre/calcul_feuille.dart';
+import 'package:fikajiana/encre/encre.dart';
+import 'package:fikajiana/moteur/moteur.dart';
+import 'package:fikajiana/reconnaissance/lecteur.dart';
+import 'package:flutter/widgets.dart';
+
+/// Rien n'est écrit à la main ici.
+class _SansLecture extends Lecteur {
+  @override
+  Future<String> lire(List<Trait> traits) async => '';
+}
+
+/// Chaque problème : ses lignes, de haut en bas.
+const List<(String, List<String>)> problemes = [
+  (
+    'matrices 2×2',
+    [
+      r'A=\begin{pmatrix}2&1\\1&3\end{pmatrix}',
+      r'B=\begin{pmatrix}1&-1\\0&2\end{pmatrix}',
+      'AB=',
+      'BA=',
+      r'\det(A)=',
+      'A^{-1}=',
+      'AX=B',
+      'A^{2}-5A=',
+      r'\det(AB)=',
+    ],
+  ),
+  (
+    'matrices 3×3',
+    [
+      r'C=\begin{pmatrix}1&2&0\\0&1&3\\2&0&1\end{pmatrix}',
+      r'\det(C)=',
+      'C^{-1}=',
+      'C^{2}=',
+      r'D=\begin{pmatrix}1\\2\\3\end{pmatrix}',
+      'CD=',
+      'CX=D',
+    ],
+  ),
+  (
+    'suite arithmétique',
+    [
+      'u_{n}=2n+3',
+      'u_{10}=',
+      r'\sum_{n=0}^{10}u_{n}=',
+      r'\lim_{n\to+\infty}\frac{u_{n}}{n}=',
+    ],
+  ),
+  (
+    'suite géométrique',
+    [
+      r'v_{n}=3\times2^{n}',
+      'v_{5}=',
+      r'\sum_{k=0}^{5}3\times2^{k}=',
+      r'\lim_{n\to+\infty}\frac{2n+1}{n+3}=',
+    ],
+  ),
+  ('suite récurrente', ['w_{0}=2', 'w_{n+1}=3w_{n}-4', 'w_{3}=']),
+  (
+    'fonction polynôme',
+    [
+      'f(x)=x^{3}-3x^{2}+2',
+      "f'(x)=",
+      "f'(x)=0",
+      'f(2)=',
+      'f(0)=',
+      r'\int_{0}^{2}f(x)dx=',
+      r'\lim_{x\to+\infty}f(x)=',
+      'f(x)=0',
+      'g(x)=f(x)+x',
+      "g'(1)=",
+    ],
+  ),
+  (
+    'fonction exponentielle',
+    [
+      'h(x)=xe^{-x}',
+      "h'(x)=",
+      "h'(x)=0",
+      'h(1)=',
+      r'\lim_{x\to+\infty}h(x)=',
+      r'\int_{0}^{1}h(x)dx=',
+    ],
+  ),
+  (
+    'fonction logarithme',
+    [r'k(x)=\ln(x)-x', "k'(x)=", "k'(x)=0", 'k(1)=', r'\lim_{x\to0^{+}}k(x)='],
+  ),
+];
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final moteur = MoteurGiac();
+  var total = Duration.zero;
+  for (final (nom, lignes) in problemes) {
+    // Une feuille par problème : les noms (f, A…) ne se mélangent pas.
+    final calcul = CalculFeuille(
+      encre: Encre(),
+      lecteur: _SansLecture(),
+      moteur: moteur,
+      pause: Duration.zero,
+    );
+    var y = 0.0;
+    for (final latex in lignes) {
+      y += 60;
+      final chrono = Stopwatch()..start();
+      await calcul.saisir(latex, Offset(0, y));
+      chrono.stop();
+      total += chrono.elapsed;
+      final bloc = calcul.blocs.lastWhere((b) => b.cadre.top == y);
+      final mesure = {
+        'p': nom,
+        'l': latex,
+        'ms': chrono.elapsedMilliseconds,
+        'etat': bloc.etat.name,
+        'type': bloc.type?.name,
+        'r': bloc.resultat,
+        'a': bloc.approche,
+        'v': bloc.verite,
+        't': bloc.texte(approcheVoulue: false, virgule: true),
+      };
+      print('BANC ${jsonEncode(mesure)}');
+    }
+    calcul.dispose();
+  }
+  print('BANC FIN ${total.inMilliseconds} ms');
+}
