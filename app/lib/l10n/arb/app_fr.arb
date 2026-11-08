@@ -650,5 +650,8 @@
     "tourSommesTitre": "Sommes et limites",
     "tourSommesPhrase": "Écrivez Σ ou lim avec leurs bornes, dessous et dessus : elles se lisent en entier et se calculent.",
     "tourJugerTitre": "Juger la lecture",
-    "tourJugerPhrase": "À côté de chaque ligne lue, 👍 dit qu'elle est juste, 👎 ouvre sa correction. Dans Corriger, toucher un signe propose ses autres lectures."
+    "tourJugerPhrase": "À côté de chaque ligne lue, 👍 dit qu'elle est juste, 👎 ouvre sa correction. Dans Corriger, toucher un signe propose ses autres lectures.",
+    "guideUsuellesTitre": "Fonctions usuelles",
+    "guideUsuellesPhrase": "sin, cos, tan, ln, log et exp s'écrivent à la main et se lisent sans attendre le modèle ; les angles suivent le réglage degrés ou radians.",
+    "guideUsuellesMots": "sin cos tan ln log exp sinus cosinus tangente logarithme exponentielle trigonométrie usuelle"
 }

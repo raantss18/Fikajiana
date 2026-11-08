@@ -920,5 +920,8 @@
     "tourSommesTitre": "Sums and limits",
     "tourSommesPhrase": "Write Σ or lim with their bounds, below and above: they are read in full and computed.",
     "tourJugerTitre": "Judge the reading",
-    "tourJugerPhrase": "Next to each read line, 👍 says it is right, 👎 opens its correction. In Correct, touching a sign offers its other readings."
+    "tourJugerPhrase": "Next to each read line, 👍 says it is right, 👎 opens its correction. In Correct, touching a sign offers its other readings.",
+    "guideUsuellesTitre": "Usual functions",
+    "guideUsuellesPhrase": "sin, cos, tan, ln, log and exp are written by hand and read without waiting for the model; angles follow the degrees or radians setting.",
+    "guideUsuellesMots": "sin cos tan ln log exp sine cosine tangent logarithm exponential trigonometry usual"
 }

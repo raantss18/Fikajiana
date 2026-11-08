@@ -183,6 +183,14 @@ List<EntreeGuide> catalogueGuide(AppLocalizations l10n) => [
     lignes: ['f(x)=x^{2}-3x+1', r'f\left(2\right)='],
   ),
   EntreeGuide(
+    cle: 'usuelles',
+    famille: FamilleGuide.fonctions,
+    titre: l10n.guideUsuellesTitre,
+    phrase: l10n.guideUsuellesPhrase,
+    motsCles: l10n.guideUsuellesMots,
+    lignes: [r'\cos\left(\pi\right)=', r'\ln\left(1\right)='],
+  ),
+  EntreeGuide(
     cle: 'derivee',
     famille: FamilleGuide.fonctions,
     titre: l10n.guideDeriveeTitre,
