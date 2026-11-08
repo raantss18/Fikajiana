@@ -49,6 +49,19 @@ void main() {
     }
   });
 
+  test('une loi de probabilité s’écrit à la main (vague 1)', () {
+    for (final texte in [
+      r'X\sim B\left(10;0{,}3\right)',
+      r'Y\sim\mathcal{N}\left(100;15^{2}\right)',
+      r'P\left(2\le X<5\right)=',
+      r'P\left(X\ge 8\right)=',
+      r'\sigma\left(X\right)=',
+      r'P\left(X\leqslant k\right)\geqslant 0{,}95',
+    ]) {
+      expect(ecrireResultat(texte, ecriture), isNotNull, reason: texte);
+    }
+  });
+
   test('le signe de la racine laisse de la place au nombre', () {
     final seul = ecrireResultat('2', ecriture)!.cadre;
     final racine = ecrireResultat(r'\sqrt{2}', ecriture)!.cadre;
