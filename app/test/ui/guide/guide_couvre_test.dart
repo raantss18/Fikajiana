@@ -3,6 +3,7 @@ import 'package:fikajiana/guide/catalogue.dart';
 import 'package:fikajiana/l10n/l10n.dart';
 import 'package:fikajiana/ui/app.dart';
 import 'package:fikajiana/ui/reglages/ecran_reglages.dart';
+import 'package:fikajiana_math/fikajiana_math.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -64,7 +65,8 @@ void main() {
       for (final langue in ['fr', 'en'])
         ...catalogueGuide(lookupAppLocalizations(Locale(langue))),
     ];
-    for (final mot in motsDeCommande) {
+    // Calcul, puis géométrie écrite sur la Feuille (`demidroite`…).
+    for (final mot in [...motsDeCommande, ...motsDeGeometrie]) {
       expect(chercherGuide(tout, mot), isNotEmpty, reason: mot);
     }
   });
