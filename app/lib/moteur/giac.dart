@@ -39,6 +39,16 @@ Future<String> evaluerGiac(String entree) {
 
 const String _separateur = '\x1f';
 
+/// Le LaTeX de Giac tel qu'on l'écrit : `\mathrm{inv}\left(e^{1}\right)`
+/// (pour `h(1)` avec `h(x)=xe^{-x}`, banc de la feuille) devient
+/// `\frac{1}{e}`.
+String latexLisible(String latex) => latex
+    .replaceAllMapped(
+      RegExp(r'\\mathrm\{inv\}\\left\(((?:(?!\\left|\\right).)*)\\right\)'),
+      (m) => '\\frac{1}{${m[1]}}',
+    )
+    .replaceAll(RegExp(r'e\^\{1\}(?![0-9])'), 'e');
+
 /// Réponse de Giac à [calculerGiac].
 class ReponseGiac {
   const new({
@@ -77,7 +87,7 @@ class ReponseGiac {
     }
     return ReponseGiac(
       exact: morceaux[0],
-      latex: morceaux[1],
+      latex: latexLisible(morceaux[1]),
       approche: morceaux[2],
     );
   }
