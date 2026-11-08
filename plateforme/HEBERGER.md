@@ -16,8 +16,8 @@ quelques Go de fichiers JSON au fil des mois, et HTTPS.
 | Dons stockés | Disque du VPS (volume Docker) | R2 (S3), le disque de Cloud Run s'efface | Disque de la machine |
 | HTTPS | Caddy (`compose.yaml`), automatique | Fourni par Cloud Run | Fourni par Funnel, chiffré jusqu'à la machine |
 | Qui voit les dons en clair | L'hébergeur du disque (comme tout VPS) | Google (calcul) et Cloudflare (stockage) | Personne d'autre (Funnel) |
-| Entretien | Mises à jour du système, sauvegardes | Presque rien ; carte bancaire demandée (non vérifié) | La machine doit rester allumée |
-| Pas-à-pas ici | **Oui** (le plus simple) | Non (à écrire si choisi) | Non (à écrire si choisi) |
+| Entretien | Mises à jour du système, sauvegardes | Presque rien ; compte de facturation Google obligatoire | La machine doit rester allumée |
+| Pas-à-pas ici | **Oui** (le plus simple) | **Oui** (choisi par Antsa le 2026-11-08) | Non (à écrire si choisi) |
 
 ## Vérifié (sources primaires)
 
@@ -88,3 +88,142 @@ Il faut : un VPS Debian ou Ubuntu, un nom de domaine (ou un sous-domaine d'un am
     `docker compose exec recepteur tar -C /donnees -cz . > dons-$(date +%F).tar.gz` (sur une machine sûre).
 
 Les dons sont dans le volume Docker `dons` (`docker volume inspect plateforme_dons`).
+
+## Pas-à-pas : option B (Cloud Run + Cloudflare R2), choisie par Antsa
+
+Compter une heure la première fois. Il faut : un compte Google, un compte Cloudflare, et sur
+l'ordinateur Docker et la Google Cloud CLI (`gcloud`, <https://docs.cloud.google.com/sdk/docs/install>).
+Toutes les commandes se lancent depuis la racine du dépôt.
+
+### Ce qui est vérifié pour cette option (le 2026-11-08)
+
+- Offre gratuite Cloud Run (facturation à la requête) : « 2 million requests per month », « 360,000 GB-seconds
+  of memory, 180,000 vCPU-seconds », « 1 GB of outbound data transfer from North America per month » ;
+  Artifact Registry : « 0.5 GB of storage per month » ; « A Google Cloud billing account is required to
+  access the Google Cloud Free Tier ». <https://docs.cloud.google.com/free/docs/free-cloud-features>
+- Cloud Run fournit la variable `PORT` (8080 par défaut) ; l'image doit être `linux/amd64`
+  (« Cloud Run specifically supports the Linux x86_64 ABI format »). <https://docs.cloud.google.com/run/docs/container-contract>
+- Options de `gcloud run deploy` utilisées ci-dessous (`--env-vars-file`, `--max-instances`, `--min-instances`,
+  `--allow-unauthenticated`, `--memory`, `--concurrency`, `--cpu-throttling`) :
+  <https://docs.cloud.google.com/sdk/gcloud/reference/run/deploy>
+- **Cloud Run journalise chaque requête** (« These logs are created automatically », on ne peut pas les couper,
+  seulement les exclure : <https://docs.cloud.google.com/run/docs/logging>) et le champ `httpRequest.remoteIp`
+  contient l'IP du client (<https://docs.cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry>).
+  L'étape 8 les exclut, pour tenir la promesse « on ne garde pas les IP ».
+- R2 : jeton « Object Read & Write » limitable à un seau ; adresse S3 `https://<ACCOUNT_ID>.r2.cloudflarestorage.com`
+  (`.eu.` pour un seau de juridiction UE) ; « You will not be able to access your Secret Access Key again ».
+  <https://developers.cloudflare.com/r2/api/s3/tokens/> — avec boto3, `region_name="auto"` :
+  <https://developers.cloudflare.com/r2/examples/aws/boto3/>
+
+**Supposé / reste à vérifier** : la forme de `X-Forwarded-For` sur Cloud Run n'est pas documentée pour
+Cloud Run (pour le répartiteur de charge Google : « [SUPPLIED_VALUE,]CLIENT_IP,LOAD_BALANCER_IP »,
+<https://docs.cloud.google.com/load-balancing/docs/https>) : l'étape 7 la mesure. R2 exige peut-être un
+moyen de paiement même sans dépasser l'offre gratuite (non vérifié). Le récepteur n'a jamais été essayé
+avec un vrai R2 ni sur Cloud Run. Le filtre d'exclusion de l'étape 8 est à vérifier dans l'Explorateur
+de journaux.
+
+### 1. Cloudflare R2 : le seau et sa clé
+
+1. Tableau de bord Cloudflare › **R2 object storage** › créer un seau `fikajiana-dons` (emplacement
+   automatique, ou juridiction UE : l'adresse prend alors `.eu.`).
+2. **Overview › Account Details › API Tokens › Manage › Create Account API token** : permission
+   **Object Read & Write**, limitée au seau `fikajiana-dons`.
+3. Noter tout de suite l'**Access Key ID**, la **Secret Access Key** (montrée une seule fois) et
+   l'**Account ID** (dans *Account Details*).
+
+### 2. Google Cloud : le projet
+
+```bash
+gcloud auth login
+gcloud projects create fikajiana-dons-XXXX        # un nom libre et unique
+gcloud config set project fikajiana-dons-XXXX
+```
+
+Relier le projet à un compte de facturation (console › Facturation), puis :
+
+```bash
+gcloud services enable run.googleapis.com artifactregistry.googleapis.com
+gcloud config set run/region us-central1
+```
+
+`us-central1` : la sortie gratuite (1 Go par mois) est comptée « from North America ». Les exports
+vers l'ordinateur d'entraînement sortent par là ; au-delà de 1 Go par mois, c'est payant (petites sommes).
+
+**Alerte de budget** (conseillé) : console › Facturation › Budgets et alertes › budget de 1 € avec
+alerte par courriel (<https://docs.cloud.google.com/billing/docs/how-to/budgets>).
+
+### 3. L'image du récepteur
+
+```bash
+gcloud artifacts repositories create fikajiana --repository-format=docker --location=us-central1
+gcloud auth configure-docker us-central1-docker.pkg.dev
+docker build --platform linux/amd64 -f plateforme/Dockerfile \
+  -t us-central1-docker.pkg.dev/fikajiana-dons-XXXX/fikajiana/dons:1 .
+docker push us-central1-docker.pkg.dev/fikajiana-dons-XXXX/fikajiana/dons:1
+```
+
+L'image fait environ 230 Mo décompressée ; garder une ou deux versions pour rester sous 0,5 Go.
+
+### 4. Les réglages
+
+```bash
+cp plateforme/exemple.cloudrun.env.yaml plateforme/cloudrun.env.yaml
+chmod 600 plateforme/cloudrun.env.yaml
+```
+
+Remplir `FIKA_JETON_ADMIN` (tiré par `python3 -c "import secrets; print(secrets.token_urlsafe(32))"`),
+`FIKA_S3_ADRESSE` (avec l'Account ID), `AWS_ACCESS_KEY_ID` et `AWS_SECRET_ACCESS_KEY` (étape 1).
+Ce fichier est ignoré par Git ; ne jamais le committer ni l'envoyer en clair.
+
+### 5. Le lancement
+
+```bash
+gcloud run deploy fikajiana-dons \
+  --image us-central1-docker.pkg.dev/fikajiana-dons-XXXX/fikajiana/dons:1 \
+  --allow-unauthenticated --env-vars-file plateforme/cloudrun.env.yaml \
+  --max-instances 1 --min-instances 0 --memory 512Mi --concurrency 20 --cpu-throttling
+```
+
+- `--max-instances 1` : la limite de débit est comptée en mémoire, dans une seule instance.
+- `--min-instances 0` et `--cpu-throttling` : rien ne tourne (ni ne coûte) entre deux envois ; le
+  premier envoi après une pause attend le démarrage (quelques secondes, non mesuré).
+- La commande affiche l'adresse du service, de la forme `https://fikajiana-dons-….run.app` (HTTPS fourni).
+
+### 6. Vérifier
+
+```bash
+curl https://fikajiana-dons-….run.app/v1/sante          # → {"ok": true}
+```
+
+### 7. Régler la lecture de l'IP (limite de débit)
+
+```bash
+curl -H "Authorization: Bearer LE_JETON" https://fikajiana-dons-….run.app/v1/mon-ip
+curl https://ifconfig.me                                   # votre IP vue d'Internet
+```
+
+Si `ip` est votre IP : c'est bon. Sinon (une adresse Google), mettre `FIKA_DERRIERE_PROXY: "2"` dans
+`cloudrun.env.yaml`, relancer l'étape 5 et revérifier. `/v1/mon-ip` ne garde rien et demande le jeton.
+
+### 8. Ne pas garder les IP dans les journaux de Google
+
+Console › **Logging › Routeur de journaux** › sink `_Default` › Modifier › **Ajouter une exclusion**,
+nommée `dons-requetes`, avec le filtre :
+
+```
+resource.type="cloud_run_revision" AND log_id("run.googleapis.com/requests")
+```
+
+Ensuite, vérifier dans l'Explorateur de journaux qu'un nouvel envoi n'y crée plus d'entrée de requête.
+Les journaux du récepteur lui-même (sans IP ni contenu) restent visibles.
+
+### 9. Donner l'adresse et récupérer
+
+- Mettre l'adresse `https://fikajiana-dons-….run.app` dans le réglage « adresse de la plateforme » de l'app.
+- Sur l'ordinateur d'entraînement :
+  `FIKA_DONS_ADRESSE=https://fikajiana-dons-….run.app FIKA_JETON_ADMIN=… uv run entrainement/recuperer_dons.py`.
+
+### 10. Mettre à jour
+
+Reconstruire avec une nouvelle étiquette (`dons:2`), `docker push`, relancer l'étape 5 avec la nouvelle
+image, puis effacer l'ancienne dans Artifact Registry. Les dons sont dans R2 : rien n'est perdu.

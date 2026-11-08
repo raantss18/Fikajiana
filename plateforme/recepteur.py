@@ -5,6 +5,7 @@ API (fixée avec l'app) :
   POST /v1/retrait  {"contributeur": "<id>"} → 202 {"retire": n}
   GET  /v1/export?depuis=<ISO 8601>  avec « Authorization: Bearer <FIKA_JETON_ADMIN> » → JSON lines
   GET  /v1/sante    → 200 {"ok": true}
+  GET  /v1/mon-ip   avec le jeton : l'adresse que le récepteur attribue à l'appelant (réglage du proxy)
 
 Lancement : `python recepteur.py` (Waitress, voir `servir()`). HTTPS est assuré devant (Caddy, hébergeur).
 Journal : méthode, chemin, statut, durée. Jamais l'IP, jamais le contenu.
@@ -15,8 +16,9 @@ Variables d'environnement :
   FIKA_JETON_ADMIN    jeton de l'export (≥ 32 caractères) ; absent : export fermé
   FIKA_DEBIT          requêtes POST permises par IP et par fenêtre (défaut 30)
   FIKA_FENETRE        durée de la fenêtre en secondes (défaut 60)
-  FIKA_DERRIERE_PROXY 1 si un proxy de confiance (Caddy) ajoute X-Forwarded-For
-  FIKA_PORT           port d'écoute (défaut 8080)
+  FIKA_DERRIERE_PROXY nombre d'adresses ajoutées à droite de X-Forwarded-For par les proxys de
+                      confiance : 1 derrière Caddy ; 0 ou absent : l'adresse de la connexion
+  FIKA_PORT ou PORT   port d'écoute (défaut 8080 ; Cloud Run fournit PORT)
 """
 
 from __future__ import annotations
@@ -78,7 +80,7 @@ class Recepteur:
         jeton_admin: str | None = None,
         debit: int = 30,
         fenetre: float = 60.0,
-        derriere_proxy: bool = False,
+        derriere_proxy: int = 0,
         classes: dict[str, str] | None = None,
         horloge=time.monotonic,
     ):
@@ -87,7 +89,7 @@ class Recepteur:
         self.stockage = stockage
         self.jeton_admin = jeton_admin
         self.limiteur = Limiteur(debit, fenetre, horloge)
-        self.derriere_proxy = derriere_proxy
+        self.derriere_proxy = int(derriere_proxy)
         self.classes = classes if classes is not None else schema.lire_classes()
 
     # --- WSGI -------------------------------------------------------------------------------
@@ -103,7 +105,7 @@ class Recepteur:
             statut, entetes, corps = _json(500, {"erreur": "erreur interne"})
         start_response(statut, entetes)
         # Seulement des routes connues dans le journal : rien de ce que l'appelant a écrit.
-        connu = chemin if chemin in ("/v1/dons", "/v1/retrait", "/v1/export", "/v1/sante") else "?"
+        connu = chemin if chemin in ("/v1/dons", "/v1/retrait", "/v1/export", "/v1/sante", "/v1/mon-ip") else "?"
         journal.info("%s %s %s %.0f ms", methode[:8], connu, statut[:3], (time.monotonic() - debut) * 1000)
         return corps
 
@@ -113,6 +115,7 @@ class Recepteur:
             "/v1/retrait": ("POST", self._retrait),
             "/v1/export": ("GET", self._export),
             "/v1/sante": ("GET", lambda env: _json(200, {"ok": True})),
+            "/v1/mon-ip": ("GET", self._mon_ip),
         }
         if chemin not in routes:
             return _json(404, {"erreur": "inconnu"})
@@ -120,7 +123,7 @@ class Recepteur:
         if methode != attendue:
             statut, entetes, corps = _json(405, {"erreur": f"{attendue} seulement"})
             return statut, entetes + [("Allow", attendue)], corps
-        if methode == "POST" or chemin == "/v1/export":
+        if methode == "POST" or chemin in ("/v1/export", "/v1/mon-ip"):
             attente = self.limiteur.accepter(self._ip(environ))
             if attente:
                 statut, entetes, corps = _json(429, {"erreur": "trop de requêtes"})
@@ -129,10 +132,11 @@ class Recepteur:
 
     def _ip(self, environ) -> str:
         if self.derriere_proxy:
-            # Le proxy de confiance ajoute l'adresse qu'il voit à droite : seule celle-là est sûre.
-            relais = environ.get("HTTP_X_FORWARDED_FOR", "")
-            if relais.strip():
-                return relais.split(",")[-1].strip()
+            # Chaque proxy de confiance ajoute l'adresse qu'il voit à droite ; ce qui est plus à gauche
+            # vient du client et peut être inventé. On prend donc la N-ième adresse en partant de la droite.
+            relais = [a.strip() for a in environ.get("HTTP_X_FORWARDED_FOR", "").split(",") if a.strip()]
+            if len(relais) >= self.derriere_proxy:
+                return relais[-self.derriere_proxy]
         return environ.get("REMOTE_ADDR", "")
 
     def _corps_json(self, environ, maxi: int):
@@ -185,7 +189,8 @@ class Recepteur:
         n = self.stockage.retirer(demande["contributeur"])
         return _json(202, {"retire": n})
 
-    def _export(self, environ):
+    def _refus_admin(self, environ):
+        """None si le jeton d'administration est bon, sinon la réponse de refus."""
         if not self.jeton_admin:
             return _json(404, {"erreur": "inconnu"})
         donne = environ.get("HTTP_AUTHORIZATION", "")
@@ -193,6 +198,20 @@ class Recepteur:
         if not hmac.compare_digest(donne.encode("utf-8"), attendu.encode("utf-8")):
             statut, entetes, corps = _json(401, {"erreur": "jeton requis"})
             return statut, entetes + [("WWW-Authenticate", "Bearer")], corps
+        return None
+
+    def _mon_ip(self, environ):
+        """Rend à l'appelant sa propre adresse telle que comptée, pour régler FIKA_DERRIERE_PROXY. Rien n'est gardé."""
+        refus = self._refus_admin(environ)
+        if refus:
+            return refus
+        relais = [a for a in environ.get("HTTP_X_FORWARDED_FOR", "").split(",") if a.strip()]
+        return _json(200, {"ip": self._ip(environ), "adresses_relayees": len(relais)})
+
+    def _export(self, environ):
+        refus = self._refus_admin(environ)
+        if refus:
+            return refus
         requete = urllib.parse.parse_qs(environ.get("QUERY_STRING", ""))
         try:
             depuis = dt.datetime.fromisoformat(requete.get("depuis", ["1970-01-01T00:00:00+00:00"])[0])
@@ -267,8 +286,20 @@ def depuis_environnement() -> Recepteur:
         jeton_admin=os.environ.get("FIKA_JETON_ADMIN") or None,
         debit=int(os.environ.get("FIKA_DEBIT", "30")),
         fenetre=float(os.environ.get("FIKA_FENETRE", "60")),
-        derriere_proxy=os.environ.get("FIKA_DERRIERE_PROXY") == "1",
+        derriere_proxy=int(os.environ.get("FIKA_DERRIERE_PROXY") or 0),
     )
+
+
+def options_waitress(application: Recepteur) -> dict:
+    return {
+        # Garde-fou en plus de la vérification de l'application.
+        "max_request_body_size": schema.TAILLE_MAX + 1024,
+        "threads": 4,
+        "ident": "fikajiana-dons",
+        # Waitress efface X-Forwarded-For par défaut (clear_untrusted_proxy_headers = True) : derrière un
+        # proxy de confiance, l'application en a besoin pour compter le débit par client (`_ip`).
+        "clear_untrusted_proxy_headers": application.derriere_proxy == 0,
+    }
 
 
 def servir() -> None:
@@ -279,11 +310,8 @@ def servir() -> None:
     waitress.serve(
         application,
         host=os.environ.get("FIKA_HOTE", "0.0.0.0"),
-        port=int(os.environ.get("FIKA_PORT", "8080")),
-        # Garde-fou en plus de la vérification de l'application.
-        max_request_body_size=schema.TAILLE_MAX + 1024,
-        threads=4,
-        ident="fikajiana-dons",
+        port=int(os.environ.get("FIKA_PORT") or os.environ.get("PORT") or 8080),
+        **options_waitress(application),
     )
 
 
