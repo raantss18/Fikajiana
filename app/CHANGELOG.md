@@ -4,6 +4,8 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Les suites sur plusieurs lignes se calculent : `uₙ = 2n + 3` puis `u₁₀ =`, une somme ou une limite ; `w₀ = 2` puis `wₙ₊₁ = 3wₙ − 4` puis `w₃ =`. Les dérivées s'écrivent simplifiées, `1/e` au lieu de « inv(e¹) », et la lecture au tracé est plus rapide. / Sequences over several lines are computed: `uₙ = 2n + 3` then `u₁₀ =`, a sum or a limit; `w₀ = 2` then `wₙ₊₁ = 3wₙ − 4` then `w₃ =`. Derivatives are simplified, `1/e` instead of "inv(e¹)", and stroke reading is faster.
+
 - Un `A` écrit d'un seul trait se lit `A` (et plus `h`) ; une limite mise au propre garde sa flèche ; un produit de matrices suivi d'un point se calcule. / An `A` written in one stroke is read as `A` (no longer `h`); a tidied limit keeps its arrow; a matrix product followed by a dot is computed.
 
 - « Relire la feuille » ne colle plus une `lim` au produit de matrices écrit juste dessous. / "Read the sheet again" no longer merges a `lim` with the matrix product written just below it.
