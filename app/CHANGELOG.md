@@ -4,6 +4,18 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+## [1.0.6] — 2026-11-08
+
+### Message fr
+
+À côté de chaque ligne, 👍 dit que la lecture est juste et 👎 ouvre sa correction. Si vous le voulez (la question est posée une fois, case non cochée), vos lignes jugées partent sans votre nom pour améliorer la reconnaissance ; vous changez d'avis à tout moment dans les Réglages. Chaque signe se lit dès qu'il est écrit, toucher un signe propose ses autres lectures, et le Guide écrit ses exemples à la main.
+
+### Message en
+
+Next to each line, 👍 says the reading is right and 👎 opens its correction. If you wish (asked once, box unticked), your judged lines are sent without your name to improve recognition; change your mind at any time in Settings. Each sign is read as soon as it is written, touching a sign offers its other readings, and the Guide writes its examples by hand.
+
+### Changements
+
 - `A =` écrit devant une matrice la déclare, au lieu d'en calculer le déterminant. / `A =` written before a matrix declares it, instead of computing its determinant.
 - Les dons consentis vont vers la plateforme du projet (Cloudflare), réglable dans les Réglages. / Consented donations go to the project's platform (Cloudflare), adjustable in Settings.
 - Le Guide écrit ses exemples à la main, trait par trait. Après chaque mise à jour, une fois le modèle là, un petit tour montre les gestes de base sur des exemples. / The Guide writes its examples by hand, stroke by stroke. After each update, once the model is there, a short tour shows the basics on small examples.
