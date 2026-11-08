@@ -4,6 +4,18 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+## [1.0.7] — 2026-11-08
+
+### Message fr
+
+La Feuille construit et mesure la géométrie : parallèle, perpendiculaire, bissectrice, projeté, intersection, triangle, angle, aire et périmètre. L'écriture se lit mieux : sin, cos, ln, log, exp, f(1), lim f(x), Σ avec k = 1, et une limite écrite en plusieurs morceaux. Les résultats et les 👍/👎 ne recouvrent plus une autre ligne et ne sortent plus de l'écran du téléphone.
+
+### Message en
+
+The Sheet builds and measures geometry: parallel, perpendicular, bisector, projection, intersection, triangle, angle, area and perimeter. Handwriting is read better: sin, cos, ln, log, exp, f(1), lim f(x), Σ with k = 1, and a limit written in several pieces. Results and 👍/👎 no longer cover another line or leave the phone screen.
+
+### Changements
+
 - `f(1)=`, `lim f(x)` sans `=` et `angle(E;F;D)` écrits à la main se lisent ; « pas de limite » n'apparaît plus sur une ligne mal lue. / Handwritten `f(1)=`, `lim f(x)` without `=` and `angle(E;F;D)` are read; "no limit" no longer appears on a misread line.
 - `lim` écrite par morceaux (borne, puis dénominateur) reste un seul calcul ; le `=` haut n'est plus perdu ; `B(2;-25)` et `C(2;7)` se lisent justes. / A `lim` written in pieces (bound, then denominator) stays one calculation; a raised `=` is no longer lost; `B(2;-25)` and `C(2;7)` are read correctly.
 - 👍 et 👎 trouvent une place libre près de leur ligne, sans couvrir une autre ligne ; un résultat ne sort plus de l'écran à droite sur téléphone. / 👍 and 👎 find a free spot near their line without covering another line; a result no longer runs off the right of the screen on phones.
