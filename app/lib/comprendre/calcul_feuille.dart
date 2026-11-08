@@ -193,13 +193,33 @@ class BlocCalcul {
 
   bool get finitParEgal => latex?.trimRight().endsWith('=') ?? false;
 
+  /// Un bout de ligne qui ne montre rien : ni résultat, ni courbe, ni objet,
+  /// ni définition (`\tan(t)`, la fin de `x = t×sin(t)` lue seule, feuille
+  /// d'Antsa). « Relire la feuille » le rattache à sa ligne.
+  bool get _bout =>
+      etat == EtatBloc.fait &&
+      !montreResultat &&
+      !seTrace &&
+      objet == null &&
+      type != TypeExpression.fonction &&
+      !(latex ?? '').contains('=');
+
   /// `g(x) =` seul (ou `y^{(x)}=`, son `g` mal lu) : une définition qu'on
   /// est en train d'écrire, pas un calcul fini. La suite, écrite après une
   /// pause, la complète (feuille d'Antsa, Pad 7, 14 h 05).
   /// `u_{n+1} =` aussi : le début d'une suite (feuille d'Antsa, 15 h 14).
-  bool get teteDeDefinition => RegExp(
-    r'^(?:[A-Za-z](?:\^\{?)?\(([a-z])\)\}?|[a-z]_\{?[a-z](?:[+-]\d)?\}?)=$',
-  ).hasMatch((latex ?? '').replaceAll(RegExp(r'\s'), ''));
+  /// `{ x =` aussi : la première ligne d'une courbe paramétrée, écrite
+  /// avant une pause (feuille d'Antsa, 15 h 14).
+  bool get teteDeDefinition =>
+      RegExp(
+        r'^(?:[A-Za-z](?:\^\{?)?\(([a-z])\)\}?|[a-z]_\{?[a-z](?:[+-]\d)?\}?'
+        r'|[xyt])=$',
+      ).hasMatch(
+        (latex ?? '').replaceAll(
+          RegExp(r'\\(?:left|right)\.?|\\begin\{[a-z]*\}|\\\{|&|\s'),
+          '',
+        ),
+      );
 
   /// Un résultat se montre après un `=`, ou sous une équation ou un système.
   /// Une expression sans `=` ne demande rien.
@@ -1519,7 +1539,7 @@ class CalculFeuille extends ChangeNotifier {
       for (final b in _blocs.values)
         if (!b.estSaisie &&
             !b.corrige &&
-            (b.etat == EtatBloc.nonCompris || !b._compris))
+            (b.etat == EtatBloc.nonCompris || !b._compris || b._bout))
           b,
     ];
     for (final b in orphelins) {

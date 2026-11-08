@@ -123,7 +123,10 @@ void main() {
     expect(tete('y^{(x)}='), isTrue);
     expect(tete('u_{n+1}='), isTrue);
     expect(tete('u _ { n + 1 } ='), isTrue);
+    expect(tete(r'\{ x ='), isTrue);
+    expect(tete(r'\left\{ \begin{matrix} x ='), isTrue);
     expect(tete('f(1)='), isFalse);
+    expect(tete('2+3='), isFalse);
     expect(tete('u_{3}='), isFalse);
     expect(tete("f'(x)="), isFalse);
   });
@@ -135,7 +138,15 @@ void main() {
     const lu =
         r'\left\{ \begin{matrix} x = t \times \sin ( t ) \\ y = t ^ { 2 } '
         r'\end{matrix} \right.';
-    final blocs = await _ecrire(traits, _Modele({_ids(traits): lu}));
+    // Comme sur le Pad 7 : `{ x =` d'abord, lu seul, puis la suite.
+    final tete = {
+      for (final t in traits)
+        if (t.id <= 5191) t.id,
+    };
+    final blocs = await _ecrire(
+      traits,
+      _Modele({tete: r'\{ x =', _ids(traits): lu}),
+    );
     expect(blocs, hasLength(1));
     // La barre haute de son `t` n'est pas une flèche de vecteur.
     expect(trouverStructure(traits), isNot(isA<StructureFleche>()));
@@ -160,4 +171,64 @@ void main() {
       r'x = \cos t , y = t \sin ( t )',
     );
   });
+
+  test(
+    'Relire la feuille rattache tan(t), bout de x = t×sin(t) lu seul',
+    () async {
+      // La feuille telle qu'enregistrée sur le Pad 7 : `{x = ; y = t²}` non
+      // compris, et `t×sin(t)` lu `\tan(t)`, compris mais ne montrant rien.
+      final traits = _charger('param_t_sin_t');
+      final bout = [
+        for (final t in traits)
+          if (t.id >= 5197 && t.id <= 5247) t.id,
+      ];
+      final reste = [
+        for (final t in traits)
+          if (!bout.contains(t.id)) t.id,
+      ];
+      final encre = Encre()
+        ..chargerDocument([for (final t in traits) t.versDocument()]);
+      final calcul = CalculFeuille(
+        encre: encre,
+        lecteur: _Modele({
+          _ids(traits):
+              r'\left\{ \begin{matrix} x = t \times \sin ( t ) \\ '
+              r'y = t ^ { 2 } \end{matrix} \right.',
+        }),
+        moteur: _Moteur(),
+        pause: Duration.zero,
+      );
+      addTearDown(calcul.dispose);
+      calcul
+        ..chargerDocument([
+          {
+            'cle': 'bloc-1',
+            'g': 0.0,
+            'h': 0.0,
+            'd': 1.0,
+            'b': 1.0,
+            'traits': reste,
+            'latex': r'\{ \begin{matrix} x = \\ y = t ^ { 2 } \end{matrix}',
+            'etat': 'nonCompris',
+            'points': 1,
+          },
+          {
+            'cle': 'bloc-2',
+            'g': 0.0,
+            'h': 0.0,
+            'd': 1.0,
+            'b': 1.0,
+            'traits': bout,
+            'latex': r'\tan ( t )',
+            'etat': 'fait',
+            'type': 'calcul',
+            'resultat': r'\tan(t)',
+            'points': 1,
+          },
+        ])
+        ..relireTout();
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      expect(calcul.blocs, hasLength(1));
+    },
+  );
 }
