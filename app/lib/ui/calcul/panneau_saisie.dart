@@ -78,6 +78,7 @@ Future<String?> ouvrirPanneauSaisie(
   String? aide,
   String? action,
   Analyseur analyser = analyserLatex,
+  Widget? enTete,
 }) {
   return showModalBottomSheet<String>(
     context: context,
@@ -90,6 +91,7 @@ Future<String?> ouvrirPanneauSaisie(
       aide: aide,
       action: action,
       analyser: analyser,
+      enTete: enTete,
     ),
   );
 }
@@ -113,8 +115,12 @@ class PanneauSaisie extends StatefulWidget {
     this.aide,
     this.action,
     this.analyser = analyserLatex,
+    this.enTete,
     super.key,
   });
+
+  /// Au-dessus de la saisie : les signes d'une ligne lue au tracé.
+  final Widget? enTete;
 
   /// Comprend la saisie avec ce que sait la feuille.
   final Analyseur analyser;
@@ -250,6 +256,7 @@ class _PanneauSaisieState extends State<PanneauSaisie> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          ?widget.enTete,
           Row(
             children: [
               Expanded(child: _apercuLu(theme, valable)),

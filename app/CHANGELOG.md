@@ -4,6 +4,10 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Chaque signe se lit dès qu'il est écrit : une ligne déjà comprise se lit plus vite à la pause. / Each sign is read as soon as it is written: a line already understood is read faster at the pause.
+- Dans « Corriger », toucher un signe d'une ligne lue propose ses autres lectures ; le choix est retenu sur l'appareil. / In "Correct", touching a sign of a read line offers its other readings; the choice is remembered on the device.
+- Réglages : « Exporter mes corrections » enregistre les signes corrigés pour l'entraînement, là où vous le choisissez. / Settings: "Export my corrections" saves the corrected signs for training, wherever you choose.
+
 ## [1.0.5] — 2026-11-07
 
 ### Message fr

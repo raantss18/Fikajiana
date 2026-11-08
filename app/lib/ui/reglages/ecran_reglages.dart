@@ -2,9 +2,11 @@ import 'dart:async';
 
 import 'package:fikajiana/l10n/l10n.dart';
 import 'package:fikajiana/mises_a_jour/mise_a_jour.dart';
+import 'package:fikajiana/reconnaissance/exemples_personnels.dart';
 import 'package:fikajiana/reconnaissance/modele.dart';
 import 'package:fikajiana/reglages/reglages.dart';
 import 'package:fikajiana/reglages/support.dart';
+import 'package:fikajiana/ui/export.dart';
 import 'package:fikajiana/ui/services.dart';
 import 'package:fikajiana/ui/theme/espacement.dart';
 import 'package:flutter/material.dart';
@@ -54,6 +56,7 @@ class EcranReglages extends StatelessWidget {
           ),
           const Divider(),
           const _SectionModele(),
+          const _ExporterCorrections(),
           const Divider(),
           const _SectionMiseAJour(),
           const Divider(),
@@ -274,6 +277,69 @@ class ListeSupports extends StatelessWidget {
             ),
         ],
       ),
+    );
+  }
+}
+
+/// « Exporter mes corrections » : les signes corrigés, au format de
+/// `collecte/FORMAT.md`, là où la personne choisit (ADR 0041).
+class _ExporterCorrections extends StatelessWidget {
+  const new();
+
+  Future<void> _effacer(
+    BuildContext context,
+    ExemplesPersonnels exemples,
+  ) async {
+    final l10n = context.l10n;
+    final oui = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: Text(l10n.effacerCorrectionsQuestion),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(l10n.annulerDialogue),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(l10n.effacer),
+          ),
+        ],
+      ),
+    );
+    if (oui ?? false) await exemples.toutEffacer();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final exemples = PorteeServices.de(context).classeur.exemples;
+    if (exemples == null) return const SizedBox.shrink();
+    return ListenableBuilder(
+      listenable: exemples,
+      builder: (context, _) {
+        final vide = exemples.liste.isEmpty;
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.upload_file_outlined),
+              title: Text(l10n.exporterCorrections),
+              subtitle: Text(
+                vide ? l10n.aucuneCorrection : l10n.exporterCorrectionsAide,
+              ),
+              enabled: !vide,
+              onTap: () => unawaited(exporterCorrections(context, exemples)),
+            ),
+            if (!vide)
+              ListTile(
+                leading: const Icon(Icons.delete_outline),
+                title: Text(l10n.effacerCorrections),
+                onTap: () => unawaited(_effacer(context, exemples)),
+              ),
+          ],
+        );
+      },
     );
   }
 }

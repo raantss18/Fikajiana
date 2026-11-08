@@ -2,9 +2,9 @@ import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:fikajiana/comprendre/blocs.dart';
-import 'package:fikajiana/comprendre/signes.dart';
 import 'package:fikajiana/comprendre/structure.dart';
 import 'package:fikajiana/encre/encre.dart';
+import 'package:fikajiana/reconnaissance/classeur_signes.dart';
 import 'package:fikajiana_math/fikajiana_math.dart';
 
 /// Une ligne lue sur son tracé seul, sans le modèle (ADR 0035, idée de
@@ -14,7 +14,44 @@ import 'package:fikajiana_math/fikajiana_math.dart';
 ///
 /// Rend `null` dès qu'un signe doute : le modèle lit alors la ligne entière.
 /// Une erreur coûte plus qu'un détour par le modèle.
-String? lireAuTrace(List<Trait> traits) {
+String? lireAuTrace(List<Trait> traits) => lireAuTraceDetaille(traits)?.latex;
+
+/// Une ligne lue au tracé, et chacun de ses signes : ses traits et ce qu'on
+/// y a lu, de gauche à droite (ADR 0041).
+typedef LectureTrace = ({String latex, List<(List<Trait>, String)> signes});
+
+/// Les signes lus par la lecture en cours.
+List<(List<Trait>, String)>? _lus;
+
+/// Comme [lireAuTrace], avec les signes lus : toucher l'un d'eux propose
+/// d'autres lectures.
+LectureTrace? lireAuTraceDetaille(List<Trait> traits) {
+  final avant = _lus;
+  final lus = _lus = [];
+  try {
+    final latex = _lireLigne(traits);
+    if (latex == null) return null;
+    lus.sort(
+      (a, b) => cadreDuGroupe(a.$1).left.compareTo(cadreDuGroupe(b.$1).left),
+    );
+    return (latex: latex, signes: lus);
+  } finally {
+    _lus = avant;
+  }
+}
+
+/// Les signes d'une ligne, comme la lecture au tracé les découpe.
+List<List<Trait>> signesDeLaLigne(List<Trait> traits) => [
+  for (final (g, _) in _fondreArcs(
+    _grouper([
+      for (final t in traits)
+        if (!_miette(t)) t,
+    ]),
+  ))
+    g,
+];
+
+String? _lireLigne(List<Trait> traits) {
   final latex = _lire(traits, 2);
   if (latex == null) return null;
   // Rien qu'un signe : sans intérêt, et douteux.
@@ -351,6 +388,13 @@ bool _classer(_Glyphe g, double hauteur) {
     g.petit = true;
     return true;
   }
+  // Un signe que la personne a corrigé, ou qu'elle écrit toujours ainsi
+  // (ADR 0041).
+  final impose = classeurCourant.impose(g.traits);
+  if (impose != null) {
+    g.signe = impose;
+    return true;
+  }
   if (g.arcs) {
     g.signe = 'x';
     return true;
@@ -366,7 +410,7 @@ bool _classer(_Glyphe g, double hauteur) {
     if (_diagonale(t) == 1) return false;
     // Un signe très net d'abord : le `f` d'Antsa, le `5` du Pad 7 ont
     // l'allure d'une parenthèse.
-    final net = reconnaitreSigne(g.dessin);
+    final net = classeurCourant.signe(g.traits, hauteurLigne: hauteur);
     if (net != null &&
         net.values.reduce(math.min) < 0.7 &&
         !net.containsKey('1')) {
@@ -431,7 +475,7 @@ bool _classer(_Glyphe g, double hauteur) {
       return true;
     }
   }
-  final lu = reconnaitreSigne(g.dessin);
+  final lu = classeurCourant.signe(g.traits, hauteurLigne: hauteur);
   if (lu == null) return g.petit;
   _poser(g, lu);
   return true;
@@ -705,6 +749,7 @@ String _ecrire(List<_Glyphe> glyphes) {
       exposant = false;
     }
     final signe = g.signe!;
+    if (!g.miette) _lus?.add((g.traits, signe));
     // `\pi x`, `\times x` : une commande ne se colle pas à une lettre.
     if (RegExp(r'\\[a-z]+$').hasMatch(sortie.toString()) &&
         RegExp('^[A-Za-z]').hasMatch(signe)) {

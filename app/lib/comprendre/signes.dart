@@ -1220,3 +1220,12 @@ List<(String, double)> classerChiffresDebug(List<List<Offset>> traits) {
   return parSigne.entries.map((e) => (e.key, e.value)).toList()
     ..sort((a, b) => a.$2.compareTo(b.$2));
 }
+
+/// La distance de deux dessins, comme entre un signe et un gabarit : pour
+/// comparer un signe aux exemples de la personne (ADR 0041).
+double distanceDessins(List<List<Offset>> a, List<List<Offset>> b) =>
+    _distance(
+      _normaliser(_reechantillonner(a)),
+      _normaliser(_reechantillonner(b)),
+    ) +
+    _penaliteTrait * (a.length - b.length).abs();

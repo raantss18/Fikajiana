@@ -88,6 +88,7 @@ class _EcranFeuilleState extends State<EcranFeuille> {
       encre: _encre,
       lecteur: services.lecteur,
       moteur: services.moteur,
+      classeur: services.classeur,
       degres: () => _degresVus,
     )..addListener(_enregistrer);
     final document = _stockage?.charger();

@@ -9,6 +9,7 @@ import 'package:fikajiana/reglages/reglages.dart';
 import 'package:fikajiana/ui/calcul/action_manuscrite.dart';
 import 'package:fikajiana/ui/calcul/marques_bloc.dart';
 import 'package:fikajiana/ui/calcul/panneau_saisie.dart';
+import 'package:fikajiana/ui/calcul/signes_lus.dart';
 import 'package:fikajiana/ui/formule_affichee.dart';
 import 'package:fikajiana/ui/navigation/destination.dart';
 import 'package:fikajiana/ui/navigation/page_destination.dart';
@@ -51,6 +52,9 @@ class RepereBloc extends StatelessWidget {
       bloc.latex ?? '',
       surRetirer: bloc.estSaisie ? () => calcul.retirer(bloc) : null,
       analyser: (latex) => calcul.analyserPour(bloc, latex),
+      enTete: bloc.signesLus.isEmpty
+          ? null
+          : SignesLus(bloc: bloc, calcul: calcul),
     );
     if (latex != null && latex.trim().isNotEmpty) {
       unawaited(calcul.corriger(bloc, latex));
@@ -683,6 +687,7 @@ Future<String?> demanderLatex(
   String? aide,
   String? action,
   Analyseur analyser = analyserLatex,
+  Widget? enTete,
 }) => ouvrirPanneauSaisie(
   context,
   initial,
@@ -690,4 +695,5 @@ Future<String?> demanderLatex(
   aide: aide,
   action: action,
   analyser: analyser,
+  enTete: enTete,
 );

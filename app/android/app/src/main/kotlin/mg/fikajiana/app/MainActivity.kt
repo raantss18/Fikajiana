@@ -40,6 +40,8 @@ class MainActivity : FlutterActivity() {
                         else @Suppress("DEPRECATION") info.versionCode,
                     )
                     "version" -> resultat.success(info.versionName)
+                    // Pour l'export des corrections au format de collecte (ADR 0039).
+                    "modele" -> resultat.success(Build.MODEL)
                     "installer" -> {
                         // Sans l'autorisation, on ouvre le réglage : l'utilisateur l'accorde puis recommence.
                         if (!packageManager.canRequestPackageInstalls()) {
