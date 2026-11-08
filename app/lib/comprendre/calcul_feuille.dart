@@ -788,11 +788,16 @@ class CalculFeuille extends ChangeNotifier {
   ///
   /// [taille] : les deux boutons, en unités de page ; [gauche] : le bord
   /// gauche de l'écran.
+  ///
+  /// Une ligne dont les actions s'ouvrent à côté des boutons
+  /// ([actionsAuJugement]) prend [largeurActions] de plus : le bouton des
+  /// actions se range avec 👍 et 👎, sans couvrir l'encre ni un résultat.
   Map<BlocCalcul, Rect> placesJugement({
     required Size taille,
     required bool approcheVoulue,
     required bool virgule,
     double gauche = double.negativeInfinity,
+    double largeurActions = 0,
   }) {
     final ecrits = _blocs.values.where((b) => !b.estSaisie).toList()
       ..sort(
@@ -809,9 +814,10 @@ class CalculFeuille extends ChangeNotifier {
       ...resultats.values.nonNulls,
     ];
     const ecart = BlocCalcul._ecart;
-    final (l, h) = (taille.width, taille.height);
+    final h = taille.height;
     final places = <BlocCalcul, Rect>{};
     for (final b in ecrits.where((b) => b.jugeable)) {
+      final l = taille.width + (actionsAuJugement(b) ? largeurActions : 0);
       final c = b.cadre;
       final r = resultats[b];
       final apres = math.max(c.right, r?.right ?? c.right);
@@ -1805,6 +1811,12 @@ class CalculFeuille extends ChangeNotifier {
   }
 
   final _propositions = <String, (String, List<Proposition>)>{};
+
+  /// Les actions de [bloc] s'ouvrent d'un bouton rangé avec 👍 et 👎 : une
+  /// ligne écrite, comprise, qui n'est pas une courbe (celle-ci les garde à
+  /// côté de « tracer »).
+  bool actionsAuJugement(BlocCalcul bloc) =>
+      bloc.jugeable && !bloc.seTrace && propositions(bloc).isNotEmpty;
 
   /// Ce qu'on peut faire d'une ligne comprise qui ne demande rien : la
   /// résoudre, la dériver, l'intégrer, la tracer, calculer son déterminant.

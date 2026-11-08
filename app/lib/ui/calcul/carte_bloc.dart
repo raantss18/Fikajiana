@@ -8,6 +8,7 @@ import 'package:fikajiana/l10n/l10n.dart';
 import 'package:fikajiana/reglages/reglages.dart';
 import 'package:fikajiana/ui/calcul/action_manuscrite.dart';
 import 'package:fikajiana/ui/calcul/marques_bloc.dart';
+import 'package:fikajiana/ui/calcul/menu_actions.dart';
 import 'package:fikajiana/ui/calcul/panneau_saisie.dart';
 import 'package:fikajiana/ui/calcul/placer_construction.dart';
 import 'package:fikajiana/ui/calcul/signes_lus.dart';
@@ -58,48 +59,21 @@ class RepereBloc extends StatelessWidget {
   static double _largeurLibre(BuildContext context, double gauche) =>
       math.max(200, MediaQuery.sizeOf(context).width - gauche - 16);
 
-  /// Ce que la feuille propose de faire de la ligne, écrit à la main comme
-  /// `tracer` (Antsa) : chaque mot pose sa ligne dessous.
-  List<Widget> _propositions(BuildContext context) {
+  /// Ce que la feuille propose de faire de la ligne : un seul bouton, qui
+  /// ouvre la liste ; le choix pose sa ligne dessous. `null` s'il n'y a rien.
+  Widget? _boutonActions() {
     final proposer = surProposer;
-    if (proposer == null || enExport) return const [];
-    final l10n = context.l10n;
-    return [
-      for (final p in calcul.propositions(bloc))
-        ActionManuscrite(
-          key: ValueKey('propose-${p.genre.name}-${bloc.cle}'),
-          mot: switch (p.genre) {
-            GenreProposition.resoudre => l10n.motResoudre,
-            GenreProposition.factoriser => l10n.motFactoriser,
-            GenreProposition.developper => l10n.motDevelopper,
-            GenreProposition.valeur => l10n.motValeur,
-            GenreProposition.tangente => l10n.motTangente,
-            GenreProposition.limite => l10n.motLimite,
-            GenreProposition.inverse => l10n.motInverse,
-            GenreProposition.deriver => l10n.motDeriver,
-            GenreProposition.integrer => l10n.motIntegrer,
-            GenreProposition.tracer => l10n.motTracer,
-            GenreProposition.determinant => l10n.motDeterminant,
-          },
-          libelle: switch (p.genre) {
-            GenreProposition.resoudre => l10n.proposerResoudre,
-            GenreProposition.factoriser => l10n.proposerFactoriser,
-            GenreProposition.developper => l10n.proposerDevelopper,
-            GenreProposition.valeur => l10n.proposerValeur,
-            GenreProposition.tangente => l10n.proposerTangente,
-            GenreProposition.limite => l10n.proposerLimite,
-            GenreProposition.inverse => l10n.proposerInverse,
-            GenreProposition.deriver => l10n.proposerDeriver,
-            GenreProposition.integrer => l10n.proposerIntegrer,
-            GenreProposition.tracer => l10n.proposerTracer,
-            GenreProposition.determinant => l10n.proposerDeterminant,
-          },
-          surToucher: () {
-            surTouche();
-            proposer(p.latex);
-          },
-        ),
-    ];
+    if (proposer == null || enExport) return null;
+    final propositions = calcul.propositions(bloc);
+    if (propositions.isEmpty) return null;
+    return BoutonActions(
+      key: ValueKey('actions-${bloc.cle}'),
+      propositions: propositions,
+      surChoisir: (p) {
+        surTouche();
+        proposer(p.latex);
+      },
+    );
   }
 
   Future<void> _corriger(BuildContext context) async {
@@ -215,13 +189,9 @@ class RepereBloc extends StatelessWidget {
     if (enExport || !bloc.jugeable) return null;
     // Une place libre près de la ligne, sans couvrir une autre ligne ni
     // ses boutons ; sinon ils se replient (téléphone d'Antsa en paysage).
-    const taille = Size(2 * 48, 48);
-    final place = calcul.placesJugement(
-      taille: taille / vue.zoom,
-      approcheVoulue: PorteeReglages.de(context).approche,
-      virgule: Localizations.localeOf(context).languageCode == 'fr',
-      gauche: -vue.decalage.dx / vue.zoom,
-    )[bloc];
+    // Le bouton des actions se range avec eux (Antsa, 2026-11-08).
+    final actions = calcul.actionsAuJugement(bloc) ? _boutonActions() : null;
+    final place = _placeJugement(context);
     if (place == null) return null;
     final position = place.topLeft * vue.zoom + vue.decalage;
     final l10n = context.l10n;
@@ -262,11 +232,24 @@ class RepereBloc extends StatelessWidget {
                 unawaited(_corriger(context));
               },
             ),
+            ?actions,
           ],
         ),
       ),
     );
   }
+
+  /// Le bouton des actions a trouvé sa place avec 👍 et 👎.
+  bool _actionsAvecJugement(BuildContext context) =>
+      calcul.actionsAuJugement(bloc) && _placeJugement(context) != null;
+
+  Rect? _placeJugement(BuildContext context) => calcul.placesJugement(
+    taille: const Size(2 * 48, 48) / vue.zoom,
+    approcheVoulue: PorteeReglages.de(context).approche,
+    virgule: Localizations.localeOf(context).languageCode == 'fr',
+    gauche: -vue.decalage.dx / vue.zoom,
+    largeurActions: 48 / vue.zoom,
+  )[bloc];
 
   Widget _repere(BuildContext context) {
     final contenu = _contenu(context);
@@ -440,8 +423,7 @@ class RepereBloc extends StatelessWidget {
             child: enExport
                 ? formule
                 : TraverseEcriture(
-                    // Les mots proposés passent à la ligne plutôt que de
-                    // sortir de l'écran (téléphone).
+                    // Passe à la ligne plutôt que de sortir de l'écran.
                     child: ConstrainedBox(
                       constraints: BoxConstraints(
                         maxWidth: _largeurLibre(context, droite.dx),
@@ -468,7 +450,7 @@ class RepereBloc extends StatelessWidget {
                               }
                             },
                           ),
-                          ..._propositions(context),
+                          ?_boutonActions(),
                           CrayonManuscrit(
                             libelle: l10n.corriger,
                             surToucher: () => unawaited(_corriger(context)),
@@ -550,9 +532,10 @@ class RepereBloc extends StatelessWidget {
               vague: false,
               surOuvrir: (_) => unawaited(_corriger(context)),
             );
-            final proposees = _propositions(context);
-            if (proposees.isEmpty) return zone;
-            // Comprise sans `=` : ce qu'on peut en faire, à côté.
+            // Comprise sans `=` : son bouton d'actions se range avec 👍 et
+            // 👎 ([_jugement]). S'ils n'ont pas de place, il reste à droite.
+            final actions = _boutonActions();
+            if (actions == null || _actionsAvecJugement(context)) return zone;
             return Positioned.fill(
               child: Stack(
                 children: [
@@ -560,17 +543,7 @@ class RepereBloc extends StatelessWidget {
                   Positioned(
                     left: droite.dx + AppEspacement.sm,
                     top: droite.dy - 24,
-                    child: TraverseEcriture(
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          maxWidth: _largeurLibre(context, droite.dx),
-                        ),
-                        child: Wrap(
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          children: proposees,
-                        ),
-                      ),
-                    ),
+                    child: TraverseEcriture(child: actions),
                   ),
                 ],
               ),

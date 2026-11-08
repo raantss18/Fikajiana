@@ -628,12 +628,13 @@
     "proposerTangente": "Tangent at 0: write it below",
     "proposerLimite": "Limit at +∞: write it below",
     "proposerInverse": "Inverse of the matrix: write it below",
+    "actionsLigne": "What to do with this line",
     "lectureAConfirmer": "Reading to be confirmed",
     "guideAConfirmerTitre": "Reading to be confirmed",
     "guideAConfirmerPhrase": "A line read from its strokes with a doubtful sign is shown and computed at once, with a discreet dotted underline. The model rereads it during a pause: if its reading is better, it replaces the line; otherwise it is offered in Correct. A corrected line is never replaced.",
     "guideAConfirmerMots": "to be confirmed dotted doubt doubtful reading model replace fast smooth",
     "guideProposeTitre": "What the sheet suggests",
-    "guideProposePhrase": "A line understood without = suggests next to it, handwritten, what can be done with it: solve, factor, expand, derive, a limit at +∞ or plot an expression; derive, integrate, its value at 0, its tangent at 0 or its limit for a function; the determinant or inverse of a square matrix. A tap writes the line below, to be corrected if needed (another point, another bound).",
+    "guideProposePhrase": "A line understood without = has, next to 👍 and 👎, a small drawn button (an arrow and three dots) that opens the list of what can be done with it: solve, factor, expand, derive, a limit at +∞ or plot an expression; derive, integrate, its value at 0, its tangent at 0 or its limit for a function; the determinant or inverse of a square matrix. The choice writes the line below, to be corrected if needed (another point, another bound).",
     "guideProposeMots": "suggest suggestion action solve derive derivative integrate antiderivative determinant factor expand limit tangent value inverse",
     "@motTracer": {
         "description": "Handwritten action word on the Sheet: lowercase ASCII letters only."

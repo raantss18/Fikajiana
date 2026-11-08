@@ -6,8 +6,8 @@ import 'package:fikajiana/moteur/giac.dart';
 import 'package:fikajiana/moteur/moteur.dart';
 import 'package:fikajiana/reconnaissance/lecteur.dart';
 import 'package:fikajiana/reglages/reglages.dart';
-import 'package:fikajiana/ui/calcul/action_manuscrite.dart';
 import 'package:fikajiana/ui/calcul/carte_bloc.dart';
+import 'package:fikajiana/ui/calcul/menu_actions.dart';
 import 'package:fikajiana/ui/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -33,8 +33,8 @@ class _Moteur implements Moteur {
 }
 
 void main() {
-  testWidgets('x²−5x+6 propose résoudre, dériver, tracer ; un toucher pose '
-      'la ligne', (t) async {
+  testWidgets('x²−5x+6 : un seul bouton ouvre résoudre, dériver, tracer ; '
+      'le choix pose la ligne', (t) async {
     final encre = Encre();
     final calcul = CalculFeuille(
       encre: encre,
@@ -90,6 +90,30 @@ void main() {
       ),
     );
     await t.pumpAndSettle();
+    // Un seul petit bouton, et non une rangée de mots qui passait sur les
+    // lignes voisines (téléphone d'Antsa, 2026-11-08).
+    final bouton = find.byType(BoutonActions);
+    expect(bouton, findsOneWidget);
+    expect(
+      find.bySemanticsLabel("Résoudre : écrire l'équation dessous"),
+      findsNothing,
+    );
+    expect(
+      find.bySemanticsLabel(RegExp('^Que faire de cette ligne : .*résoudre')),
+      findsOneWidget,
+    );
+    // 48 dp, rangé avec 👍 et 👎, hors de l'encre.
+    final zone = t.getRect(bouton);
+    expect(zone.height, greaterThanOrEqualTo(48));
+    expect(zone.width, greaterThanOrEqualTo(48));
+    expect(zone.overlaps(bloc.cadre), isFalse);
+    final pouce = t.getRect(find.byKey(ValueKey('faux-${bloc.cle}')));
+    expect(zone.top, pouce.top);
+    expect(zone.left, greaterThanOrEqualTo(pouce.right));
+
+    // Le toucher ouvre le menu : chaque action, nommée pour TalkBack.
+    await t.tap(bouton);
+    await t.pumpAndSettle();
     for (final nom in [
       "Résoudre : écrire l'équation dessous",
       'Dériver : écrire la dérivée dessous',
@@ -97,12 +121,13 @@ void main() {
     ]) {
       expect(find.bySemanticsLabel(nom), findsOneWidget);
     }
-    // Écrits à la main, de 48 dp au moins.
-    for (final a in t.widgetList(find.byType(ActionManuscrite))) {
-      expect(t.getSize(find.byWidget(a)).height, greaterThanOrEqualTo(48));
+    for (final e in t.widgetList(find.byType(PopupMenuItem<Proposition>))) {
+      expect(t.getSize(find.byWidget(e)).height, greaterThanOrEqualTo(48));
     }
-    await t.tap(find.byTooltip("Résoudre : écrire l'équation dessous"));
+    await t.tap(find.bySemanticsLabel("Résoudre : écrire l'équation dessous"));
+    await t.pumpAndSettle();
     expect(poses, [r'\text{résoudre}\left(x^{2}-5x+6=0\right)']);
+    expect(find.byType(PopupMenuItem<Proposition>), findsNothing);
 
     // À confirmer : un pointillé que TalkBack nomme ; il part ensuite.
     expect(find.bySemanticsLabel('Lecture à confirmer'), findsNothing);

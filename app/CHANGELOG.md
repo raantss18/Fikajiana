@@ -4,6 +4,8 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Les actions proposées (résoudre, dériver…) s'ouvrent d'un seul petit bouton à côté de la ligne, rangé avec 👍 et 👎 : plus de rangée de mots sur les lignes voisines. / Suggested actions (solve, derive…) open from a single small button next to the line, beside 👍 and 👎: no more rows of words over neighbouring lines.
+
 ## [1.1.0] — 2026-11-08
 
 ### Message fr

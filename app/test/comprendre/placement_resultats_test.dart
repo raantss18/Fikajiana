@@ -328,6 +328,7 @@ void main() {
       approcheVoulue: false,
       virgule: true,
       gauche: gauche,
+      largeurActions: 48,
     );
 
     /// Les boutons ne couvrent ni l'encre, ni un résultat, ni d'autres
@@ -433,6 +434,27 @@ void main() {
       final p = places();
       libres(p);
       expect(p.keys.map((b) => b.cle), contains('long'));
+    });
+
+    test('le bouton des actions se range avec eux, sans couvrir les '
+        'lignes voisines (téléphone d’Antsa, 2026-11-08)', () {
+      // Trois expressions serrées sur un téléphone en portrait : la rangée
+      // « solve factor derive limit plot » passait sur les lignes dessous.
+      calcul
+        ..bordDroit = 400
+        ..chargerDocument([
+          ligne('a', const Rect.fromLTRB(120, 100, 300, 140), 'x^{2}-5x+6'),
+          ligne('b', const Rect.fromLTRB(120, 146, 300, 186), 'x^{2}-1'),
+          ligne('c', const Rect.fromLTRB(120, 192, 300, 232), '2x+3=7'),
+        ]);
+      final a = calcul.blocs.firstWhere((b) => b.cle == 'a');
+      expect(calcul.actionsAuJugement(a), isTrue);
+      final p = places();
+      libres(p);
+      // 👍, 👎 et le bouton des actions : trois cibles de 48 dp.
+      expect(p[a]!.width, 3 * 48);
+      final c = calcul.blocs.firstWhere((b) => b.cle == 'c');
+      expect(calcul.actionsAuJugement(c), isFalse);
     });
 
     test('sans aucune place libre, ils se replient', () {
