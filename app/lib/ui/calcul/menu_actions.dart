@@ -36,33 +36,65 @@ String libelleProposition(AppLocalizations l10n, GenreProposition genre) =>
       GenreProposition.determinant => l10n.proposerDeterminant,
     };
 
-/// Un seul petit bouton à côté d'une ligne comprise : il ouvre la liste de ce
-/// qu'on peut en faire (résoudre, dériver…), au lieu d'une rangée de mots
-/// qui passait sur les lignes voisines (téléphone d'Antsa, 2026-11-08).
+/// Une entrée de la liste d'une ligne : son mot écrit à la main, ce que
+/// TalkBack en dit, et ce qu'elle fait.
+@immutable
+class EntreeLigne {
+  const new({
+    required this.cle,
+    required this.mot,
+    required this.libelle,
+    required this.agir,
+    this.apercu,
+    this.icone,
+    this.choisie = false,
+  });
+
+  /// Pour les tests : `juste`, `faux`, `corriger`, `tracer`, `deriver`…
+  final String cle;
+  final String mot;
+  final String libelle;
+  final VoidCallback agir;
+
+  /// Une formule en petit à côté du mot : la ligne qui sera posée, ou une
+  /// autre lecture possible.
+  final String? apercu;
+
+  /// Un dessin devant le mot (👍, 👎), jamais seul : le mot est là.
+  final IconData? icone;
+
+  /// L'entrée déjà choisie (la ligne jugée juste) : icône pleine.
+  final bool choisie;
+}
+
+/// Le seul bouton d'une ligne (Antsa, 2026-11-08 : « dans la même liste
+/// déroulante, même l'option de modification ») : il ouvre une liste avec
+/// juste, faux, corriger, les autres lectures, tracer ou placer, et ce qu'on
+/// peut faire de la ligne. Plus rien d'autre n'est posé à côté d'elle.
 ///
 /// Le dessin, tracé à la main : une flèche qui descend puis part à droite
-/// (« écrire la suite dessous ») et trois points (« au choix »). TalkBack
-/// lit son nom et les actions. Cible de 48 dp (règle 9).
-class BoutonActions extends StatelessWidget {
+/// (« écrire la suite dessous ») et trois points (« au choix ») ; une petite
+/// coche quand la ligne est jugée juste, une croix si elle est jugée fausse.
+/// TalkBack lit son nom, l'état et les entrées. Cible de 48 dp (règle 9).
+class BoutonLigne extends StatelessWidget {
   const new({
-    required this.propositions,
+    required this.entrees,
     required this.surTouche,
-    required this.surChoisir,
+    this.juge,
     super.key,
   });
+
+  final List<EntreeLigne> entrees;
+
+  /// Jugée juste (`true`), fausse (`false`), pas encore (`null`).
+  final bool? juge;
 
   /// Le toucher laisse aussi un point dans l'encre (TraverseEcriture) : il
   /// s'efface dès l'ouverture, sinon il se lit comme une ligne (Pad 7).
   final VoidCallback surTouche;
 
-  final List<Proposition> propositions;
-
-  /// L'action choisie : sa ligne se pose dessous.
-  final ValueChanged<Proposition> surChoisir;
-
   Future<void> _ouvrir(BuildContext context) async {
     surTouche();
-    final l10n = context.l10n;
     final theme = Theme.of(context);
     final boite = context.findRenderObject()! as RenderBox;
     final dessus =
@@ -72,7 +104,7 @@ class BoutonActions extends StatelessWidget {
       boite.size.bottomLeft(Offset.zero),
       ancestor: dessus,
     );
-    final choix = await showMenu<Proposition>(
+    final choix = await showMenu<EntreeLigne>(
       context: context,
       position: RelativeRect.fromRect(
         bas & const Size(1, 1),
@@ -80,41 +112,65 @@ class BoutonActions extends StatelessWidget {
       ),
       color: theme.colorScheme.surface,
       items: [
-        for (final p in propositions)
+        for (final e in entrees)
           PopupMenuItem(
-            key: ValueKey('menu-${p.genre.name}'),
-            value: p,
+            key: ValueKey('menu-${e.cle}'),
+            value: e,
             child: Semantics(
-              label: libelleProposition(l10n, p.genre),
+              label: e.libelle,
+              selected: e.choisie,
               excludeSemantics: true,
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  MotManuscrit(mot: motProposition(l10n, p.genre), hauteur: 26),
-                  const SizedBox(width: AppEspacement.md),
-                  // La ligne qui sera posée, en petit, à l'encre discrète.
-                  Flexible(
-                    child: EcritureManuscrite(
-                      latex: p.latex,
-                      couleur: theme.colorScheme.onSurfaceVariant,
-                      hauteur: 20,
-                      repli: const SizedBox.shrink(),
+                  if (e.icone != null) ...[
+                    Icon(
+                      e.icone,
+                      size: 20,
+                      color: e.choisie
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.onSurfaceVariant,
                     ),
-                  ),
+                    const SizedBox(width: AppEspacement.sm),
+                  ],
+                  MotManuscrit(mot: e.mot, hauteur: 26),
+                  if (e.apercu case final apercu?) ...[
+                    const SizedBox(width: AppEspacement.md),
+                    // En petit, à l'encre discrète.
+                    Flexible(
+                      child: EcritureManuscrite(
+                        latex: apercu,
+                        couleur: theme.colorScheme.onSurfaceVariant,
+                        hauteur: 20,
+                        repli: Text(
+                          apercu,
+                          style: TextStyle(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
           ),
       ],
     );
-    if (choix != null) surChoisir(choix);
+    choix?.agir();
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final mots = [for (final p in propositions) motProposition(l10n, p.genre)];
-    final libelle = '${l10n.actionsLigne} : ${mots.join(', ')}';
+    final etat = switch (juge) {
+      true => ', ${l10n.ligneJugeeJuste}',
+      false => ', ${l10n.ligneJugeeFausse}',
+      null => '',
+    };
+    final libelle =
+        '${l10n.actionsLigne}$etat : ${entrees.map((e) => e.mot).join(', ')}';
+    final theme = Theme.of(context);
     return Semantics(
       button: true,
       label: libelle,
@@ -127,7 +183,11 @@ class BoutonActions extends StatelessWidget {
           child: SizedBox.square(
             dimension: 48,
             child: CustomPaint(
-              painter: _PeintreActions(Theme.of(context).colorScheme.tertiary),
+              painter: _PeintreActions(
+                theme.colorScheme.tertiary,
+                juge: juge,
+                marque: theme.colorScheme.primary,
+              ),
             ),
           ),
         ),
@@ -137,9 +197,11 @@ class BoutonActions extends StatelessWidget {
 }
 
 class _PeintreActions extends CustomPainter {
-  const new(this.couleur);
+  const new(this.couleur, {required this.juge, required this.marque});
 
   final Color couleur;
+  final bool? juge;
+  final Color marque;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -171,8 +233,35 @@ class _PeintreActions extends CustomPainter {
     for (final x in [-2.0, 3.5, 9.0]) {
       canvas.drawCircle(p(x, -8), 1.8, point);
     }
+    // Jugée : une petite coche (juste) ou une croix (fausse), en bas à
+    // droite, dans la couleur des choix ; la forme le dit aussi (règle 9).
+    final etat = Paint()
+      ..color = marque
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.4
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    switch (juge) {
+      case true:
+        canvas.drawPath(
+          Path()
+            ..moveTo(p(9, 13).dx, p(9, 13).dy)
+            ..lineTo(p(12.5, 16.5).dx, p(12.5, 16.5).dy)
+            ..lineTo(p(19, 9).dx, p(19, 9).dy),
+          etat,
+        );
+      case false:
+        canvas
+          ..drawLine(p(11, 10), p(18, 17), etat)
+          ..drawLine(p(18, 10), p(11, 17), etat);
+      case null:
+        break;
+    }
   }
 
   @override
-  bool shouldRepaint(_PeintreActions ancien) => ancien.couleur != couleur;
+  bool shouldRepaint(_PeintreActions ancien) =>
+      ancien.couleur != couleur ||
+      ancien.juge != juge ||
+      ancien.marque != marque;
 }

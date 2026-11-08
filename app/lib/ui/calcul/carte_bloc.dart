@@ -59,18 +59,133 @@ class RepereBloc extends StatelessWidget {
   static double _largeurLibre(BuildContext context, double gauche) =>
       math.max(200, MediaQuery.sizeOf(context).width - gauche - 16);
 
-  /// Ce que la feuille propose de faire de la ligne : un seul bouton, qui
-  /// ouvre la liste ; le choix pose sa ligne dessous. `null` s'il n'y a rien.
-  Widget? _boutonActions() {
-    final proposer = surProposer;
-    if (proposer == null || enExport) return null;
-    final propositions = calcul.propositions(bloc);
-    if (propositions.isEmpty) return null;
-    return BoutonActions(
-      key: ValueKey('actions-${bloc.cle}'),
-      propositions: propositions,
+  /// La liste unique d'une ligne (Antsa, 2026-11-08 : « dans la même liste
+  /// déroulante, même l'option de modification ») : juste, faux, corriger,
+  /// les autres lectures, tracer ou placer, puis ce qu'on peut en faire.
+  List<EntreeLigne> _entrees(BuildContext context) {
+    final latex = bloc.latex;
+    if (latex == null || enExport) return const [];
+    final l10n = context.l10n;
+    final juge = bloc.juge;
+    final entrees = <EntreeLigne>[
+      if (bloc.jugeable) ...[
+        EntreeLigne(
+          cle: 'juste',
+          mot: l10n.motJuste,
+          libelle: l10n.ligneJuste,
+          icone: juge ?? false ? Icons.thumb_up : Icons.thumb_up_outlined,
+          choisie: juge ?? false,
+          agir: () => unawaited(calcul.jugerJuste(bloc)),
+        ),
+        EntreeLigne(
+          cle: 'faux',
+          mot: l10n.motFaux,
+          libelle: l10n.ligneFausse,
+          icone: juge == false ? Icons.thumb_down : Icons.thumb_down_outlined,
+          choisie: juge == false,
+          agir: () {
+            calcul.jugerFaux(bloc);
+            unawaited(_corriger(context));
+          },
+        ),
+      ],
+      EntreeLigne(
+        cle: 'corriger',
+        mot: l10n.motCorriger,
+        libelle: l10n.corriger,
+        agir: () => unawaited(_corriger(context)),
+      ),
+      for (final (i, autre) in bloc.autresLectures.indexed)
+        EntreeLigne(
+          cle: 'lecture-$i',
+          mot: l10n.motLire,
+          libelle: '${l10n.blocChoisirLecture} : $autre',
+          apercu: autre,
+          agir: () => unawaited(calcul.corriger(bloc, autre)),
+        ),
+      ...?_entreeFigure(context),
+      if (surProposer case final proposer?)
+        for (final p in calcul.propositions(bloc))
+          EntreeLigne(
+            cle: p.genre.name,
+            mot: motProposition(l10n, p.genre),
+            libelle: libelleProposition(l10n, p.genre),
+            apercu: p.latex,
+            agir: () => proposer(p.latex),
+          ),
+    ];
+    return entrees;
+  }
+
+  /// Tracer ou voir une courbe, placer un point, un vecteur et ses points.
+  List<EntreeLigne>? _entreeFigure(BuildContext context) {
+    if (bloc.etat != EtatBloc.fait) return null;
+    final l10n = context.l10n;
+    void ouvrirFigure() {
+      if (!context.mounted) return;
+      Navigator.of(context).push(RouteDestination(Destination.figure));
+    }
+
+    final objet = bloc.objet;
+    if (objet != null) {
+      return [
+        EntreeLigne(
+          cle: 'placer',
+          mot: l10n.motPlacer,
+          libelle: l10n.placerDansFigure,
+          agir: () {
+            if (!context.mounted) return;
+            PorteeServices.de(context).atelier.placerObjet(objet);
+            ouvrirFigure();
+          },
+        ),
+      ];
+    }
+    final objets = bloc.aPlacer;
+    if (objets.isNotEmpty) {
+      return [
+        EntreeLigne(
+          cle: 'placer',
+          mot: l10n.motPlacer,
+          libelle: l10n.placerDansFigure,
+          agir: () {
+            if (!context.mounted) return;
+            final atelier = PorteeServices.de(context).atelier;
+            objets.forEach(atelier.placerObjet);
+            final c = bloc.commande;
+            if (c != null && !placerConstruction(context, atelier, c)) return;
+            ouvrirFigure();
+          },
+        ),
+      ];
+    }
+    if (!bloc.seTrace) return null;
+    final dejaTracee = PorteeServices.de(context).courbes.liste
+        .any((c) => c.latex == bloc.latex);
+    return [
+      EntreeLigne(
+        cle: 'tracer',
+        mot: dejaTracee ? l10n.motVoir : l10n.motTracer,
+        libelle: dejaTracee ? l10n.voirDansFigure : l10n.grapheTracer,
+        agir: () {
+          if (!context.mounted) return;
+          final courbes = PorteeServices.de(context).courbes;
+          final deja = courbes.liste.any((c) => c.latex == bloc.latex);
+          if (deja || courbes.ajouter(bloc.latex ?? '')) ouvrirFigure();
+        },
+      ),
+    ];
+  }
+
+  /// Le seul bouton de la ligne, `null` s'il n'a rien à proposer.
+  Widget? _bouton(BuildContext context) {
+    final entrees = _entrees(context);
+    if (entrees.isEmpty) return null;
+    return BoutonLigne(
+      key: ValueKey('ligne-${bloc.cle}'),
+      entrees: entrees,
+      juge: bloc.juge,
       surTouche: surTouche,
-      surChoisir: (p) => proposer(p.latex),
     );
   }
 
@@ -148,7 +263,7 @@ class RepereBloc extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final repere = _repere(context);
-    final jugement = _jugement(context);
+    final jugement = _boutonPlace(context);
     final marque = _marqueAConfirmer(context);
     if (jugement == null && marque == null) return repere;
     return Positioned.fill(
@@ -181,90 +296,39 @@ class RepereBloc extends StatelessWidget {
     );
   }
 
-  /// 👍 et 👎 à gauche d'une ligne lue (ADR 0042) : discrets, cibles de
-  /// 48 dp. 👍 garde la lecture comme juste ; 👎 ouvre sa correction.
-  Widget? _jugement(BuildContext context) {
-    if (enExport || !bloc.jugeable) return null;
-    // Une place libre près de la ligne, sans couvrir une autre ligne ni
-    // ses boutons ; sinon ils se replient (téléphone d'Antsa en paysage).
-    // Le bouton des actions se range avec eux (Antsa, 2026-11-08).
-    final actions = calcul.actionsAuJugement(bloc) ? _boutonActions() : null;
-    final place = _placeJugement(context);
+  /// Le bouton d'une ligne écrite (ADR 0051), là où il ne couvre ni l'encre,
+  /// ni un résultat, ni le bouton d'une autre ligne. Juste et faux (ADR 0042)
+  /// sont dans sa liste.
+  Widget? _boutonPlace(BuildContext context) {
+    if (enExport || bloc.estSaisie || !bloc.jugeable) return null;
+    final bouton = _bouton(context);
+    if (bouton == null) return null;
+    final place = calcul.placesJugement(
+      taille: const Size(48, 48) / vue.zoom,
+      approcheVoulue: PorteeReglages.de(context).approche,
+      virgule: Localizations.localeOf(context).languageCode == 'fr',
+      gauche: -vue.decalage.dx / vue.zoom,
+    )[bloc];
     if (place == null) return null;
     final position = place.topLeft * vue.zoom + vue.decalage;
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
-    final discret = theme.colorScheme.onSurfaceVariant;
-    final choisi = theme.colorScheme.primary;
-    final juge = bloc.juge;
     return Positioned(
       left: position.dx,
       top: position.dy,
-      child: TraverseEcriture(
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              key: ValueKey('juste-${bloc.cle}'),
-              tooltip: l10n.ligneJuste,
-              iconSize: 18,
-              isSelected: juge ?? false,
-              color: discret,
-              selectedIcon: Icon(Icons.thumb_up, color: choisi),
-              icon: const Icon(Icons.thumb_up_outlined),
-              onPressed: () {
-                surTouche();
-                unawaited(calcul.jugerJuste(bloc));
-              },
-            ),
-            IconButton(
-              key: ValueKey('faux-${bloc.cle}'),
-              tooltip: l10n.ligneFausse,
-              iconSize: 18,
-              isSelected: juge == false,
-              color: discret,
-              selectedIcon: Icon(Icons.thumb_down, color: choisi),
-              icon: const Icon(Icons.thumb_down_outlined),
-              onPressed: () {
-                calcul.jugerFaux(bloc);
-                unawaited(_corriger(context));
-              },
-            ),
-            ?actions,
-          ],
-        ),
-      ),
+      child: TraverseEcriture(child: bouton),
     );
   }
-
-  /// Le coin de « tracer » ou « placer » et du crayon, à l'écran : à droite
-  /// de la ligne, ou dessous près du bord ([CalculFeuille.rangeeAction]).
-  Offset _coinRangee() =>
-      calcul.rangeeAction(bloc, 48 / vue.zoom).topLeft * vue.zoom +
-      vue.decalage;
-
-  /// Le bouton des actions a trouvé sa place avec 👍 et 👎.
-  bool _actionsAvecJugement(BuildContext context) =>
-      calcul.actionsAuJugement(bloc) && _placeJugement(context) != null;
-
-  Rect? _placeJugement(BuildContext context) => calcul.placesJugement(
-    taille: const Size(2 * 48, 48) / vue.zoom,
-    approcheVoulue: PorteeReglages.de(context).approche,
-    virgule: Localizations.localeOf(context).languageCode == 'fr',
-    gauche: -vue.decalage.dx / vue.zoom,
-    largeurActions: 48 / vue.zoom,
-  )[bloc];
 
   Widget _repere(BuildContext context) {
     final contenu = _contenu(context);
     final objets = bloc.aPlacer;
-    final commande = bloc.commande;
     // Ce qui a été lu ne se réécrit pas sur la feuille (Antsa) : il se voit
     // en touchant le résultat, et se corrige là.
     if (objets.isEmpty || enExport || bloc.etat != EtatBloc.fait) {
       return contenu;
     }
-    // Un vecteur calculé : son résultat, et de quoi le placer.
+    // Un vecteur calculé et tapé : sa formule, et son bouton (placer est
+    // dans sa liste). Écrit, le bouton est posé avec les autres.
+    if (!bloc.estSaisie) return contenu;
     final haut = bloc.cadre.topRight * vue.zoom + vue.decalage;
     return Positioned.fill(
       child: Stack(
@@ -277,18 +341,12 @@ class RepereBloc extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Tapée au clavier, la ligne n'a pas d'encre : on l'écrit.
-                  if (bloc.estSaisie)
-                    _Formule(
-                      latex: bloc.latex ?? '',
-                      couleur: PorteeReglages.de(context).support.stylos.first,
-                      manuscrite: true,
-                    ),
-                  _BoutonPlacer(
-                    objets: objets,
-                    commande: commande,
-                    surTouche: surTouche,
+                  _Formule(
+                    latex: bloc.latex ?? '',
+                    couleur: PorteeReglages.de(context).support.stylos.first,
+                    manuscrite: true,
                   ),
+                  ?_bouton(context),
                 ],
               ),
             ),
@@ -375,96 +433,50 @@ class RepereBloc extends StatelessWidget {
         );
       case EtatBloc.fait:
         // Un point ou un vecteur : il a sa place en Géométrie.
-        final objet = bloc.objet;
-        if (objet != null) {
-          if (enExport) return const SizedBox.shrink();
-          final rangee = _coinRangee();
+        // Un point ou un vecteur : placer est dans la liste du bouton. Tapé,
+        // il s'écrit, son bouton à côté.
+        if (bloc.objet != null) {
+          if (enExport || !bloc.estSaisie) return const SizedBox.shrink();
           return Positioned(
-            left: rangee.dx,
-            top: rangee.dy,
+            left: droite.dx + AppEspacement.sm,
+            top: droite.dy - 24,
             child: TraverseEcriture(
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (bloc.estSaisie)
-                    _Formule(
-                      latex: bloc.latex ?? '',
-                      couleur: encre,
-                      manuscrite: true,
-                    ),
-                  ActionManuscrite(
-                    mot: l10n.motPlacer,
-                    libelle: l10n.placerDansFigure,
-                    surToucher: () {
-                      surTouche();
-                      PorteeServices.de(context).atelier.placerObjet(objet);
-                      Navigator.of(context)
-                          .push(RouteDestination(Destination.figure));
-                    },
+                  _Formule(
+                    latex: bloc.latex ?? '',
+                    couleur: encre,
+                    manuscrite: true,
                   ),
-                  CrayonManuscrit(
-                    libelle: l10n.corriger,
-                    surToucher: () => unawaited(_corriger(context)),
-                  ),
+                  ?_bouton(context),
                 ],
               ),
             ),
           );
         }
-        // Une courbe : rien à calculer, un bouton nommé pour la tracer. La
-        // lecture peut être fausse : elle se corrige à côté.
+        // Une courbe : rien à calculer ; tracer est dans la liste du bouton.
+        // Tapée, elle s'écrit, son bouton à côté.
         if (bloc.seTrace) {
+          if (!bloc.estSaisie) return const SizedBox.shrink();
           final formule = _Formule(
             latex: bloc.latex ?? '',
             couleur: enExport ? accent : encre,
             manuscrite: true,
           );
-          if (enExport && !bloc.estSaisie) return const SizedBox.shrink();
-          final dejaTracee = PorteeServices.de(context).courbes.liste
-              .any((c) => c.latex == bloc.latex);
-          final rangee = enExport
-              ? droite + const Offset(AppEspacement.sm, -24)
-              : _coinRangee();
           return Positioned(
-            left: rangee.dx,
-            top: rangee.dy,
+            left: droite.dx + AppEspacement.sm,
+            top: droite.dy - 24,
             child: enExport
                 ? formule
                 : TraverseEcriture(
-                    // Passe à la ligne plutôt que de sortir de l'écran.
                     child: ConstrainedBox(
                       constraints: BoxConstraints(
-                        maxWidth: _largeurLibre(context, rangee.dx),
+                        maxWidth: _largeurLibre(context, droite.dx),
                       ),
                       child: Wrap(
                         crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          if (bloc.estSaisie) formule,
-                          ActionManuscrite(
-                            mot: dejaTracee ? l10n.motVoir : l10n.motTracer,
-                            libelle: dejaTracee
-                                ? l10n.voirDansFigure
-                                : l10n.grapheTracer,
-                            surToucher: () {
-                              surTouche();
-                              final services = PorteeServices.de(context);
-                              final deja = services.courbes.liste.any(
-                                (c) => c.latex == bloc.latex,
-                              );
-                              if (deja ||
-                                  services.courbes.ajouter(bloc.latex ?? '')) {
-                                Navigator.of(context)
-                                    .push(RouteDestination(Destination.figure));
-                              }
-                            },
-                          ),
-                          // Rangé avec 👍 et 👎 s'ils ont leur place.
-                          if (!_actionsAvecJugement(context)) ?_boutonActions(),
-                          CrayonManuscrit(
-                            libelle: l10n.corriger,
-                            surToucher: () => unawaited(_corriger(context)),
-                          ),
-                        ],
+                        children: [formule, ?_bouton(context)],
                       ),
                     ),
                   ),
@@ -541,22 +553,9 @@ class RepereBloc extends StatelessWidget {
               vague: false,
               surOuvrir: (_) => unawaited(_corriger(context)),
             );
-            // Comprise sans `=` : son bouton d'actions se range avec 👍 et
-            // 👎 ([_jugement]). S'ils n'ont pas de place, il reste à droite.
-            final actions = _boutonActions();
-            if (actions == null || _actionsAvecJugement(context)) return zone;
-            return Positioned.fill(
-              child: Stack(
-                children: [
-                  zone,
-                  Positioned(
-                    left: droite.dx + AppEspacement.sm,
-                    top: droite.dy - 24,
-                    child: TraverseEcriture(child: actions),
-                  ),
-                ],
-              ),
-            );
+            // Comprise sans `=` : ce qu'on peut en faire est dans la liste du
+            // bouton de la ligne.
+            return zone;
           }
           position = bloc.estSaisie || bloc.resultatDessous
               ? dessous
@@ -606,29 +605,6 @@ class RepereBloc extends StatelessWidget {
       ),
     );
   }
-}
-
-/// Place dans la Figure ce qu'une ligne a calculé : un vecteur et ses points.
-class _BoutonPlacer extends StatelessWidget {
-  const new({required this.objets, required this.surTouche, this.commande});
-
-  final List<ObjetLu> objets;
-  final CommandeGeo? commande;
-  final VoidCallback surTouche;
-
-  @override
-  Widget build(BuildContext context) => ActionManuscrite(
-    mot: context.l10n.motPlacer,
-    libelle: context.l10n.placerDansFigure,
-    surToucher: () {
-      surTouche();
-      final atelier = PorteeServices.de(context).atelier;
-      objets.forEach(atelier.placerObjet);
-      final c = commande;
-      if (c != null && !placerConstruction(context, atelier, c)) return;
-      Navigator.of(context).push(RouteDestination(Destination.figure));
-    },
-  );
 }
 
 /// « Arrêter » n'apparaît que si le calcul dure : un calcul court ne montre

@@ -319,16 +319,15 @@ void main() {
     sansChevauchement();
   });
 
-  group('👍 et 👎', () {
-    // Deux boutons de 48 dp, à la vue de départ (zoom 1).
-    const taille = Size(96, 48);
+  group('le bouton de chaque ligne (ADR 0051)', () {
+    // Un bouton de 48 dp, à la vue de départ (zoom 1).
+    const taille = Size(48, 48);
 
     Map<BlocCalcul, Rect> places({double gauche = 0}) => calcul.placesJugement(
       taille: taille,
       approcheVoulue: false,
       virgule: true,
       gauche: gauche,
-      largeurActions: 48,
     );
 
     /// Les boutons ne couvrent ni l'encre, ni un résultat, ni d'autres
@@ -436,101 +435,39 @@ void main() {
       expect(p.keys.map((b) => b.cle), contains('long'));
     });
 
-    test('le bouton des actions se range avec eux, sans couvrir les '
-        'lignes voisines (téléphone d’Antsa, 2026-11-08)', () {
-      // Trois expressions serrées sur un téléphone en portrait : la rangée
-      // « solve factor derive limit plot » passait sur les lignes dessous.
+    test('lignes serrées sur un téléphone : un bouton chacune, jamais l’un '
+        'sur l’autre ni sur l’encre (téléphone d’Antsa, 2026-11-08)', () {
+      // « solve factor derive limit plot » passait sur les lignes dessous,
+      // puis les pouces des lignes voisines se chevauchaient.
       calcul
-        ..bordDroit = 400
+        ..bordDroit = 364
         ..chargerDocument([
-          ligne('a', const Rect.fromLTRB(120, 100, 300, 140), 'x^{2}-5x+6'),
-          ligne('b', const Rect.fromLTRB(120, 146, 300, 186), 'x^{2}-1'),
-          ligne('c', const Rect.fromLTRB(120, 192, 300, 232), '2x+3=7'),
-        ]);
-      final a = calcul.blocs.firstWhere((b) => b.cle == 'a');
-      expect(calcul.actionsAuJugement(a), isTrue);
-      final p = places();
-      libres(p);
-      // 👍, 👎 et le bouton des actions : trois cibles de 48 dp.
-      expect(p[a]!.width, 3 * 48);
-      final c = calcul.blocs.firstWhere((b) => b.cle == 'c');
-      expect(calcul.actionsAuJugement(c), isFalse);
-    });
-
-    test('une courbe : pas sur « tracer » et le crayon, à sa droite '
-        '(Pad 7, format téléphone)', () {
-      calcul
-        ..bordDroit = 400
-        ..chargerDocument([
+          ligne('a', const Rect.fromLTRB(20, 100, 300, 140), 'x^{2}-5x+6'),
+          ligne('b', const Rect.fromLTRB(20, 144, 300, 184), 'x^{2}-1'),
           ligne(
             'c',
-            const Rect.fromLTRB(20, 100, 120, 150),
+            const Rect.fromLTRB(20, 188, 300, 228),
             'y=2x+1',
             type: 'fonction',
           ),
-        ]);
-      final c = calcul.blocs.single;
-      expect(c.seTrace, isTrue);
-      final zone = places()[c];
-      expect(zone, isNotNull);
-      final tracer = Rect.fromLTWH(
-        c.cadre.right,
-        c.cadre.center.dy - 24,
-        216,
-        48,
-      );
-      expect(zone!.overlaps(tracer), isFalse);
-    });
-
-    test('une courbe près du bord droit : « tracer » et le crayon passent '
-        'dessous, sans 👍 ni 👎 dessus (téléphone en portrait, Pad 7)', () {
-      calcul
-        ..bordDroit = 364
-        ..chargerDocument([
           ligne(
-            'c',
-            const Rect.fromLTRB(150, 200, 260, 260),
-            'y=x',
-            type: 'fonction',
+            'd',
+            const Rect.fromLTRB(20, 232, 300, 272),
+            '2+3=',
+            resultat: '5',
           ),
         ]);
-      final c = calcul.blocs.single;
-      final rangee = calcul.rangeeAction(c, 48);
-      expect(rangee.top, greaterThan(c.cadre.bottom));
-      expect(rangee.left, c.cadre.left);
-      final zone = places()[c];
-      expect(zone, isNotNull);
-      expect(zone!.overlaps(rangee), isFalse);
-      expect(zone.overlaps(c.cadre), isFalse);
-    });
-
-    test('une courbe au bord gauche sous une autre ligne : 👍 et 👎 sous '
-        '« tracer », sans se replier (Pad 7, format téléphone)', () {
-      calcul
-        ..bordDroit = 364
-        ..chargerDocument([
-          ligne(
-            'haut',
-            const Rect.fromLTRB(20, 130, 300, 190),
-            'x^{2}-1',
-            etat: 'nonCompris',
-          ),
-          ligne(
-            'c',
-            const Rect.fromLTRB(20, 200, 300, 260),
-            'y=x',
-            type: 'fonction',
-          ),
-        ]);
-      final c = calcul.blocs.firstWhere((b) => b.cle == 'c');
-      final rangee = calcul.rangeeAction(c, 48);
       final p = places();
       libres(p);
-      expect(p[c], isNotNull);
-      expect(p[c]!.top, greaterThan(rangee.bottom));
+      expect(p, hasLength(4));
+      for (final zone in p.values) {
+        expect(zone.width, 48);
+        expect(zone.left, greaterThanOrEqualTo(0));
+        expect(zone.right, lessThanOrEqualTo(364));
+      }
     });
 
-    test('sans aucune place libre, ils se replient', () {
+    test('sans place tout près, plus bas : chaque ligne a son bouton', () {
       // Une ligne entourée d'encre de tous côtés.
       calcul
         ..bordDroit = 400
@@ -548,7 +485,7 @@ void main() {
         ]);
       final p = places();
       libres(p);
-      expect(p.keys.map((b) => b.cle), isNot(contains('centre')));
+      expect(p.keys.map((b) => b.cle), contains('centre'));
     });
   });
 

@@ -780,41 +780,21 @@ class CalculFeuille extends ChangeNotifier {
     }
   }
 
-  /// Où s'écrivent « tracer » ou « placer » et le crayon d'une courbe ou
-  /// d'un point, pour des cibles de hauteur [hauteur] (coordonnées de page) :
-  /// à droite de la ligne, ou dessous quand le bord de la page est trop près
-  /// (téléphone en portrait, Pad 7 : le crayon sortait de l'écran).
-  Rect rangeeAction(BlocCalcul bloc, double hauteur) {
-    const ecart = BlocCalcul._ecart;
-    final c = bloc.cadre;
-    final droite = Rect.fromLTWH(
-      c.right + ecart,
-      c.center.dy - hauteur / 2,
-      4.5 * hauteur,
-      hauteur,
-    );
-    if (droite.right <= _bordDroit) return droite;
-    return Rect.fromLTWH(c.left, c.bottom + ecart, 4.5 * hauteur, hauteur);
-  }
-
-  /// Où poser 👍 et 👎 de chaque ligne jugeable, en coordonnées de page :
-  /// à gauche de la ligne, sinon dessous, dessus, ou après son résultat ;
-  /// jamais sur l'encre, un résultat ou les boutons d'une autre ligne
-  /// (téléphone d'Antsa en paysage : posés sur les bornes d'une limite).
-  /// Sans place libre, la ligne n'en a pas : ils se replient.
+  /// Où poser le bouton de chaque ligne écrite jugeable (ADR 0051), en
+  /// coordonnées de page : à gauche de la ligne, sinon dessous, dessus, ou
+  /// après son résultat ; jamais sur l'encre, un résultat, une ligne tapée
+  /// ou le bouton d'une autre ligne (téléphone d'Antsa : posés sur les
+  /// bornes d'une limite, puis les uns sur les autres). Sans place près
+  /// d'elle, on descend, puis on monte, jusqu'à en trouver une : chaque
+  /// ligne a son bouton.
   ///
-  /// [taille] : les deux boutons, en unités de page ; [gauche] : le bord
-  /// gauche de l'écran.
-  ///
-  /// Une ligne dont les actions s'ouvrent à côté des boutons
-  /// ([actionsAuJugement]) prend [largeurActions] de plus : le bouton des
-  /// actions se range avec 👍 et 👎, sans couvrir l'encre ni un résultat.
+  /// [taille] : le bouton, en unités de page ; [gauche] : le bord gauche de
+  /// l'écran.
   Map<BlocCalcul, Rect> placesJugement({
     required Size taille,
     required bool approcheVoulue,
     required bool virgule,
     double gauche = double.negativeInfinity,
-    double largeurActions = 0,
   }) {
     final ecrits = _blocs.values.where((b) => !b.estSaisie).toList()
       ..sort(
@@ -828,18 +808,16 @@ class CalculFeuille extends ChangeNotifier {
     };
     const ecart = BlocCalcul._ecart;
     final obstacles = [
-      for (final b in ecrits) b.cadre,
+      for (final b in _blocs.values) b.cadre,
       ...resultats.values.nonNulls,
-      // « tracer » ou « placer » et le crayon d'une courbe ou d'un point :
-      // 👍 et 👎 s'y posaient (vu sur le Pad 7, format téléphone).
-      for (final b in ecrits)
-        if (b.etat == EtatBloc.fait && (b.seTrace || b.objet != null))
-          rangeeAction(b, taille.height),
     ];
-    final h = taille.height;
+    final (l, h) = (taille.width, taille.height);
+    bool libre(Rect e) =>
+        e.left >= gauche &&
+        e.right <= _bordDroit &&
+        !obstacles.any((o) => o.inflate(ecart).overlaps(e));
     final places = <BlocCalcul, Rect>{};
     for (final b in ecrits.where((b) => b.jugeable)) {
-      final l = taille.width + (actionsAuJugement(b) ? largeurActions : 0);
       final c = b.cadre;
       final r = resultats[b];
       final apres = math.max(c.right, r?.right ?? c.right);
@@ -856,14 +834,28 @@ class CalculFeuille extends ChangeNotifier {
           Rect.fromLTWH(r.right + ecart, r.center.dy - h / 2, l, h),
           Rect.fromLTWH(c.left, math.max(c.bottom, r.bottom) + ecart, l, h),
         ],
-        // « tracer » passé sous une courbe (téléphone en portrait) : sous lui.
-        if (b.etat == EtatBloc.fait && (b.seTrace || b.objet != null))
-          Rect.fromLTWH(c.left, rangeeAction(b, h).bottom + ecart, l, h),
       ];
-      final place = essais.where((e) {
-        if (e.left < gauche || e.right > _bordDroit) return false;
-        return !obstacles.any((o) => o.inflate(ecart).overlaps(e));
-      }).firstOrNull;
+      var place = essais.where(libre).firstOrNull;
+      // Rien de libre tout près : plus bas, puis plus haut, sur la colonne
+      // de la ligne, juste à sa gauche ou contre le bord gauche.
+      final bas = math.max(c.bottom, r?.bottom ?? c.bottom);
+      for (var i = 0; place == null && i < 40; i++) {
+        final pas = i * (h / 2);
+        for (final x in <double>[
+          c.left,
+          c.left - l - ecart,
+          math.max(gauche, 0),
+        ]) {
+          final dessous = Rect.fromLTWH(x, bas + ecart + pas, l, h);
+          final dessus = Rect.fromLTWH(x, c.top - h - ecart - pas, l, h);
+          place = libre(dessous)
+              ? dessous
+              : libre(dessus)
+              ? dessus
+              : null;
+          if (place != null) break;
+        }
+      }
       if (place == null) continue;
       places[b] = place;
       obstacles.add(place);
@@ -1836,12 +1828,6 @@ class CalculFeuille extends ChangeNotifier {
   }
 
   final _propositions = <String, (String, List<Proposition>)>{};
-
-  /// Les actions de [bloc] s'ouvrent d'un bouton rangé avec 👍 et 👎 : une
-  /// ligne écrite et comprise, courbe comprise (« tracer » et le crayon
-  /// remplissaient déjà la largeur d'un téléphone).
-  bool actionsAuJugement(BlocCalcul bloc) =>
-      bloc.jugeable && propositions(bloc).isNotEmpty;
 
   /// Ce qu'on peut faire d'une ligne comprise qui ne demande rien : la
   /// résoudre, la dériver, l'intégrer, la tracer, calculer son déterminant.

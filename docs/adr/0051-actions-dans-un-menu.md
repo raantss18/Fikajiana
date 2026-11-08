@@ -1,9 +1,9 @@
-# ADR 0051 — Les actions proposées s'ouvrent d'un seul bouton
+# ADR 0051 — Un seul bouton par ligne, une seule liste
 
-- **Date** : 2026-11-08 · **Statut** : accepté
-- **Contexte** : sur le téléphone d'Antsa, la rangée de mots proposés (« résoudre factoriser dériver limite tracer ») passait à la ligne et s'écrivait sur les lignes et résultats voisins.
-- **Décision** : un seul bouton de 48 dp, dessiné à la main (flèche qui descend puis avance : « écrire dessous » ; trois points : « au choix »), nommé pour TalkBack avec la liste des actions. Il ouvre un menu (`showMenu`) où chaque action s'écrit à la main avec, en petit, la ligne qu'elle posera ; le choix pose la ligne dessous comme avant.
-- **Placement** : pour une expression écrite, le bouton se range avec 👍 et 👎 ; `placesJugement` leur réserve 48 dp de plus et cherche la place libre (encre, résultats, autres boutons évités). Une courbe aussi (vu sur le Pad 7 en format téléphone : « tracer », le bouton et le crayon passaient à la ligne). Sans place, il reste à droite de la ligne, ou entre « tracer » et le crayon.
-- **Courbes et points** : « tracer » ou « placer » et le crayon passent sous la ligne quand le bord est trop près (`rangeeAction`), et comptent comme obstacle pour 👍/👎, qui peuvent se poser sous eux.
+- **Date** : 2026-11-08, revu le 2026-11-09 · **Statut** : accepté
+- **Contexte** : sur le téléphone d'Antsa, la rangée de mots proposés passait sur les lignes voisines ; avec un bouton d'actions rangé près de 👍/👎, les pouces se chevauchaient encore. Antsa : « dans la même liste déroulante, même l'option de modification ».
+- **Décision** : chaque ligne écrite a un seul bouton de 48 dp, dessiné à la main (flèche « écrire dessous », trois points « au choix »), nommé pour TalkBack avec son état et ses entrées. Il ouvre une liste (`showMenu`) : juste, faux (ouvre la correction), corriger, les autres lectures, tracer/voir ou placer, puis les actions proposées (résoudre, dériver…), chacune écrite à la main, avec en petit la ligne qu'elle posera. Plus de 👍/👎, de crayon ni de mot posé à côté de la ligne. Une ligne tapée garde sa formule écrite, le bouton à côté.
+- **État** : « à confirmer » reste un pointillé sous la ligne ; jugée juste, le bouton porte une coche, jugée fausse une croix (forme et couleur, règle 9).
+- **Placement** : `placesJugement` cherche une place de 48 dp à gauche, dessous, dessus ou après le résultat, sans encre, résultat, ligne tapée ni autre bouton ; sinon plus bas puis plus haut, jusqu'à en trouver une : chaque ligne a son bouton.
 - **Écarté** : réduire les mots (illisibles) ; un panneau plein écran (cache la ligne).
-- **Vérifié / Reste** : voir `docs/TODO.md` § 0 (tests, essai Pad 7).
+- **Vérifié / Reste** : voir `docs/TODO.md` § 0.
