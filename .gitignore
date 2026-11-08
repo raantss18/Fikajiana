@@ -22,3 +22,6 @@ native/giac/construit/
 
 # Versions préparées
 release-out/
+
+# Écriture collectée (ADR 0038) : hors Git tant qu'Antsa ne la publie pas.
+/donnees/
