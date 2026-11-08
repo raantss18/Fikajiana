@@ -4,6 +4,7 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Le Guide présente aussi les outils de la Feuille (👍/👎, corriger un signe, relire, gomme, fond, export…) et les réglages ; le tour montre les matrices, les sommes et limites, et comment juger une lecture. / The Guide also covers the Sheet tools (👍/👎, correcting a sign, re-reading, eraser, background, export…) and the settings; the tour shows matrices, sums and limits, and how to judge a reading.
 ## [1.0.6] — 2026-11-08
 
 ### Message fr

@@ -12,7 +12,7 @@ void main() {
 
     group('tour ($langue)', () {
       test('quelques étapes courtes, aux clés uniques', () {
-        expect(etapes.length, inInclusiveRange(4, 7));
+        expect(etapes.length, inInclusiveRange(4, 10));
         final cles = etapes.map((e) => e.cle).toSet();
         expect(cles, hasLength(etapes.length));
       });
@@ -72,6 +72,30 @@ void main() {
     test('f(x) = x² − 1 donne f(3) = 8', () {
       expect(etapes['fonction']![1], ('f(3)=', '8'));
       expect(3 * 3 - 1, 8);
+    });
+
+    test('det(1 2 ; 3 4) = 1×4 − 2×3 = −2', () {
+      expect(etapes['matrices']![1], (r'\det(A)=', '-2'));
+      expect(1 * 4 - 2 * 3, -2);
+    });
+
+    test('Σ k² de 1 à 10 = 385, et sin x / x tend vers 1 en 0', () {
+      expect(etapes['sommes']![0].$2, '385');
+      expect(
+        [for (var k = 1; k <= 10; k++) k * k].reduce((a, b) => a + b),
+        385,
+      );
+      // n(n+1)(2n+1)/6 pour n = 10.
+      expect(10 * 11 * 21 ~/ 6, 385);
+      expect(etapes['sommes']![1].$2, '1');
+      for (final x in [1e-3, -1e-4, 1e-6]) {
+        expect(math.sin(x) / x, closeTo(1, 1e-6));
+      }
+    });
+
+    test('30 × 8 = 240', () {
+      expect(etapes['juger'], [(r'30\times8=', '240')]);
+      expect(30 * 8, 240);
     });
 
     test('5! = 120', () {

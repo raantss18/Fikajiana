@@ -2,6 +2,8 @@ import 'package:fikajiana/comprendre/carnet.dart';
 import 'package:fikajiana/comprendre/classeur.dart';
 import 'package:fikajiana/geometrie/atelier.dart';
 import 'package:fikajiana/graphe/courbes.dart';
+import 'package:fikajiana/guide/tour.dart';
+import 'package:fikajiana/l10n/l10n.dart';
 import 'package:fikajiana/moteur/giac.dart';
 import 'package:fikajiana/moteur/moteur.dart';
 import 'package:fikajiana/reconnaissance/lecteur.dart';
@@ -74,6 +76,9 @@ Future<void> _lancer(
   );
   await t.pumpAndSettle();
 }
+
+/// Le nombre d'étapes du tour.
+final int _n = etapesTour(lookupAppLocalizations(const Locale('fr'))).length;
 
 final Finder _proposition = find.text('Un petit tour ?');
 
@@ -171,17 +176,17 @@ void main() {
       await t.tap(find.text('Faire le tour'));
       await t.pumpAndSettle();
       expect(find.byType(EcranTour), findsOneWidget);
-      expect(find.text('Étape 1 sur 6'), findsOneWidget);
+      expect(find.text('Étape 1 sur $_n'), findsOneWidget);
 
-      for (var i = 2; i <= 6; i++) {
+      for (var i = 2; i <= _n; i++) {
         await t.tap(find.text('Suivant'));
         await t.pumpAndSettle();
-        expect(find.text('Étape $i sur 6'), findsOneWidget);
+        expect(find.text('Étape $i sur $_n'), findsOneWidget);
       }
       expect(find.text('Suivant'), findsNothing);
       await t.tap(find.text('Précédent'));
       await t.pumpAndSettle();
-      expect(find.text('Étape 5 sur 6'), findsOneWidget);
+      expect(find.text('Étape ${_n - 1} sur $_n'), findsOneWidget);
       await t.tap(find.text('Suivant'));
       await t.pumpAndSettle();
 
@@ -285,11 +290,11 @@ void main() {
             .push(MaterialPageRoute<void>(builder: (_) => const EcranTour()));
         await t.pumpAndSettle();
         final suivant = langue.languageCode == 'fr' ? 'Suivant' : 'Next';
-        for (var i = 0; i < 6; i++) {
+        for (var i = 0; i < _n; i++) {
           expect(t.takeException(), isNull);
           await expectLater(t, meetsGuideline(androidTapTargetGuideline));
           await expectLater(t, meetsGuideline(textContrastGuideline));
-          if (i < 5) {
+          if (i < _n - 1) {
             await t.tap(find.text(suivant));
             await t.pumpAndSettle();
           }
