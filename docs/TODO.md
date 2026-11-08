@@ -27,7 +27,7 @@
 
 Déjà livré ce jour : rature et stylet (0.6.1), lueur et trait ondulé (0.7.1), main qui défile (0.7.2). Fusionné, pas encore publié : saisie naturelle, mémoire de la feuille, `det`, points et vecteurs, calcul formel de la PR 29 (0.8.0).
 
-13. 🔄 **Petit modèle par signe** (ADR 0038, décision d'Antsa 2026-11-08) : app de collecte (tablette et téléphone), entraînement en une commande, intégration dans Fikajiana. Antsa fournit ses écritures.
+13. 🔄 **Petit modèle par signe** (ADR 0038, décision d'Antsa 2026-11-08) : app de collecte (tablette et téléphone), entraînement en une commande, intégration dans Fikajiana. Antsa fournit ses écritures. App de collecte faite (`collecte/app/`, ADR 0039, `collecte/LISEZMOI.md`) ; reste : les séances d'Antsa, l'essai sur le téléphone.
 
 ## 0. Erreurs signalées
 
