@@ -4,7 +4,7 @@ import 'package:fikajiana/encre/encre.dart';
 import 'package:fikajiana/reconnaissance/classeur_signes.dart';
 import 'package:fikajiana/reconnaissance/exemples_personnels.dart';
 
-/// Le classeur de l'application (ADR 0039) : les corrections de la personne
+/// Le classeur de l'application (ADR 0040) : les corrections de la personne
 /// d'abord, puis le petit modèle s'il est là, sinon les gabarits.
 ///
 /// Chaque signe se classe dès qu'il est fini ([preparer]) et son verdict

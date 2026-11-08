@@ -46,7 +46,7 @@ void main() {
     lecteur = _Lecteur();
   });
 
-  group('lecture continue (ADR 0039)', () {
+  group('lecture continue (ADR 0040)', () {
     test(
       'les signes tous lus : la ligne n’attend pas toute la pause',
       () async {

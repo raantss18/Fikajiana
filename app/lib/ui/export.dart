@@ -102,7 +102,7 @@ List<Widget> lignesExport(
 }
 
 /// Les corrections de la personne, en JSON (`collecte/FORMAT.md`), là où
-/// elle choisit de les mettre (ADR 0039). Rien ne part autrement.
+/// elle choisit de les mettre (ADR 0040). Rien ne part autrement.
 Future<void> exporterCorrections(
   BuildContext context,
   ExemplesPersonnels exemples,

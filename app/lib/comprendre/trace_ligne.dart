@@ -17,7 +17,7 @@ import 'package:fikajiana_math/fikajiana_math.dart';
 String? lireAuTrace(List<Trait> traits) => lireAuTraceDetaille(traits)?.latex;
 
 /// Une ligne lue au tracé, et chacun de ses signes : ses traits et ce qu'on
-/// y a lu, de gauche à droite (ADR 0039).
+/// y a lu, de gauche à droite (ADR 0040).
 typedef LectureTrace = ({String latex, List<(List<Trait>, String)> signes});
 
 /// Les signes lus par la lecture en cours.
@@ -389,7 +389,7 @@ bool _classer(_Glyphe g, double hauteur) {
     return true;
   }
   // Un signe que la personne a corrigé, ou qu'elle écrit toujours ainsi
-  // (ADR 0039).
+  // (ADR 0040).
   final impose = classeurCourant.impose(g.traits);
   if (impose != null) {
     g.signe = impose;

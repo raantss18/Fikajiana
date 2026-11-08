@@ -1,4 +1,4 @@
-# ADR 0039 — Un classeur de signes, des signes lus dès qu'ils sont finis
+# ADR 0040 — Un classeur de signes, des signes lus dès qu'ils sont finis
 
 - **Date** : 2026-11-08 · **Statut** : accepté · Suite de l'ADR 0038, idée de Mikajy (https://github.com/ARHeritiana/Mikajy).
 - **Contexte** : la lecture au tracé (ADR 0035, 0037) appelait directement les gabarits $P à la pause, pour chaque signe ; le petit modèle par signe (ADR 0038) doit pouvoir les remplacer sans toucher aux règles de la ligne.

@@ -178,7 +178,7 @@ class BlocCalcul {
   List<String> autresLectures = const [];
 
   /// Lu au tracé : chaque signe, ses traits et ce qu'on y a lu. Toucher
-  /// l'un d'eux propose d'autres lectures (ADR 0039).
+  /// l'un d'eux propose d'autres lectures (ADR 0040).
   List<(List<Trait>, String)> signesLus = const [];
 
   /// `f'(x)` ou `det(…)` : la réponse s'affiche même sans `=`.
@@ -475,7 +475,7 @@ class CalculFeuille extends ChangeNotifier {
   final Moteur moteur;
   final Duration pause;
 
-  /// La pause quand tous les signes de la ligne sont déjà lus (ADR 0039).
+  /// La pause quand tous les signes de la ligne sont déjà lus (ADR 0040).
   final Duration pauseConnue;
 
   /// Lit chaque signe : corrections de la personne, petit modèle, gabarits.
@@ -575,7 +575,7 @@ class CalculFeuille extends ChangeNotifier {
         : pause;
     _minuteur = Timer(attente, () => unawaited(_lireLesNouveaux()));
     // Chaque signe se lit dès qu'il est fini : le stylet levé, et rien de
-    // nouveau depuis un instant (ADR 0039).
+    // nouveau depuis un instant (ADR 0040).
     _dernierTrait = DateTime.now();
     _minuteurSignes?.cancel();
     unawaited(_lireLesSignes(finis: true));
@@ -1043,7 +1043,7 @@ class CalculFeuille extends ChangeNotifier {
       classeur.classer(signe, hauteurLigne: bloc.cadre.height);
 
   /// La personne dit ce qu'est [signe] : la ligne se relit, et l'exemple
-  /// reste sur l'appareil pour les prochaines fois (ADR 0039).
+  /// reste sur l'appareil pour les prochaines fois (ADR 0040).
   Future<void> corrigerSigne(
     BlocCalcul bloc,
     List<Trait> signe,

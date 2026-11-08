@@ -1222,7 +1222,7 @@ List<(String, double)> classerChiffresDebug(List<List<Offset>> traits) {
 }
 
 /// La distance de deux dessins, comme entre un signe et un gabarit : pour
-/// comparer un signe aux exemples de la personne (ADR 0039).
+/// comparer un signe aux exemples de la personne (ADR 0040).
 double distanceDessins(List<List<Offset>> a, List<List<Offset>> b) =>
     _distance(
       _normaliser(_reechantillonner(a)),

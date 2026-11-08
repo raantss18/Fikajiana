@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
 
 /// Les signes d'une ligne lue au tracé : toucher l'un d'eux propose ses
-/// meilleures autres lectures (idée de Mikajy, ADR 0039). Le choix corrige
+/// meilleures autres lectures (idée de Mikajy, ADR 0040). Le choix corrige
 /// la ligne et reste sur l'appareil comme exemple.
 class SignesLus extends StatefulWidget {
   const new({required this.bloc, required this.calcul, super.key});

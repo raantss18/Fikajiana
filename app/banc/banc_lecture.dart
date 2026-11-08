@@ -24,7 +24,7 @@ double _ms(Stopwatch s) => s.elapsedMicroseconds / 1000;
 
 /// Le temps de lecture au tracé de chaque écriture réelle des tests, avant
 /// (gabarits à chaque lecture) et après (signes classés dès qu'ils sont
-/// finis, ADR 0039). Usage : `tool/banc/lancer.sh android-arm64
+/// finis, ADR 0040). Usage : `tool/banc/lancer.sh android-arm64
 /// banc/banc_lecture.dart`.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
