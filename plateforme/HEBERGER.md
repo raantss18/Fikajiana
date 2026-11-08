@@ -108,7 +108,7 @@ Les dons sont dans le volume Docker `dons` (`docker volume inspect plateforme_do
 
 > Le 2026-11-08, Google a refusé la carte d'Antsa (« Payment authorization failed ») : sans compte de
 > facturation, Cloud Run est impossible. Remplacée par le Worker Cloudflare (ADR 0045). Le projet vide
-> `fikajiana-dons-5b2c` reste à supprimer. Ce pas-à-pas sert encore pour qui aurait une carte acceptée.
+> `fikajiana-dons-5b2c` a été supprimé le 2026-11-08. Ce pas-à-pas sert encore pour qui aurait une carte acceptée.
 
 Compter une heure la première fois. Il faut : un compte Google, un compte Cloudflare, et sur
 l'ordinateur Docker et la Google Cloud CLI (`gcloud`, <https://docs.cloud.google.com/sdk/docs/install>).
