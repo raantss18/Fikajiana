@@ -36,6 +36,39 @@ class EcranReglages extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.all(AppEspacement.md),
+            child: Semantics(
+              header: true,
+              child: Text(
+                l10n.reglagesLangue,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+          ),
+          RadioGroup<String>(
+            groupValue: reglages.langue ?? '',
+            onChanged: (code) => reglages.langue = code,
+            child: Column(
+              children: [
+                RadioListTile<String>(
+                  value: '',
+                  title: Text(l10n.langueSysteme),
+                ),
+                // Chaque langue s'écrit dans sa langue : on la reconnaît
+                // même sans lire celle de l'écran.
+                const RadioListTile<String>(
+                  value: 'fr',
+                  title: Text('Français', locale: Locale('fr')),
+                ),
+                const RadioListTile<String>(
+                  value: 'en',
+                  title: Text('English', locale: Locale('en')),
+                ),
+              ],
+            ),
+          ),
+          const Divider(),
+          Padding(
+            padding: const EdgeInsets.all(AppEspacement.md),
             child: Text(
               l10n.reglagesSupport,
               style: Theme.of(context).textTheme.titleMedium,

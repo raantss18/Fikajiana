@@ -41,7 +41,7 @@ Déjà livré ce jour : rature et stylet (0.6.1), lueur et trait ondulé (0.7.1)
 
 1. ✅ **Choisir une ligne** de la Feuille : toucher, entourer ou appui long ; déplacer (glisser ou flèches), dupliquer, supprimer (Annuler), copier le LaTeX (ADR 0049, PR #90). Vu sur le Pad 7 (plein écran, téléphone portrait et paysage). Reste : vrai stylet.
 2. ✅ **Historique** : renommer un document (feuille et Figure, `noms.json`), le supprimer avec « Annuler » quelques secondes (corbeille vidée ensuite et au démarrage), trier par date ou par nom. Vu sur le Pad 7 (plein écran, téléphone).
-3. ⏳ **Langue** dans les Réglages (Système, Français, English), sans redémarrer.
+3. ✅ **Langue** dans les Réglages (celle du système, Français, English), sans redémarrer, gardée au redémarrage. Revue fr/en : aucune clé ne manque ; les seuls mots français de l'anglais sont des noms de commandes (`résoudre`, `médiane`…), écrits tels quels exprès. Vu sur le Pad 7 (plein écran, téléphone).
 4. ⏳ **Panneaux de correction écrits à la main** (reste du cap n° 8).
 5. ⏳ **Actions proposées selon le type** d'une ligne comprise sans `=`.
 

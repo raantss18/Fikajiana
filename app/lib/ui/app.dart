@@ -59,6 +59,11 @@ class _AppState extends State<App> {
             themeMode: _reglages.support.estSombre
                 ? ThemeMode.dark
                 : ThemeMode.light,
+            // Choisie dans les Réglages, sans redémarrer ; sinon le système.
+            locale: switch (_reglages.langue) {
+              final code? => Locale(code),
+              null => null,
+            },
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             home: const PageDestination(destination: Destination.feuille),
