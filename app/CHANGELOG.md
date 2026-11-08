@@ -4,6 +4,8 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Le stylet ne perd plus ses points pendant que l'app lit une ligne ou relit la feuille : écrire reste fluide. / The pen no longer loses points while the app reads a line or rereads the sheet: writing stays smooth.
+
 - Équations différentielles du second ordre à coefficients constants résolues (`y'' + y = cos x`) ; `t·sin(t)` n'est plus lu `tan(t)` ; une courbe paramétrée avec `t × sin(t)` n'est plus prise pour un vecteur ; des chiffres d'Antsa (5, 8, 3) mieux lus. / Constant-coefficient second-order differential equations are solved (`y'' + y = cos x`); `t·sin(t)` is no longer read as `tan(t)`; a parametric curve with `t × sin(t)` is no longer taken for a vector; some of Antsa's digits (5, 8, 3) are read better.
 
 - Équations différentielles du premier ordre (`y' − 3y = cos(x)`) résolues ; courbes paramétrées écrites avec une accolade tracées au lieu d'être « résolues » ; `uₙ₊₁ = …` écrit en deux temps reste une seule ligne. / First-order differential equations (`y' − 3y = cos(x)`) are solved; parametric curves written with a brace are plotted instead of "solved"; `uₙ₊₁ = …` written in two goes stays one line.

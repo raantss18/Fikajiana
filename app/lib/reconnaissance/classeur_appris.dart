@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'dart:ui';
 
+import 'package:fikajiana/comprendre/signes.dart';
 import 'package:fikajiana/encre/encre.dart';
 import 'package:fikajiana/reconnaissance/classeur_signes.dart';
 import 'package:fikajiana/reconnaissance/ecritures.dart';
@@ -63,10 +64,42 @@ class ClasseurAppris extends ClasseurSignes {
       trouves++;
       return cache[cle] as T;
     }
-    calcules++;
-    _borner();
-    return cache[cle] = calcul();
+    void calculer() {
+      calcules++;
+      _borner();
+      cache[cle] = calcul();
+    }
+
+    // Lecture par tranches : le verdict se calcule seul, hors de la lecture.
+    if (Zone.current[cleTranches] == true) throw MesureEnAttente(calculer);
+    calculer();
+    return cache[cle] as T;
   }
+
+  /// Lit par tranches courtes : [lecture], synchrone, s'arrête au premier
+  /// verdict qui manque ; il se calcule seul, l'application reprend la main
+  /// (le stylet, l'écran), puis la lecture repart du début, ce qui est déjà
+  /// en cache ne coûtant presque rien. Sur le Pad 7, une ligne lue d'un bloc
+  /// figeait l'app 100 à 240 ms, et Flutter perd alors les points du trait
+  /// en cours (2026-11-08) : le trait devenait des lignes droites.
+  Future<R> parTranches<R>(R Function() lecture) async {
+    for (var i = 0; i < _tranchesMaximum; i++) {
+      final R resultat;
+      try {
+        resultat = runZoned(lecture, zoneValues: {cleTranches: true});
+      } on MesureEnAttente catch (manque) {
+        manque.mesurer();
+        await laisserPasser();
+        continue;
+      }
+      return resultat;
+    }
+    return lecture();
+  }
+
+  /// Au-delà, la lecture finit d'un bloc : une ligne n'a jamais autant de
+  /// signes à mesurer.
+  static const int _tranchesMaximum = 400;
 
   /// Le verdict du modèle sur une classe déjà calculée, avec ses règles de
   /// doute : la famille entière quand les premières se confondent.
@@ -202,3 +235,16 @@ class ClasseurAppris extends ClasseurSignes {
     _classements.clear();
   }
 }
+
+/// Rend la main à l'application si le calcul la garde depuis plus de
+/// [_tranche] : le stylet et l'écran passent avant la suite. Un `await`
+/// seul ne suffit pas, il ne laisse passer que les microtâches.
+Future<void> laisserPasser() {
+  if (_depuisLaMain.elapsed < _tranche) return Future<void>.value();
+  _depuisLaMain.reset();
+  return Future<void>.delayed(Duration.zero);
+}
+
+/// Une image sur deux à 120 Hz : au-delà, Flutter perd des points du trait.
+const _tranche = Duration(milliseconds: 8);
+final _depuisLaMain = Stopwatch()..start();

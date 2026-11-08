@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
@@ -159,6 +160,52 @@ void main() {
       ]);
       expect(ecritures.corrige(signes.last), isNull);
       expect(ecritures.reconnaitre(_copie(signes.last, 300)), isNull);
+    });
+  });
+
+  // Pad 7, 2026-11-08 : une ligne lue d'un bloc figeait l'app 100 à 240 ms,
+  // et Flutter perdait les points du trait en cours.
+  group('la lecture par tranches', () {
+    test('lit comme d’un bloc, un signe mesuré par tranche', () async {
+      final direct = avecClasseur(
+        ClasseurAppris(),
+        () => lireAuTraceDetaille(ligne),
+      )!;
+      final c = ClasseurAppris();
+      final detail = await c.parTranches(
+        () => avecClasseur(c, () => lireAuTraceDetaille(ligne)),
+      );
+      expect(detail!.latex, direct.latex);
+      expect(c.calcules, greaterThan(0));
+      // Relue, tout est en cache : plus rien à mesurer.
+      final avant = c.calcules;
+      await c.parTranches(() => avecClasseur(c, () => lireAuTrace(ligne)));
+      expect(c.calcules, avant);
+    });
+
+    test('hors tranches, un verdict manquant se calcule sur place', () {
+      final c = ClasseurAppris();
+      expect(avecClasseur(c, () => lireAuTrace(ligne)), r'30\times8');
+      expect(c.calcules, greaterThan(0));
+    });
+
+    test('rend la main à l’application entre deux tranches', () async {
+      final c = ClasseurAppris();
+      // Un événement en attente (un point du stylet) : il passe avant la
+      // fin de la lecture, qui dure plus d'une tranche.
+      var passe = false;
+      Timer.run(() => passe = true);
+      var tranches = 0;
+      final detail = await c.parTranches(() {
+        tranches++;
+        // Chaque tranche dure plus de 8 ms, même sur l'ordinateur.
+        final chrono = Stopwatch()..start();
+        while (chrono.elapsedMilliseconds < 10) {}
+        expect(passe, tranches > 1);
+        return avecClasseur(c, () => lireAuTraceDetaille(ligne));
+      });
+      expect(detail!.latex, r'30\times8');
+      expect(tranches, greaterThan(1));
     });
   });
 }
