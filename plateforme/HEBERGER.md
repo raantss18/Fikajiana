@@ -117,12 +117,18 @@ Toutes les commandes se lancent depuis la racine du dépôt.
 
 **Supposé / reste à vérifier** : la forme de `X-Forwarded-For` sur Cloud Run n'est pas documentée pour
 Cloud Run (pour le répartiteur de charge Google : « [SUPPLIED_VALUE,]CLIENT_IP,LOAD_BALANCER_IP »,
-<https://docs.cloud.google.com/load-balancing/docs/https>) : l'étape 7 la mesure. R2 exige peut-être un
-moyen de paiement même sans dépasser l'offre gratuite (non vérifié). Le récepteur n'a jamais été essayé
-avec un vrai R2 ni sur Cloud Run. Le filtre d'exclusion de l'étape 8 est à vérifier dans l'Explorateur
+<https://docs.cloud.google.com/load-balancing/docs/https>) : l'étape 7 la mesure. Le récepteur n'a pas
+encore tourné sur Cloud Run. Le filtre d'exclusion de l'étape 8 est à vérifier dans l'Explorateur
 de journaux.
 
 ### 1. Cloudflare R2 : le seau et sa clé
+
+**Fait le 2026-11-08** (compte d'Antsa) : abonnement R2 à 0 $ par mois activé — Cloudflare **exige une
+carte bancaire** même sans dépasser l'offre gratuite —, seau `fikajiana-dons` (emplacement automatique,
+Europe de l'Ouest, classe Standard), jeton de compte `fikajiana-dons-recepteur` (Object Read & Write, ce
+seau seulement, sans fin). Ses clés sont dans `plateforme/cloudrun.env.yaml` d'une copie de travail et dans
+`~/.config/fikajiana/cloudrun.env.yaml` sur l'ordinateur d'Antsa, jamais dans Git. Essai réel depuis
+l'ordinateur avec ces clés : don 201, export, retrait 202 puis don refusé 410 ; le seau est vide ensuite.
 
 1. Tableau de bord Cloudflare › **R2 object storage** › créer un seau `fikajiana-dons` (emplacement
    automatique, ou juridiction UE : l'adresse prend alors `.eu.`).
