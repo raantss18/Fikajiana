@@ -176,6 +176,16 @@ const List<(String, List<String>)> problemes = [
       '6!=',
     ],
   ),
+  // Vague 4 : tableau de valeurs.
+  (
+    'tableau de valeurs',
+    [
+      'f(x)=x^{2}-1',
+      r'\text{tableau}(f;0;3;1)',
+      r'\text{tableau}(\frac{1}{x};1;4)=',
+      r'\text{tableau}(x^{3};-1;1;0{,}5)',
+    ],
+  ),
 ];
 
 Future<void> main() async {

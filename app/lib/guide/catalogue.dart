@@ -203,6 +203,14 @@ List<EntreeGuide> catalogueGuide(AppLocalizations l10n) => [
     lignes: [r"y'-3y=\cos(x)"],
   ),
   EntreeGuide(
+    cle: 'tableau',
+    famille: FamilleGuide.fonctions,
+    titre: l10n.guideTableauTitre,
+    phrase: l10n.guideTableauPhrase,
+    motsCles: l10n.guideTableauMots,
+    lignes: ['f(x)=x^{2}-1', r'\text{tableau}\left(f;0;3;1\right)'],
+  ),
+  EntreeGuide(
     cle: 'derivee',
     famille: FamilleGuide.fonctions,
     titre: l10n.guideDeriveeTitre,

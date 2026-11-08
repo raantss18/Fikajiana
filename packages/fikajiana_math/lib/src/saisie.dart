@@ -62,6 +62,21 @@ Saisie lireSaisie(String texte) {
   ).hasMatch(propre)) {
     return Saisie(propre);
   }
+  // `tableau(f;0;5;1)`, `tableau(x^2-1;-1;1;0,5)` (vague 4).
+  final tableau = RegExp(r'^tableau\s*\((.*)\)\s*(=?)$').firstMatch(propre);
+  if (tableau != null) {
+    try {
+      final morceaux = _separer(
+        tableau[1]!,
+        ';',
+      ).map((t) => _Traducteur(_decouper(t.trim())).traduire());
+      return Saisie(
+        '\\text{tableau}\\left(${morceaux.join(';')}\\right)${tableau[2]}',
+      );
+    } on _Refus catch (refus) {
+      return Saisie.refusee(refus.probleme, detail: refus.detail);
+    }
+  }
   // `17≡2[5]`, `17 equiv 2 mod 5` : une congruence.
   final congruence = RegExp(
     r'^(.+?)\s*(?:≡|\bequiv\b|\bcongru\b(?:\s*à)?)\s*(.+?)\s*'

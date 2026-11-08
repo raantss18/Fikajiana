@@ -46,6 +46,7 @@ const motsDeCommande = [
   'reste',
   'division',
   'bezout',
+  'tableau',
 ];
 
 /// Les mesures d'une figure, devant leurs points : `angle(E;F;D)` (ADR 0047).

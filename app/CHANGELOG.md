@@ -4,6 +4,8 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Tableau de valeurs : tableau(f;0;5;1) écrit x et f(x), valeurs exactes, sous la fonction ; aussi avec une expression en x. / Table of values: tableau(f;0;5;1) writes x and f(x), exact values, below the function; also with an expression in x.
+
 - Arithmétique : division(17;5) donne le quotient et le reste, bezout(12;18) les coefficients de Bézout, 17 ≡ 2 [5] dit vrai ou faux, et A₅² les arrangements ; à la main ou au clavier. / Arithmetic: division(17;5) gives the quotient and remainder, bezout(12;18) Bézout coefficients, 17 ≡ 2 [5] says true or false, and A₅² arrangements; by hand or keyboard.
 
 - Réglages, À propos : qui a conçu Fikajiana (Antsa Malala RANIRIAMANJAKA), un courriel à lui écrire et le code source, ouverts d'un toucher. / Settings, About: who designed Fikajiana (Antsa Malala RANIRIAMANJAKA), an email to write to her and the source code, opened with a tap.

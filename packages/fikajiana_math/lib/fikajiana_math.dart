@@ -10,4 +10,5 @@ export 'src/plausibilite.dart';
 export 'src/probabilites.dart';
 export 'src/redressement.dart';
 export 'src/saisie.dart';
+export 'src/tableau.dart';
 export 'src/traceur.dart';

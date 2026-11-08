@@ -168,4 +168,17 @@ ref[f"{p} | A_{{5}}^{{2}}="] = int(sp.ff(5, 2))
 ref[f"{p} | \\binom{{10}}{{3}}="] = int(sp.binomial(10, 3))
 ref[f"{p} | 6!="] = int(sp.factorial(6))
 
+# Vague 4 : tableau de valeurs (x puis f(x), toutes les valeurs affichées).
+p = "tableau de valeurs"
+
+
+def tableau(expr, xs):
+    return [float(v) for v in xs] + [float(sp.N(expr.subs(x, v), 15)) for v in xs]
+
+
+ref[f"{p} | \\text{{tableau}}(f;0;3;1)"] = tableau(x**2 - 1, [0, 1, 2, 3])
+ref[f"{p} | \\text{{tableau}}(\\frac{{1}}{{x}};1;4)="] = tableau(1 / x, [1, 2, 3, 4])
+ref[f"{p} | \\text{{tableau}}(x^{{3}};-1;1;0{{,}}5)"] = tableau(
+    x**3, [-1, R(-1, 2), 0, R(1, 2), 1])
+
 print(json.dumps(ref, ensure_ascii=False, indent=1))
