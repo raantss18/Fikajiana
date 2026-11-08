@@ -121,7 +121,8 @@ void main() {
       for (final p in calcul.propositions(b)) (p.genre, p.latex),
     ];
 
-    test('une expression en x : résoudre, dériver, tracer', () async {
+    test('une expression en x : résoudre, factoriser, dériver, limite, '
+        'tracer', () async {
       moteur.reponse = const ReponseGiac(
         exact: 'x^2-5*x+6',
         latex: 'x^{2}-5x+6',
@@ -134,24 +135,47 @@ void main() {
           GenreProposition.resoudre,
           r'\text{résoudre}\left(x^{2}-5x+6=0\right)',
         ),
+        (
+          GenreProposition.factoriser,
+          r'\text{factoriser}\left(x^{2}-5x+6\right)',
+        ),
         (GenreProposition.deriver, r'\frac{d}{dx}\left(x^{2}-5x+6\right)='),
+        (
+          GenreProposition.limite,
+          r'\lim_{x\to+\infty}\left(x^{2}-5x+6\right)=',
+        ),
         (GenreProposition.tracer, 'y=x^{2}-5x+6'),
       ]);
     });
 
-    test('une fonction définie : dériver et intégrer', () async {
-      final b = await ligne('f(x)=x^{2}+1');
-      expect(b.seTrace, isTrue);
-      expect(proposees(b), [
-        (GenreProposition.deriver, "f'(x)="),
-        (GenreProposition.integrer, r'\int f\left(x\right)dx='),
-      ]);
+    test('des parenthèses : développer, pas factoriser', () async {
+      final genres = [
+        for (final p in calcul.propositions(await ligne('(x+1)^{2}'))) p.genre,
+      ];
+      expect(genres, contains(GenreProposition.developper));
+      expect(genres, isNot(contains(GenreProposition.factoriser)));
     });
 
-    test('une matrice carrée : son déterminant ; pas une 2×3', () async {
+    test(
+      'une fonction : dériver, intégrer, valeur, tangente, limite',
+      () async {
+        final b = await ligne('f(x)=x^{2}+1');
+        expect(b.seTrace, isTrue);
+        expect(proposees(b), [
+          (GenreProposition.deriver, "f'(x)="),
+          (GenreProposition.integrer, r'\int f\left(x\right)dx='),
+          (GenreProposition.valeur, r'f\left(0\right)='),
+          (GenreProposition.tangente, r'\text{tangente}\left(f;0\right)'),
+          (GenreProposition.limite, r'\lim_{x\to+\infty}f\left(x\right)='),
+        ]);
+      },
+    );
+
+    test('une matrice carrée : déterminant, inverse ; pas une 2×3', () async {
       final a = await ligne(r'A=\begin{pmatrix}1&2\\3&4\end{pmatrix}');
       expect(proposees(a), [
         (GenreProposition.determinant, r'\det\left(A\right)='),
+        (GenreProposition.inverse, 'A^{-1}='),
       ]);
       final m = await ligne(
         r'\begin{pmatrix}1&2&3\\4&5&6\end{pmatrix}',

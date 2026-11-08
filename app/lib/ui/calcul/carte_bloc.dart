@@ -54,6 +54,10 @@ class RepereBloc extends StatelessWidget {
   /// Une action proposée a été touchée : poser sa ligne sous celle-ci.
   final ValueChanged<String>? surProposer;
 
+  /// La place à droite de la ligne jusqu'au bord de l'écran.
+  static double _largeurLibre(BuildContext context, double gauche) =>
+      math.max(200, MediaQuery.sizeOf(context).width - gauche - 16);
+
   /// Ce que la feuille propose de faire de la ligne, écrit à la main comme
   /// `tracer` (Antsa) : chaque mot pose sa ligne dessous.
   List<Widget> _propositions(BuildContext context) {
@@ -66,6 +70,12 @@ class RepereBloc extends StatelessWidget {
           key: ValueKey('propose-${p.genre.name}-${bloc.cle}'),
           mot: switch (p.genre) {
             GenreProposition.resoudre => l10n.motResoudre,
+            GenreProposition.factoriser => l10n.motFactoriser,
+            GenreProposition.developper => l10n.motDevelopper,
+            GenreProposition.valeur => l10n.motValeur,
+            GenreProposition.tangente => l10n.motTangente,
+            GenreProposition.limite => l10n.motLimite,
+            GenreProposition.inverse => l10n.motInverse,
             GenreProposition.deriver => l10n.motDeriver,
             GenreProposition.integrer => l10n.motIntegrer,
             GenreProposition.tracer => l10n.motTracer,
@@ -73,6 +83,12 @@ class RepereBloc extends StatelessWidget {
           },
           libelle: switch (p.genre) {
             GenreProposition.resoudre => l10n.proposerResoudre,
+            GenreProposition.factoriser => l10n.proposerFactoriser,
+            GenreProposition.developper => l10n.proposerDevelopper,
+            GenreProposition.valeur => l10n.proposerValeur,
+            GenreProposition.tangente => l10n.proposerTangente,
+            GenreProposition.limite => l10n.proposerLimite,
+            GenreProposition.inverse => l10n.proposerInverse,
             GenreProposition.deriver => l10n.proposerDeriver,
             GenreProposition.integrer => l10n.proposerIntegrer,
             GenreProposition.tracer => l10n.proposerTracer,
@@ -396,34 +412,41 @@ class RepereBloc extends StatelessWidget {
             child: enExport
                 ? formule
                 : TraverseEcriture(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (bloc.estSaisie) formule,
-                        ActionManuscrite(
-                          mot: dejaTracee ? l10n.motVoir : l10n.motTracer,
-                          libelle: dejaTracee
-                              ? l10n.voirDansFigure
-                              : l10n.grapheTracer,
-                          surToucher: () {
-                            surTouche();
-                            final services = PorteeServices.de(context);
-                            final deja = services.courbes.liste.any(
-                              (c) => c.latex == bloc.latex,
-                            );
-                            if (deja ||
-                                services.courbes.ajouter(bloc.latex ?? '')) {
-                              Navigator.of(context)
-                                  .push(RouteDestination(Destination.figure));
-                            }
-                          },
-                        ),
-                        ..._propositions(context),
-                        CrayonManuscrit(
-                          libelle: l10n.corriger,
-                          surToucher: () => unawaited(_corriger(context)),
-                        ),
-                      ],
+                    // Les mots proposés passent à la ligne plutôt que de
+                    // sortir de l'écran (téléphone).
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: _largeurLibre(context, droite.dx),
+                      ),
+                      child: Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          if (bloc.estSaisie) formule,
+                          ActionManuscrite(
+                            mot: dejaTracee ? l10n.motVoir : l10n.motTracer,
+                            libelle: dejaTracee
+                                ? l10n.voirDansFigure
+                                : l10n.grapheTracer,
+                            surToucher: () {
+                              surTouche();
+                              final services = PorteeServices.de(context);
+                              final deja = services.courbes.liste.any(
+                                (c) => c.latex == bloc.latex,
+                              );
+                              if (deja ||
+                                  services.courbes.ajouter(bloc.latex ?? '')) {
+                                Navigator.of(context)
+                                    .push(RouteDestination(Destination.figure));
+                              }
+                            },
+                          ),
+                          ..._propositions(context),
+                          CrayonManuscrit(
+                            libelle: l10n.corriger,
+                            surToucher: () => unawaited(_corriger(context)),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
           );
@@ -510,9 +533,14 @@ class RepereBloc extends StatelessWidget {
                     left: droite.dx + AppEspacement.sm,
                     top: droite.dy - 24,
                     child: TraverseEcriture(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: proposees,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: _largeurLibre(context, droite.dx),
+                        ),
+                        child: Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: proposees,
+                        ),
                       ),
                     ),
                   ),

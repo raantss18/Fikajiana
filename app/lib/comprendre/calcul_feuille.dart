@@ -597,7 +597,19 @@ String _ensembleApproche(String approche) {
 }
 
 /// Ce que la feuille propose de faire d'une ligne comprise (Antsa).
-enum GenreProposition { resoudre, deriver, integrer, tracer, determinant }
+enum GenreProposition {
+  resoudre,
+  factoriser,
+  developper,
+  deriver,
+  integrer,
+  valeur,
+  tangente,
+  limite,
+  tracer,
+  determinant,
+  inverse,
+}
 
 /// Une action proposée : son genre, et la ligne qu'elle pose dessous.
 @immutable
@@ -1650,27 +1662,32 @@ class CalculFeuille extends ChangeNotifier {
     if (analyse?.type == TypeExpression.fonction && nom != null) {
       final v = analyse!.variableFonction ?? analyse.inconnues.firstOrNull;
       if (v != null && RegExp(r'^[A-Za-z]$').hasMatch(nom)) {
-        candidates
-          ..add(Proposition(GenreProposition.deriver, "$nom'($v)="))
-          ..add(
-            Proposition(
-              GenreProposition.integrer,
-              '\\int $nom\\left($v\\right)d$v=',
-            ),
-          );
+        final appel = '$nom\\left($v\\right)';
+        candidates.addAll([
+          Proposition(GenreProposition.deriver, "$nom'($v)="),
+          Proposition(GenreProposition.integrer, '\\int ${appel}d$v='),
+          Proposition(GenreProposition.valeur, '$nom\\left(0\\right)='),
+          Proposition(
+            GenreProposition.tangente,
+            '\\text{tangente}\\left($nom;0\\right)',
+          ),
+          Proposition(GenreProposition.limite, '\\lim_{$v\\to+\\infty}$appel='),
+        ]);
       }
     } else if (plat.contains('pmatrix') || plat.contains('bmatrix')) {
       final carre = _matriceCarree(plat);
       final nomme = RegExp(r'^([A-Z])\s*=').firstMatch(plat)?[1];
       if (carre) {
-        candidates.add(
+        final matrice = nomme ?? '\\left($lu\\right)';
+        candidates.addAll([
           Proposition(
             GenreProposition.determinant,
             nomme != null
                 ? '\\det\\left($nomme\\right)='
                 : '\\det\\left($lu\\right)=',
           ),
-        );
+          Proposition(GenreProposition.inverse, '$matrice^{-1}='),
+        ]);
       }
     } else if (!plat.contains('=') &&
         analyse != null &&
@@ -1679,14 +1696,34 @@ class CalculFeuille extends ChangeNotifier {
       final equation = comprise('$lu=0');
       final v = equation?.inconnues.singleOrNull;
       if (equation?.type == TypeExpression.equation && v != null) {
+        // Factoriser : une somme où la variable revient ou monte en
+        // puissance ; développer : des parenthèses à ouvrir.
+        final somme = RegExp('[+-]').hasMatch(plat.substring(1));
+        final puissance =
+            plat.contains('^') || RegExp(v).allMatches(plat).length > 1;
+        final parentheses = plat.contains('(');
         candidates.addAll([
           Proposition(
             GenreProposition.resoudre,
             '\\text{résoudre}\\left($lu=0\\right)',
           ),
+          if (somme && puissance && !parentheses)
+            Proposition(
+              GenreProposition.factoriser,
+              '\\text{factoriser}\\left($lu\\right)',
+            ),
+          if (parentheses)
+            Proposition(
+              GenreProposition.developper,
+              '\\text{développer}\\left($lu\\right)',
+            ),
           Proposition(
             GenreProposition.deriver,
             '\\frac{d}{d$v}\\left($lu\\right)=',
+          ),
+          Proposition(
+            GenreProposition.limite,
+            '\\lim_{$v\\to+\\infty}\\left($lu\\right)=',
           ),
           if (v == 'x') Proposition(GenreProposition.tracer, 'y=$lu'),
         ]);
