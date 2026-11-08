@@ -69,6 +69,7 @@ class RepereBloc extends StatelessWidget {
   Future<void> _ouvrirPanneau(BuildContext context, Offset ancre) async {
     surTouche();
     final l10n = context.l10n;
+    final encre = PorteeReglages.de(context).support.stylos.first;
     final latex = bloc.latex?.trim() ?? '';
     final choix = await ouvrirPanneauBloc(
       context,
@@ -79,14 +80,19 @@ class RepereBloc extends StatelessWidget {
         EtatBloc.nonCompris => l10n.blocPanneauNonCompris,
         _ => l10n.blocPanneauErreur,
       },
-      lecture: latex.isEmpty ? null : _Formule(latex: latex),
+      // Ce qui a été lu, à l'encre de la feuille, comme sur la ligne.
+      lecture: latex.isEmpty
+          ? null
+          : _Formule(latex: latex, couleur: encre, manuscrite: true),
       effacer: bloc.estSaisie ? l10n.retirer : l10n.blocEffacer,
+      motEffacer: bloc.estSaisie ? l10n.motRetirer : l10n.motEffacer,
       autres: [
         for (final autre in bloc.autresLectures)
-          ActionChip(
-            label: _Formule(latex: autre),
-            tooltip: l10n.blocChoisirLecture,
-            onPressed: () {
+          LectureManuscrite(
+            latex: autre,
+            couleur: encre,
+            libelle: '${l10n.blocChoisirLecture} : $autre',
+            surToucher: () {
               Navigator.of(context, rootNavigator: true).pop();
               unawaited(calcul.corriger(bloc, autre));
             },

@@ -4,6 +4,7 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Le panneau d'une ligne à vérifier s'écrit à la main comme le reste de la Feuille : relire, effacer, corriger, et les autres lectures possibles. / The panel of a line to check is handwritten like the rest of the Sheet: reread, erase, correct, and the other possible readings.
 - Choix de la langue dans les Réglages (celle du système, Français, English), appliqué aussitôt sans redémarrer. / Language choice in Settings (system, Français, English), applied at once without restarting.
 - Historique : renommer un document (feuille et Figure), le supprimer avec « Annuler » pendant quelques secondes, trier par date ou par nom. / History: rename a document (sheet and Figure), delete it with "Undo" for a few seconds, sort by date or by name.
 - Choisir une ligne de la Feuille (Outils, puis la toucher ou l'entourer ; ou appui long sur son résultat) : la déplacer au doigt ou aux flèches, la dupliquer dessous, la supprimer (Annuler la rend), copier son LaTeX. / Select a line on the Sheet (Tools, then tap or circle it; or long-press its result): move it by dragging or with the arrows, duplicate it below, delete it (Undo brings it back), copy its LaTeX.

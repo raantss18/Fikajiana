@@ -603,6 +603,10 @@
     "motTracer": "plot",
     "motVoir": "see",
     "motPlacer": "place",
+    "motRelire": "reread",
+    "motEffacer": "erase",
+    "motRetirer": "remove",
+    "motCorriger": "correct",
     "@motTracer": {
         "description": "Handwritten action word on the Sheet: lowercase ASCII letters only."
     },

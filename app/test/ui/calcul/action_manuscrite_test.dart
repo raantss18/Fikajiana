@@ -55,4 +55,28 @@ void main() {
     expect(find.text('repli'), findsNothing);
     expect(t.getSize(find.byType(EcritureManuscrite)).height, greaterThan(40));
   });
+
+  testWidgets('une autre lecture, écrite à la main, se choisit', (t) async {
+    var touche = 0;
+    await monter(
+      t,
+      LectureManuscrite(
+        latex: '2+3',
+        couleur: Colors.blue,
+        libelle: 'Choisir cette lecture : 2+3',
+        surToucher: () => touche++,
+      ),
+    );
+    expect(find.text('2+3'), findsNothing);
+    expect(
+      find.bySemanticsLabel('Choisir cette lecture : 2+3'),
+      findsOneWidget,
+    );
+    expect(
+      t.getSize(find.byType(LectureManuscrite)).height,
+      greaterThanOrEqualTo(48),
+    );
+    await t.tap(find.byType(LectureManuscrite));
+    expect(touche, 1);
+  });
 }

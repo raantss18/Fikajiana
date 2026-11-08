@@ -220,3 +220,51 @@ class _PeintreEcriture extends CustomPainter {
   bool shouldRepaint(_PeintreEcriture ancien) =>
       ancien.ecrit != ecrit || ancien.couleur != couleur;
 }
+
+/// Une autre lecture possible, écrite à la main : la toucher la choisit.
+/// TalkBack dit [libelle] ; la cible fait au moins 48 dp (règle 9).
+class LectureManuscrite extends StatelessWidget {
+  const new({
+    required this.latex,
+    required this.couleur,
+    required this.libelle,
+    required this.surToucher,
+    super.key,
+  });
+
+  final String latex;
+  final Color couleur;
+  final String libelle;
+  final VoidCallback surToucher;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: libelle,
+      excludeSemantics: true,
+      child: Tooltip(
+        message: libelle,
+        child: InkWell(
+          onTap: surToucher,
+          borderRadius: BorderRadius.circular(AppEspacement.sm),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppEspacement.sm),
+              child: Center(
+                widthFactor: 1,
+                child: EcritureManuscrite(
+                  latex: latex,
+                  couleur: couleur,
+                  hauteur: 28,
+                  repli: Text(latex, style: TextStyle(color: couleur)),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
