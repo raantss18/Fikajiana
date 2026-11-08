@@ -35,6 +35,16 @@ Déjà livré ce jour : rature et stylet (0.6.1), lueur et trait ondulé (0.7.1)
     Dons consentis (ADR 0042) : récepteur de référence Python (`plateforme/`, ADR 0043) et **Worker Cloudflare en service** (`plateforme/worker/`, ADR 0045, <https://fikajiana-dons.fikajiana-dons-worker.workers.dev>, seau R2 `fikajiana-dons`) ; récupération triée et par pages (`uv run entrainement/recuperer_dons.py`). Cloud Run abandonné (carte refusée par Google). ⏳ Mettre l'adresse dans l'app ; essai depuis l'app ; projet Google vide `fikajiana-dons-5b2c` supprimé le 2026-11-08 (effacement définitif sous 30 jours, sauf restauration).
     Lignes jugées et dons (ADR 0042, 0044) : 👍/👎 à côté de chaque ligne, magasin unique `Ecritures`, consentement une fois (case non cochée), envoi `POST /v1/dons` en arrière-plan (Wi-Fi seulement par défaut, adresse vide par défaut), retrait. ⏳ Adresse de la plateforme à régler quand elle sera hébergée (Antsa) ; envoi app fermée (tâche de fond Android) non fait.
 
+## Améliorations demandées (2026-11-08)
+
+> Une PR par ligne, dans l'ordre.
+
+1. ✅ **Choisir une ligne** de la Feuille : toucher, entourer ou appui long ; déplacer (glisser ou flèches), dupliquer, supprimer (Annuler), copier le LaTeX (ADR 0049, PR #90). Vu sur le Pad 7 (plein écran, téléphone portrait et paysage). Reste : vrai stylet.
+2. ✅ **Historique** : renommer un document (feuille et Figure, `noms.json`), le supprimer avec « Annuler » quelques secondes (corbeille vidée ensuite et au démarrage), trier par date ou par nom. Vu sur le Pad 7 (plein écran, téléphone).
+3. ⏳ **Langue** dans les Réglages (Système, Français, English), sans redémarrer.
+4. ⏳ **Panneaux de correction écrits à la main** (reste du cap n° 8).
+5. ⏳ **Actions proposées selon le type** d'une ligne comprise sans `=`.
+
 ## 0. Erreurs signalées
 
 - ✅ 2026-11-08 : vu à l'essai de « Choisir une ligne » (Pad 7, version publiée) : une ligne déplacée laissait son écriture au propre à l'ancienne place. Cause : `Rect.toString()` rend « Instance of 'Rect' » en version publiée ; les clés de cache `'$lu|$cadre'` et `'…|$cadre|…|$pris'` ne changeaient jamais. Même classe : un résultat ne se replaçait pas quand les résultats des lignes d'avant bougeaient (cause possible des résultats posés sur une autre ligne). Corrigé (`cleDeRect`, ADR 0049) ; même classe cherchée dans `lib/` (aucune autre clé faite d'un `Rect`, `Offset` ou `Size`). Test : `calcul_feuille_test` (le source n'interpole plus de `Rect`).

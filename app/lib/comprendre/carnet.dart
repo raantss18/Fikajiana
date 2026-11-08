@@ -14,7 +14,11 @@ class ApercuFeuille {
     required this.calculs,
     this.courbes = const [],
     this.objets = 0,
+    this.nom,
   });
+
+  /// Le nom donné au document (feuille et Figure), ou `null`.
+  final String? nom;
 
   final String id;
   final DateTime modifiee;
@@ -47,6 +51,8 @@ class Carnet extends ChangeNotifier {
       return;
     }
     _feuilles.createSync(recursive: true);
+    // Une suppression qu'on n'a pas annulée avant de quitter : définitive.
+    viderCorbeille();
     // La 0.2.0 et avant n'avaient qu'une feuille.
     final ancienne = File('${dossier.path}/feuille.json');
     if (ancienne.existsSync()) {
@@ -75,6 +81,46 @@ class Carnet extends ChangeNotifier {
 
   Directory get _feuilles => Directory('${dossier!.path}/feuilles');
   File get _noteCourante => File('${dossier!.path}/courante.txt');
+  File get _fichierNoms => File('${dossier!.path}/noms.json');
+  Directory get _corbeille => Directory('${dossier!.path}/corbeille');
+
+  Map<String, String>? _noms;
+
+  /// Les noms donnés aux documents : `noms.json`, à côté des feuilles.
+  Map<String, String> get noms {
+    final deja = _noms;
+    if (deja != null) return deja;
+    var lus = <String, String>{};
+    if (dossier != null && _fichierNoms.existsSync()) {
+      try {
+        lus = (jsonDecode(
+          _fichierNoms.readAsStringSync(),
+        ) as Map<String, dynamic>).cast<String, String>();
+      } on Object {
+        lus = {};
+      }
+    }
+    return _noms = lus;
+  }
+
+  void _ecrireNoms() {
+    if (dossier == null) return;
+    File('${_fichierNoms.path}.tmp')
+      ..writeAsStringSync(jsonEncode(noms), flush: true)
+      ..renameSync(_fichierNoms.path);
+  }
+
+  /// Nomme le document [id] (sa feuille et sa Figure) ; un nom vide l'efface.
+  void renommer(String id, String nom) {
+    final net = nom.trim();
+    if (net.isEmpty) {
+      noms.remove(id);
+    } else {
+      noms[id] = net;
+    }
+    _ecrireNoms();
+    notifyListeners();
+  }
 
   String get courante => _courante;
 
@@ -153,6 +199,7 @@ class Carnet extends ChangeNotifier {
             ],
             courbes: courbes,
             objets: objets,
+            nom: noms[id],
           ),
         );
       } on Object {
@@ -180,12 +227,21 @@ class Carnet extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Le dossier de la corbeille qui garde ce qui vient de [d].
+  Directory _dansCorbeille(Directory d) => Directory(
+    '${_corbeille.path}/${d.uri.pathSegments.lastWhere((s) => s.isNotEmpty)}',
+  );
+
   /// Supprime un document, feuille et Figure ; si c'était le courant, passe
-  /// au plus récent.
+  /// au plus récent. Ses fichiers vont à la corbeille : [restaurer] les rend
+  /// tant que [viderCorbeille] n'est pas passé (au prochain démarrage).
   void supprimer(String id) {
     if (dossier == null) return;
-    for (final fichier in _fichiers(id)) {
-      if (fichier.existsSync()) fichier.deleteSync();
+    for (final d in _dossiers) {
+      final fichier = File('${d.path}/$id.json');
+      if (!fichier.existsSync()) continue;
+      final cible = _dansCorbeille(d)..createSync(recursive: true);
+      fichier.renameSync('${cible.path}/$id.json');
     }
     if (id == _courante) {
       final reste = apercus();
@@ -193,6 +249,44 @@ class Carnet extends ChangeNotifier {
       _noter();
     }
     notifyListeners();
+  }
+
+  /// Rend le document [id] supprimé juste avant, feuille, Figure et nom ;
+  /// [ouvrir] : il redevient le document en cours.
+  void restaurer(String id, {bool ouvrir = false}) {
+    if (dossier == null) return;
+    for (final d in _dossiers) {
+      final garde = File('${_dansCorbeille(d).path}/$id.json');
+      if (!garde.existsSync()) continue;
+      d.createSync(recursive: true);
+      garde.renameSync('${d.path}/$id.json');
+    }
+    if (ouvrir) {
+      _courante = id;
+      _noter();
+    }
+    notifyListeners();
+  }
+
+  /// Efface pour de bon le document [id] supprimé : « Annuler » est passé.
+  void oublierSupprime(String id) {
+    if (dossier == null) return;
+    for (final d in _dossiers) {
+      final garde = File('${_dansCorbeille(d).path}/$id.json');
+      if (garde.existsSync()) garde.deleteSync();
+    }
+    if (noms.remove(id) != null) _ecrireNoms();
+  }
+
+  /// Efface pour de bon ce qui attend dans la corbeille, et les noms des
+  /// documents qui n'existent plus.
+  void viderCorbeille() {
+    if (dossier == null) return;
+    if (_corbeille.existsSync()) _corbeille.deleteSync(recursive: true);
+    final vivants = {for (final a in apercus()) a.id};
+    final avant = noms.length;
+    noms.removeWhere((id, _) => !vivants.contains(id));
+    if (noms.length != avant) _ecrireNoms();
   }
 }
 

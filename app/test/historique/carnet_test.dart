@@ -2,18 +2,37 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:fikajiana/comprendre/carnet.dart';
+import 'package:fikajiana/comprendre/classeur.dart';
+import 'package:fikajiana/geometrie/atelier.dart';
+import 'package:fikajiana/graphe/courbes.dart';
+import 'package:fikajiana/moteur/moteur.dart';
+import 'package:fikajiana/reconnaissance/lecteur.dart';
+import 'package:fikajiana/reconnaissance/modele.dart';
+import 'package:fikajiana/ui/app.dart';
 import 'package:fikajiana/ui/historique/ecran_historique.dart';
+import 'package:fikajiana/ui/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../helpers/helpers.dart';
 
 void _ecrire(Carnet carnet, {List<String> calculs = const ['2+3=']}) {
+  var n = 0;
   (carnet.stockage!..programmer(
         () => {
           'traits': <Object>[],
           'blocs': [
-            for (final latex in calculs) {'latex': latex},
+            // Une ligne tapée, que la Feuille sait aussi ouvrir.
+            for (final latex in calculs)
+              {
+                'cle': 'saisie-${n++}',
+                'g': 0,
+                'h': 0,
+                'd': 0,
+                'b': 0,
+                'latex': latex,
+                'etat': 'fait',
+              },
           ],
         },
       ))
@@ -141,6 +160,66 @@ void main() {
       expect(grapheDe(id).existsSync(), isFalse);
     });
 
+    test('supprimer va à la corbeille ; restaurer rend tout, nom compris', () {
+      final carnet = Carnet(dossier: dossier, annexes: annexes);
+      _ecrire(carnet);
+      final id = carnet.courante;
+      figureDe(id).writeAsStringSync('{}');
+      carnet
+        ..renommer(id, '  Exercices  ')
+        ..supprimer(id);
+      expect(carnet.apercus(), isEmpty);
+      expect(carnet.courante, isNot(id));
+      carnet.restaurer(id, ouvrir: true);
+      expect(carnet.courante, id);
+      final apercu = carnet.apercus().single;
+      expect(apercu.nom, 'Exercices');
+      expect(figureDe(id).existsSync(), isTrue);
+    });
+
+    test('oublier un supprimé l’efface pour de bon, nom compris', () {
+      final carnet = Carnet(dossier: dossier, annexes: annexes);
+      _ecrire(carnet);
+      final id = carnet.courante;
+      figureDe(id).writeAsStringSync('{}');
+      carnet
+        ..renommer(id, 'Brouillon')
+        ..supprimer(id)
+        ..oublierSupprime(id)
+        ..restaurer(id);
+      expect(carnet.apercus(), isEmpty);
+      expect(figureDe(id).existsSync(), isFalse);
+      expect(carnet.noms, isEmpty);
+    });
+
+    test('au démarrage, la corbeille se vide ; les noms restent', () {
+      final carnet = Carnet(dossier: dossier, annexes: annexes);
+      _ecrire(carnet);
+      final garde = carnet.courante;
+      carnet
+        ..renommer(garde, 'Gardé')
+        ..nouvelle();
+      _ecrire(carnet);
+      final parti = carnet.courante;
+      carnet
+        ..renommer(parti, 'Parti')
+        ..supprimer(parti);
+      final relu = Carnet(dossier: dossier, annexes: annexes)..restaurer(parti);
+      expect(relu.apercus().map((a) => a.id), [garde]);
+      expect(relu.noms, {garde: 'Gardé'});
+    });
+
+    test('renommer ne change pas la date ; un nom vide s’efface', () {
+      final carnet = Carnet(dossier: dossier, annexes: annexes);
+      _ecrire(carnet);
+      final id = carnet.courante;
+      final avant = carnet.apercus().single.modifiee;
+      carnet.renommer(id, 'Suites');
+      expect(carnet.apercus().single.modifiee, avant);
+      carnet.renommer(id, '   ');
+      expect(carnet.apercus().single.nom, isNull);
+    });
+
     void feuille(String id, List<String> lignes) =>
         File('${dossier.path}/feuilles/$id.json')
           ..parent.createSync(recursive: true)
@@ -198,6 +277,101 @@ void main() {
   });
 
   group('écran', () {
+    testWidgets('renommer, supprimer puis Annuler, trier', (t) async {
+      final carnet = Carnet(dossier: dossier, annexes: const ['figures']);
+      _ecrire(carnet, calculs: ['1+1=']);
+      final ancien = carnet.courante;
+      File('${dossier.path}/feuilles/$ancien.json')
+          .setLastModifiedSync(DateTime(2026));
+      carnet.nouvelle();
+      _ecrire(carnet, calculs: ['2+2=']);
+      final modele = ModeleOcr(dossier: null);
+      final services = Services(
+        modele: modele,
+        lecteur: LecteurPix2Text(modele),
+        moteur: MoteurGiac(),
+        courbes: Courbes(),
+        atelier: Atelier(),
+        carnet: carnet,
+        graphes: Classeur(),
+        figures: Classeur(),
+      );
+      t.view.physicalSize = const Size(400, 800);
+      t.view.devicePixelRatio = 1;
+      t.platformDispatcher.localesTestValue = [const Locale('fr')];
+      addTearDown(t.view.reset);
+      addTearDown(t.platformDispatcher.clearAllTestValues);
+      await t.pumpWidget(App(services: services));
+      await t.pumpAndSettle();
+      await t.tap(find.byTooltip('Menu'));
+      await t.pumpAndSettle();
+      await t.tap(find.text('Historique'));
+      await t.pumpAndSettle();
+
+      // Le plus récent d'abord.
+      double haut(String id) => t.getTopLeft(find.byKey(ValueKey(id))).dy;
+      expect(haut(carnet.courante), lessThan(haut(ancien)));
+
+      // Renommer l'ancien.
+      await t.tap(
+        find.descendant(
+          of: find.byKey(ValueKey(ancien)),
+          matching: find.byTooltip('Actions du document'),
+        ),
+      );
+      await t.pumpAndSettle();
+      await t.tap(find.text('Renommer'));
+      await t.pumpAndSettle();
+      await t.enterText(find.byType(TextField), 'Exercices');
+      await t.tap(find.widgetWithText(FilledButton, 'Renommer'));
+      await t.pumpAndSettle();
+      expect(find.text('Exercices'), findsOneWidget);
+      expect(carnet.noms[ancien], 'Exercices');
+
+      // Trier : les plus anciens d'abord.
+      await t.tap(find.byTooltip('Trier'));
+      await t.pumpAndSettle();
+      await t.tap(
+        find.widgetWithText(
+          CheckedPopupMenuItem<TriHistorique>,
+          "plus anciens d'abord",
+        ),
+      );
+      await t.pumpAndSettle();
+      expect(haut(ancien), lessThan(haut(carnet.courante)));
+
+      // Supprimer, puis Annuler : il revient avec son nom.
+      await t.tap(
+        find.descendant(
+          of: find.byKey(ValueKey(ancien)),
+          matching: find.byTooltip('Actions du document'),
+        ),
+      );
+      await t.pumpAndSettle();
+      await t.tap(find.text('Supprimer'));
+      await t.pumpAndSettle();
+      expect(find.text('Document supprimé'), findsOneWidget);
+      expect(find.byKey(ValueKey(ancien)), findsNothing);
+      await t.tap(find.text('Annuler'));
+      await t.pumpAndSettle();
+      expect(find.text('Exercices'), findsOneWidget);
+
+      // Supprimer sans annuler : passé le message, il est perdu.
+      await t.tap(
+        find.descendant(
+          of: find.byKey(ValueKey(ancien)),
+          matching: find.byTooltip('Actions du document'),
+        ),
+      );
+      await t.pumpAndSettle();
+      await t.tap(find.text('Supprimer'));
+      await t.pumpAndSettle();
+      await t.pump(const Duration(seconds: 7));
+      await t.pumpAndSettle();
+      carnet.restaurer(ancien);
+      expect(carnet.apercus().map((a) => a.id), isNot(contains(ancien)));
+    });
+
     testWidgets('sans feuille : le dit ; nouvelle feuille revient', (t) async {
       await t.pumpFikajiana();
       await t.tap(find.byTooltip('Menu'));
