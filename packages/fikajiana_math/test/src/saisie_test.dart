@@ -218,4 +218,32 @@ void main() {
       );
     });
   });
+
+  group('inéquations au clavier (vague 5)', () {
+    for (final (tape, latex, giac) in [
+      ('x+1<3', 'x+1<3', 'solve(x+1<3,x)'),
+      ('x^2>=4', r'x^{2}\ge 4', 'solve((x)^(2)>=4,x)'),
+      ('2x-3>x+1', '2x-3>x+1', 'solve(2*x-3>x+1,x)'),
+      ('abs(x-1)<2', '|x-1|<2', 'solve(abs(x-1)<2,x)'),
+      (
+        'résoudre(x^2>4)',
+        r'\text{résoudre}\left(x^{2}>4\right)',
+        'solve((x)^(2)>4,x)',
+      ),
+    ]) {
+      test(tape, () {
+        expect(lireSaisie(tape).latex, latex);
+        expect(analyserLatex(latex).giac, giac);
+      });
+    }
+
+    test('une double inégalité ou un côté vide : refusés, avec la raison', () {
+      expect(lireSaisie('-2<x<=5').probleme, ProblemeSaisie.signeInattendu);
+      expect(lireSaisie('x+1<').probleme, ProblemeSaisie.incomplet);
+    });
+
+    test('une égalité reste une équation', () {
+      expect(lireSaisie('x=2').latex, 'x=2');
+    });
+  });
 }

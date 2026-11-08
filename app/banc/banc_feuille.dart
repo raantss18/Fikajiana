@@ -176,6 +176,18 @@ const List<(String, List<String>)> problemes = [
       '6!=',
     ],
   ),
+  // Vague 5 : inéquations (bornes des solutions).
+  (
+    'inéquations',
+    [
+      'x+1<3',
+      r'x^{2}\ge 4',
+      '2x-3>x+1',
+      '|x-1|<2',
+      r'\text{résoudre}\left(x^{2}-5x+6\le 0\right)',
+      r'\ln\left(x\right)>1',
+    ],
+  ),
 ];
 
 Future<void> main() async {

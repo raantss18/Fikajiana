@@ -4,6 +4,8 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Inéquations au clavier : x^2>=4, abs(x-1)<2, résoudre(x^2>4) donnent leurs solutions, comme écrites à la main. / Inequalities with the keyboard: x^2>=4, abs(x-1)<2, résoudre(x^2>4) give their solutions, as when handwritten.
+
 - Arithmétique : division(17;5) donne le quotient et le reste, bezout(12;18) les coefficients de Bézout, 17 ≡ 2 [5] dit vrai ou faux, et A₅² les arrangements ; à la main ou au clavier. / Arithmetic: division(17;5) gives the quotient and remainder, bezout(12;18) Bézout coefficients, 17 ≡ 2 [5] says true or false, and A₅² arrangements; by hand or keyboard.
 
 - Réglages, À propos : qui a conçu Fikajiana (Antsa Malala RANIRIAMANJAKA), un courriel à lui écrire et le code source, ouverts d'un toucher. / Settings, About: who designed Fikajiana (Antsa Malala RANIRIAMANJAKA), an email to write to her and the source code, opened with a tap.
