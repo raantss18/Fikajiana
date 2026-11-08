@@ -20,7 +20,7 @@ enum Origine {
 }
 
 /// Un échantillon d'écriture : une ligne (`expression`) ou un signe
-/// (`signe`), ses traits bruts et ce qu'ils disent (ADR 0042, 0043).
+/// (`signe`), ses traits bruts et ce qu'ils disent (ADR 0042, 0044).
 class Echantillon {
   const new({
     required this.id,

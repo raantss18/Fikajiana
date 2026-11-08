@@ -36,3 +36,10 @@ release-out/
 
 # Petit modèle par signe : embarqué à la construction, hors Git tant qu'une version n'est pas adoptée.
 /app/assets/modeles/signes*
+
+# Plateforme des dons : environnement, secrets et dons reçus en essai.
+/plateforme/.venv/
+/plateforme/.env
+/plateforme/dons-recus/
+/plateforme/**/__pycache__/
+/plateforme/.pytest_cache/

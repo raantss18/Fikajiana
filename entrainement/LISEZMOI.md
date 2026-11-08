@@ -25,6 +25,16 @@ cinq mesures du tracé (ADR 0038, 0040). Tout se fait sur l'ordinateur, sans GPU
    même test (ADR 0038), copier `signes.onnx`, `signes_classes.txt` et `signes.json` à l'endroit
    choisi par l'app et noter l'empreinte SHA-256 de `signes.json`.
 
+## Dons reçus par la plateforme (ADR 0042, 0043)
+
+```bash
+FIKA_DONS_ADRESSE=https://… FIKA_JETON_ADMIN=… uv run entrainement/recuperer_dons.py
+```
+
+Télécharge les nouveaux dons, applique les retraits, trie (traits vides, signes impossibles, doublons
+exacts, LaTeX illisible) et range dans `donnees/ecriture/dons/`, que la commande d'entraînement lit
+d'elle-même. Rapport : `donnees/dons-rapport.md`. Voir `plateforme/LISEZMOI.md`.
+
 ## Ce que fait la commande
 
 - Lit toutes les séances (`rejete` ignoré, expressions laissées de côté pour l'instant) et les signes
