@@ -147,6 +147,14 @@ void main() {
       expect(redresserLecture('1,5=1.5'), '1,5=1.5');
     });
 
+    test('le D d’Antsa devant un point (Pad 7)', () {
+      expect(redresserLecture(r'\mathtt { D } ( 4 , - 8 )'), 'D ( 4 , - 8 )');
+      expect(redresserLecture(r'\supset ( 4 , - 8 )'), 'D( 4 , - 8 )');
+      // Ailleurs, ⊃ garde son sens.
+      expect(redresserLecture(r'A \supset B'), r'A \supset B');
+      expect(redresserLecture(r'\mathbf{v}=\vec{u}'), r'v=\vec{u}');
+    });
+
     test('le 1 lu Λ', () {
       expect(redresserLecture(r'\varLambda + \varLambda'), '1+ 1');
       expect(redresserLecture(r'\Lambda 0 \times 3'), r'10 \times 3');

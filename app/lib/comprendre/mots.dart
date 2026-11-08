@@ -28,6 +28,7 @@ const motsDeCommande = [
   'plot',
   'développer',
   'factoriser',
+  'résoudre',
   'simplifier',
   'décomposer',
   'premier',
@@ -175,7 +176,9 @@ List<Offset> _reechantillonner(List<Offset> s, double pas) {
   final reperes = <_Repere>[];
   for (final s in traces) {
     final c = _c(s);
-    if (math.max(c.width, c.height) < 1.4 * x && c.bottom < haut + 0.3 * x) {
+    // Un point ou un accent : petit, tout au-dessus des lettres basses.
+    // L'accent d'Antsa, sur `résoudre`, fait presque 2 hauteurs de x (Pad 7).
+    if (math.max(c.width, c.height) < 2.2 * x && c.bottom < haut + 0.3 * x) {
       reperes.add(('.', place(c.center.dx)));
       continue;
     }
@@ -308,8 +311,10 @@ List<(String, double)> classerMots(
       () {
         final (attendus, lettres) = _attendu(_sansTiret(nom));
         final ecart = _ecart(vus, attendus);
-        // Une lettre moyenne fait environ 0,85 hauteur de x.
-        return (nom, ecart + 0.08 * (largeur - 0.85 * lettres).abs());
+        // Une lettre moyenne fait environ 0,85 hauteur de x. La cursive
+        // d'Antsa est bien plus large (`résoudre` : 16 hauteurs de x pour
+        // 6) : la largeur départage, sans peser plus que les repères.
+        return (nom, ecart + 0.05 * (largeur - 0.85 * lettres).abs());
       }(),
   ]..sort((a, b) => a.$2.compareTo(b.$2));
 }

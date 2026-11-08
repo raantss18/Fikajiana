@@ -193,6 +193,13 @@ class BlocCalcul {
 
   bool get finitParEgal => latex?.trimRight().endsWith('=') ?? false;
 
+  /// `g(x) =` seul (ou `y^{(x)}=`, son `g` mal lu) : une définition qu'on
+  /// est en train d'écrire, pas un calcul fini. La suite, écrite après une
+  /// pause, la complète (feuille d'Antsa, Pad 7, 14 h 05).
+  bool get teteDeDefinition =>
+      RegExp(r'^[A-Za-z](?:\^\{?)?\(([a-z])\)\}?=$')
+          .hasMatch((latex ?? '').replaceAll(RegExp(r'\s'), ''));
+
   /// Un résultat se montre après un `=`, ou sous une équation ou un système.
   /// Une expression sans `=` ne demande rien.
   bool get montreResultat {
@@ -973,7 +980,11 @@ class CalculFeuille extends ChangeNotifier {
         ecrits
             .where(
               (b) =>
-                  prolonge(b.cadre, cadre, ferme: b.finitParEgal) ||
+                  prolonge(
+                    b.cadre,
+                    cadre,
+                    ferme: b.finitParEgal && !b.teteDeDefinition,
+                  ) ||
                   (precede(b.cadre, cadre) && !finitParEgal(groupe)),
             )
             .firstOrNull ??
