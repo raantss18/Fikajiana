@@ -1,0 +1,33 @@
+{
+  "format": 1,
+  "licence": "CC0-1.0",
+  "auteur": "Exemple",
+  "appareil": { "modele": "essai", "largeur_dp": 1280, "hauteur_dp": 800, "densite": 2.0 },
+  "outil": "stylet",
+  "debut": "2026-11-08T09:30:00+03:00",
+  "echantillons": [
+    {
+      "id": "a1", "type": "signe", "classe": "plus", "attendu": "+",
+      "traits": [
+        [[100, 150, 0, 0.5], [150, 151, 40, 0.6], [200, 150, 80, 0.5]],
+        [[150, 100, 200, 0.5], [151, 150, 240, 0.6], [150, 200, 280, 0.4]]
+      ],
+      "case": [50, 50, 200, 200], "rejete": false
+    },
+    {
+      "id": "a2", "type": "signe", "classe": "4", "attendu": "4",
+      "traits": [[[10, 10, 0, 0.5], [20, 20, 10, 0.5]]],
+      "case": [0, 0, 100, 100], "rejete": true
+    },
+    {
+      "id": "a3", "type": "expression", "attendu": "\\frac{1}{x+2}",
+      "traits": [[[10, 10, 0, 0.5], [20, 20, 10, 0.5]]],
+      "case": [0, 0, 100, 100], "rejete": false
+    },
+    {
+      "id": "a4", "type": "signe", "classe": "pas_une_classe", "attendu": "?",
+      "traits": [[[10, 10, 0, 0.5]]],
+      "case": [0, 0, 100, 100], "rejete": false
+    }
+  ]
+}

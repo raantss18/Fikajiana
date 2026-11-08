@@ -1,0 +1,31 @@
+[project]
+name = "fikajiana-entrainement"
+version = "0.1.0"
+description = "Entraînement du modèle de signes de Fikajiana (ADR 0038)"
+requires-python = ">=3.11,<3.13"
+license = "GPL-3.0-or-later"
+dependencies = [
+  "torch>=2.4",
+  "numpy",
+  "pillow>=10.1",
+  "scikit-image",
+  "fonttools",
+  "onnx",
+  "onnxruntime",
+  "pytest",
+]
+
+[tool.uv]
+package = false
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
