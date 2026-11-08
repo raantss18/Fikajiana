@@ -18,6 +18,11 @@ const _cleDonner = 'dons_consentis';
 const _cleConsentementDemande = 'dons_consentement_demande';
 const _cleWifiSeulement = 'dons_wifi_seulement';
 const _cleAdresse = 'dons_adresse';
+
+/// La plateforme choisie par Antsa (ADR 0045, Worker en service le
+/// 2026-11-08). Rien ne part sans le consentement (ADR 0042).
+const adresseDonsParDefaut =
+    'https://fikajiana-dons.fikajiana-dons-worker.workers.dev';
 const _cleContributeur = 'dons_contributeur';
 
 /// Réglages de l'utilisateur, gardés sur l'appareil seulement.
@@ -38,7 +43,7 @@ class Reglages extends ChangeNotifier {
     _donner = stockage.getBool(_cleDonner) ?? false;
     _consentementDemande = stockage.getBool(_cleConsentementDemande) ?? false;
     _wifiSeulement = stockage.getBool(_cleWifiSeulement) ?? true;
-    _adresse = stockage.getString(_cleAdresse) ?? '';
+    _adresse = stockage.getString(_cleAdresse) ?? adresseDonsParDefaut;
     _contributeur = stockage.getString(_cleContributeur) ?? '';
   }
 
@@ -79,7 +84,7 @@ class Reglages extends ChangeNotifier {
     unawaited(stockage?.setBool(_cleWifiSeulement, valeur));
   }
 
-  var _adresse = '';
+  String _adresse = adresseDonsParDefaut;
 
   /// L'adresse de la plateforme ; vide, rien ne part.
   String get adressePlateforme => _adresse;
