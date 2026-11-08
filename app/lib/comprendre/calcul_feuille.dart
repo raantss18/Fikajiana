@@ -1073,6 +1073,10 @@ class CalculFeuille extends ChangeNotifier {
           nomDePoints ??
           tracee ??
           redresserEgal(traits, await lecteur.lire(traits));
+      if (structuree == null && nomDePoints == null && tracee == null) {
+        final lu = latex;
+        latex = avecClasseur(classeur, () => redresserLettres(traits, lu));
+      }
       final tempsModele =
           chrono.elapsedMicroseconds - tempsStructure - tempsTrace;
       if (bloc._version != version || !identical(_blocs[bloc.cle], bloc)) {
@@ -1631,16 +1635,25 @@ class CalculFeuille extends ChangeNotifier {
         ..verite = exact == 'true'
         ..etat = EtatBloc.fait;
     } else {
-      String sansEspaces(String s) => s.replaceAll(RegExp(r'[\s()]'), '');
+      String sansEspaces(String s) => s
+          .replaceAll(RegExp(r'\\(?:left|right)\b'), '')
+          .replaceAll(RegExp(r'[\s()]'), '');
+      // `e³ − 2e⁶ =` : Giac rend `exp(3)-2*exp(6)` pour `(e)^(3)-2*(e)^(6)`,
+      // la même écriture ; seul le LaTeX le montre (Pad 7 d'Antsa).
+      final entree = (bloc.latex ?? '').trimRight().replaceFirst(
+        RegExp(r'=$'),
+        '',
+      );
+      final memeEcriture =
+          sansEspaces(exact) == sansEspaces(analyse.giac) ||
+          sansEspaces(reponse.latex) == sansEspaces(entree);
       bloc
         ..resultat = reponse.latex
         // Une valeur déjà décimale ou entière ne se répète pas.
         ..approche = reponse.approche.isEmpty || num.tryParse(exact) != null
             ? null
             : reponse.approche
-        ..inchange =
-            !analyse.demandeResultat &&
-            sansEspaces(exact) == sansEspaces(analyse.giac)
+        ..inchange = !analyse.demandeResultat && memeEcriture
         ..etat = EtatBloc.fait;
     }
   }
