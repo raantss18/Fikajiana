@@ -4,6 +4,7 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- `A =` écrit devant une matrice la déclare, au lieu d'en calculer le déterminant. / `A =` written before a matrix declares it, instead of computing its determinant.
 - Les dons consentis vont vers la plateforme du projet (Cloudflare), réglable dans les Réglages. / Consented donations go to the project's platform (Cloudflare), adjustable in Settings.
 - Le Guide écrit ses exemples à la main, trait par trait. Après chaque mise à jour, une fois le modèle là, un petit tour montre les gestes de base sur des exemples. / The Guide writes its examples by hand, stroke by stroke. After each update, once the model is there, a short tour shows the basics on small examples.
 - 👍 et 👎 à côté de chaque ligne lue : 👍 dit que la lecture est juste, 👎 ouvre sa correction ; ces lignes jugées aident la lecture sur l'appareil. / 👍 and 👎 next to each read line: 👍 says the reading is right, 👎 opens its correction; these judged lines help reading on the device.
