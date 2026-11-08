@@ -113,24 +113,18 @@ class RepereBloc extends StatelessWidget {
   /// 👍 et 👎 à gauche d'une ligne lue (ADR 0042) : discrets, cibles de
   /// 48 dp. 👍 garde la lecture comme juste ; 👎 ouvre sa correction.
   Widget? _jugement(BuildContext context) {
-    final lisible = switch (bloc.etat) {
-      EtatBloc.fait ||
-      EtatBloc.nonCompris ||
-      EtatBloc.sansResultat ||
-      EtatBloc.erreur ||
-      EtatBloc.arrete => true,
-      _ => false,
-    };
-    if (enExport || bloc.estSaisie || bloc.latex == null || !lisible) {
-      return null;
-    }
-    const largeur = 2 * 48.0;
-    final gauche = bloc.cadre.centerLeft * vue.zoom + vue.decalage;
-    final dessous = bloc.cadre.bottomLeft * vue.zoom + vue.decalage;
-    // À gauche de la ligne ; sous elle s'il n'y a pas la place.
-    final position = gauche.dx - largeur - AppEspacement.xxs >= 0
-        ? Offset(gauche.dx - largeur - AppEspacement.xxs, gauche.dy - 24)
-        : dessous;
+    if (enExport || !bloc.jugeable) return null;
+    // Une place libre près de la ligne, sans couvrir une autre ligne ni
+    // ses boutons ; sinon ils se replient (téléphone d'Antsa en paysage).
+    const taille = Size(2 * 48, 48);
+    final place = calcul.placesJugement(
+      taille: taille / vue.zoom,
+      approcheVoulue: PorteeReglages.de(context).approche,
+      virgule: Localizations.localeOf(context).languageCode == 'fr',
+      gauche: -vue.decalage.dx / vue.zoom,
+    )[bloc];
+    if (place == null) return null;
+    final position = place.topLeft * vue.zoom + vue.decalage;
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final discret = theme.colorScheme.onSurfaceVariant;

@@ -6,4 +6,5 @@
 - **Ordre des essais** : place voulue, autre côté ; puis chacun décalé le long de sa ligne (à droite : vers le haut ou le bas en touchant la hauteur de la ligne ; dessous : vers la droite, sans dépasser la fin de la ligne) ; puis le tout à 80 %, 65 %, 50 % de la taille, jamais sous la hauteur minimale d'écriture (22 dp).
 - **Sans place libre** : là où il gêne le moins (surface recouverte la plus petite) : la page est trop pleine pour faire mieux.
 - **Regroupement** : un groupe orphelin rejoint d'abord sa propre ligne (`prolonge`), puis seulement une barre de fraction ou un grand signe au-dessus (`estDenominateur`, `estBorne`).
-- **Vérifié** : `test/comprendre/placement_resultats_test.dart` (7 cas, tous en échec avant la correction). **Reste** : essai au vrai stylet.
+- **👍 et 👎** : même règle (à gauche, dessous, dessus, après le résultat), cibles de 48 dp ; sans place, ils se replient. Le bord de page vaut pour toute ligne, même écrite après son réglage.
+- **Vérifié** : `test/comprendre/placement_resultats_test.dart` (résultats, 👍/👎, bord de page). **Reste** : essai au vrai stylet.

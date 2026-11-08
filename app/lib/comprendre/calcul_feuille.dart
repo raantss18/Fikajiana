@@ -207,6 +207,19 @@ class BlocCalcul {
   /// Rien d'écrit juste dessous : une solution peut s'y poser.
   bool dessousLibre = true;
 
+  /// Une ligne lue, pas tapée : 👍 et 👎 s'y proposent (ADR 0042).
+  bool get jugeable =>
+      !estSaisie &&
+      latex != null &&
+      switch (etat) {
+        EtatBloc.fait ||
+        EtatBloc.nonCompris ||
+        EtatBloc.sansResultat ||
+        EtatBloc.erreur ||
+        EtatBloc.arrete => true,
+        _ => false,
+      };
+
   /// Ce qui est écrit autour : un résultat ne s'y pose pas.
   List<Rect> _voisins = const [];
 
@@ -660,6 +673,59 @@ class CalculFeuille extends ChangeNotifier {
         .._bordDroit = bord
         .._ecritPour = null;
     }
+  }
+
+  /// Où poser 👍 et 👎 de chaque ligne jugeable, en coordonnées de page :
+  /// à gauche de la ligne, sinon dessous, dessus, ou après son résultat ;
+  /// jamais sur l'encre, un résultat ou les boutons d'une autre ligne
+  /// (téléphone d'Antsa en paysage : posés sur les bornes d'une limite).
+  /// Sans place libre, la ligne n'en a pas : ils se replient.
+  ///
+  /// [taille] : les deux boutons, en unités de page ; [gauche] : le bord
+  /// gauche de l'écran.
+  Map<BlocCalcul, Rect> placesJugement({
+    required Size taille,
+    required bool approcheVoulue,
+    required bool virgule,
+    double gauche = double.negativeInfinity,
+  }) {
+    final ecrits = _blocs.values.where((b) => !b.estSaisie).toList()
+      ..sort(
+        (a, b) => a.cadre.top != b.cadre.top
+            ? a.cadre.top.compareTo(b.cadre.top)
+            : a.cadre.left.compareTo(b.cadre.left),
+      );
+    final resultats = {
+      for (final b in ecrits)
+        b: b.ecriture(approcheVoulue: approcheVoulue, virgule: virgule)?.cadre,
+    };
+    final obstacles = [
+      for (final b in ecrits) b.cadre,
+      ...resultats.values.nonNulls,
+    ];
+    const ecart = BlocCalcul._ecart;
+    final (l, h) = (taille.width, taille.height);
+    final places = <BlocCalcul, Rect>{};
+    for (final b in ecrits.where((b) => b.jugeable)) {
+      final c = b.cadre;
+      final apres = math.max(c.right, resultats[b]?.right ?? c.right);
+      final essais = [
+        Rect.fromLTWH(c.left - l - ecart, c.center.dy - h / 2, l, h),
+        Rect.fromLTWH(c.left - l - ecart, c.top, l, h),
+        Rect.fromLTWH(c.left - l - ecart, c.bottom - h, l, h),
+        Rect.fromLTWH(c.left, c.bottom + ecart, l, h),
+        Rect.fromLTWH(c.left, c.top - h - ecart, l, h),
+        Rect.fromLTWH(apres + ecart, c.center.dy - h / 2, l, h),
+      ];
+      final place = essais.where((e) {
+        if (e.left < gauche || e.right > _bordDroit) return false;
+        return !obstacles.any((o) => o.inflate(ecart).overlaps(e));
+      }).firstOrNull;
+      if (place == null) continue;
+      places[b] = place;
+      obstacles.add(place);
+    }
+    return places;
   }
 
   /// Un résultat ne s'écrit pas sur la ligne d'en dessous.

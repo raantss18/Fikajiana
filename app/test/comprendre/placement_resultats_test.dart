@@ -318,4 +318,131 @@ void main() {
     );
     sansChevauchement();
   });
+
+  group('👍 et 👎', () {
+    // Deux boutons de 48 dp, à la vue de départ (zoom 1).
+    const taille = Size(96, 48);
+
+    Map<BlocCalcul, Rect> places({double gauche = 0}) => calcul.placesJugement(
+      taille: taille,
+      approcheVoulue: false,
+      virgule: true,
+      gauche: gauche,
+    );
+
+    /// Les boutons ne couvrent ni l'encre, ni un résultat, ni d'autres
+    /// boutons, et gardent leurs 48 dp.
+    void libres(Map<BlocCalcul, Rect> places) {
+      final poses = resultats();
+      for (final MapEntry(key: bloc, value: zone) in places.entries) {
+        expect(zone.height, greaterThanOrEqualTo(48));
+        for (final autre in calcul.blocs) {
+          expect(
+            zone.overlaps(autre.cadre),
+            isFalse,
+            reason: '👍 de ${bloc.latex} ($zone) sur ${autre.latex}',
+          );
+          final r = poses[autre];
+          if (r != null) {
+            expect(
+              zone.overlaps(r),
+              isFalse,
+              reason: '👍 de ${bloc.latex} sur le résultat de ${autre.latex}',
+            );
+          }
+        }
+        for (final MapEntry(key: b, value: z) in places.entries) {
+          if (identical(b, bloc)) continue;
+          expect(zone.overlaps(z), isFalse, reason: '👍 sur 👍');
+        }
+      }
+    }
+
+    test('les bornes d’une limite au bord gauche : pas de boutons sur '
+        'l’encre d’une autre ligne', () {
+      // Téléphone en paysage : `lim` puis `x → 3` lu à part, collés au bord
+      // gauche ; dessous, une autre ligne. Avant : posés dessous sans
+      // regarder, sur les bornes.
+      calcul.chargerDocument([
+        ligne(
+          'lim',
+          const Rect.fromLTRB(10, 100, 200, 150),
+          r'\lim\frac{1}{x-3}=',
+          resultat: r'\infty',
+        ),
+        ligne(
+          'borne',
+          const Rect.fromLTRB(10, 152, 90, 180),
+          r'x\to3',
+          etat: 'nonCompris',
+        ),
+        ligne(
+          'apres',
+          const Rect.fromLTRB(10, 240, 200, 280),
+          '2+3=',
+          resultat: '5',
+        ),
+      ]);
+      final p = places();
+      libres(p);
+      expect(p, isNotEmpty);
+    });
+
+    test('deux lignes côte à côte : les boutons de droite ne vont pas sur '
+        'la ligne de gauche', () {
+      calcul.chargerDocument([
+        ligne(
+          'a',
+          const Rect.fromLTRB(200, 100, 300, 140),
+          '2+3=',
+          resultat: '5',
+        ),
+        ligne(
+          'b',
+          const Rect.fromLTRB(400, 100, 500, 140),
+          '4+4=',
+          resultat: '8',
+        ),
+      ]);
+      final p = places();
+      libres(p);
+      expect(p, hasLength(2));
+    });
+
+    test('sans aucune place libre, ils se replient', () {
+      // Une ligne entourée d'encre de tous côtés.
+      calcul
+        ..bordDroit = 400
+        ..chargerDocument([
+          ligne(
+            'centre',
+            const Rect.fromLTRB(120, 100, 280, 140),
+            'x+1',
+            etat: 'nonCompris',
+          ),
+          ligne('haut', const Rect.fromLTRB(0, 0, 400, 96), 'a'),
+          ligne('bas', const Rect.fromLTRB(0, 144, 400, 300), 'b'),
+          ligne('gauche', const Rect.fromLTRB(0, 98, 116, 142), 'c'),
+          ligne('droite', const Rect.fromLTRB(284, 98, 400, 142), 'd'),
+        ]);
+      final p = places();
+      libres(p);
+      expect(p.keys.map((b) => b.cle), isNot(contains('centre')));
+    });
+  });
+
+  test('téléphone en portrait : une ligne écrite après le réglage du bord '
+      'garde son résultat dans l’écran', () async {
+    // Le bord ne se donnait qu'aux lignes déjà là : `8×9−7×13 =` écrite
+    // ensuite montrait `=-` puis sortait de l'écran.
+    calcul.bordDroit = 384;
+    trait(const Rect.fromLTRB(16, 100, 370, 140));
+    lecteur.selon = (_) => r'8\times9-7\times13=';
+    moteur.reponse = (_) =>
+        const ReponseGiac(exact: '-19', latex: '-19', approche: '');
+    calcul.encreChangee();
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    expect(calcul.blocs.single.resultat, '-19');
+    sansChevauchement();
+  });
 }

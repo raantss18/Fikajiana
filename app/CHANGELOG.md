@@ -4,6 +4,7 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- 👍 et 👎 trouvent une place libre près de leur ligne, sans couvrir une autre ligne ; un résultat ne sort plus de l'écran à droite sur téléphone. / 👍 and 👎 find a free spot near their line without covering another line; a result no longer runs off the right of the screen on phones.
 - Un résultat ne se pose plus sur une autre ligne ni sur son résultat, même après « Relire la feuille » : il se décale, puis s'écrit plus petit s'il le faut ; une grande matrice ne touche plus la ligne suivante. / A result no longer lands on another line or its result, even after "Read the sheet again": it moves aside, then gets smaller if needed; a large matrix no longer touches the next line.
 - Le Guide présente aussi les outils de la Feuille (👍/👎, corriger un signe, relire, gomme, fond, export…) et les réglages ; le tour montre les matrices, les sommes et limites, et comment juger une lecture. / The Guide also covers the Sheet tools (👍/👎, correcting a sign, re-reading, eraser, background, export…) and the settings; the tour shows matrices, sums and limits, and how to judge a reading.
 - La Feuille construit aussi parallèle, perpendiculaire, bissectrice, tangente, symétrique, projeté, intersection, triangle et polygone, et mesure angle(A;B;C)=, aire(ABC)= et périmètre(ABC)=, en valeur exacte. / The Sheet also builds parallels, perpendiculars, bisectors, tangents, reflections, projections, intersections, triangles and polygons, and measures angle(A;B;C)=, aire(ABC)= and périmètre(ABC)= exactly.
