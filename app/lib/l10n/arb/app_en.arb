@@ -757,10 +757,47 @@
     "signesLusTitre": "Signs read",
     "signeLuToucher": "Touch for other readings of this sign",
     "signeLuAutres": "This sign could also be:",
-    "exporterCorrections": "Export my corrections",
-    "exporterCorrectionsAide": "The signs you corrected, in the collection format (CC0), for training. Nothing leaves without you.",
-    "aucuneCorrection": "No corrections yet",
-    "effacerCorrections": "Delete my corrections",
-    "effacerCorrectionsQuestion": "Forget all the signs you corrected on this device?",
-    "effacer": "Delete"
+    "effacer": "Delete",
+    "aiderReconnaissance": "Help recognition",
+    "aiderReconnaissanceDetail": "What you write and correct stays on this device to improve reading. Nothing leaves the device without your action.",
+    "prenomAuteur": "First name (author of exported writing)",
+    "exporterEcritures": "Export my writing",
+    "exporterEcrituresAide": "{n} samples, {taille}, in the collection format (CC0), for training.",
+    "aucuneEcriture": "No writing kept yet",
+    "effacerEcritures": "Delete my writing",
+    "effacerEcrituresQuestion": "Forget all the writing kept on this device, corrections included?",
+    "ecrituresExportees": "Writing saved in {chemin}",
+    "@exporterEcrituresAide": {
+        "placeholders": {
+            "n": {
+                "type": "int"
+            },
+            "taille": {
+                "type": "String"
+            }
+        }
+    },
+    "@ecrituresExportees": {
+        "placeholders": {
+            "chemin": {
+                "type": "String"
+            }
+        }
+    },
+    "tailleKo": "{n} KB",
+    "tailleMo": "{n} MB",
+    "@tailleKo": {
+        "placeholders": {
+            "n": {
+                "type": "int"
+            }
+        }
+    },
+    "@tailleMo": {
+        "placeholders": {
+            "n": {
+                "type": "String"
+            }
+        }
+    }
 }

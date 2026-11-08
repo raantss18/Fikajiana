@@ -1,10 +1,10 @@
-import 'dart:convert';
+import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui' as ui;
 
 import 'package:fikajiana/export/pdf_image.dart';
 import 'package:fikajiana/l10n/l10n.dart';
-import 'package:fikajiana/reconnaissance/exemples_personnels.dart';
+import 'package:fikajiana/reconnaissance/ecritures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -101,36 +101,43 @@ List<Widget> lignesExport(
   ];
 }
 
-/// Les corrections de la personne, en JSON (`collecte/FORMAT.md`), là où
-/// elle choisit de les mettre (ADR 0041). Rien ne part autrement.
-Future<void> exporterCorrections(
+/// L'écriture gardée, au format de `collecte/FORMAT.md` (ADR 0042) :
+/// écrite dans le dossier de l'app (lisible par `adb pull`), puis le
+/// partage Android s'ouvre. Rien ne part sans le choix de la personne.
+Future<void> exporterEcritures(
   BuildContext context,
-  ExemplesPersonnels exemples,
-) async {
+  Ecritures ecritures, {
+  required String auteur,
+}) async {
   final messager = ScaffoldMessenger.of(context);
   final l10n = context.l10n;
   final vue = View.of(context);
   final ecran = vue.physicalSize / vue.devicePixelRatio;
   try {
     final modele = await _systeme.invokeMethod<String>('modele') ?? 'inconnu';
-    final json = exemples.exporter(
+    final dossier = await _systeme.invokeMethod<String>('dossierEcritures');
+    if (dossier == null) throw const FileSystemException('dossier');
+    final fichiers = ecritures.exporter(
       modele: modele,
       ecranDp: ecran,
       densite: vue.devicePixelRatio,
+      auteur: auteur,
     );
-    final quand = DateTime.now()
-        .toIso8601String()
-        .substring(0, 19)
-        .replaceAll(RegExp('[-:]'), '')
-        .replaceFirst('T', '-');
-    final enregistre = await _systeme.invokeMethod<bool>('enregistrer', {
-      'nom': 'fikajiana-ecriture-$modele-$quand.json',
-      'type': 'application/json',
-      'octets': Uint8List.fromList(utf8.encode(json)),
-    });
-    if (enregistre ?? false) {
-      messager.showSnackBar(SnackBar(content: Text(l10n.exportFait)));
+    await Directory(dossier).create(recursive: true);
+    final chemins = <String>[];
+    for (final MapEntry(key: nom, value: texte) in fichiers.entries) {
+      final f = File('$dossier/$nom');
+      await f.writeAsString(texte, flush: true);
+      chemins.add(f.path);
     }
+    if (chemins.isEmpty) return;
+    messager.showSnackBar(
+      SnackBar(
+        content: Text(l10n.ecrituresExportees(dossier)),
+        duration: const Duration(seconds: 8),
+      ),
+    );
+    await _systeme.invokeMethod<bool>('partager', {'chemins': chemins});
   } on Exception {
     messager.showSnackBar(SnackBar(content: Text(l10n.exportErreur)));
   }

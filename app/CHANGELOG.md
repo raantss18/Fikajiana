@@ -4,11 +4,12 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- « Aider la reconnaissance » (Réglages, activé) : les lignes lues justes et vos corrections restent sur l'appareil pour améliorer la lecture ; « Exporter mes écritures » les partage quand vous le choisissez, « Effacer mes écritures » les oublie. / "Help recognition" (Settings, on): lines read correctly and your corrections stay on the device to improve reading; "Export my writing" shares them when you choose, "Delete my writing" forgets them.
+
 - Le petit modèle par signe, s'il est embarqué, lit un signe que le tracé seul ne reconnaît pas. / The small per-sign model, when bundled, reads a sign the strokes alone do not recognise.
 
 - Chaque signe se lit dès qu'il est écrit : une ligne déjà comprise se lit plus vite à la pause. / Each sign is read as soon as it is written: a line already understood is read faster at the pause.
 - Dans « Corriger », toucher un signe d'une ligne lue propose ses autres lectures ; le choix est retenu sur l'appareil. / In "Correct", touching a sign of a read line offers its other readings; the choice is remembered on the device.
-- Réglages : « Exporter mes corrections » enregistre les signes corrigés pour l'entraînement, là où vous le choisissez. / Settings: "Export my corrections" saves the corrected signs for training, wherever you choose.
 
 ## [1.0.5] — 2026-11-07
 

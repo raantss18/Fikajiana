@@ -11,6 +11,8 @@ const _cleDegres = 'degres';
 const _cleStyletConnu = 'stylet_connu';
 const _cleEcrireAuDoigt = 'ecrire_au_doigt';
 const _cleAuPropre = 'au_propre';
+const _cleAider = 'aider_reconnaissance';
+const _clePrenom = 'prenom';
 
 /// Réglages de l'utilisateur, gardés sur l'appareil seulement.
 class Reglages extends ChangeNotifier {
@@ -26,6 +28,34 @@ class Reglages extends ChangeNotifier {
     _styletConnu = stockage.getBool(_cleStyletConnu) ?? false;
     _ecrireAuDoigt = stockage.getBool(_cleEcrireAuDoigt) ?? false;
     _auPropre = stockage.getBool(_cleAuPropre) ?? true;
+    _aider = stockage.getBool(_cleAider) ?? true;
+    _prenom = stockage.getString(_clePrenom) ?? '';
+  }
+
+  var _aider = true;
+
+  /// « Aider la reconnaissance » : l'écriture lue reste sur l'appareil pour
+  /// l'entraînement ; rien ne part sans le geste de la personne (ADR 0042).
+  bool get aiderReconnaissance => _aider;
+
+  set aiderReconnaissance(bool valeur) {
+    if (valeur == _aider) return;
+    _aider = valeur;
+    notifyListeners();
+    unawaited(stockage?.setBool(_cleAider, valeur));
+  }
+
+  var _prenom = '';
+
+  /// Le prénom écrit comme auteur des écritures exportées.
+  String get prenom => _prenom;
+
+  set prenom(String valeur) {
+    final net = valeur.trim();
+    if (net == _prenom) return;
+    _prenom = net;
+    notifyListeners();
+    unawaited(stockage?.setString(_clePrenom, net));
   }
 
   var _auPropre = true;

@@ -70,6 +70,9 @@ class _EcranFeuilleState extends State<EcranFeuille> {
   var _enExport = false;
   bool? _degres;
   bool get _degresVus => _degres ?? false;
+
+  /// « Aider la reconnaissance », lu dans les réglages.
+  var _aider = true;
   late final CalculFeuille _calcul;
   late final ModeleOcr _modele;
   late final EssaiGuide _essais;
@@ -90,6 +93,7 @@ class _EcranFeuilleState extends State<EcranFeuille> {
       moteur: services.moteur,
       classeur: services.classeur,
       degres: () => _degresVus,
+      aider: () => _aider,
     )..addListener(_enregistrer);
     final document = _stockage?.charger();
     if (document != null) {
@@ -108,6 +112,7 @@ class _EcranFeuilleState extends State<EcranFeuille> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final degres = PorteeReglages.de(context).degres;
+    _aider = PorteeReglages.de(context).aiderReconnaissance;
     final change = _degres != null && _degres != degres;
     _degres = degres;
     // Après la construction : recalculer prévient les écouteurs.

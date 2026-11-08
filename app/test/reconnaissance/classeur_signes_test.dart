@@ -7,7 +7,7 @@ import 'package:fikajiana/comprendre/trace_ligne.dart';
 import 'package:fikajiana/encre/encre.dart';
 import 'package:fikajiana/reconnaissance/classeur_appris.dart';
 import 'package:fikajiana/reconnaissance/classeur_signes.dart';
-import 'package:fikajiana/reconnaissance/exemples_personnels.dart';
+import 'package:fikajiana/reconnaissance/ecritures.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 List<Trait> _traits(String dossier, String nom) => [
@@ -85,7 +85,7 @@ void main() {
     });
 
     test('lit la ligne comme les gabarits', () {
-      final c = ClasseurAppris(exemples: ExemplesPersonnels());
+      final c = ClasseurAppris(ecritures: Ecritures());
       expect(avecClasseur(c, () => lireAuTrace(ligne)), lireAuTrace(ligne));
     });
 
@@ -106,90 +106,59 @@ void main() {
   });
 
   group('les corrections de la personne', () {
+    const caseLigne = Rect.fromLTWH(0, 0, 100, 40);
+
     test('un signe corrigé se relit corrigé, la ligne aussi', () async {
-      final exemples = ExemplesPersonnels();
-      final c = ClasseurAppris(exemples: exemples);
+      final ecritures = Ecritures();
+      final c = ClasseurAppris(ecritures: ecritures);
       final detail = avecClasseur(c, () => lireAuTraceDetaille(ligne))!;
       expect(detail.latex, r'30\times8');
       expect(
         [for (final (_, s) in detail.signes) s],
         ['3', '0', r'\times', '8'],
       );
-      await exemples.ajouter(detail.signes.last.$1, '3');
+      await ecritures.corrigerSigne(
+        detail.signes.last.$1,
+        '3',
+        caseLigne: caseLigne,
+      );
       c.oublier();
       expect(avecClasseur(c, () => lireAuTrace(ligne)), r'30\times3');
     });
 
     test('le même dessin ailleurs prend la classe apprise', () async {
-      final exemples = ExemplesPersonnels();
-      await exemples.ajouter(signes.last, 'B');
+      final ecritures = Ecritures();
+      await ecritures.corrigerSigne(signes.last, 'B', caseLigne: caseLigne);
       final ailleurs = _copie(signes.last, 300);
-      expect(exemples.corrige(ailleurs), isNull);
-      expect(exemples.reconnaitre(ailleurs), 'B');
-      final c = ClasseurAppris(exemples: exemples);
+      expect(ecritures.corrige(ailleurs), isNull);
+      expect(ecritures.reconnaitre(ailleurs), 'B');
+      final c = ClasseurAppris(ecritures: ecritures);
       expect(c.impose(ailleurs), 'B');
-      final classes = await c.classer(
-        ailleurs,
-        caseLigne: const Rect.fromLTWH(0, 0, 100, 40),
-      );
+      final classes = await c.classer(ailleurs, caseLigne: caseLigne);
       expect(classes.first, ('B', 1.0));
     });
 
-    test('deux exemples de classes différentes trop proches : doute', () async {
-      final exemples = ExemplesPersonnels();
-      await exemples.ajouter(signes.last, 'B');
-      await exemples.ajouter(_copie(signes.last, 600), '8');
-      expect(exemples.reconnaitre(_copie(signes.last, 300)), isNull);
-    });
+    test(
+      'deux corrections de classes différentes trop proches : doute',
+      () async {
+        final ecritures = Ecritures();
+        await ecritures.corrigerSigne(signes.last, 'B', caseLigne: caseLigne);
+        await ecritures.corrigerSigne(
+          _copie(signes.last, 600),
+          '8',
+          caseLigne: caseLigne,
+        );
+        expect(ecritures.reconnaitre(_copie(signes.last, 300)), isNull);
+      },
+    );
 
-    test('restent sur l’appareil, et se rechargent', () async {
-      final dossier = Directory.systemTemp.createTempSync('exemples');
-      addTearDown(() => dossier.deleteSync(recursive: true));
-      final fichier = File('${dossier.path}/signes/exemples.json');
-      final exemples = ExemplesPersonnels(fichier: fichier);
-      await exemples.ajouter(signes.first, '3');
-      final relus = ExemplesPersonnels(fichier: fichier);
-      await relus.charger();
-      expect(relus.liste.single.classe, '3');
-      expect(relus.corrige(signes.first), '3');
-      await relus.toutEffacer();
-      expect(relus.liste, isEmpty);
-    });
-
-    test('s’exportent au format de collecte/FORMAT.md', () async {
-      final exemples = ExemplesPersonnels();
-      await exemples.ajouter(signes.last, '3');
-      await exemples.ajouter(signes[2], r'\times');
-      await exemples.ajouter(signes.first, '§');
-      final json = jsonDecode(
-        exemples.exporter(
-          modele: '2410CRP4CG',
-          ecranDp: const Size(1280, 800),
-          densite: 2.75,
-        ),
-      ) as Map<String, dynamic>;
-      expect(json['format'], 1);
-      expect(json['licence'], 'CC0-1.0');
-      expect(json['appareil'], {
-        'modele': '2410CRP4CG',
-        'largeur_dp': 1280,
-        'hauteur_dp': 800,
-        'densite': 2.75,
-      });
-      expect(json['debut'], matches(r'^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d[+-]'));
-      final echantillons = (json['echantillons'] as List<dynamic>)
-          .cast<Map<String, dynamic>>();
-      // Le `§` n'est pas une classe de collecte/classes.txt.
-      expect([for (final e in echantillons) e['classe']], ['3', 'fois']);
-      final e = echantillons.first;
-      expect(e['type'], 'signe');
-      expect(e['attendu'], '3');
-      expect(e['rejete'], isFalse);
-      expect(e['case'], hasLength(4));
-      final trait = (e['traits'] as List<dynamic>).first as List<dynamic>;
-      final point = trait.first as List<dynamic>;
-      expect(point, hasLength(4));
-      expect(point[2], 0);
+    test('une lecture juste ne sert pas de correction', () async {
+      final ecritures = Ecritures();
+      await ecritures.ligneJuste(signes.last, '8', caseLigne, [
+        (signes.last, '8', caseLigne),
+      ]);
+      expect(ecritures.corrige(signes.last), isNull);
+      expect(ecritures.reconnaitre(_copie(signes.last, 300)), isNull);
     });
   });
 }

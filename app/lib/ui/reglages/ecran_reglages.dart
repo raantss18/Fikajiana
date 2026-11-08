@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:fikajiana/l10n/l10n.dart';
 import 'package:fikajiana/mises_a_jour/mise_a_jour.dart';
-import 'package:fikajiana/reconnaissance/exemples_personnels.dart';
+import 'package:fikajiana/reconnaissance/ecritures.dart';
 import 'package:fikajiana/reconnaissance/modele.dart';
 import 'package:fikajiana/reglages/reglages.dart';
 import 'package:fikajiana/reglages/support.dart';
@@ -56,7 +56,7 @@ class EcranReglages extends StatelessWidget {
           ),
           const Divider(),
           const _SectionModele(),
-          const _ExporterCorrections(),
+          const _AiderReconnaissance(),
           const Divider(),
           const _SectionMiseAJour(),
           const Divider(),
@@ -281,20 +281,32 @@ class ListeSupports extends StatelessWidget {
   }
 }
 
-/// « Exporter mes corrections » : les signes corrigés, au format de
-/// `collecte/FORMAT.md`, là où la personne choisit (ADR 0041).
-class _ExporterCorrections extends StatelessWidget {
+/// « Aider la reconnaissance » (ADR 0042) : l'écriture lue reste sur
+/// l'appareil ; l'exporter, l'effacer.
+class _AiderReconnaissance extends StatefulWidget {
   const new();
 
-  Future<void> _effacer(
-    BuildContext context,
-    ExemplesPersonnels exemples,
-  ) async {
+  @override
+  State<_AiderReconnaissance> createState() => _AiderReconnaissanceState();
+}
+
+class _AiderReconnaissanceState extends State<_AiderReconnaissance> {
+  late final _prenom = TextEditingController(
+    text: PorteeReglages.de(context).prenom,
+  );
+
+  @override
+  void dispose() {
+    _prenom.dispose();
+    super.dispose();
+  }
+
+  Future<void> _effacer(Ecritures ecritures) async {
     final l10n = context.l10n;
     final oui = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        content: Text(l10n.effacerCorrectionsQuestion),
+        content: Text(l10n.effacerEcrituresQuestion),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -307,35 +319,64 @@ class _ExporterCorrections extends StatelessWidget {
         ],
       ),
     );
-    if (oui ?? false) await exemples.toutEffacer();
+    if (oui ?? false) await ecritures.toutEffacer();
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final exemples = PorteeServices.de(context).classeur.exemples;
-    if (exemples == null) return const SizedBox.shrink();
+    final reglages = PorteeReglages.de(context);
+    final ecritures = PorteeServices.de(context).classeur.ecritures;
+    if (ecritures == null) return const SizedBox.shrink();
     return ListenableBuilder(
-      listenable: exemples,
+      listenable: ecritures,
       builder: (context, _) {
-        final vide = exemples.liste.isEmpty;
+        final n = ecritures.liste.length;
+        final vide = n == 0;
         return Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            SwitchListTile(
+              title: Text(l10n.aiderReconnaissance),
+              subtitle: Text(l10n.aiderReconnaissanceDetail),
+              value: reglages.aiderReconnaissance,
+              onChanged: (v) => reglages.aiderReconnaissance = v,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppEspacement.md),
+              child: TextField(
+                controller: _prenom,
+                decoration: InputDecoration(labelText: l10n.prenomAuteur),
+                textCapitalization: TextCapitalization.words,
+                onChanged: (v) => reglages.prenom = v,
+              ),
+            ),
             ListTile(
               leading: const Icon(Icons.upload_file_outlined),
-              title: Text(l10n.exporterCorrections),
+              title: Text(l10n.exporterEcritures),
               subtitle: Text(
-                vide ? l10n.aucuneCorrection : l10n.exporterCorrectionsAide,
+                vide
+                    ? l10n.aucuneEcriture
+                    : l10n.exporterEcrituresAide(
+                        n,
+                        ecritures.octets < 1000000
+                            ? l10n.tailleKo((ecritures.octets / 1000).ceil())
+                            : l10n.tailleMo(
+                                (ecritures.octets / 1e6).toStringAsFixed(1),
+                              ),
+                      ),
               ),
               enabled: !vide,
-              onTap: () => unawaited(exporterCorrections(context, exemples)),
+              onTap: () => unawaited(
+                exporterEcritures(context, ecritures, auteur: reglages.prenom),
+              ),
             ),
             if (!vide)
               ListTile(
                 leading: const Icon(Icons.delete_outline),
-                title: Text(l10n.effacerCorrections),
-                onTap: () => unawaited(_effacer(context, exemples)),
+                title: Text(l10n.effacerEcritures),
+                onTap: () => unawaited(_effacer(ecritures)),
               ),
           ],
         );

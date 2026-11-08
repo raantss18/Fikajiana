@@ -9,7 +9,7 @@ import 'package:fikajiana/guide/essai.dart';
 import 'package:fikajiana/moteur/moteur.dart';
 import 'package:fikajiana/reconnaissance/classeur_appris.dart';
 import 'package:fikajiana/reconnaissance/classeur_onnx.dart';
-import 'package:fikajiana/reconnaissance/exemples_personnels.dart';
+import 'package:fikajiana/reconnaissance/ecritures.dart';
 import 'package:fikajiana/reconnaissance/lecteur.dart';
 import 'package:fikajiana/reconnaissance/modele.dart';
 import 'package:flutter/widgets.dart';
@@ -27,7 +27,7 @@ class Services {
     required this.graphes,
     required this.figures,
     ClasseurAppris? classeur,
-  }) : classeur = classeur ?? ClasseurAppris(exemples: ExemplesPersonnels()) {
+  }) : classeur = classeur ?? ClasseurAppris(ecritures: Ecritures()) {
     // Une courbe `C : …` et un objet de la Figure n'ont jamais le même nom.
     courbes.nomsPris = () => atelier.figure.noms;
     atelier.nomsReserves = () => courbes.noms;
@@ -73,12 +73,13 @@ class Services {
     );
     final carnet = Carnet(dossier: dossier, annexes: annexes);
     rattacherFiguresAuxFeuilles(dossier, annexes);
-    // Les corrections de la personne, sur l'appareil seulement (ADR 0041).
-    final exemples = ExemplesPersonnels(
-      fichier: File('${dossier.path}/signes/exemples.json'),
+    // L'écriture gardée sur l'appareil : lignes justes et corrections, un
+    // seul magasin (ADR 0042).
+    final ecritures = Ecritures(
+      fichier: File('${dossier.path}/ecritures/ecritures.jsonl'),
     );
-    unawaited(exemples.charger());
-    final classeur = ClasseurAppris(exemples: exemples);
+    unawaited(ecritures.charger());
+    final classeur = ClasseurAppris(ecritures: ecritures);
     // Le petit modèle par signe, s'il est embarqué : chargé une fois, en fond.
     unawaited(ClasseurOnnx.charger().then((m) => classeur.modele = m));
     return Services(

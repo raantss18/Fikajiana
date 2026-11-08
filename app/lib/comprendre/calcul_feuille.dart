@@ -16,7 +16,7 @@ import 'package:fikajiana/moteur/giac.dart';
 import 'package:fikajiana/moteur/moteur.dart';
 import 'package:fikajiana/reconnaissance/classeur_appris.dart';
 import 'package:fikajiana/reconnaissance/classeur_signes.dart';
-import 'package:fikajiana/reconnaissance/exemples_personnels.dart';
+import 'package:fikajiana/reconnaissance/ecritures.dart';
 import 'package:fikajiana/reconnaissance/lecteur.dart';
 import 'package:fikajiana/reconnaissance/pix2text.dart' show normaliserLatex;
 import 'package:fikajiana_math/fikajiana_math.dart';
@@ -465,10 +465,63 @@ class CalculFeuille extends ChangeNotifier {
     required this.moteur,
     this.pause = const Duration(milliseconds: 700),
     this.pauseConnue = const Duration(milliseconds: 400),
+    this.attenteJuste = const Duration(minutes: 10),
     ClasseurAppris? classeur,
     bool Function()? degres,
+    bool Function()? aider,
   }) : degres = degres ?? (() => false),
-       classeur = classeur ?? ClasseurAppris(exemples: ExemplesPersonnels());
+       aider = aider ?? (() => true),
+       classeur = classeur ?? ClasseurAppris(ecritures: Ecritures());
+
+  /// Une lecture laissée sans correction ce temps-là est juste (ADR 0042).
+  final Duration attenteJuste;
+
+  /// « Aider la reconnaissance » : garder les lignes lues justes et les
+  /// lignes corrigées. Les signes corrigés, eux, servent toujours à lire.
+  final bool Function() aider;
+
+  /// Les lignes lues, résultat affiché, en attente d'être dites justes.
+  final Map<String, (Timer, List<Trait>, String, Rect, List<SigneDeLigne>)>
+  _justes = {};
+
+  /// Le résultat de [bloc] est affiché : sans correction pendant
+  /// [attenteJuste], sa lecture sera gardée comme juste.
+  void _attendreJuste(BlocCalcul bloc, List<Trait> traits) {
+    _oublierJuste(bloc.cle);
+    final latex = bloc.latex;
+    if (!aider() ||
+        latex == null ||
+        bloc.estSaisie ||
+        bloc.corrige ||
+        bloc.etat != EtatBloc.fait) {
+      return;
+    }
+    final signes = [for (final (t, _) in bloc.signesLus) t];
+    final lus = [
+      for (final (t, l) in bloc.signesLus) (t, l, caseDansLaLigne(t, signes)),
+    ];
+    final cle = bloc.cle;
+    _justes[cle] = (
+      Timer(attenteJuste, () => _validerJuste(cle)),
+      traits,
+      latex,
+      cadreDuGroupe(traits),
+      lus,
+    );
+  }
+
+  void _oublierJuste(String cle) => _justes.remove(cle)?.$1.cancel();
+
+  void _validerJuste(String cle) {
+    final juste = _justes.remove(cle);
+    if (juste == null) return;
+    juste.$1.cancel();
+    final (_, traits, latex, cadre, signes) = juste;
+    unawaited(classeur.ecritures?.ligneJuste(traits, latex, cadre, signes));
+  }
+
+  /// La feuille change : ce qui attendait est juste, maintenant.
+  void validerLesJustes() => _justes.keys.toList().forEach(_validerJuste);
 
   final Encre encre;
   final Lecteur lecteur;
@@ -678,7 +731,11 @@ class CalculFeuille extends ChangeNotifier {
       }
     }
     if (vides.isEmpty) return;
-    vides.forEach(_blocs.remove);
+    for (final cle in vides) {
+      _blocs.remove(cle);
+      // Une ligne effacée n'était peut-être pas juste.
+      _oublierJuste(cle);
+    }
     notifyListeners();
   }
 
@@ -783,6 +840,7 @@ class CalculFeuille extends ChangeNotifier {
   Future<void> _lire(BlocCalcul bloc) async {
     final traits = _traitsDe(bloc);
     final version = ++bloc._version;
+    _oublierJuste(bloc.cle);
     bloc
       .._points = _compterPoints(traits)
       ..cadre = cadreDuGroupe(traits)
@@ -893,6 +951,9 @@ class CalculFeuille extends ChangeNotifier {
       await _calculer(bloc);
       if (structuree == null && bloc.etat == EtatBloc.nonCompris) {
         await _lireUnMot(bloc, traits, version);
+      }
+      if (bloc._version == version && identical(_blocs[bloc.cle], bloc)) {
+        _attendreJuste(bloc, traits);
       }
     } on ModeleAbsent {
       bloc.etat = EtatBloc.sansModele;
@@ -1040,6 +1101,21 @@ class CalculFeuille extends ChangeNotifier {
 
   /// Toute lecture reste corrigeable : le calcul repart du texte corrigé.
   Future<void> corriger(BlocCalcul bloc, String latex) async {
+    if (!bloc.estSaisie) {
+      // La lecture était fausse : jamais gardée comme juste ; la ligne
+      // corrigée, elle, l'est (ADR 0042).
+      _oublierJuste(bloc.cle);
+      final traits = _traitsDe(bloc);
+      if (aider() && traits.isNotEmpty) {
+        unawaited(
+          classeur.ecritures?.corrigerLigne(
+            traits,
+            latex,
+            cadreDuGroupe(traits),
+          ),
+        );
+      }
+    }
     bloc
       ..note = null
       ..latex = latex
@@ -1078,7 +1154,14 @@ class CalculFeuille extends ChangeNotifier {
     List<Trait> signe,
     String classe,
   ) async {
-    await classeur.exemples?.ajouter(signe, classe);
+    _oublierJuste(bloc.cle);
+    await classeur.ecritures?.corrigerSigne(
+      signe,
+      classe,
+      caseLigne: caseDansLaLigne(signe, [
+        for (final (t, _) in bloc.signesLus) t,
+      ]),
+    );
     classeur.oublier();
     relire(bloc);
   }
@@ -1094,6 +1177,7 @@ class CalculFeuille extends ChangeNotifier {
   }
 
   void retirer(BlocCalcul bloc) {
+    _oublierJuste(bloc.cle);
     _blocs.remove(bloc.cle);
     notifyListeners();
   }
@@ -1357,6 +1441,7 @@ class CalculFeuille extends ChangeNotifier {
 
   @override
   void dispose() {
+    validerLesJustes();
     _ferme = true;
     _minuteur?.cancel();
     _minuteurSignes?.cancel();

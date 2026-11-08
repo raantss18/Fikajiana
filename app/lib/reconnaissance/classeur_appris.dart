@@ -4,7 +4,7 @@ import 'dart:ui';
 
 import 'package:fikajiana/encre/encre.dart';
 import 'package:fikajiana/reconnaissance/classeur_signes.dart';
-import 'package:fikajiana/reconnaissance/exemples_personnels.dart';
+import 'package:fikajiana/reconnaissance/ecritures.dart';
 
 /// Le classeur de l'application (ADR 0041) : les corrections de la personne
 /// d'abord, puis les gabarits ; le petit modèle (ADR 0038, 0040) répond
@@ -13,11 +13,12 @@ import 'package:fikajiana/reconnaissance/exemples_personnels.dart';
 /// Chaque signe se classe dès qu'il est fini ([preparer]) et son verdict
 /// reste en cache : la lecture de la ligne ne fait plus que le relire.
 class ClasseurAppris extends ClasseurSignes {
-  new({this.exemples, this.modele, this.base = const ClasseurGabarits()}) {
-    exemples?.addListener(_imposes.clear);
+  new({this.ecritures, this.modele, this.base = const ClasseurGabarits()}) {
+    ecritures?.addListener(_imposes.clear);
   }
 
-  final ExemplesPersonnels? exemples;
+  /// L'écriture gardée sur l'appareil, dont les corrections (ADR 0042).
+  final Ecritures? ecritures;
 
   /// Le petit modèle par signe (ADR 0038), une fois chargé ; `null` : les
   /// gabarits seuls, comme avant.
@@ -89,8 +90,8 @@ class ClasseurAppris extends ClasseurSignes {
 
   @override
   String? impose(List<Trait> signe) {
-    final e = exemples;
-    if (e == null || e.liste.isEmpty) return null;
+    final e = ecritures;
+    if (e == null || !e.aDesCorrections) return null;
     return _cache(
       _imposes,
       cleDuSigne(signe),
@@ -182,8 +183,8 @@ class ClasseurAppris extends ClasseurSignes {
     final vus = <String>{};
     final propres = [
       for (final (c, d)
-          in exemples?.voisins(signe) ?? const <(String, double)>[])
-        if (d <= ExemplesPersonnels.seuil) (c, 1.0),
+          in ecritures?.voisins(signe) ?? const <(String, double)>[])
+        if (d <= Ecritures.seuil) (c, 1.0),
     ];
     return [
       for (final (c, p) in [...propres, ...classement])
