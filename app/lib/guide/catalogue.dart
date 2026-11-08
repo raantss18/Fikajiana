@@ -636,6 +636,13 @@ List<EntreeGuide> catalogueGuide(AppLocalizations l10n) => [
     motsCles: l10n.guideGommeMots,
   ),
   EntreeGuide(
+    cle: 'propose',
+    famille: FamilleGuide.feuille,
+    titre: l10n.guideProposeTitre,
+    phrase: l10n.guideProposePhrase,
+    motsCles: l10n.guideProposeMots,
+  ),
+  EntreeGuide(
     cle: 'selection',
     famille: FamilleGuide.feuille,
     titre: l10n.guideSelectionTitre,

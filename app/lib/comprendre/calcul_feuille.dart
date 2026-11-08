@@ -596,6 +596,28 @@ String _ensembleApproche(String approche) {
   return '\\{${valeurs.join(',')}\\}';
 }
 
+/// Ce que la feuille propose de faire d'une ligne comprise (Antsa).
+enum GenreProposition { resoudre, deriver, integrer, tracer, determinant }
+
+/// Une action proposée : son genre, et la ligne qu'elle pose dessous.
+@immutable
+class Proposition {
+  const new(this.genre, this.latex);
+
+  final GenreProposition genre;
+  final String latex;
+
+  @override
+  bool operator ==(Object other) =>
+      other is Proposition && other.genre == genre && other.latex == latex;
+
+  @override
+  int get hashCode => Object.hash(genre, latex);
+
+  @override
+  String toString() => '${genre.name} : $latex';
+}
+
 /// Une valeur approchée courte : assez de chiffres, sans encombrer.
 String abregerApproche(String approche) {
   final valeur = double.tryParse(approche.trim());
@@ -1579,6 +1601,116 @@ class CalculFeuille extends ChangeNotifier {
       if (_ferme) return;
     }
     notifyListeners();
+  }
+
+  final _propositions = <String, (String, List<Proposition>)>{};
+
+  /// Ce qu'on peut faire d'une ligne comprise qui ne demande rien : la
+  /// résoudre, la dériver, l'intégrer, la tracer, calculer son déterminant.
+  /// Chaque ligne proposée est comprise sous [bloc] (ses définitions
+  /// comptent), sinon elle n'est pas proposée.
+  List<Proposition> propositions(BlocCalcul bloc) {
+    final lu = bloc.latex?.trim();
+    if (lu == null ||
+        lu.isEmpty ||
+        bloc.etat != EtatBloc.fait ||
+        bloc.montreResultat ||
+        bloc.finitParEgal ||
+        bloc.objet != null ||
+        bloc.commande != null ||
+        bloc.note != null) {
+      return const [];
+    }
+    final cle = '$lu|${_blocs.length}|${cleDeRect(bloc.cadre)}';
+    final deja = _propositions[bloc.cle];
+    if (deja != null && deja.$1 == cle) return deja.$2;
+    final trouvees = _proposer(bloc, lu);
+    _propositions[bloc.cle] = (cle, trouvees);
+    return trouvees;
+  }
+
+  List<Proposition> _proposer(BlocCalcul bloc, String lu) {
+    // Comme une ligne écrite juste dessous : le bloc lui-même compte.
+    final dessous = BlocCalcul(
+      cle: '',
+      cadre: Rect.fromLTWH(bloc.cadre.left, bloc.cadre.bottom + 1, 0, 0),
+    );
+    Analyse? comprise(String latex) {
+      try {
+        return _contextePour(dessous).analyser(latex, degres: degres());
+      } on Object {
+        return null;
+      }
+    }
+
+    final candidates = <Proposition>[];
+    final analyse = comprise(lu);
+    final nom = analyse?.nomFonction;
+    final plat = sansLeftRight(lu);
+    if (analyse?.type == TypeExpression.fonction && nom != null) {
+      final v = analyse!.variableFonction ?? analyse.inconnues.firstOrNull;
+      if (v != null && RegExp(r'^[A-Za-z]$').hasMatch(nom)) {
+        candidates
+          ..add(Proposition(GenreProposition.deriver, "$nom'($v)="))
+          ..add(
+            Proposition(
+              GenreProposition.integrer,
+              '\\int $nom\\left($v\\right)d$v=',
+            ),
+          );
+      }
+    } else if (plat.contains('pmatrix') || plat.contains('bmatrix')) {
+      final carre = _matriceCarree(plat);
+      final nomme = RegExp(r'^([A-Z])\s*=').firstMatch(plat)?[1];
+      if (carre) {
+        candidates.add(
+          Proposition(
+            GenreProposition.determinant,
+            nomme != null
+                ? '\\det\\left($nomme\\right)='
+                : '\\det\\left($lu\\right)=',
+          ),
+        );
+      }
+    } else if (!plat.contains('=') &&
+        analyse != null &&
+        analyse.type == TypeExpression.calcul) {
+      // Une expression en une variable : `x^2-5x+6`.
+      final equation = comprise('$lu=0');
+      final v = equation?.inconnues.singleOrNull;
+      if (equation?.type == TypeExpression.equation && v != null) {
+        candidates.addAll([
+          Proposition(
+            GenreProposition.resoudre,
+            '\\text{résoudre}\\left($lu=0\\right)',
+          ),
+          Proposition(
+            GenreProposition.deriver,
+            '\\frac{d}{d$v}\\left($lu\\right)=',
+          ),
+          if (v == 'x') Proposition(GenreProposition.tracer, 'y=$lu'),
+        ]);
+      }
+    }
+    return [
+      for (final p in candidates)
+        if (comprise(p.latex) != null) p,
+    ];
+  }
+
+  static bool _matriceCarree(String latex) {
+    final corps = RegExp(
+      r'\\begin\{[pb]matrix\}(.*?)\\end\{[pb]matrix\}',
+      dotAll: true,
+    ).firstMatch(latex)?[1];
+    if (corps == null) return false;
+    final lignes = corps
+        .split(r'\\')
+        .map((l) => l.trim())
+        .where((l) => l.isNotEmpty)
+        .toList();
+    return lignes.length > 1 &&
+        lignes.every((l) => '&'.allMatches(l).length + 1 == lignes.length);
   }
 
   /// Ce qui est défini au-dessus de [bloc] : le plus proche l'emporte.

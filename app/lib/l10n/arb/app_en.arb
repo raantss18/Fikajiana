@@ -607,6 +607,18 @@
     "motEffacer": "erase",
     "motRetirer": "remove",
     "motCorriger": "correct",
+    "motResoudre": "solve",
+    "motDeriver": "derive",
+    "motIntegrer": "integrate",
+    "motDeterminant": "determinant",
+    "proposerResoudre": "Solve: write the equation below",
+    "proposerDeriver": "Derive: write the derivative below",
+    "proposerIntegrer": "Integrate: write the antiderivative below",
+    "proposerTracer": "Plot: write y = … below",
+    "proposerDeterminant": "Determinant: write it below",
+    "guideProposeTitre": "What the sheet suggests",
+    "guideProposePhrase": "A line understood without = suggests next to it, handwritten, what can be done with it: solve or derive an expression, derive or integrate a function, the determinant of a square matrix. A tap writes the line below.",
+    "guideProposeMots": "suggest suggestion action solve derive derivative integrate antiderivative determinant",
     "@motTracer": {
         "description": "Handwritten action word on the Sheet: lowercase ASCII letters only."
     },

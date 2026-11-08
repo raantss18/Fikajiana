@@ -30,6 +30,7 @@ class RepereBloc extends StatelessWidget {
     required this.surTouche,
     required this.surEffacer,
     this.surChoisir,
+    this.surProposer,
     this.enExport = false,
     super.key,
   });
@@ -49,6 +50,41 @@ class RepereBloc extends StatelessWidget {
 
   /// Appui long : la ligne est choisie (déplacer, dupliquer, effacer).
   final VoidCallback? surChoisir;
+
+  /// Une action proposée a été touchée : poser sa ligne sous celle-ci.
+  final ValueChanged<String>? surProposer;
+
+  /// Ce que la feuille propose de faire de la ligne, écrit à la main comme
+  /// `tracer` (Antsa) : chaque mot pose sa ligne dessous.
+  List<Widget> _propositions(BuildContext context) {
+    final proposer = surProposer;
+    if (proposer == null || enExport) return const [];
+    final l10n = context.l10n;
+    return [
+      for (final p in calcul.propositions(bloc))
+        ActionManuscrite(
+          key: ValueKey('propose-${p.genre.name}-${bloc.cle}'),
+          mot: switch (p.genre) {
+            GenreProposition.resoudre => l10n.motResoudre,
+            GenreProposition.deriver => l10n.motDeriver,
+            GenreProposition.integrer => l10n.motIntegrer,
+            GenreProposition.tracer => l10n.motTracer,
+            GenreProposition.determinant => l10n.motDeterminant,
+          },
+          libelle: switch (p.genre) {
+            GenreProposition.resoudre => l10n.proposerResoudre,
+            GenreProposition.deriver => l10n.proposerDeriver,
+            GenreProposition.integrer => l10n.proposerIntegrer,
+            GenreProposition.tracer => l10n.proposerTracer,
+            GenreProposition.determinant => l10n.proposerDeterminant,
+          },
+          surToucher: () {
+            surTouche();
+            proposer(p.latex);
+          },
+        ),
+    ];
+  }
 
   Future<void> _corriger(BuildContext context) async {
     surTouche();
@@ -382,6 +418,7 @@ class RepereBloc extends StatelessWidget {
                             }
                           },
                         ),
+                        ..._propositions(context),
                         CrayonManuscrit(
                           libelle: l10n.corriger,
                           surToucher: () => unawaited(_corriger(context)),
@@ -454,13 +491,33 @@ class RepereBloc extends StatelessWidget {
           if (sansResultat) {
             if (enExport) return const SizedBox.shrink();
             // Rien à afficher, mais on doit pouvoir voir ce qui a été lu.
-            return _AVerifier(
+            final zone = _AVerifier(
               bloc: bloc,
               vue: vue,
               libelle: l10n.corriger,
               couleur: accent,
               vague: false,
               surOuvrir: (_) => unawaited(_corriger(context)),
+            );
+            final proposees = _propositions(context);
+            if (proposees.isEmpty) return zone;
+            // Comprise sans `=` : ce qu'on peut en faire, à côté.
+            return Positioned.fill(
+              child: Stack(
+                children: [
+                  zone,
+                  Positioned(
+                    left: droite.dx + AppEspacement.sm,
+                    top: droite.dy - 24,
+                    child: TraverseEcriture(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: proposees,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             );
           }
           position = bloc.estSaisie || bloc.resultatDessous

@@ -107,6 +107,66 @@ void main() {
 
   tearDown(() => calcul.dispose());
 
+  group('actions proposées selon le type', () {
+    Future<BlocCalcul> ligne(String lu, {double y = 0}) async {
+      lecteur.reponse = lu;
+      _trait(encre, 0, y);
+      encre.terminer();
+      calcul.encreChangee();
+      await _attendre();
+      return calcul.blocs.firstWhere((b) => b.cadre.top >= y - 1);
+    }
+
+    List<(GenreProposition, String)> proposees(BlocCalcul b) => [
+      for (final p in calcul.propositions(b)) (p.genre, p.latex),
+    ];
+
+    test('une expression en x : résoudre, dériver, tracer', () async {
+      moteur.reponse = const ReponseGiac(
+        exact: 'x^2-5*x+6',
+        latex: 'x^{2}-5x+6',
+        approche: 'x^2-5*x+6',
+      );
+      final b = await ligne('x^{2}-5x+6');
+      expect(b.montreResultat, isFalse);
+      expect(proposees(b), [
+        (
+          GenreProposition.resoudre,
+          r'\text{résoudre}\left(x^{2}-5x+6=0\right)',
+        ),
+        (GenreProposition.deriver, r'\frac{d}{dx}\left(x^{2}-5x+6\right)='),
+        (GenreProposition.tracer, 'y=x^{2}-5x+6'),
+      ]);
+    });
+
+    test('une fonction définie : dériver et intégrer', () async {
+      final b = await ligne('f(x)=x^{2}+1');
+      expect(b.seTrace, isTrue);
+      expect(proposees(b), [
+        (GenreProposition.deriver, "f'(x)="),
+        (GenreProposition.integrer, r'\int f\left(x\right)dx='),
+      ]);
+    });
+
+    test('une matrice carrée : son déterminant ; pas une 2×3', () async {
+      final a = await ligne(r'A=\begin{pmatrix}1&2\\3&4\end{pmatrix}');
+      expect(proposees(a), [
+        (GenreProposition.determinant, r'\det\left(A\right)='),
+      ]);
+      final m = await ligne(
+        r'\begin{pmatrix}1&2&3\\4&5&6\end{pmatrix}',
+        y: 400,
+      );
+      expect(proposees(m), isEmpty);
+    });
+
+    test('un calcul fini, une équation, un nombre : rien', () async {
+      expect(proposees(await ligne('2+3=')), isEmpty);
+      expect(proposees(await ligne('x+3=4', y: 300)), isEmpty);
+      expect(proposees(await ligne('12', y: 600)), isEmpty);
+    });
+  });
+
   group('choisir une ligne', () {
     Future<BlocCalcul> ligneEcrite() async {
       _trait(encre, 0, 0);
