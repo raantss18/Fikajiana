@@ -62,6 +62,13 @@ Saisie lireSaisie(String texte) {
   ).hasMatch(propre)) {
     return Saisie(propre);
   }
+  // `X~B(10;0,3)`, `P(X<=3)=`, `E(X)=` : les lois de probabilité.
+  try {
+    final probabilite = _probabiliteTapee(propre);
+    if (probabilite != null) return Saisie(probabilite);
+  } on _Refus catch (refus) {
+    return Saisie.refusee(refus.probleme, detail: refus.detail);
+  }
   // `A=[1,2;3,4]` ou `A=[[1,2],[3,4]]` : une matrice au clavier.
   final matrice = _matriceTapee(propre);
   if (matrice != null) return Saisie(matrice);
@@ -84,6 +91,74 @@ Saisie lireSaisie(String texte) {
   } on _Refus catch (refus) {
     return Saisie.refusee(refus.probleme, detail: refus.detail);
   }
+}
+
+/// Une loi déclarée (`X~B(10;0,3)`, `Y~N(100;15^2)`) ou une probabilité
+/// (`P(X<=3)=`, `P(2<=X<5)`, `P(X<=k)>=0,95`), `E(X)=`, `V(X)=`,
+/// `sigma(X)=` : le LaTeX qu'écrirait la main. `null` sinon.
+String? _probabiliteTapee(String texte) {
+  String traduit(String morceau) =>
+      _Traducteur(_decouper(morceau.trim())).traduire();
+  final loi = RegExp(r'^([A-Z])\s*[~∼]\s*([A-Za-z]+)\s*\((.*)\)$')
+      .firstMatch(texte);
+  if (loi != null) {
+    var morceaux = _separer(loi[3]!, ';');
+    if (morceaux.length == 1) morceaux = _separer(loi[3]!, ',');
+    return '${loi[1]}\\sim ${loi[2]}\\left('
+        '${morceaux.map(traduit).join(';')}\\right)';
+  }
+  final moment = RegExp(r'^(E|V|sigma|σ)\s*\(\s*([A-Z])\s*\)\s*(=?)$')
+      .firstMatch(texte);
+  if (moment != null) {
+    final nom = switch (moment[1]) {
+      'sigma' || 'σ' => r'\sigma',
+      final autre => autre!,
+    };
+    return '$nom\\left(${moment[2]}\\right)${moment[3]}';
+  }
+  final p = RegExp(r'^P\s*\((.*)\)\s*(.*)$').firstMatch(texte);
+  if (p == null || !RegExp('[A-Z]').hasMatch(p[1]!)) return null;
+  const signes = {
+    '<=': r'\le ',
+    '>=': r'\ge ',
+    '≤': r'\le ',
+    '≥': r'\ge ',
+    '<': '<',
+    '>': '>',
+    '=': '=',
+  };
+  // Les morceaux entre les signes d'ordre, chacun traduit.
+  String relation(String s) {
+    final sortie = StringBuffer();
+    final morceau = StringBuffer();
+    void vider() {
+      if (morceau.toString().trim().isNotEmpty) {
+        sortie.write(traduit(morceau.toString()));
+      }
+      morceau.clear();
+    }
+
+    for (var i = 0; i < s.length; i++) {
+      final deux = i + 1 < s.length ? s.substring(i, i + 2) : '';
+      final signe = signes.containsKey(deux)
+          ? deux
+          : signes.containsKey(s[i])
+          ? s[i]
+          : null;
+      if (signe == null) {
+        morceau.write(s[i]);
+        continue;
+      }
+      vider();
+      sortie.write(signes[signe]);
+      i += signe.length - 1;
+    }
+    vider();
+    return sortie.toString();
+  }
+
+  final suite = p[2]!.trim();
+  return 'P\\left(${relation(p[1]!)}\\right)${relation(suite)}';
 }
 
 /// `développer((x+1)^2)`, `moyenne(2;4;9)`, `tangente(f;2)` sur toute la

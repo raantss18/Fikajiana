@@ -241,6 +241,18 @@ final Map<String, _Glyphe> _glyphes = {
     _arc(0.33, 0.56, 0.26, 0.38, -_pi / 2, 3 * _pi / 2 + 0.2),
     _l([0.08, 1, 0.58, 0.1]),
   ]),
+  // `X ∼ B(10 ; 0,3)` : la vague d'une loi de probabilité.
+  '∼': _Glyphe(0.62, [
+    [
+      ..._arc(0.18, 0.64, 0.13, 0.08, _pi, 2 * _pi),
+      ..._arc(0.44, 0.64, 0.13, 0.08, _pi, 0),
+    ],
+  ]),
+  // σ(X), l'écart type : un rond et sa queue.
+  'σ': _Glyphe(0.64, [
+    _arc(0.28, 0.73, 0.22, 0.26, -_pi / 2, 3 * _pi / 2),
+    _l([0.28, 0.47, 0.62, 0.45]),
+  ]),
   'π': _Glyphe(0.6, [
     _l([0.02, 0.46, 0.2, 0.4, 0.58, 0.42]),
     _l([0.2, 0.42, 0.16, 1]),
@@ -604,7 +616,7 @@ class _Compositeur {
     if (g == null) throw const _NonPrisEnCharge();
     return _Boite(
       g.largeur,
-      'acegmnopqrsuvwxyz∈<>≤≥'.contains(c) ? 0.58 : 1,
+      'acegmnopqrsuvwxyz∈<>≤≥∼σ'.contains(c) ? 0.58 : 1,
       'gjpqy,;'.contains(c) ? 0.24 : 0,
       [
         for (final t in g.traces) [for (final p in t) p - const Offset(0, 1)],
@@ -646,9 +658,12 @@ class _Compositeur {
       'iff' || 'Leftrightarrow' => _lettre('⇔'),
       'quad' || 'qquad' => const _Boite(0.8, 0, 0, []),
       'in' => _lettre('∈'),
-      'leq' => _lettre('≤'),
+      'leq' || 'le' || 'leqslant' => _lettre('≤'),
       'approx' => _lettre('≈'),
-      'geq' => _lettre('≥'),
+      'geq' || 'ge' || 'geqslant' => _lettre('≥'),
+      'sim' => _lettre('∼'),
+      'sigma' => _lettre('σ'),
+      'mathcal' || 'mathscr' => _groupe(),
       'emptyset' => _lettre('∅'),
       'frac' => _fraction(),
       'begin' => _matrice(),

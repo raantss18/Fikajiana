@@ -194,4 +194,28 @@ void main() {
       expect(texteDepuisLatex(somme), somme);
     });
   });
+
+  group('lois de probabilité au clavier (vague 1)', () {
+    for (final (tape, latex) in [
+      ('X~B(10;0,3)', r'X\sim B\left(10;0,3\right)'),
+      ('Y~N(100;15^2)', r'Y\sim N\left(100;15^{2}\right)'),
+      ('P(X<=3)=', r'P\left(X\le 3\right)='),
+      ('P(2<=X<5)=', r'P\left(2\le X<5\right)='),
+      ('P(X>8)', r'P\left(X>8\right)'),
+      ('P(X<=k)>=0,95', r'P\left(X\le k\right)\ge 0,95'),
+      ('E(X)=', r'E\left(X\right)='),
+      ('sigma(X)=', r'\sigma\left(X\right)='),
+    ]) {
+      test(tape, () => expect(lireSaisie(tape).latex, latex));
+    }
+
+    test('tapée, la loi se comprend comme écrite à la main', () {
+      final x = analyserLatex(lireSaisie('X~B(10;0,3)').latex!);
+      final valeurs = {x.nomValeur!: x.giac};
+      expect(
+        analyserLatex(lireSaisie('P(X<=3)=').latex!, valeurs: valeurs).giac,
+        analyserLatex(r'P(X\le3)=', valeurs: valeurs).giac,
+      );
+    });
+  });
 }

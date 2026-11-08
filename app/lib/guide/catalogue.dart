@@ -352,6 +352,30 @@ List<EntreeGuide> catalogueGuide(AppLocalizations l10n) => [
     lignes: [r'\text{moyenne}\left(2;4;9\right)'],
   ),
   EntreeGuide(
+    cle: 'loi',
+    famille: FamilleGuide.statistiques,
+    titre: l10n.guideLoiTitre,
+    phrase: l10n.guideLoiPhrase,
+    motsCles: l10n.guideLoiMots,
+    lignes: [
+      r'X\sim B\left(10;0{,}3\right)',
+      r'P\left(X\le 3\right)=',
+      r'E\left(X\right)=',
+    ],
+  ),
+  EntreeGuide(
+    cle: 'loiNormale',
+    famille: FamilleGuide.statistiques,
+    titre: l10n.guideLoiNormaleTitre,
+    phrase: l10n.guideLoiNormalePhrase,
+    motsCles: l10n.guideLoiNormaleMots,
+    lignes: [
+      r'Y\sim N\left(100;15^{2}\right)',
+      r'P\left(85\le Y\le 115\right)=',
+      r'P\left(Y\le t\right)=0{,}975',
+    ],
+  ),
+  EntreeGuide(
     cle: 'mediane',
     famille: FamilleGuide.statistiques,
     titre: l10n.guideMedianeTitre,

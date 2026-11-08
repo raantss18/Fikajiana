@@ -1,5 +1,6 @@
 import 'package:fikajiana_math/src/evaluateur.dart';
 import 'package:fikajiana_math/src/lecteur_latex.dart';
+import 'package:fikajiana_math/src/probabilites.dart';
 import 'package:fikajiana_math/src/redressement.dart';
 
 /// Ce que l'écriture semble être.
@@ -145,6 +146,11 @@ Analyse analyserLatex(
   Map<String, (double, double)> vecteurs = const {},
   Map<String, String> valeurs = const {},
 }) {
+  // `X \sim B(10;0{,}3)`, puis `P(X\le3)=`, `E(X)=` (ADR 0052).
+  final loi =
+      analyserLoi(latex, valeurs: valeurs) ??
+      analyserProbabilite(latex, valeurs: valeurs);
+  if (loi != null) return loi;
   // `y'-3y=cos(x)` : une équation différentielle (feuille d'Antsa, Pad 7).
   final differentielle = _equationDifferentielle(latex, degres: degres);
   if (differentielle != null) return differentielle;

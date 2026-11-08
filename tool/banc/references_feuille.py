@@ -99,4 +99,53 @@ for _ in range(4):
 note(p, "u_{4}=", u4)
 note(p, r"\text{résoudre}(x^{2}-4=0)", solve(x**2 - 4, x))
 
+# Vague 1 : lois de probabilité, par sympy.stats (indépendant du lecteur de l'app).
+from sympy import stats as st  # noqa: E402
+
+
+def nombre(probleme, ligne, valeur):
+    ref[f"{probleme} | {ligne}"] = float(sp.N(valeur, 15))
+
+
+def plus_petit(loi, alpha, debut=0):
+    """Le plus petit entier k tel que P(loi <= k) >= alpha."""
+    k = debut
+    while float(sp.N(st.P(loi <= k))) < alpha:
+        k += 1
+    return k
+
+
+p = "lois de probabilité"
+X = st.Binomial("X", 10, R(3, 10))
+nombre(p, "P(X=3)=", st.P(sp.Eq(X, 3)))
+nombre(p, r"P(X\le3)=", st.P(X <= 3))
+nombre(p, r"P(2\le X<5)=", st.P(sp.And(X >= 2, X < 5)))
+nombre(p, "P(X>8)=", st.P(X > 8))
+nombre(p, "E(X)=", st.E(X))
+nombre(p, "V(X)=", st.variance(X))
+nombre(p, r"\sigma(X)=", st.std(X))
+nombre(p, r"P(X\le k)\ge0{,}95", plus_petit(X, 0.95))
+Z = st.Poisson("Z", 3)
+nombre(p, "P(Z=0)=", st.P(sp.Eq(Z, 0)))
+nombre(p, r"P(Z\ge2)=", 1 - st.P(Z <= 1))
+nombre(p, r"P(Z\le k)\ge0{,}9", plus_petit(Z, 0.9))
+T = st.Geometric("T", R(1, 5))  # sympy : support 1, 2, 3… (premier succès)
+nombre(p, r"P(T\le3)=", st.P(T <= 3))
+nombre(p, "E(T)=", st.E(T))
+nombre(p, r"P(T\le k)\ge0{,}5", plus_petit(T, 0.5, debut=1))
+Y = st.Normal("Y", 100, 15)  # écart type 15, variance 15²
+nombre(p, r"P(Y\le115)=", st.cdf(Y)(115))
+nombre(p, r"P(85\le Y\le115)=", st.cdf(Y)(115) - st.cdf(Y)(85))
+nombre(p, "P(Y>130)=", 1 - st.cdf(Y)(130))
+tt = sp.symbols("tt")
+nombre(p, r"P(Y\le t)=0{,}975", sp.nsolve(st.cdf(Y)(tt) - R(975, 1000), tt, 130))
+nombre(p, r"P(Y\ge t)=0{,}05", sp.nsolve(st.cdf(Y)(tt) - R(95, 100), tt, 125))
+D = st.Exponential("D", R(1, 2))
+nombre(p, r"P(D\le2)=", st.cdf(D)(2))
+nombre(p, "V(D)=", st.variance(D))
+nombre(p, r"P(D\le t)=0{,}5", sp.solve(sp.Eq(st.cdf(D)(tt), R(1, 2)), tt)[0])
+U = st.Uniform("U", 0, 10)
+nombre(p, r"P(2\le U\le5)=", st.cdf(U)(5) - st.cdf(U)(2))
+nombre(p, r"P(U\le t)=0{,}3", 3)
+
 print(json.dumps(ref, ensure_ascii=False, indent=1))
