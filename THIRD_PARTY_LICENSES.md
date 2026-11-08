@@ -42,3 +42,4 @@ Installés sur le serveur qui reçoit les dons (ADR 0042) ; rien n'est copié da
 | Waitress | ZPL 2.1 | serveur HTTP (WSGI) | https://pypi.org/project/waitress/ |
 | boto3 (facultatif) | Apache-2.0 | stockage compatible S3 | https://github.com/boto/boto3/blob/develop/LICENSE |
 | Caddy (image `caddy:2.10`) | Apache-2.0 | HTTPS devant le récepteur | https://github.com/caddyserver/caddy/blob/master/LICENSE |
+| Wrangler 4.158.0 (outil de développement) | MIT OR Apache-2.0 | publier le Worker (`plateforme/worker/`) | https://github.com/cloudflare/workers-sdk |

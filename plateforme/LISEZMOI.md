@@ -1,5 +1,9 @@
 # La plateforme des dons d'écriture
 
+> **En service** (2026-11-08) : le Worker Cloudflare, <https://fikajiana-dons.fikajiana-dons-worker.workers.dev>
+> (`worker/LISEZMOI.md`, ADR 0045). Le récepteur Python de ce dossier reste la référence pour un serveur
+> ou une machine à soi ; les deux acceptent et refusent les mêmes dons.
+
 Quand une personne l'accepte dans Fikajiana, les lignes qu'elle a jugées (👍, ou 👎 puis corrigées)
 partent ici. Elles servent à entraîner le petit modèle qui lit les signes écrits à la main
 (ADR 0038, ADR 0042). Ce dossier contient le **récepteur** : un petit programme qui reçoit ces dons,

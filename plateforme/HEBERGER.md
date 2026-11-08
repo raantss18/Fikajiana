@@ -7,6 +7,21 @@ avant de payer. Prix hors taxes sauf mention contraire.
 Ce qu'il faut au récepteur : un conteneur de ~230 Mo (176 Mo sans S3), quelques requêtes par minute,
 quelques Go de fichiers JSON au fil des mois, et HTTPS.
 
+## Option retenue : Worker Cloudflare + R2 (en service depuis le 2026-11-08)
+
+Choix d'Antsa après le refus de sa carte par Google (option B ci-dessous abandonnée). ADR 0045,
+mode d'emploi : `worker/LISEZMOI.md`. Adresse : <https://fikajiana-dons.fikajiana-dons-worker.workers.dev>.
+
+**Vérifié le 2026-11-08, sur le vrai service** (depuis l'ordinateur d'Antsa) : `/v1/sante` 200 ; un don
+201 `{"recu":2}` ; un don avec `auteur` 400 ; un corps de 2,2 Mo 413 ; l'export sans jeton 401, avec
+jeton la liste des dons ; `/v1/mon-ip` rend l'adresse de l'appelant ; retrait 202 puis don refusé 410 ;
+`recuperer_dons.py` lit l'export et applique le retrait ; 150 requêtes rapides depuis une même IP : 53
+acceptées puis 97 refusées (429), la limite est bien approximative. Le seau a été vidé après l'essai.
+Le certificat HTTPS du sous-domaine `workers.dev` a mis environ 2 minutes à être prêt.
+Coût : 0 € (offre gratuite Workers ; R2 sous ses limites gratuites, carte enregistrée chez Cloudflare).
+
+**Reste à tester** : l'envoi depuis l'app ; le temps de calcul des plus gros envois (10 ms permis).
+
 ## Comparaison
 
 | | A. Petit VPS + Docker | B. Conteneur gratuit + stockage objet | C. Chez soi + tunnel |
@@ -89,7 +104,11 @@ Il faut : un VPS Debian ou Ubuntu, un nom de domaine (ou un sous-domaine d'un am
 
 Les dons sont dans le volume Docker `dons` (`docker volume inspect plateforme_dons`).
 
-## Pas-à-pas : option B (Cloud Run + Cloudflare R2), choisie par Antsa
+## Pas-à-pas : option B (Cloud Run + Cloudflare R2) — abandonnée
+
+> Le 2026-11-08, Google a refusé la carte d'Antsa (« Payment authorization failed ») : sans compte de
+> facturation, Cloud Run est impossible. Remplacée par le Worker Cloudflare (ADR 0045). Le projet vide
+> `fikajiana-dons-5b2c` reste à supprimer. Ce pas-à-pas sert encore pour qui aurait une carte acceptée.
 
 Compter une heure la première fois. Il faut : un compte Google, un compte Cloudflare, et sur
 l'ordinateur Docker et la Google Cloud CLI (`gcloud`, <https://docs.cloud.google.com/sdk/docs/install>).

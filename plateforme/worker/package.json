@@ -1,0 +1,16 @@
+{
+  "name": "fikajiana-dons-worker",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Récepteur des dons d'écriture de Fikajiana sur Cloudflare Workers (ADR 0045)",
+  "license": "GPL-3.0-or-later",
+  "type": "module",
+  "scripts": {
+    "classes": "node outils/classes.mjs",
+    "test": "node --test test/*.test.mjs",
+    "deployer": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "4.158.0"
+  }
+}

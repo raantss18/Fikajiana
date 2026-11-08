@@ -170,3 +170,38 @@ def test_signe_racine_garde():
               "traits": [[[100, 150, 0, 1], [120, 200, 10, 1], [150, 100, 20, 1], [250, 100, 30, 1]]],
               "case": [50, 50, 200, 200]}
     assert rd.motif_de_rejet(racine) is None
+
+
+def test_export_par_pages(tmp_path, monkeypatch):
+    """Le Worker répond par pages : `telecharger` suit les lignes « suite » jusqu'au bout."""
+    pages = {
+        None: [ENTETE, {"type": "retrait", "contributeur": B, "date": "x"}, don(A, seance(A, plus()), 1),
+               {"type": "suite", "apres": "dons/a/1.json"}],
+        "dons/a/1.json": [dict(ENTETE, jusqua="plus tard"), don(A, seance(A, plus(dx=3)), 2)],
+    }
+    vus = []
+
+    class Reponse:
+        def __init__(self, lignes):
+            self.lignes = [(json.dumps(l) + "\n").encode() for l in lignes]
+
+        def __enter__(self):
+            return iter(self.lignes)
+
+        def __exit__(self, *a):
+            return False
+
+    def ouvrir(requete, timeout):
+        import urllib.parse as up
+
+        q = up.parse_qs(up.urlparse(requete.full_url).query)
+        vus.append(q)
+        return Reponse(pages[q.get("apres", [None])[0]])
+
+    monkeypatch.setattr(rd.urllib.request, "urlopen", ouvrir)
+    lignes = list(rd.telecharger("https://dons.exemple", "j", "2026-01-01"))
+    assert [l["type"] for l in lignes] == ["export", "retrait", "don", "export", "don"]
+    assert all(q["depuis"] == ["2026-01-01"] for q in vus) and len(vus) == 2
+    etat = {}
+    r = rd.trier(lignes, tmp_path / "d", etat, CLASSES)
+    assert r["bilan"]["séances écrites"] == 2 and etat["jusqua"] == ENTETE["jusqua"]
