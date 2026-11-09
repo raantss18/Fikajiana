@@ -4,6 +4,18 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+## [1.1.2] — 2026-11-09
+
+### Message fr
+
+Nouveau, comme sur une calculatrice de lycée : lois de probabilité (binomiale, normale…), arithmétique (division euclidienne, Bézout, congruences), statistiques à deux variables (droite d'ajustement, corrélation, quartiles), tableau de valeurs d'une fonction, et inéquations au clavier. Réglages, À propos : qui a conçu Fikajiana et comment écrire.
+
+### Message en
+
+New, as on a high-school calculator: probability distributions (binomial, normal…), arithmetic (Euclidean division, Bézout, congruences), two-variable statistics (regression line, correlation, quartiles), a function's table of values, and inequalities with the keyboard. Settings, About: who designed Fikajiana and how to get in touch.
+
+### Changements
+
 - Statistiques à deux variables : ajustement([1;2;3;4];[2;4;5;8]) donne la droite des moindres carrés et r (aussi exponentiel, logarithmique, puissance, degré 2), correlation et covariance ; quartiles(…) donne Q₁, la médiane et Q₃ comme au lycée. / Two-variable statistics: ajustement([1;2;3;4];[2;4;5;8]) gives the least-squares line and r (also exponential, logarithmic, power, degree 2), correlation and covariance; quartiles(…) gives Q₁, the median and Q₃ (French high-school definition).
 - Tableau de valeurs : tableau(f;0;5;1) écrit x et f(x), valeurs exactes, sous la fonction ; aussi avec une expression en x. / Table of values: tableau(f;0;5;1) writes x and f(x), exact values, below the function; also with an expression in x.
 - Inéquations au clavier : x^2>=4, abs(x-1)<2, résoudre(x^2>4) donnent leurs solutions, comme écrites à la main. / Inequalities with the keyboard: x^2>=4, abs(x-1)<2, résoudre(x^2>4) give their solutions, as when handwritten.
