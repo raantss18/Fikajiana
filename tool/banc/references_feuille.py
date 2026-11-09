@@ -168,6 +168,68 @@ ref[f"{p} | A_{{5}}^{{2}}="] = int(sp.ff(5, 2))
 ref[f"{p} | \\binom{{10}}{{3}}="] = int(sp.binomial(10, 3))
 ref[f"{p} | 6!="] = int(sp.factorial(6))
 
+# Vague 3 : statistiques à deux variables. Moindres carrés par les équations
+# normales en matrices SymPy (et non par les sommes de l'app) ; modèles exp,
+# ln, puissance linéarisés comme sur les calculatrices.
+import math  # noqa: E402
+
+p = "statistiques à deux variables"
+
+
+def moindres_carres(colonnes, ys):
+    V = Matrix([[c(x) for c in colonnes] for x in xs_courant])
+    return list((V.T * V).inv() * V.T * Matrix(ys))
+
+
+def nombres(valeurs):
+    return [float(sp.N(v, 15)) for v in valeurs]
+
+
+xs_courant = [1, 2, 3, 4, 5]
+ys = [2, 4, 5, 4, 5]
+a, b = moindres_carres([lambda x: x, lambda x: 1], ys)
+X = Matrix(xs_courant)
+Y = Matrix(ys)
+mx, my = sum(xs_courant) / R(5), sum(ys) / R(5)
+cov = sum((x - mx) * (y - my) for x, y in zip(xs_courant, ys)) / 5
+vx = sum((x - mx) ** 2 for x in xs_courant) / 5
+vy = sum((y - my) ** 2 for y in ys) / 5
+r = cov / sp.sqrt(vx * vy)
+ref[f"{p} | \\text{{ajustement}}([1;2;3;4;5];[2;4;5;4;5])"] = nombres([a, b, r])
+ref[f"{p} | \\text{{correlation}}([1;2;3;4;5];[2;4;5;4;5])="] = float(sp.N(r, 15))
+
+xs_courant = [1, 2, 3, 4]
+ys = [R(27, 10), R(74, 10), R(201, 10), R(546, 10)]
+pente, origine = moindres_carres([lambda x: x, lambda x: 1], [sp.log(v) for v in ys])
+ref[f"{p} | \\text{{ajustement}}([1;2;3;4];[2{{,}}7;7{{,}}4;20{{,}}1;54{{,}}6];exp)"] = nombres([sp.exp(origine), pente])
+ys = [0, R(7, 10), R(11, 10), R(14, 10)]
+a, b = moindres_carres([lambda x: sp.log(x), lambda x: 1], ys)
+ref[f"{p} | \\text{{ajustement}}([1;2;3;4];[0;0{{,}}7;1{{,}}1;1{{,}}4];ln)"] = nombres([a, b])
+ys = [3, 12, 27, 48]
+pente, origine = moindres_carres([lambda x: sp.log(x), lambda x: 1], [sp.log(v) for v in ys])
+ref[f"{p} | \\text{{ajustement}}([1;2;3;4];[3;12;27;48];puissance)"] = nombres([sp.exp(origine), pente])
+ys = [1, 4, 9, 17]
+ref[f"{p} | \\text{{ajustement}}([1;2;3;4];[1;4;9;17];2)"] = nombres(
+    moindres_carres([lambda x: x**2, lambda x: x, lambda x: 1], ys))
+xs, ys = [1, 2, 3], [2, 4, 7]
+mx, my = R(sum(xs), 3), R(sum(ys), 3)
+ref[f"{p} | \\text{{covariance}}([1;2;3];[2;4;7])="] = float(
+    sum((x - mx) * (y - my) for x, y in zip(xs, ys)) / 3)
+
+
+def quartiles_lycee(valeurs):
+    """Q1 = rang ceil(n/4), Q3 = rang ceil(3n/4) ; médiane usuelle."""
+    v = sorted(valeurs)
+    n = len(v)
+    q1 = v[math.ceil(n / 4) - 1]
+    q3 = v[math.ceil(3 * n / 4) - 1]
+    me = v[n // 2] if n % 2 else R(v[n // 2 - 1] + v[n // 2], 2)
+    return [q1, me, q3]
+
+
+ref[f"{p} | \\text{{quartiles}}(3;1;7;5;9;2)"] = nombres(quartiles_lycee([3, 1, 7, 5, 9, 2]))
+ref[f"{p} | \\text{{quartiles}}(12;5;8;3;9;14;7)"] = nombres(quartiles_lycee([12, 5, 8, 3, 9, 14, 7]))
+
 # Vague 4 : tableau de valeurs (x puis f(x), toutes les valeurs affichées).
 p = "tableau de valeurs"
 

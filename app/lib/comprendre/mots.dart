@@ -46,6 +46,9 @@ const motsDeCommande = [
   'reste',
   'division',
   'bezout',
+  // Vague 3 : `ajustement`, `quartiles`, `correlation`, `covariance` non :
+  // ajoutés ici, ils recoupaient `g(x) =` d'une feuille d'Antsa
+  // (feuille_pad7_relue_test). Ils restent au clavier (ADR 0055).
   'tableau',
 ];
 
