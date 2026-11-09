@@ -8,18 +8,18 @@ abstract final class Contact {
   static const nom = 'Antsa Malala RANIRIAMANJAKA';
 
   /// Son courriel public.
-  static const courriel = 'raantss@gmail.com';
+  static const courriel = 'antsa.raniriamanjaka@univ-antananarivo.mg';
 
   /// Le dépôt du code source (licence : ADR 0001).
   static const depot = 'https://github.com/raantss18/Fikajiana';
 
-  /// Son numéro WhatsApp, chiffres seuls avec l'indicatif (`261…`) ;
-  /// `null` tant qu'Antsa ne l'a pas donné : l'entrée reste cachée.
-  static const String? whatsApp = null;
+  /// Son numéro WhatsApp, chiffres seuls avec l'indicatif (`261…`), donné
+  /// par Antsa le 2026-11-09.
+  static const whatsApp = '261334383882';
 
   /// Le lien d'une discussion WhatsApp (<https://faq.whatsapp.com/5913398998672934>).
-  static String? get lienWhatsApp =>
-      whatsApp == null ? null : 'https://wa.me/$whatsApp';
+  /// `null` cacherait l'entrée des Réglages.
+  static String? get lienWhatsApp => 'https://wa.me/$whatsApp';
 }
 
 const _systeme = MethodChannel('fikajiana/systeme');

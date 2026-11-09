@@ -47,7 +47,7 @@ Déjà livré ce jour : rature et stylet (0.6.1), lueur et trait ondulé (0.7.1)
 6. ✅ **Liste des objets de la Figure** (cap n° 9) : faite depuis longtemps, revue sur le Pad 7, passée à ✅.
 7. ✅ **Plus d'actions proposées** (choix d'Antsa, suite du point 5) : `factoriser` (somme où la variable monte en puissance), `développer` (parenthèses), `limite` en +∞ d'une expression ; `valeur` en 0, `tangente` en 0, `limite` d'une fonction ; `inverse` d'une matrice carrée. Mots qui passent à la ligne. Vu sur le Pad 7 : `limite` pose `lim (X−1) = +∞`. ⏳ Système de deux équations écrites sur deux lignes (non fait : une accolade le résout déjà) ; point et borne choisis par la personne (on corrige la ligne posée).
 8. ✅ **Un seul bouton par ligne** (Antsa, 2026-11-08 et 09) : la rangée de mots, les pouces, le crayon et « tracer » deviennent un petit bouton dessiné qui ouvre une seule liste (ADR 0051, PR #101).
-9. 🔄 **À propos : coordonnées d'Antsa** (Antsa, 2026-11-09) : nom, courriel (`mailto:`), dépôt GitHub dans les Réglages et le Guide, ouverts au toucher (méthode Android `ouvrir`) ; WhatsApp prévu (`https://wa.me/<numéro>`), caché tant que le numéro n'est pas donné (`Contact.whatsApp`). ⏳ Numéro WhatsApp.
+9. ✅ **À propos : coordonnées d'Antsa** (Antsa, 2026-11-09) : nom, courriel universitaire (`mailto:`), dépôt GitHub et WhatsApp +261 33 43 838 82 (`https://wa.me/261334383882`) dans les Réglages et le Guide, ouverts au toucher (méthode Android `ouvrir`). Test `contact_test`. Publié en 1.1.3.
 
 ## Couverture d'une calculatrice de lycée (Antsa, 2026-11-08, après la version de l'étape 8)
 

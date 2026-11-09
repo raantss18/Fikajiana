@@ -286,7 +286,7 @@
     "contactWhatsApp": "WhatsApp",
     "contactSansApp": "No app on this device can open it.",
     "guideContactTitre": "Contact the author, source code",
-    "guideContactPhrase": "Settings, About: Fikajiana is designed by Antsa Malala RANIRIAMANJAKA. Write an email opens your email app to raantss@gmail.com; Source code opens the repository https://github.com/raantss18/Fikajiana. Nothing is sent without your action.",
+    "guideContactPhrase": "Settings, About: Fikajiana is designed by Antsa Malala RANIRIAMANJAKA. Write an email opens your email app to antsa.raniriamanjaka@univ-antananarivo.mg; Source code opens the repository https://github.com/raantss18/Fikajiana; WhatsApp opens a chat with +261 33 43 838 82. Nothing is sent without your action.",
     "guideContactMots": "contact author email e-mail mail write source code repository github licence whatsapp about Antsa",
     "@aProposLicences": {
         "description": "Settings: updates and about"
