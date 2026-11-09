@@ -3,6 +3,7 @@ import 'package:fikajiana_math/src/evaluateur.dart';
 import 'package:fikajiana_math/src/lecteur_latex.dart';
 import 'package:fikajiana_math/src/probabilites.dart';
 import 'package:fikajiana_math/src/redressement.dart';
+import 'package:fikajiana_math/src/statistiques.dart';
 
 /// Ce que l'écriture semble être.
 enum TypeExpression {
@@ -159,6 +160,9 @@ Analyse analyserLatex(
       valeurs: valeurs,
     );
   }
+  // `ajustement([x];[y])`, `quartiles(…)` (vague 3).
+  final statistiques = analyserStatistiques(latex, valeurs: valeurs);
+  if (statistiques != null) return statistiques;
   // `division(17;5)`, `17 \equiv 2 [5]` (vague 2).
   final arithmetique = analyserArithmetique(latex, valeurs: valeurs);
   if (arithmetique != null) return arithmetique;

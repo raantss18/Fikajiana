@@ -62,6 +62,33 @@ Saisie lireSaisie(String texte) {
   ).hasMatch(propre)) {
     return Saisie(propre);
   }
+  // `ajustement([1;2;3];[2;4;7];exp)`, `quartiles(3;1;7)` (vague 3).
+  final statistique = RegExp(
+    r'^(ajustement|r[ée]gression|corr[ée]lation|covariance|quartiles)\s*'
+    r'\((.*)\)\s*(=?)$',
+  ).firstMatch(propre);
+  if (statistique != null) {
+    try {
+      String traduit(String t) => _Traducteur(_decouper(t.trim())).traduire();
+      String argument(String a) {
+        final liste = RegExp(r'^\s*[\[{(](.*)[\]})]\s*$').firstMatch(a);
+        if (liste != null) {
+          return '\\left[${_separer(liste[1]!, ';').map(traduit).join(';')}'
+              r'\right]';
+        }
+        // Le modèle (`exp`, `ln`, `puissance`, `2`) reste tel quel.
+        return RegExp(r'^\s*[a-zé]+\s*$').hasMatch(a) ? a.trim() : traduit(a);
+      }
+
+      final morceaux = _separerHorsCrochets(statistique[2]!);
+      return Saisie(
+        '\\text{${statistique[1]}}\\left('
+        '${morceaux.map(argument).join(';')}\\right)${statistique[3]}',
+      );
+    } on _Refus catch (refus) {
+      return Saisie.refusee(refus.probleme, detail: refus.detail);
+    }
+  }
   // `17≡2[5]`, `17 equiv 2 mod 5` : une congruence.
   final congruence = RegExp(
     r'^(.+?)\s*(?:≡|\bequiv\b|\bcongru\b(?:\s*à)?)\s*(.+?)\s*'
@@ -108,6 +135,24 @@ Saisie lireSaisie(String texte) {
   } on _Refus catch (refus) {
     return Saisie.refusee(refus.probleme, detail: refus.detail);
   }
+}
+
+/// `[1;2];[3;4];exp` : coupé aux `;` hors des crochets et parenthèses.
+List<String> _separerHorsCrochets(String texte) {
+  final morceaux = <String>[];
+  var profondeur = 0;
+  var debut = 0;
+  for (var i = 0; i < texte.length; i++) {
+    final c = texte[i];
+    if ('([{'.contains(c)) profondeur++;
+    if (')]}'.contains(c)) profondeur--;
+    if (c == ';' && profondeur == 0) {
+      morceaux.add(texte.substring(debut, i));
+      debut = i + 1;
+    }
+  }
+  morceaux.add(texte.substring(debut));
+  return morceaux;
 }
 
 /// Une loi déclarée (`X~B(10;0,3)`, `Y~N(100;15^2)`) ou une probabilité
