@@ -176,6 +176,31 @@ const List<(String, List<String>)> problemes = [
       '6!=',
     ],
   ),
+  // Vague 3 : statistiques à deux variables.
+  (
+    'statistiques à deux variables',
+    [
+      r'\text{ajustement}([1;2;3;4;5];[2;4;5;4;5])',
+      r'\text{ajustement}([1;2;3;4];[2{,}7;7{,}4;20{,}1;54{,}6];exp)',
+      r'\text{ajustement}([1;2;3;4];[0;0{,}7;1{,}1;1{,}4];ln)',
+      r'\text{ajustement}([1;2;3;4];[3;12;27;48];puissance)',
+      r'\text{ajustement}([1;2;3;4];[1;4;9;17];2)',
+      r'\text{correlation}([1;2;3;4;5];[2;4;5;4;5])=',
+      r'\text{covariance}([1;2;3];[2;4;7])=',
+      r'\text{quartiles}(3;1;7;5;9;2)',
+      r'\text{quartiles}(12;5;8;3;9;14;7)',
+    ],
+  ),
+  // Vague 4 : tableau de valeurs.
+  (
+    'tableau de valeurs',
+    [
+      'f(x)=x^{2}-1',
+      r'\text{tableau}(f;0;3;1)',
+      r'\text{tableau}(\frac{1}{x};1;4)=',
+      r'\text{tableau}(x^{3};-1;1;0{,}5)',
+    ],
+  ),
   // Vague 5 : inéquations (bornes des solutions).
   (
     'inéquations',

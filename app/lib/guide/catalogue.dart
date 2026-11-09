@@ -203,6 +203,14 @@ List<EntreeGuide> catalogueGuide(AppLocalizations l10n) => [
     lignes: [r"y'-3y=\cos(x)"],
   ),
   EntreeGuide(
+    cle: 'tableau',
+    famille: FamilleGuide.fonctions,
+    titre: l10n.guideTableauTitre,
+    phrase: l10n.guideTableauPhrase,
+    motsCles: l10n.guideTableauMots,
+    lignes: ['f(x)=x^{2}-1', r'\text{tableau}\left(f;0;3;1\right)'],
+  ),
+  EntreeGuide(
     cle: 'derivee',
     famille: FamilleGuide.fonctions,
     titre: l10n.guideDeriveeTitre,
@@ -381,6 +389,34 @@ List<EntreeGuide> catalogueGuide(AppLocalizations l10n) => [
       r'Y\sim N\left(100;15^{2}\right)',
       r'P\left(85\le Y\le 115\right)=',
       r'P\left(Y\le t\right)=0{,}975',
+    ],
+  ),
+  EntreeGuide(
+    cle: 'ajustement',
+    famille: FamilleGuide.statistiques,
+    titre: l10n.guideAjustementTitre,
+    phrase: l10n.guideAjustementPhrase,
+    motsCles: l10n.guideAjustementMots,
+    lignes: [
+      r'\text{ajustement}\left(\left[1;2;3;4\right];\left[2;4;5;8\right]\right)',
+    ],
+  ),
+  EntreeGuide(
+    cle: 'quartiles',
+    famille: FamilleGuide.statistiques,
+    titre: l10n.guideQuartilesTitre,
+    phrase: l10n.guideQuartilesPhrase,
+    motsCles: l10n.guideQuartilesMots,
+    lignes: [r'\text{quartiles}\left(3;1;7;5;9;2\right)'],
+  ),
+  EntreeGuide(
+    cle: 'correlation',
+    famille: FamilleGuide.statistiques,
+    titre: l10n.guideCorrelationTitre,
+    phrase: l10n.guideCorrelationPhrase,
+    motsCles: l10n.guideCorrelationMots,
+    lignes: [
+      r'\text{correlation}\left(\left[1;2;3\right];\left[2;4;7\right]\right)=',
     ],
   ),
   EntreeGuide(
