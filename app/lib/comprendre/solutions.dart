@@ -39,6 +39,14 @@ String ecrireSolutions(
   return solutions == null ? latex : '$solutions$suite';
 }
 
+/// Vrai si la ligne pose une question qu'une réponse équivalente résout :
+/// une relation (`=`, `<`, `≤`…) ou `résoudre(…)`. `division(17;5)` ou
+/// `ajustement(…)` ne sont pas équivalents à `q=3 et r=2` : pas de `⇔`.
+bool poseUneRelation(String latex) => RegExp(
+  r'[=<>]|\\(le|ge|leq|geq|leqslant|geqslant|neq|ne)(?![a-zA-Z])'
+  r'|r[ée]soudre|\bsolve',
+).hasMatch(latex);
+
 String? _equation(String texte, String inconnue, String ou) {
   if (!texte.startsWith(r'\{') || !texte.endsWith(r'\}')) return null;
   final valeurs = _separer(texte.substring(2, texte.length - 2), ',');
@@ -56,10 +64,14 @@ final _estRelation = RegExp(r'[<>]|\\leq|\\geq');
 
 /// Giac rend `(x>\mathrm{-2})\mbox{ and }(x<2)` : on écrit `-2<x<2`.
 String _inequation(String relation) {
-  final propre = relation.replaceAllMapped(
-    RegExp(r'\\mathrm\{(-[^{}]*)\}'),
-    (m) => m[1]!,
-  );
+  final propre = relation
+      .replaceAllMapped(RegExp(r'\\mathrm\{(-[^{}]*)\}'), (m) => m[1]!)
+      // `x>(e)` : une borne seule n'a pas besoin de parenthèses. Celles d'une
+      // fonction (`\ln(3)`) restent : une lettre les précède.
+      .replaceAllMapped(
+        RegExp(r'(?<![a-zA-Z\\])\((\w+|\\[a-zA-Z]+) ?\)'),
+        (m) => m[1]!,
+      );
   final deux = RegExp(
     r'^\((.+?)(>|\\geq )(.+?)\)\\mbox\{ and \}\(\1(<|\\leq )(.+?)\)$',
   ).firstMatch(propre);

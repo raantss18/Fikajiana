@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:fikajiana/comprendre/calcul_feuille.dart';
+import 'package:fikajiana/comprendre/solutions.dart';
 import 'package:fikajiana/encre/traverse_ecriture.dart';
 import 'package:fikajiana/encre/vue_feuille.dart';
 import 'package:fikajiana/l10n/l10n.dart';
@@ -572,7 +573,8 @@ class RepereBloc extends StatelessWidget {
               : !bloc.estResolution
               ? '$egal $valeur'
               // `x+3=4 = {1}` serait faux : deux écritures équivalentes.
-              : valeur.startsWith('S=')
+              // Sans relation (`division(17;5)`), la réponse suit, sans `⇔`.
+              : valeur.startsWith('S=') || !poseUneRelation(ecrit)
               ? valeur
               : '\\iff $valeur';
           // Tapée, la ligne s'écrit aussi à la main : la question à l'encre

@@ -143,6 +143,9 @@ Saisie lireSaisie(String texte) {
   try {
     final commande = _commandeDeCalcul(propre);
     if (commande != null) return Saisie(commande);
+    // `x+1<3`, `x^2>=4`, `-2<x<=5` : une inéquation (vague 5).
+    final inequation = _inequationTapee(propre);
+    if (inequation != null) return Saisie(inequation);
     final jetons = _decouper(propre);
     final latex = _Traducteur(jetons).traduire();
     final autre = _Traducteur(jetons, denominateurLong: true).traduire();
@@ -238,6 +241,61 @@ String? _probabiliteTapee(String texte) {
   return 'P\\left(${relation(p[1]!)}\\right)${relation(suite)}';
 }
 
+/// Les signes d'ordre tapés, et leur LaTeX.
+const _ordresTapes = {
+  '<=': r'\le ',
+  '>=': r'\ge ',
+  '=<': r'\le ',
+  '=>': r'\ge ',
+  '≤': r'\le ',
+  '≥': r'\ge ',
+  '<': '<',
+  '>': '>',
+};
+
+/// `x+1<3`, `x^2>=4`, `-2<x<=5` : chaque côté traduit, les signes d'ordre
+/// en LaTeX. `null` sans signe d'ordre hors des parenthèses. Lève un refus
+/// si un côté ne se lit pas.
+String? _inequationTapee(String texte) {
+  final sortie = StringBuffer();
+  final morceau = StringBuffer();
+  var profondeur = 0;
+  var signes = 0;
+  void vider() {
+    final t = morceau.toString().trim();
+    if (t.isEmpty) throw const _Refus(ProblemeSaisie.incomplet);
+    sortie.write(_Traducteur(_decouper(t)).traduire());
+    morceau.clear();
+  }
+
+  for (var i = 0; i < texte.length; i++) {
+    final c = texte[i];
+    if (c == '(' || c == '[') profondeur++;
+    if (c == ')' || c == ']') profondeur--;
+    final deux = i + 1 < texte.length ? texte.substring(i, i + 2) : '';
+    final signe = profondeur > 0
+        ? null
+        : _ordresTapes.containsKey(deux)
+        ? deux
+        : _ordresTapes.containsKey(c)
+        ? c
+        : null;
+    if (signe == null) {
+      morceau.write(c);
+      continue;
+    }
+    vider();
+    sortie.write(_ordresTapes[signe]);
+    signes++;
+    i += signe.length - 1;
+  }
+  if (signes == 0) return null;
+  // `-2<x<=5` : pas encore comprise ; le dire plutôt qu'une ligne en échec.
+  if (signes > 1) throw const _Refus(ProblemeSaisie.signeInattendu, '<');
+  vider();
+  return sortie.toString();
+}
+
 /// `développer((x+1)^2)`, `moyenne(2;4;9)`, `tangente(f;2)` sur toute la
 /// ligne : le nom pour le lecteur, chaque argument traduit à part.
 String? _commandeDeCalcul(String texte) {
@@ -245,7 +303,10 @@ String? _commandeDeCalcul(String texte) {
       .firstMatch(texte);
   if (m == null) return null;
   final nom = normaliserNom(m[1]!);
-  if (!nomsDeCalcul.contains(nom)) return null;
+  // `résoudre(…)` se lit dans `analyserLatex`, pas dans le lecteur.
+  if (!nomsDeCalcul.contains(nom) && nom != 'resoudre' && nom != 'solve') {
+    return null;
+  }
   final dedans = m[2]!;
   final unSeul =
       !RegExp(
@@ -279,7 +340,8 @@ String? _commandeDeCalcul(String texte) {
         '\\right)${m[3]}';
   }
   final traduits = [
-    for (final morceau in morceaux) _Traducteur(_decouper(morceau)).traduire(),
+    for (final morceau in morceaux)
+      _inequationTapee(morceau) ?? _Traducteur(_decouper(morceau)).traduire(),
   ];
   // `\\text` : l'affichage garde les accents ; le lecteur les ôte.
   return '\\text{${m[1]}}\\left(${traduits.join(';')}\\right)${m[3]}';

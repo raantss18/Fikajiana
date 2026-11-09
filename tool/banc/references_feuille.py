@@ -243,4 +243,23 @@ ref[f"{p} | \\text{{tableau}}(\\frac{{1}}{{x}};1;4)="] = tableau(1 / x, [1, 2, 3
 ref[f"{p} | \\text{{tableau}}(x^{{3}};-1;1;0{{,}}5)"] = tableau(
     x**3, [-1, R(-1, 2), 0, R(1, 2), 1])
 
+# Vague 5 : inéquations ; on compare les bornes des intervalles solutions.
+from sympy.solvers.inequalities import solve_univariate_inequality  # noqa: E402
+
+p = "inéquations"
+
+
+def bornes(relation):
+    ens = solve_univariate_inequality(relation, x, relational=False)
+    finis = sorted({float(b) for b in ens.boundary if b.is_finite})
+    return finis
+
+
+ref[f"{p} | x+1<3"] = bornes(x + 1 < 3)
+ref[f"{p} | x^{{2}}\\ge 4"] = bornes(x**2 >= 4)
+ref[f"{p} | 2x-3>x+1"] = bornes(2 * x - 3 > x + 1)
+ref[f"{p} | |x-1|<2"] = bornes(sp.Abs(x - 1) < 2)
+ref[f"{p} | \\text{{résoudre}}\\left(x^{{2}}-5x+6\\le 0\\right)"] = bornes(x**2 - 5 * x + 6 <= 0)
+ref[f"{p} | \\ln\\left(x\\right)>1"] = [float(sp.N(sp.E, 15))]
+
 print(json.dumps(ref, ensure_ascii=False, indent=1))

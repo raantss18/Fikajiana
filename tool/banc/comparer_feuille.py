@@ -10,6 +10,7 @@ autres se relisent à la main). Une ligne est juste si un nombre de son résulta
 (approché, exact ou texte affiché) vaut la référence à 1e-6 près (relatif).
 """
 import json
+import math
 import pathlib
 import re
 import subprocess
@@ -33,6 +34,15 @@ def nombres(mesure):
     for cle in ("a", "r", "t"):
         texte = mesure.get(cle) or ""
         texte = re.sub(r"\{,\}", ".", str(texte))
+        # Valeurs exactes : \mathrm{-1}, \frac{-1}{8}, e et \pi seuls.
+        texte = re.sub(r"\\mathrm\{(-?\d+)\}", r"\1", texte)
+        texte = re.sub(
+            r"\\frac\{(-?\d+)\}\{(-?\d+)\}",
+            lambda m: repr(int(m[1]) / int(m[2])),
+            texte,
+        )
+        texte = re.sub(r"(?<![a-zA-Z\\])e(?![a-zA-Z])", repr(math.e), texte)
+        texte = re.sub(r"\\pi(?![a-zA-Z])", repr(math.pi), texte)
         for m in NOMBRE.findall(texte):
             try:
                 trouves.append(float(m.replace(",", ".")))
