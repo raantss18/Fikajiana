@@ -39,6 +39,14 @@ String ecrireSolutions(
   return solutions == null ? latex : '$solutions$suite';
 }
 
+/// Vrai si la ligne pose une question qu'une réponse équivalente résout :
+/// une relation (`=`, `<`, `≤`…) ou `résoudre(…)`. `division(17;5)` ou
+/// `ajustement(…)` ne sont pas équivalents à `q=3 et r=2` : pas de `⇔`.
+bool poseUneRelation(String latex) => RegExp(
+  r'[=<>]|\\(le|ge|leq|geq|leqslant|geqslant|neq|ne)(?![a-zA-Z])'
+  r'|r[ée]soudre|\bsolve',
+).hasMatch(latex);
+
 String? _equation(String texte, String inconnue, String ou) {
   if (!texte.startsWith(r'\{') || !texte.endsWith(r'\}')) return null;
   final valeurs = _separer(texte.substring(2, texte.length - 2), ',');

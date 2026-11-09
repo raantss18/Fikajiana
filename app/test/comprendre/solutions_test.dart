@@ -138,4 +138,19 @@ void main() {
       expect(systeme(latex), latex);
     });
   });
+
+  test('⇔ seulement si la ligne pose une relation (banc du Pad 7)', () {
+    expect(poseUneRelation('x+3=4'), isTrue);
+    expect(poseUneRelation(r'x^{2}\ge 4'), isTrue);
+    expect(poseUneRelation(r'\ln\left(x\right)>1'), isTrue);
+    expect(poseUneRelation(r'\text{résoudre}\left(x^{2}-4\right)'), isTrue);
+    expect(poseUneRelation(r'\text{division}\left(17;5\right)'), isFalse);
+    expect(
+      poseUneRelation(
+        r'\text{ajustement}\left(\left[1;2\right];\left[2;4\right]\right)',
+      ),
+      isFalse,
+    );
+    expect(poseUneRelation(r'\text{left}'), isFalse);
+  });
 }
