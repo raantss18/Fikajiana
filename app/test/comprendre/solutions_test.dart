@@ -65,6 +65,13 @@ void main() {
         );
       });
 
+      test('une borne seule perd ses parenthèses : x>e, pas x>(e)', () {
+        // Sortie réelle du banc sur le Pad 7 pour ln(x)>1 (vague 5).
+        expect(_equation(r'\{x>(e)\}'), 'x>e');
+        expect(_equation(r'\{x<(\pi )\}'), r'x<\pi');
+        expect(_equation(r'\{x>\ln(3)\}'), r'x>\ln(3)');
+      });
+
       test('deux intervalles se disent avec « ou »', () {
         expect(
           _equation(r'\{x\leq \mathrm{-1},x\geq 1\}'),

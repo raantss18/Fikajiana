@@ -56,10 +56,14 @@ final _estRelation = RegExp(r'[<>]|\\leq|\\geq');
 
 /// Giac rend `(x>\mathrm{-2})\mbox{ and }(x<2)` : on écrit `-2<x<2`.
 String _inequation(String relation) {
-  final propre = relation.replaceAllMapped(
-    RegExp(r'\\mathrm\{(-[^{}]*)\}'),
-    (m) => m[1]!,
-  );
+  final propre = relation
+      .replaceAllMapped(RegExp(r'\\mathrm\{(-[^{}]*)\}'), (m) => m[1]!)
+      // `x>(e)` : une borne seule n'a pas besoin de parenthèses. Celles d'une
+      // fonction (`\ln(3)`) restent : une lettre les précède.
+      .replaceAllMapped(
+        RegExp(r'(?<![a-zA-Z\\])\((\w+|\\[a-zA-Z]+) ?\)'),
+        (m) => m[1]!,
+      );
   final deux = RegExp(
     r'^\((.+?)(>|\\geq )(.+?)\)\\mbox\{ and \}\(\1(<|\\leq )(.+?)\)$',
   ).firstMatch(propre);
