@@ -4,6 +4,20 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+## [1.1.3] — 2026-11-09
+
+### Message fr
+
+Réglages, À propos : on peut maintenant écrire à Antsa sur WhatsApp (+261 33 43 838 82) d'un toucher, et son courriel devient antsa.raniriamanjaka@univ-antananarivo.mg.
+
+### Message en
+
+Settings, About: you can now reach Antsa on WhatsApp (+261 33 43 838 82) with one tap, and her email is now antsa.raniriamanjaka@univ-antananarivo.mg.
+
+### Changements
+
+- Réglages, À propos : on peut maintenant écrire à Antsa sur WhatsApp (+261 33 43 838 82) d'un toucher, et son courriel devient antsa.raniriamanjaka@univ-antananarivo.mg. / Settings, About: you can now reach Antsa on WhatsApp (+261 33 43 838 82) with one tap, and her email is now antsa.raniriamanjaka@univ-antananarivo.mg.
+
 ## [1.1.2] — 2026-11-09
 
 ### Message fr

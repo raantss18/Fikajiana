@@ -53,13 +53,19 @@ void main() {
     await t.tap(find.text('Code source'));
     await t.pumpAndSettle();
     expect(ouverts, [
-      'mailto:raantss@gmail.com',
+      'mailto:antsa.raniriamanjaka@univ-antananarivo.mg',
       'https://github.com/raantss18/Fikajiana',
     ]);
 
-    // WhatsApp : pas d'entrée tant que le numéro n'est pas donné.
-    expect(Contact.whatsApp, isNull);
-    expect(find.text('WhatsApp'), findsNothing);
+    // WhatsApp : le numéro d'Antsa, avec l'indicatif de Madagascar.
+    expect(Contact.lienWhatsApp, 'https://wa.me/261334383882');
+    await t.ensureVisible(find.text('WhatsApp'));
+    await t.pumpAndSettle();
+    expect(find.text('+261334383882'), findsOneWidget);
+    await t.tap(find.text('WhatsApp'));
+    await t.pumpAndSettle();
+    expect(ouverts.last, 'https://wa.me/261334383882');
+    ouverts.clear();
 
     // Sans app pour l'ouvrir, on le dit.
     repond = false;
