@@ -13,13 +13,13 @@ abstract final class Contact {
   /// Le dépôt du code source (licence : ADR 0001).
   static const depot = 'https://github.com/raantss18/Fikajiana';
 
-  /// Son numéro WhatsApp, chiffres seuls avec l'indicatif (`261…`) ;
-  /// `null` cacherait l'entrée (numéro donné par Antsa le 2026-11-09).
-  static const String? whatsApp = '261334383882';
+  /// Son numéro WhatsApp, chiffres seuls avec l'indicatif (`261…`), donné
+  /// par Antsa le 2026-11-09.
+  static const whatsApp = '261334383882';
 
   /// Le lien d'une discussion WhatsApp (<https://faq.whatsapp.com/5913398998672934>).
-  static String? get lienWhatsApp =>
-      whatsApp == null ? null : 'https://wa.me/$whatsApp';
+  /// `null` cacherait l'entrée des Réglages.
+  static String? get lienWhatsApp => 'https://wa.me/$whatsApp';
 }
 
 const _systeme = MethodChannel('fikajiana/systeme');
