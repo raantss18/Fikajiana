@@ -68,6 +68,13 @@ Déjà livré ce jour : rature et stylet (0.6.1), lueur et trait ondulé (0.7.1)
    `essai_local.sh` l'accepte. Écrit depuis le cloud, **jamais lancé** (pas de KVM dans le conteneur) : à essayer sur
    l'ordinateur (`creer`, `lancer`, `essai_local.sh`), noter la mémoire réelle.
 
+## Innovation (Antsa, 2026-11-14 : « je veux que tu innoves »)
+
+> Pistes choisies par Antsa : étapes de résolution, vérifier ma copie, nouveau visage ; puis un site GitHub et une vidéo de démonstration.
+> Les points 1 à 3 et 5 sont tenus dans leur propre PR (étapes et copie : PR #117).
+
+4. 🔄 **Site GitHub** du projet, dans l'esprit de celui de Zanak'i Antsa (ADR 0063) : `site/`, `tool/build_site.py`, `.github/workflows/site.yml`, 19 tests. Page construite avec les vraies versions et vue à 375 et 1360 px, claire et sombre. Reste : Antsa active Pages (source : GitHub Actions) ; la vidéo `site/video/demo.mp4` et `site/chapitres.json` (point 5) ; captures facultatives (`site/LISEZMOI.md`) ; lecteur d'écran, Firefox, Safari, vrai téléphone.
+
 ## Sécurité et robustesse (Antsa, 2026-11-14, ADR 0060)
 
 1. ✅ **Audit** : 240 dépendances sans faille connue (OSV) ; code relu (mise à jour, dons, Android, colle Giac, magasin d'écriture).
