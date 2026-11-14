@@ -116,6 +116,14 @@ void main() {
       );
     });
 
+    test(r'reconnue sans parenthèse devant une matrice, comme \det', () {
+      expect(
+        superieurDemande('\\text{valeurspropres}$a='),
+        Superieur.valeursPropres,
+      );
+      expect(superieurDemande('\\text{rang}$a'), Superieur.rang);
+    });
+
     test('trace reste « tracer » : seul tr(A) est la trace', () {
       expect(superieurDemande(r'\text{trace}(f)'), isNull);
       expect(superieurDemande(r'\text{tr}(A)'), Superieur.trace);

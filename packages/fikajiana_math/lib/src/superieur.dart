@@ -98,10 +98,11 @@ String giacMatrice(Superieur commande, String m) => switch (commande) {
   _ => throw ArgumentError('$commande ne porte pas sur une matrice'),
 };
 
-/// La commande du supérieur que demande [ligne], ou `null`.
+/// La commande du supérieur que demande [ligne], ou `null`. Sur une matrice,
+/// la parenthèse peut manquer, comme pour `\det` : `rang\begin{pmatrix}…`.
 Superieur? superieurDemande(String ligne) {
   final nom = RegExp(
-    r'^\s*\\?(?:(?:operatorname|mathrm|text|textrm)\s*\{\s*)?([A-Za-zéèêàùûôîç\s_-]+?)\s*\}?\s*(?:\\left)?\s*\(',
+    r'^\s*\\?(?:(?:operatorname|mathrm|text|textrm)\s*\{\s*)?([A-Za-zéèêàùûôîç\s_-]+?)\s*\}?\s*(?:(?:\\left)?\s*\(|\\begin\b)',
   ).firstMatch(ligne);
   if (nom == null) return null;
   return nomsDuSuperieur[normaliserNom(nom[1]!)];
