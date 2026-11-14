@@ -78,7 +78,7 @@ Déjà livré ce jour : rature et stylet (0.6.1), lueur et trait ondulé (0.7.1)
 3. 🔄 **Nouveau visage** : l'accueil montre trois exemples du tour qui s'écrivent à la main avec leur résultat ; bandeau du modèle lisible sur téléphone ; une ligne tapée a son bouton. Vu sur l'émulateur léger. Reste : Pad 7 ; la palette (ADR 0010) est gardée.
 6. 🔄 **Mise à jour du modèle depuis l'app** (ADR 0064, Antsa 2026-11-14) : Réglages → « Rechercher une mise à jour du modèle », fiche `modele.json` signée publiée avec chaque version. Tests avec un serveur local. Reste : essai sur appareil avec une vraie version 2 du modèle.
 4. 🔄 **Site GitHub** du projet, dans l'esprit de celui de Zanak'i Antsa (ADR 0063) : `site/`, `tool/build_site.py`, `.github/workflows/site.yml`, 19 tests. Page construite avec les vraies versions et vue à 375 et 1360 px, claire et sombre. Reste : Antsa active Pages (source : GitHub Actions) ; la vidéo `site/video/demo.mp4` et `site/chapitres.json` (point 5) ; captures facultatives (`site/LISEZMOI.md`) ; lecteur d'écran, Firefox, Safari, vrai téléphone.
-5. ⏳ **Vidéo de démonstration**, sur l'émulateur léger, écriture rejouée, sous-titres en français.
+5. ✅ **Vidéo de démonstration** (2 min 50, 4,6 Mo) : tournée sur l'émulateur léger en tablette paysage (`tool/video/tourner.py`), vraie écriture du Pad 7 rejouée au stylet (`rejouer_stylet.py`), montée avec cartons, chapitres et sous-titres français sous l'écran (`monter.py`) ; posée dans `site/video/`. Limite : l'installation est racontée par un carton, l'émulateur ATD n'a pas l'installateur d'Android. Reste : la retourner sur le Pad 7.
 
 ## Sécurité et robustesse (Antsa, 2026-11-14, ADR 0060)
 

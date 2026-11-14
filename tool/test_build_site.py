@@ -47,7 +47,11 @@ class Construction(unittest.TestCase):
     def site_avec(self, fichiers):
         """Une copie du gabarit, avec des fichiers en plus (la vidéo, les chapitres, une capture)."""
         site = self.tmp / 'site'
-        shutil.copytree(build_site.SITE, site)
+        # Sans la vidéo ni les chapitres du dépôt : chaque test pose les siens.
+        shutil.copytree(
+            build_site.SITE, site,
+            ignore=lambda dossier, noms: [n for n in noms if n == 'video' or n == 'chapitres.json'],
+        )
         for nom, contenu in fichiers.items():
             (site / nom).parent.mkdir(parents=True, exist_ok=True)
             (site / nom).write_text(contenu, encoding='utf-8')
@@ -95,8 +99,7 @@ class Construction(unittest.TestCase):
             self.construire(releases=[r for r in self.releases if not r['assets']])
 
     def test_sans_video_une_illustration(self):
-        self.assertFalse((build_site.SITE / 'video' / 'demo.mp4').exists(), 'ce test suppose le dépôt sans vidéo')
-        _, page = self.construire()
+        _, page = self.construire(self.site_avec({}))
         self.assertNotIn('<video', page)
         self.assertNotIn('class="chapitres"', page)
         self.assertIn('feuille-accueil', page)
