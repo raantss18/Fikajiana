@@ -136,8 +136,9 @@ typedef SigneDeLigne = (List<Trait> traits, String latex, Rect caseLigne);
 
 /// Toute l'écriture gardée sur l'appareil, un seul magasin (ADR 0041,
 /// 0042, 0066) : les lignes lues justes, les corrections. Rien ne quitte
-/// l'appareil, sauf un export fait par la personne. Les signes corrigés servent aussi à lire : un
-/// plus proche voisin passe avant le modèle quand il est sûr.
+/// l'appareil, sauf un export fait par la personne. Les signes corrigés
+/// servent aussi à lire : un plus proche voisin passe avant le modèle quand
+/// il est sûr.
 class Ecritures extends ChangeNotifier {
   new({this.fichier, this.plafond = 20 * 1000 * 1000});
 
