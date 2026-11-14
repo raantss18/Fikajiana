@@ -10,6 +10,8 @@ import 'package:fikajiana/reglages/reglages.dart';
 import 'package:fikajiana/ui/calcul/action_manuscrite.dart';
 import 'package:fikajiana/ui/calcul/marques_bloc.dart';
 import 'package:fikajiana/ui/calcul/menu_actions.dart';
+import 'package:fikajiana/ui/calcul/panneau_copie.dart';
+import 'package:fikajiana/ui/calcul/panneau_etapes.dart';
 import 'package:fikajiana/ui/calcul/panneau_saisie.dart';
 import 'package:fikajiana/ui/calcul/placer_construction.dart';
 import 'package:fikajiana/ui/calcul/signes_lus.dart';
@@ -105,6 +107,22 @@ class RepereBloc extends StatelessWidget {
           agir: () => unawaited(calcul.corriger(bloc, autre)),
         ),
       ...?_entreeFigure(context),
+      // Les étapes de la résolution, comme au tableau (2026-11-14).
+      if (calcul.equationAEtapes(bloc) != null)
+        EntreeLigne(
+          cle: 'etapes',
+          mot: l10n.motEtapes,
+          libelle: l10n.etapesVoir,
+          agir: () => unawaited(montrerEtapes(context, calcul, bloc)),
+        ),
+      // Vérifier ma copie : la démarche relue ligne par ligne (2026-11-14).
+      if (calcul.copieDe(bloc) case final copie?)
+        EntreeLigne(
+          cle: 'verifier',
+          mot: l10n.motVerifier,
+          libelle: l10n.copieVerifier,
+          agir: () => unawaited(montrerCopie(context, calcul, copie)),
+        ),
       if (surProposer case final proposer?)
         for (final p in calcul.propositions(bloc))
           EntreeLigne(
@@ -586,6 +604,8 @@ class RepereBloc extends StatelessWidget {
                   children: [
                     _Formule(latex: ecrit, couleur: encre, manuscrite: true),
                     _Formule(latex: reponse, couleur: accent, manuscrite: true),
+                    // Une ligne tapée a aussi sa liste (étapes, corriger).
+                    if (!enExport) ?_bouton(context),
                   ],
                 )
               : _Formule(latex: reponse, couleur: accent, manuscrite: true);

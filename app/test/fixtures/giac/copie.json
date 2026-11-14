@@ -1,0 +1,107 @@
+{
+ "sort(simplify(solve((2*x+3)=(7),x)))": {
+  "exact": "list[2]",
+  "latex": "\\{2\\}",
+  "approche": "list[2.0]"
+ },
+ "sort(simplify(solve((2*x)=(4),x)))": {
+  "exact": "list[2]",
+  "latex": "\\{2\\}",
+  "approche": "list[2.0]"
+ },
+ "sort(simplify(solve((x)=(2),x)))": {
+  "exact": "list[2]",
+  "latex": "\\{2\\}",
+  "approche": "list[2.0]"
+ },
+ "sort(simplify(solve((2*x)=(10),x)))": {
+  "exact": "list[5]",
+  "latex": "\\{5\\}",
+  "approche": "list[5.0]"
+ },
+ "sort(simplify(solve((x)=(5),x)))": {
+  "exact": "list[5]",
+  "latex": "\\{5\\}",
+  "approche": "list[5.0]"
+ },
+ "sort(simplify(solve((3*x-5)=(x+1),x)))": {
+  "exact": "list[3]",
+  "latex": "\\{3\\}",
+  "approche": "list[3.0]"
+ },
+ "sort(simplify(solve((2*x)=(6),x)))": {
+  "exact": "list[3]",
+  "latex": "\\{3\\}",
+  "approche": "list[3.0]"
+ },
+ "sort(simplify(solve((x)=(3),x)))": {
+  "exact": "list[3]",
+  "latex": "\\{3\\}",
+  "approche": "list[3.0]"
+ },
+ "sort(simplify(solve(((x)^(2)-5*x+6)=(0),x)))": {
+  "exact": "list[2,3]",
+  "latex": "\\{2,3\\}",
+  "approche": "list[2.0,3.0]"
+ },
+ "sort(simplify(solve(((x-2)*(x-3))=(0),x)))": {
+  "exact": "list[2,3]",
+  "latex": "\\{2,3\\}",
+  "approche": "list[2.0,3.0]"
+ },
+ "sort(simplify(solve(((x)^(2))=(4),x)))": {
+  "exact": "list[-2,2]",
+  "latex": "\\{\\mathrm{-2},2\\}",
+  "approche": "list[-2.0,2.0]"
+ },
+ "simplify((2*(x+1)+3)-(2*x+2+3))": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "simplify((2*x+2+3)-(2*x+5))": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "simplify((2*(x+1)+3)-(2*x+1+3))": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "simplify((2*x+1+3)-(2*x+4))": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "simplify((((x+1))^(2))-((x)^(2)+2*x+1))": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "simplify((((x+1))^(2))-((x)^(2)+1))": {
+  "exact": "2*x",
+  "latex": "2\\cdot x",
+  "approche": ""
+ },
+ "sort(simplify(solve(((x)/(2))=(3),x)))": {
+  "exact": "list[6]",
+  "latex": "\\{6\\}",
+  "approche": "list[6.0]"
+ },
+ "sort(simplify(solve((x)=(6),x)))": {
+  "exact": "list[6]",
+  "latex": "\\{6\\}",
+  "approche": "list[6.0]"
+ },
+ "sort(simplify(solve((sin(x))=(0),x)))": {
+  "exact": "list[n_0*pi]",
+  "latex": "\\{\\mathrm{n\\_0}\\cdot \\pi \\}",
+  "approche": ""
+ },
+ "sort(simplify(solve((x)=(0),x)))": {
+  "exact": "list[0]",
+  "latex": "\\{0\\}",
+  "approche": "list[0.0]"
+ }
+}

@@ -13,10 +13,12 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:crypto/crypto.dart' as crypto;
-import 'package:cryptography/cryptography.dart';
+import 'package:fikajiana/mises_a_jour/signature.dart';
 import 'package:fikajiana/reconnaissance/modele.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+
+export 'package:fikajiana/mises_a_jour/signature.dart' show clePubliqueBase64;
 
 /// Remplaçable pour les essais.
 const String urlPublication = String.fromEnvironment(
@@ -24,9 +26,6 @@ const String urlPublication = String.fromEnvironment(
   defaultValue:
       'https://github.com/raantss18/Fikajiana/releases/latest/download',
 );
-
-/// Clé publique Ed25519. La clé privée est dans `release-keys/`, hors de Git.
-const String clePubliqueBase64 = 'x0K7GNrUrRDDYSy/P7+mMtVLczvkVtRJM3vEIlpJQHg=';
 
 /// Taille maximale de `release.json` et de sa signature.
 const int _descriptionMax = 64 * 1024;
@@ -57,19 +56,12 @@ Future<VersionPubliee?> lireSigne(
   String clePublique = clePubliqueBase64,
 }) async {
   try {
-    final valide = await Ed25519().verify(
+    final json = await lireJsonSigne(
       corps,
-      signature: Signature(
-        base64.decode(signatureBase64.trim()),
-        publicKey: SimplePublicKey(
-          base64.decode(clePublique),
-          type: KeyPairType.ed25519,
-        ),
-      ),
+      signatureBase64,
+      clePublique: clePublique,
     );
-    if (!valide) return null;
-    final json = jsonDecode(utf8.decode(corps)) as Map<String, dynamic>;
-    if (json['format'] != 1) return null;
+    if (json == null || json['format'] != 1) return null;
     return VersionPubliee(Map<String, dynamic>.from(json['latest'] as Map));
   } on Object {
     return null;

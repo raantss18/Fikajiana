@@ -276,6 +276,22 @@ List<EntreeGuide> catalogueGuide(AppLocalizations l10n) => [
     lignes: ['x^{2}-5x+6=0'],
   ),
   EntreeGuide(
+    cle: 'etapes',
+    famille: FamilleGuide.equations,
+    titre: l10n.guideEtapesTitre,
+    phrase: l10n.guideEtapesPhrase,
+    motsCles: l10n.guideEtapesMots,
+    lignes: ['2x^{2}-3x-5=0'],
+  ),
+  EntreeGuide(
+    cle: 'copie',
+    famille: FamilleGuide.equations,
+    titre: l10n.guideCopieTitre,
+    phrase: l10n.guideCopiePhrase,
+    motsCles: l10n.guideCopieMots,
+    lignes: ['2x+3=7', '2x=4', 'x=2'],
+  ),
+  EntreeGuide(
     cle: 'inequation',
     famille: FamilleGuide.equations,
     titre: l10n.guideInequationTitre,
@@ -905,6 +921,13 @@ List<EntreeGuide> catalogueGuide(AppLocalizations l10n) => [
     titre: l10n.guideHistoriqueTitre,
     phrase: l10n.guideHistoriquePhrase,
     motsCles: l10n.guideHistoriqueMots,
+  ),
+  EntreeGuide(
+    cle: 'majModele',
+    famille: FamilleGuide.reglages,
+    titre: l10n.guideMajModeleTitre,
+    phrase: l10n.guideMajModelePhrase,
+    motsCles: l10n.guideMajModeleMots,
   ),
   EntreeGuide(
     cle: 'modele',

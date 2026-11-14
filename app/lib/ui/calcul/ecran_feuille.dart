@@ -10,6 +10,7 @@ import 'package:fikajiana/encre/feuille_encre.dart';
 import 'package:fikajiana/encre/vue_feuille.dart';
 import 'package:fikajiana/export/capture.dart';
 import 'package:fikajiana/guide/essai.dart';
+import 'package:fikajiana/guide/tour.dart';
 import 'package:fikajiana/l10n/l10n.dart';
 import 'package:fikajiana/reconnaissance/modele.dart';
 import 'package:fikajiana/reglages/reglages.dart';
@@ -19,6 +20,7 @@ import 'package:fikajiana/ui/calcul/couche_resultats.dart';
 import 'package:fikajiana/ui/calcul/panneau_saisie.dart';
 import 'package:fikajiana/ui/calcul/placer_construction.dart';
 import 'package:fikajiana/ui/calcul/selection_bloc.dart';
+import 'package:fikajiana/ui/ecriture_animee.dart';
 import 'package:fikajiana/ui/export.dart';
 import 'package:fikajiana/ui/guide/ecran_tour.dart';
 import 'package:fikajiana/ui/navigation/destination.dart';
@@ -651,22 +653,64 @@ class _EcranFeuilleState extends State<EcranFeuille> {
                             unawaited(_poserSous(bloc, latex)),
                       ),
                     if (_calcul.modeleManquant && !_enExport)
+                      // Au-dessus des boutons du bas, sur toute la largeur : à
+                      // côté d'eux, le texte se coupait lettre par lettre sur
+                      // un téléphone (vu sur l'émulateur, 2026-11-14).
                       Positioned(
                         left: AppEspacement.md,
-                        right: 80,
-                        bottom: 72,
+                        right: AppEspacement.md,
+                        bottom: 88,
                         child: SafeArea(
-                          child: Card(
-                            child: ListTile(
-                              leading: const Icon(Icons.download_outlined),
-                              title: Text(l10n.modeleManquant),
-                              trailing: TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).push(
-                                    RouteEcran((_) => const EcranReglages()),
-                                  );
-                                },
-                                child: Text(l10n.reglages),
+                          child: Align(
+                            alignment: AlignmentDirectional.centerStart,
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 480),
+                              child: Card(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: AppEspacement.md,
+                                    right: AppEspacement.sm,
+                                    top: AppEspacement.md,
+                                    bottom: AppEspacement.xxs,
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const Icon(Icons.download_outlined),
+                                          const SizedBox(
+                                            width: AppEspacement.md,
+                                          ),
+                                          Expanded(
+                                            child: Text(l10n.modeleManquant),
+                                          ),
+                                        ],
+                                      ),
+                                      Align(
+                                        alignment:
+                                            AlignmentDirectional.centerEnd,
+                                        child: TextButton(
+                                          style: TextButton.styleFrom(
+                                            minimumSize: const Size(48, 48),
+                                          ),
+                                          onPressed: () {
+                                            Navigator.of(context).push(
+                                              RouteEcran(
+                                                (_) => const EcranReglages(),
+                                              ),
+                                            );
+                                          },
+                                          child: Text(l10n.reglages),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -868,6 +912,34 @@ class _Invitation extends StatelessWidget {
                     : support.stylos[1],
               ),
             ),
+            // L'accueil montre ce que fait la Feuille : trois exemples du
+            // tour s'écrivent à la main avec leur résultat (nouveau visage,
+            // 2026-11-14). Pas sur un écran trop bas ; immobile si l'appareil
+            // demande moins d'animations (EcritureAnimee).
+            if (MediaQuery.sizeOf(context).height >= 640) ...[
+              const SizedBox(height: AppEspacement.lg),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppEspacement.lg,
+                ),
+                // Un bloc centré de la largeur d'un téléphone : sur une
+                // tablette, les exemples ne restent pas collés au bord.
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 340),
+                  child: ExcludeSemantics(
+                    child: EcritureAnimee(
+                      delai: const Duration(milliseconds: 600),
+                      hauteurChiffre: 22,
+                      lignes: [
+                        for (final etape in etapesTour(context.l10n).take(3))
+                          for (final (question, reponse) in etape.lignes)
+                            LigneEcrite(question, reponse),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
