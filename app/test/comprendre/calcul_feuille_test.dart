@@ -489,6 +489,42 @@ void main() {
     });
   });
 
+  group('nombres complexes (ADR 0058)', () {
+    test('formeexp : Giac rend [r, θ], la feuille écrit r e^{iθ}', () async {
+      lecteur.reponse = r'\mathrm{formeexp}(1+i)=';
+      moteur.reponse = const ReponseGiac(
+        exact: '[√2,pi/4]',
+        latex: r'[\sqrt{2},\frac{\pi }{4}]',
+        approche: '[1.41421356237,0.785398163397]',
+      );
+      _trait(encre, 0, 0);
+      calcul.encreChangee();
+      await _attendre();
+      expect(
+        calcul.blocs.single.texte(approcheVoulue: false, virgule: true),
+        r'\sqrt{2}\,e^{i\frac{\pi}{4}}',
+      );
+      expect(moteur.entrees.join('\n'), contains('simplify(arg('));
+    });
+
+    test('z²+1=0 se résout dans ℂ', () async {
+      lecteur.reponse = 'z^{2}+1=0';
+      moteur.reponse = const ReponseGiac(
+        exact: 'list[i,-i]',
+        latex: r'\{i,-i\}',
+        approche: '',
+      );
+      _trait(encre, 0, 0);
+      calcul.encreChangee();
+      await _attendre();
+      expect(
+        calcul.blocs.single.texte(approcheVoulue: false, virgule: true),
+        r'z=i\,\mathrm{ou}\,z=-i',
+      );
+      expect(moteur.entrees.join('\n'), contains('csolve('));
+    });
+  });
+
   group('modes', () {
     test('exact ou approché, sans recalculer', () async {
       moteur.reponse = const ReponseGiac(

@@ -1,4 +1,5 @@
 import 'package:fikajiana_math/src/analyse.dart';
+import 'package:fikajiana_math/src/complexes.dart';
 
 /// Résultat brut de la lecture d'un LaTeX.
 sealed class Lecture {
@@ -176,6 +177,8 @@ final Set<String> nomsDeCalcul = {
   'tangente',
   'division',
   'bezout',
+  // Nombres complexes (vague 6, ADR 0058).
+  ...nomsDeFormesComplexes.keys,
 };
 
 /// `Développer`, `écart-type` : le nom tel que le lecteur le connaît.
@@ -1149,6 +1152,8 @@ class LecteurLatex {
     }
     if (_mesures.contains(nom) || nom == 'widehat') return _mesure(nom);
     if (nom == 'discriminant') return _discriminant();
+    final forme = nomsDeFormesComplexes[nom];
+    if (forme != null) return _formeComplexe(forme);
     if (nom == 'tangente') return _tangente();
     switch (nom) {
       case 'frac' || 'dfrac' || 'tfrac':
@@ -1346,6 +1351,31 @@ class LecteurLatex {
     final v = variables.single;
     final q = '(${p.giac})';
     return Terme('normal(coeff($q,$v,1)^2-4*coeff($q,$v,2)*coeff($q,$v,0))');
+  }
+
+  /// `formeexp(1+i)`, `formetrigo(z)`, `racines(3;8i)` (ADR 0058) : un
+  /// nombre, sans variable.
+  Terme _formeComplexe(FormeComplexe forme) {
+    demandeResultat = true;
+    _attendre('(');
+    var n = 1;
+    if (forme == FormeComplexe.racines) {
+      final ordre = _somme();
+      final entier = int.tryParse(ordre.giac.replaceAll(RegExp('[()]'), ''));
+      if (entier == null || entier < 2 || entier > 12) {
+        throw const ErreurLatex('racines(n;a) : n entier de 2 à 12');
+      }
+      n = entier;
+      if (!_prendre(';') && !_prendre(',')) {
+        throw const ErreurLatex('racines(n;a)');
+      }
+    }
+    final z = _somme();
+    _attendre(')');
+    if (z.symboles.isNotEmpty) {
+      throw const ErreurLatex('forme d’un complexe : un nombre attendu');
+    }
+    return Terme(giacFormeComplexe(forme, '(${z.giac})', n: n, degres: degres));
   }
 
   /// `tangente(f;2)` : la tangente à la courbe de f, définie plus haut, en 2.

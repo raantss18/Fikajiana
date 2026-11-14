@@ -262,4 +262,30 @@ ref[f"{p} | |x-1|<2"] = bornes(sp.Abs(x - 1) < 2)
 ref[f"{p} | \\text{{résoudre}}\\left(x^{{2}}-5x+6\\le 0\\right)"] = bornes(x**2 - 5 * x + 6 <= 0)
 ref[f"{p} | \\ln\\left(x\\right)>1"] = [float(sp.N(sp.E, 15))]
 
+# Vague 6 : nombres complexes (SymPy, sans le lecteur de l'app).
+p = "complexes"
+I = sp.I
+for ligne, z in [
+    (r"\text{formeexp}(1+i)=", 1 + I),
+    (r"\text{formeexp}(-1-i\sqrt{3})=", -1 - I * sp.sqrt(3)),
+    (r"\text{formetrigo}(\sqrt{3}-i)=", sp.sqrt(3) - I),
+    (r"\text{formeexp}(\frac{1+i\sqrt{3}}{1-i})=", (1 + I * sp.sqrt(3)) / (1 - I)),
+]:
+    # Module et argument principal (dans ]-π ; π]), affichés en valeur approchée.
+    ref[f"{p} | {ligne}"] = [float(sp.Abs(z)), float(sp.arg(z))]
+for ligne, a, ordre in [(r"\text{racines}(3;8i)", 8 * I, 3), (r"\text{racines}(4;-16)", -16, 4)]:
+    zs = sp.solve(sp.Symbol("w") ** ordre - a, sp.Symbol("w"))
+    assert len(zs) == ordre and all(abs(complex(w) ** ordre - complex(a)) < 1e-9 for w in zs)
+    ref[f"{p} | {ligne}"] = [float(sp.Abs(zs[0]))]  # le module commun, écrit devant e^{iθ}
+w = sp.Symbol("w")
+for ligne, equation in [
+    ("z^{2}-2z+5=0", w**2 - 2 * w + 5),
+    ("z^{2}+4=0", w**2 + 4),
+    ("(1+i)z=3+i", (1 + I) * w - (3 + I)),
+]:
+    # Les parties non nulles : 2i s'écrit sans 0.
+    parties = sorted({float(c) for s in sp.solve(equation, w) for c in (sp.re(s), sp.im(s)) if c != 0})
+    ref[f"{p} | {ligne}"] = parties
+# z^{3}=-8 : degré 3, refusé (csolve fait tomber Giac) : aucune valeur attendue.
+
 print(json.dumps(ref, ensure_ascii=False, indent=1))

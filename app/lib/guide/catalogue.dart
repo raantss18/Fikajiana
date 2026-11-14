@@ -443,6 +443,31 @@ List<EntreeGuide> catalogueGuide(AppLocalizations l10n) => [
     motsCles: l10n.guideEcartTypeMots,
     lignes: [r'\text{écart-type}\left(2;4;9\right)'],
   ),
+  // Nombres complexes (ADR 0058).
+  EntreeGuide(
+    cle: 'forme_complexe',
+    famille: FamilleGuide.calcul,
+    titre: l10n.guideFormeComplexeTitre,
+    phrase: l10n.guideFormeComplexePhrase,
+    motsCles: l10n.guideFormeComplexeMots,
+    lignes: [r'\text{formeexp}\left(1+i\right)'],
+  ),
+  EntreeGuide(
+    cle: 'racines_complexes',
+    famille: FamilleGuide.calcul,
+    titre: l10n.guideRacinesComplexesTitre,
+    phrase: l10n.guideRacinesComplexesPhrase,
+    motsCles: l10n.guideRacinesComplexesMots,
+    lignes: [r'\text{racines}\left(3;8i\right)'],
+  ),
+  EntreeGuide(
+    cle: 'equation_complexe',
+    famille: FamilleGuide.equations,
+    titre: l10n.guideEquationComplexeTitre,
+    phrase: l10n.guideEquationComplexePhrase,
+    motsCles: l10n.guideEquationComplexeMots,
+    lignes: ['z^{2}-2z+5=0'],
+  ),
   // Arithmétique.
   EntreeGuide(
     cle: 'division',

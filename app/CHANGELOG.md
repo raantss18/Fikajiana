@@ -4,6 +4,8 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Nombres complexes : formeexp(1+i) donne √2 e^{iπ/4}, formetrigo(1+i) la forme trigonométrique, racines(3;8i) les racines n-ièmes ; z²−2z+5=0 se résout dans ℂ (degré 1 ou 2) ; à la main ou au clavier. / Complex numbers: formeexp(1+i) gives √2 e^{iπ/4}, formetrigo(1+i) the trigonometric form, racines(3;8i) the n-th roots; z²−2z+5=0 is solved in ℂ (degree 1 or 2); by hand or keyboard.
+
 ## [1.1.3] — 2026-11-09
 
 ### Message fr

@@ -335,7 +335,14 @@ class BlocCalcul {
           choisie == null && exact != null && ecritEnDecimal(latex ?? '')
           ? decimaleExacte(exact)
           : null;
-      valeur = decimale ?? (choisie == null ? exact : abregerApproche(choisie));
+      final brut =
+          decimale ?? (choisie == null ? exact : abregerApproche(choisie));
+      // `formeexp(1+i)` : Giac rend [module, argument], la forme s'écrit ici
+      // (ADR 0058).
+      final forme = formeDemandee(latex ?? '');
+      valeur = forme == null || brut == null
+          ? brut
+          : ecrireFormeComplexe(forme, brut) ?? brut;
     }
     // `2\cdot x^{2}` de Giac s'écrit `2x^{2}`, comme à la main.
     final sansPoint = valeur?.replaceAllMapped(
