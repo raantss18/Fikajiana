@@ -15,7 +15,7 @@ import time
 RACINE = pathlib.Path(__file__).resolve().parents[2] / "app/test/fixtures"
 serie, densite = sys.argv[1], float(sys.argv[2])
 x0, y, k = float(sys.argv[3]), float(sys.argv[4]), float(sys.argv[5])
-POINTS_PAR_TRAIT = 14
+POINTS_PAR_TRAIT = 60  # assez pour garder la forme des longs traits (limite, matrice)
 
 for nom in sys.argv[6:]:
     traits = json.loads((RACINE / f"{nom}.json").read_text())
