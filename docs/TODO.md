@@ -82,13 +82,14 @@ Déjà livré ce jour : rature et stylet (0.6.1), lueur et trait ondulé (0.7.1)
 7. ✅ **Version 1.1.4** publiée le 2026-11-14 avec `modele.json` signé ; site en ligne : https://raantss18.github.io/Fikajiana/ (Pages par Actions, vidéo en tête). Vu sur l'émulateur léger (x86_64) : étapes, copie, accueil, écriture rejouée, courbe, Guide, Réglages.
 8. ✅ **Essai sur le Pad 7 par ADB sans fil** (2026-11-14) : 1.1.4 installée par-dessus la 1.1.3, feuille d'Antsa conservée ; « étapes » sur son `x²−3x+1=0` écrit à la main (Δ = 5, (3 ± √5)/2) ; `9999999!` refusé, l'app continue ; « vérifier » montre la ligne fausse ; mise à jour du modèle « à jour ». Trouvé et corrigé : la conclusion des étapes écrivait « ou » en anglais (test `etapes_test`). Reste : mode avion sur le Pad ; un document d'essai (3 lignes tapées) est resté dans l'Historique.
 
+9. ✅ **Dons et entraînement retirés** (ADR 0066, Antsa 2026-11-14) : question, envoi, réglages, Guide, `plateforme/`, `entrainement/`. 👍/👎, export et effacement restent sur l'appareil. ⏳ ❓ Antsa : arrêter le Worker `fikajiana-dons` et vider le seau R2 sur son compte Cloudflare.
 ## Sécurité et robustesse (Antsa, 2026-11-14, ADR 0060)
 
 1. ✅ **Audit** : 240 dépendances sans faille connue (OSV) ; code relu (mise à jour, dons, Android, colle Giac, magasin d'écriture).
 2. ✅ **Corrigé** : calcul démesuré refusé (`9999999!`), moteur jamais bloqué sans fin, plantage Android 7 à l'installation d'une mise à jour, sauvegarde Android coupée (l'encre ne part plus chez Google), quotas du Worker des dons, écritures simultanées du magasin, téléchargement de mise à jour borné, liens `https`/`mailto` seulement. Tests : `moteur_test`, `ecritures_test`, `worker.test.mjs`.
-3. ⏳ ❓ Antsa : redéployer le Worker des dons (`cd plateforme/worker && npx wrangler deploy`) pour que les quotas soient en service.
-4. ⏳ ❓ Antsa, consentement : (a) cocher la case puis « retour » vaut oui sans « Continuer » : le garder ? (b) les lignes jugées avant le oui partent après le oui : le garder ? (c) l'heure d'une séance porte le décalage horaire (une position grossière) : passer en UTC ? (d) tirer un nouvel identifiant quand l'adresse de la plateforme change ?
-5. ⏳ Mêmes quotas dans `plateforme/recepteur.py` ; actions GitHub épinglées par SHA ; exports d'écriture effacés avec « Effacer » ; essai de `9999999!` sur appareil.
+3. ✅ Sans objet : les dons et le Worker sont retirés (ADR 0066).
+4. ✅ Sans objet : plus de consentement à recueillir, rien n'est envoyé (ADR 0066).
+5. ⏳ Actions GitHub épinglées par SHA ; exports d'écriture effacés avec « Effacer » ; essai de `9999999!` sur appareil.
 
 ## Fluidité (accord d'Antsa, 2026-11-08)
 

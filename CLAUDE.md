@@ -17,10 +17,10 @@
    paysage, chaque support. Si le Pad n'est pas joignable : émulateur **léger** (`tool/emulateur_leger.sh`, ADR 0057, 0065), et ce qu'il
    ne couvre pas (arm64, stylet réel) reste « à tester ». Jamais l'ancien `fikajiana_resizable`, trop lourd (Antsa, 2026-11-08).
 5. **Libre et 100 % hors ligne.** Licence du code : voir ADR 0001. Aucune dépendance non OSI (ni ML Kit, ni MyScript),
-   modèles et poids sous licence compatible. Aucun compte, aucune pub, aucune télémétrie. L'encre ne quitte l'appareil
-   qu'avec le consentement de la personne (case à cocher, révocable à tout moment), et seulement les lignes qu'elle a jugées
-   (👍, ou 👎 corrigé), sans nom ni position (ADR 0042, décision d'Antsa 2026-11-08). Autre exception : la recherche de
-   mise à jour, à la demande (ADR 0015). Tout marche hors ligne ; test réseau coupé avant chaque version.
+   modèles et poids sous licence compatible. Aucun compte, aucune pub, aucune télémétrie. L'encre ne quitte jamais l'appareil :
+   plus de dons d'écriture ni d'entraînement (Antsa, 2026-11-14, ADR 0066) ; seule la personne peut l'exporter elle-même dans
+   un fichier. Le réseau ne sert qu'à la demande : télécharger le modèle (ADR 0016), chercher une mise à jour de l'app ou du
+   modèle (ADR 0015, 0064). Tout marche hors ligne ; test réseau coupé avant chaque version.
 6. **Aucun secret dans Git** (clés de signature dans `release-keys/`, ignoré).
 7. **Pas de copie** d'une app existante (nom, icônes, textes, captures). Code d'un tiers repris seulement si sa licence
    est compatible, noté dans `THIRD_PARTY_LICENSES.md`.

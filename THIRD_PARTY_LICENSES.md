@@ -21,25 +21,3 @@
 Le code initial de `app/` et `packages/fikajiana_math/` provient des gabarits de Very Good CLI
 (https://github.com/VeryGoodOpenSource/very_good_cli). Leur licence n'a pas été vérifiée : à confirmer.
 
-## Entraînement du modèle de signes (`entrainement/`, hors application)
-
-Outils sur l'ordinateur, non distribués avec l'app ; seuls les poids produits (`signes.onnx`) le seraient.
-
-| Composant | Licence | Usage | Source |
-|---|---|---|---|
-| PyTorch (CPU) | BSD-3-Clause | entraînement | https://github.com/pytorch/pytorch/blob/main/LICENSE |
-| ONNX, ONNX Runtime (Python) | Apache-2.0, MIT | export, vérification | https://github.com/onnx/onnx · https://github.com/microsoft/onnxruntime |
-| NumPy, Pillow, scikit-image, fontTools | BSD-3-Clause, MIT-CMU, BSD-3-Clause, MIT | rendu et squelette | https://numpy.org/doc/stable/license.html · https://github.com/python-pillow/Pillow/blob/main/LICENSE · https://github.com/scikit-image/scikit-image/blob/main/LICENSE.txt · https://github.com/fonttools/fonttools/blob/main/LICENSE |
-| Polices Caveat, Patrick Hand, Kalam, Klee One, Yomogi, Zen Kurenaido | SIL OFL 1.1 | signes synthétiques (images rendues, polices non distribuées) | `entrainement/SOURCES.md` |
-| MNIST, HASYv2 | CC BY-SA 3.0, ODbL 1.0 | **non utilisés** (voir `entrainement/SOURCES.md`) | — |
-
-## Plateforme des dons (`plateforme/`, côté serveur, hors application)
-
-Installés sur le serveur qui reçoit les dons (ADR 0042) ; rien n'est copié dans le dépôt ni dans l'app.
-
-| Composant | Licence | Usage | Source |
-|---|---|---|---|
-| Waitress | ZPL 2.1 | serveur HTTP (WSGI) | https://pypi.org/project/waitress/ |
-| boto3 (facultatif) | Apache-2.0 | stockage compatible S3 | https://github.com/boto/boto3/blob/develop/LICENSE |
-| Caddy (image `caddy:2.10`) | Apache-2.0 | HTTPS devant le récepteur | https://github.com/caddyserver/caddy/blob/master/LICENSE |
-| Wrangler 4.158.0 (outil de développement) | MIT OR Apache-2.0 | publier le Worker (`plateforme/worker/`) | https://github.com/cloudflare/workers-sdk |

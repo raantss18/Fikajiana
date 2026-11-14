@@ -134,8 +134,8 @@ class _EcranFeuilleState extends State<EcranFeuille> {
       if (!mounted || version == null || reglages.tourPropose == version) {
         return;
       }
-      // Une autre question (les dons, ADR 0042) ou un autre écran est
-      // devant : le tour attend que la Feuille revienne au premier plan.
+      // Un autre écran est devant : le tour attend que la Feuille
+      // revienne au premier plan.
       if (!(ModalRoute.of(context)?.isCurrent ?? true)) {
         _tourEnAttente = true;
         return;

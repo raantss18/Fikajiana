@@ -951,13 +951,6 @@ List<EntreeGuide> catalogueGuide(AppLocalizations l10n) => [
     motsCles: l10n.guideEcrituresMots,
   ),
   EntreeGuide(
-    cle: 'dons',
-    famille: FamilleGuide.reglages,
-    titre: l10n.guideDonsTitre,
-    phrase: l10n.guideDonsPhrase,
-    motsCles: l10n.guideDonsMots,
-  ),
-  EntreeGuide(
     cle: 'tour',
     famille: FamilleGuide.reglages,
     titre: l10n.guideTourTitre,

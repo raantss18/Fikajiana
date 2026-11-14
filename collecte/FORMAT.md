@@ -1,7 +1,7 @@
 # Format des données d'écriture (ADR 0038)
 
-Contrat commun entre Fikajiana (dons d'écriture, ADR 0042), la plateforme (`plateforme/`) et l'entraînement
-(`entrainement/`). L'app de collecte séparée a été retirée (ADR 0039, remplacée).
+Format de l'export « Exporter mes écritures » de Fikajiana (Réglages). Les dons, la plateforme et l'entraînement qui
+l'utilisaient ont été retirés (ADR 0066) ; le format reste, pour que la personne garde son écriture.
 Toute modification de ce fichier passe par un nouvel ADR.
 
 ## Un fichier par séance
@@ -58,9 +58,3 @@ L'app de collecte écrit un fichier JSON par séance, nommé
   la première séance.
 - Les fichiers versés vont dans `donnees/ecriture/` (hors Git tant qu'Antsa ne les publie pas :
   `.gitignore`), un sous-dossier par personne.
-
-## Dons envoyés par Fikajiana (ADR 0042, 0043)
-
-Même format, réduit à une liste blanche (`plateforme/schema.py`) : **`auteur` est interdit** (un prénom),
-`contributeur` (identifiant tiré au hasard, 16 à 64 caractères `A-Z a-z 0-9 _ -`) est obligatoire,
-`version_app` est permis. Tout autre champ fait refuser le don.

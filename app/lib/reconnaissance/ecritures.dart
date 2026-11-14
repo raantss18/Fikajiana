@@ -90,7 +90,8 @@ class Echantillon {
   /// retire toute lecture « juste » qui partage un de ses traits.
   final List<String> clesTraits;
 
-  /// Déjà donné à la plateforme (ADR 0042).
+  /// Donné à l'ancienne plateforme des dons (retirée, ADR 0066) : lu pour
+  /// relire les fichiers d'avant.
   final bool envoye;
 
   Echantillon envoyeA() => Echantillon(
@@ -134,9 +135,10 @@ class Echantillon {
 typedef SigneDeLigne = (List<Trait> traits, String latex, Rect caseLigne);
 
 /// Toute l'écriture gardée sur l'appareil, un seul magasin (ADR 0041,
-/// 0042) : les lignes lues justes, les corrections. Rien ne part sans le
-/// geste de la personne. Les signes corrigés servent aussi à lire : un
-/// plus proche voisin passe avant le modèle quand il est sûr.
+/// 0042, 0066) : les lignes lues justes, les corrections. Rien ne quitte
+/// l'appareil, sauf un export fait par la personne. Les signes corrigés
+/// servent aussi à lire : un plus proche voisin passe avant le modèle quand
+/// il est sûr.
 class Ecritures extends ChangeNotifier {
   new({this.fichier, this.plafond = 20 * 1000 * 1000});
 
@@ -408,108 +410,6 @@ class Ecritures extends ChangeNotifier {
 
   bool get aDesCorrections => _corrections.isNotEmpty;
 
-  /// Les lignes jugées pas encore données.
-  int get lignesEnAttente =>
-      _liste.where((e) => !e.$1.envoye && !e.$1.estSigne).length;
-
-  /// Les dons à envoyer, par paquets de séances au format accepté par la
-  /// plateforme (ADR 0042 ; `plateforme/schema.py`) : sans prénom, avec
-  /// l'identifiant au hasard [contributeur]. Chaque paquet porte les ids
-  /// des échantillons qu'il emporte (ceux qu'on ne peut pas donner aussi :
-  /// ils quittent la file avec lui).
-  List<Don> dons({
-    required String contributeur,
-    required String modele,
-    required Size ecranDp,
-    required double densite,
-    String? versionApp,
-    int echantillonsMax = 400,
-    int pointsMax = 120000,
-    int octetsMax = 1500000,
-  }) {
-    final paquets = <Don>[];
-    for (final stylet in [true, false]) {
-      final pris = [
-        for (final (e, _) in _liste)
-          if (!e.envoye && e.auStylet == stylet) e,
-      ];
-      var ids = <String>[];
-      var echantillons = <Map<String, dynamic>>[];
-      var points = 0;
-      var octets = 0;
-      DateTime? debut;
-      void fermer() {
-        if (echantillons.isEmpty) {
-          if (ids.isNotEmpty) paquets.add(Don(ids, null));
-        } else {
-          paquets.add(
-            Don(
-              ids,
-              jsonEncode({
-                'format': 1,
-                'licence': 'CC0-1.0',
-                'contributeur': contributeur,
-                'version_app': ?versionApp,
-                'appareil': {
-                  'modele': _modelePermis(modele),
-                  'largeur_dp': ecranDp.width.round().clamp(1, 20000),
-                  'hauteur_dp': ecranDp.height.round().clamp(1, 20000),
-                  'densite': densite.clamp(0.1, 10),
-                },
-                'outil': stylet ? 'stylet' : 'doigt',
-                'debut': ?(debut == null ? null : _iso(debut!)),
-                'echantillons': echantillons,
-              }),
-            ),
-          );
-        }
-        ids = [];
-        echantillons = [];
-        points = 0;
-        octets = 0;
-        debut = null;
-      }
-
-      for (final e in pris) {
-        final json = _versFormat(e);
-        final n = e.traits.fold<int>(0, (s, t) => s + t.length);
-        final taille = json == null ? 0 : jsonEncode(json).length;
-        if (echantillons.length >= echantillonsMax ||
-            points + n > pointsMax ||
-            octets + taille > octetsMax) {
-          fermer();
-        }
-        ids.add(e.id);
-        if (json == null) continue;
-        echantillons.add(json);
-        points += n;
-        octets += taille;
-        final d = debut;
-        if (d == null || e.quand.isBefore(d)) debut = e.quand;
-      }
-      fermer();
-    }
-    return paquets;
-  }
-
-  /// Ces échantillons sont partis (ou ne partiront jamais).
-  Future<void> marquerEnvoyes(Iterable<String> ids) {
-    final pris = ids.toSet();
-    for (var i = 0; i < _liste.length; i++) {
-      final (e, n) = _liste[i];
-      if (pris.contains(e.id) && !e.envoye) _liste[i] = (e.envoyeA(), n);
-    }
-    notifyListeners();
-    return _reecrire();
-  }
-
-  /// Le modèle d'appareil, tel que la plateforme l'accepte.
-  static String _modelePermis(String modele) {
-    final net = modele.replaceAll(RegExp(r'[^A-Za-z0-9 ._+()\-]'), '_');
-    final court = net.length > 64 ? net.substring(0, 64) : net;
-    return court.isEmpty ? 'android' : court;
-  }
-
   /// Les échantillons au format de `collecte/FORMAT.md`, un fichier par
   /// outil (`stylet`, `doigt`) : nom → contenu. Un signe d'une classe
   /// inconnue de `collecte/classes.txt` est laissé de côté.
@@ -558,8 +458,8 @@ class Ecritures extends ChangeNotifier {
   static Map<String, dynamic>? _versFormat(Echantillon e) {
     final id = e.estSigne ? idDeClasse(e.attendu) : null;
     if (e.estSigne && id == null) return null;
-    // Les limites du récepteur (`plateforme/schema.py`) : au-delà, gardé
-    // sur l'appareil mais jamais donné.
+    // Les limites du format de collecte (`collecte/FORMAT.md`) : au-delà,
+    // gardé sur l'appareil mais pas exporté.
     if (e.attendu.trim().isEmpty ||
         e.attendu.length > 512 ||
         e.traits.isEmpty ||
@@ -621,13 +521,4 @@ class Ecritures extends ChangeNotifier {
     final base = local.toIso8601String().split('.').first;
     return '$base$signe${deux(o.inHours)}:${deux(o.inMinutes % 60)}';
   }
-}
-
-/// Un paquet de dons : les échantillons qu'il emporte et le corps JSON à
-/// envoyer (`null` : rien de donnable, il ne fait que vider la file).
-class Don {
-  const new(this.ids, this.corps);
-
-  final List<String> ids;
-  final String? corps;
 }
