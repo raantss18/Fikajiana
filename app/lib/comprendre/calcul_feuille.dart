@@ -1998,7 +1998,10 @@ class CalculFeuille extends ChangeNotifier {
     final Analyse analyse;
     try {
       analyse = analyserPour(bloc, latex);
-    } on FormatException {
+    } on Object {
+      // Une ligne mal lue ne se comprend pas, et l'analyse lance alors
+      // autre chose qu'une FormatException : sans ce filet, la Feuille
+      // entière devenait grise (vu sur l'émulateur, 2026-11-14).
       return null;
     }
     final membres = analyse.membres;
@@ -2038,7 +2041,10 @@ class CalculFeuille extends ChangeNotifier {
     final Analyse analyse;
     try {
       analyse = analyserPour(bloc, latex);
-    } on FormatException {
+    } on Object {
+      // Une ligne mal lue ne se comprend pas, et l'analyse lance alors
+      // autre chose qu'une FormatException : sans ce filet, la Feuille
+      // entière devenait grise (vu sur l'émulateur, 2026-11-14).
       return null;
     }
     final membres = analyse.membres;

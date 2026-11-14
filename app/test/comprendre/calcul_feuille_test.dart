@@ -316,6 +316,30 @@ void main() {
       expect(calcul.blocs.single, same(bloc));
     });
 
+    // Vu sur l'émulateur (2026-11-14) : une ligne mal lue faisait lancer
+    // l'analyse pendant la construction du bouton, et la Feuille devenait
+    // grise. Ni étapes ni copie pour elle, et jamais d'exception.
+    test('étapes et copie : une ligne mal lue ne casse rien', () async {
+      for (final mal in [
+        r'\circ m ^ { 2 x } - 1 -=',
+        r'x \rightarrow 0 , 2 x',
+        r'\frac{',
+        '=',
+        '',
+      ]) {
+        await calcul.saisir(mal, Offset.zero);
+      }
+      await calcul.saisir('2x+3=7', const Offset(0, 500));
+      await calcul.saisir('2x=4', const Offset(0, 600));
+      for (final bloc in calcul.blocs) {
+        expect(() => calcul.equationAEtapes(bloc), returnsNormally);
+        expect(() => calcul.copieDe(bloc), returnsNormally);
+      }
+      final derniere = calcul.blocs.last;
+      expect(calcul.equationAEtapes(derniere), isNotNull);
+      expect(calcul.copieDe(derniere)!.map((l) => l.latex), ['2x+3=7', '2x=4']);
+    });
+
     test('une ligne tapée se déplace, se duplique, se remet', () async {
       await calcul.saisir('2+3=', Offset.zero);
       final bloc = calcul.blocs.single;
