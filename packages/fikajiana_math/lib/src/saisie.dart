@@ -8,6 +8,8 @@ library;
 import 'package:fikajiana_math/src/lecteur_latex.dart'
     show nomsDeCalcul, normaliserNom;
 import 'package:fikajiana_math/src/objets.dart';
+import 'package:fikajiana_math/src/superieur.dart'
+    show nomsDuSuperieurAPlusieursArguments;
 
 /// Pourquoi une saisie ne se lit pas.
 enum ProblemeSaisie {
@@ -328,6 +330,7 @@ String? _commandeDeCalcul(String texte) {
         'bezout',
         'racines',
         'nthroots',
+        ...nomsDuSuperieurAPlusieursArguments,
       }.contains(nom);
   var morceaux = unSeul ? [dedans] : _separer(dedans, ';');
   if (!unSeul && morceaux.length == 1) morceaux = _separer(dedans, ',');

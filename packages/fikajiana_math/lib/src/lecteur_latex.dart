@@ -1,5 +1,6 @@
 import 'package:fikajiana_math/src/analyse.dart';
 import 'package:fikajiana_math/src/complexes.dart';
+import 'package:fikajiana_math/src/superieur.dart';
 
 /// Résultat brut de la lecture d'un LaTeX.
 sealed class Lecture {
@@ -179,6 +180,8 @@ final Set<String> nomsDeCalcul = {
   'bezout',
   // Nombres complexes (vague 6, ADR 0058).
   ...nomsDeFormesComplexes.keys,
+  // Supérieur (vague 7, ADR 0059).
+  ...nomsDuSuperieur.keys,
 };
 
 /// `Développer`, `écart-type` : le nom tel que le lecteur le connaît.
@@ -1154,6 +1157,8 @@ class LecteurLatex {
     if (nom == 'discriminant') return _discriminant();
     final forme = nomsDeFormesComplexes[nom];
     if (forme != null) return _formeComplexe(forme);
+    final superieur = nomsDuSuperieur[nom];
+    if (superieur != null) return _superieur(superieur);
     if (nom == 'tangente') return _tangente();
     switch (nom) {
       case 'frac' || 'dfrac' || 'tfrac':
@@ -1376,6 +1381,82 @@ class LecteurLatex {
       throw const ErreurLatex('forme d’un complexe : un nombre attendu');
     }
     return Terme(giacFormeComplexe(forme, '(${z.giac})', n: n, degres: degres));
+  }
+
+  /// `DL(f;0;4)`, `laplace(t^2)`, `rang(A)`… (ADR 0059).
+  Terme _superieur(Superieur commande) {
+    demandeResultat = true;
+    // `rang\begin{pmatrix}…` ou `rang A`, comme `\det` : sans parenthèses.
+    final parenthese = _prendre('(');
+    if (!parenthese &&
+        (commande == Superieur.taylor ||
+            commande == Superieur.laplace ||
+            commande == Superieur.invlaplace)) {
+      throw const ErreurLatex('attendu « ( »');
+    }
+    switch (commande) {
+      case Superieur.taylor:
+        final (corps, variable) = _fonctionOuExpression('DL(f;a;n)');
+        if (!_prendre(';') && !_prendre(',')) {
+          throw const ErreurLatex('DL(f;a;n)');
+        }
+        final a = _somme();
+        if (!_prendre(';') && !_prendre(',')) {
+          throw const ErreurLatex('DL(f;a;n)');
+        }
+        final ordre = int.tryParse(
+          _somme().giac.replaceAll(RegExp('[()]'), ''),
+        );
+        _attendre(')');
+        if (ordre == null || ordre < 1 || ordre > 12) {
+          throw const ErreurLatex('DL(f;a;n) : n entier de 1 à 12');
+        }
+        return Terme('taylor($corps,$variable=${a.giac},$ordre)');
+      case Superieur.laplace || Superieur.invlaplace:
+        final (corps, variable) = _fonctionOuExpression('laplace(f)');
+        _attendre(')');
+        final inverse = commande == Superieur.invlaplace;
+        if (!inverse && variable == 's') {
+          throw const ErreurLatex('laplace(f) : f fonction de t, pas de s');
+        }
+        return Terme(
+          inverse
+              ? 'invlaplace($corps,$variable,t)'
+              : 'laplace($corps,$variable,s)',
+        );
+      case Superieur.rang ||
+          Superieur.trace ||
+          Superieur.noyau ||
+          Superieur.valeursPropres ||
+          Superieur.vecteursPropres ||
+          Superieur.polynomeCaracteristique ||
+          Superieur.diagonaliser:
+        final m = parenthese ? _somme() : _puissance();
+        if (parenthese) _attendre(')');
+        final nu = m.giac.replaceAll(RegExp(r'^\(+'), '');
+        if (!m.estMatrice && !nu.startsWith('[[')) {
+          throw const ErreurLatex('une matrice attendue');
+        }
+        return Terme(giacMatrice(commande, m.giac));
+    }
+  }
+
+  /// Une fonction définie plus haut (`f`) ou une expression d'une seule
+  /// variable (`e^{x}`) : son corps et sa variable.
+  (String, String) _fonctionOuExpression(String usage) {
+    final nom = _courant.texte;
+    final definition = definitions[nom];
+    if (_courant.genre == _Genre.lettre &&
+        definition != null &&
+        (_voir(1).est(';') || _voir(1).est(',') || _voir(1).est(')'))) {
+      _i++;
+      return ('(${definition.corps})', definition.variable);
+    }
+    final f = _somme();
+    if (f.symboles.length != 1) {
+      throw ErreurLatex('$usage : une fonction d’une variable');
+    }
+    return (f.giac, f.symboles.single);
   }
 
   /// `tangente(f;2)` : la tangente à la courbe de f, définie plus haut, en 2.

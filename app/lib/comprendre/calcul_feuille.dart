@@ -338,11 +338,17 @@ class BlocCalcul {
       final brut =
           decimale ?? (choisie == null ? exact : abregerApproche(choisie));
       // `formeexp(1+i)` : Giac rend [module, argument], la forme s'écrit ici
-      // (ADR 0058).
+      // (ADR 0058) ; de même pour le supérieur.
       final forme = formeDemandee(latex ?? '');
-      valeur = forme == null || brut == null
-          ? brut
-          : ecrireFormeComplexe(forme, brut) ?? brut;
+      // `DL(f;0;4)`, `noyau(A)`, `diagonaliser(A)` (ADR 0059).
+      final superieur = superieurDemande(latex ?? '');
+      valeur = brut == null
+          ? null
+          : forme != null
+          ? ecrireFormeComplexe(forme, brut) ?? brut
+          : superieur != null
+          ? ecrireSuperieur(superieur, brut, francais: virgule) ?? brut
+          : brut;
     }
     // `2\cdot x^{2}` de Giac s'écrit `2x^{2}`, comme à la main.
     final sansPoint = valeur?.replaceAllMapped(
