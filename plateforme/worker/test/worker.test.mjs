@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { beforeEach, test } from "node:test";
 
-import worker, { BUDGET_EXPORT, dateDeCle, horodatage } from "../src/index.js";
+import worker, { BUDGET_EXPORT, DONS_PAR_JOUR, cleDebit, dateDeCle, horodatage } from "../src/index.js";
 
 const CAS = JSON.parse(readFileSync(new URL("../../tests/cas_schema.json", import.meta.url), "utf-8"));
 const SEANCE = JSON.parse(CAS.find((c) => c.nom === "valide").texte);
@@ -91,7 +91,7 @@ test("don valide : 201, rangé comme le récepteur Python", async () => {
   const [cle] = env.DONS.objets.keys();
   assert.match(cle, new RegExp(`^dons/${C}/\\d{8}T\\d{12}Z-[0-9a-f]{12}\\.json$`));
   assert.deepEqual(JSON.parse(env.DONS.objets.get(cle).texte), SEANCE);
-  assert.ok(env.DONS.appels <= 2);
+  assert.ok(env.DONS.appels <= 3); // retrait ? plafond du jour ? puis l'écriture
 });
 
 test("don invalide : 400 sans rien stocker ni recopier le contenu", async () => {
@@ -180,6 +180,7 @@ test("export par pages sous le budget de sous-requêtes, puis complet", async ()
     const c = `c${String(i).padStart(3, "0")}${"x".repeat(13)}`;
     await env.DONS.put(`dons/${c}/20261108T10000${i % 10}000000Z-${String(i).padStart(12, "0")}.json`, JSON.stringify({ ...SEANCE, contributeur: c }));
   }
+  await env.DONS.put(`dons/${"w".repeat(16)}/20261108T100000000000Z-aaaaaaaaaaaa.json`, "{}");
   await appel("POST", "/v1/retrait", { corps: { contributeur: "w".repeat(16) } });
   const vus = new Set();
   let apres = "";
@@ -234,4 +235,35 @@ test("journal : ni IP ni contenu", async () => {
   assert.doesNotMatch(texte, /203\.0\.113|Antsa/);
   assert.ok(!texte.includes(C));
   assert.match(texte, /POST \/v1\/dons 201/);
+});
+
+test("débit : une clé par /64 en IPv6, par adresse en IPv4", () => {
+  assert.equal(cleDebit("203.0.113.7"), "203.0.113.7");
+  assert.equal(cleDebit("2001:db8:1:2:aaaa:bbbb:cccc:dddd"), "2001:db8:1:2::/64");
+  assert.equal(cleDebit("2001:db8:1:2::1"), cleDebit("2001:db8:1:2:ffff::9"));
+  assert.equal(cleDebit("2001:db8::1"), "2001:db8:0:0::/64");
+  assert.notEqual(cleDebit("2001:db8:1:3::1"), cleDebit("2001:db8:1:2::1"));
+});
+
+test("plafond de dons par identifiant et par jour", async () => {
+  const jour = horodatage(new Date()).slice(0, 9);
+  for (let i = 0; i < DONS_PAR_JOUR; i++) {
+    env.DONS.objets.set(`dons/${C}/${jour}000000000000Z-${String(i).padStart(6, "0")}.json`, { texte: "{}" });
+  }
+  const avant = env.DONS.objets.size;
+  const r = await worker.fetch(
+    new Request("https://x/v1/dons", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(SEANCE) }),
+    env,
+  );
+  assert.equal(r.status, 429);
+  assert.equal(env.DONS.objets.size, avant);
+});
+
+test("retrait d'un identifiant inconnu : aucune note écrite", async () => {
+  const r = await worker.fetch(
+    new Request("https://x/v1/retrait", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contributeur: "Z".repeat(20) }) }),
+    env,
+  );
+  assert.equal(r.status, 202);
+  assert.equal(env.DONS.objets.size, 0);
 });

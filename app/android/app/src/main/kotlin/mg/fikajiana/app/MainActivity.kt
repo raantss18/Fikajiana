@@ -83,7 +83,8 @@ class MainActivity : FlutterActivity() {
                     }
                     "installer" -> {
                         // Sans l'autorisation, on ouvre le réglage : l'utilisateur l'accorde puis recommence.
-                        if (!packageManager.canRequestPackageInstalls()) {
+                        // canRequestPackageInstalls date d'Android 8 (API 26) : avant, l'installateur demande lui-même.
+                        if (Build.VERSION.SDK_INT >= 26 && !packageManager.canRequestPackageInstalls()) {
                             startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName")))
                             resultat.success(false)
                         } else {
@@ -99,6 +100,11 @@ class MainActivity : FlutterActivity() {
                     }
                     // Android demande où mettre le fichier : aucune autorisation (ADR 0022).
                     "enregistrer" -> {
+                        // Un seul enregistrement à la fois : le second écraserait la réponse du premier.
+                        if (reponseEnregistrer != null) {
+                            resultat.success(false)
+                            return@setMethodCallHandler
+                        }
                         aEnregistrer = appel.argument<ByteArray>("octets")
                         reponseEnregistrer = resultat
                         @Suppress("DEPRECATION")
@@ -114,6 +120,11 @@ class MainActivity : FlutterActivity() {
                     // Un lien des Réglages (courriel, dépôt, WhatsApp), au toucher seulement.
                     "ouvrir" -> {
                         val lien = Uri.parse(appel.argument<String>("lien")!!)
+                        // Seulement le web sûr et le courriel : ni fichier, ni contenu d'une autre app.
+                        if (lien.scheme != "https" && lien.scheme != "mailto") {
+                            resultat.success(false)
+                            return@setMethodCallHandler
+                        }
                         val action = if (lien.scheme == "mailto") Intent.ACTION_SENDTO else Intent.ACTION_VIEW
                         try {
                             startActivity(Intent(action, lien).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))

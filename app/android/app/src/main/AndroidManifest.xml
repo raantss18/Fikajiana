@@ -4,10 +4,15 @@
     <!-- Savoir s'il y a du Wi-Fi avant d'envoyer des dons consentis (ADR 0042). -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
+    <!-- Ni sauvegarde dans le nuage ni transfert d'appareil : l'encre ne quitte l'appareil
+         qu'avec le consentement de la personne (règle 5, audit 2026-11-14). -->
     <application
         android:label="Fikajiana"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:dataExtractionRules="@xml/data_extraction_rules">
         <activity
             android:name=".MainActivity"
             android:exported="true"

@@ -164,6 +164,47 @@ void main() {
       expect(fichier.existsSync(), isFalse);
     });
 
+    test('écritures simultanées : rien de perdu ni mêlé (M4)', () async {
+      final dossier = Directory.systemTemp.createTempSync('ecritures');
+      addTearDown(() => dossier.deleteSync(recursive: true));
+      final fichier = File('${dossier.path}/ecritures/ecritures.jsonl');
+      final a = Ecritures(fichier: fichier);
+      final traits = Encre()..chargerDocument(_document('trente_fois_8'));
+      const c = Rect.fromLTWH(0, 0, 100, 40);
+      await a.corrigerLigne(traits.traits.toList(), 'un', c);
+      // Sans attendre : envoi marqué (réécriture), correction, autre envoi.
+      final ids = a.liste.map((e) => e.id).toList();
+      traits.chargerDocument(_document('e_x_egal_7'));
+      final taches = [
+        a.marquerEnvoyes(ids),
+        a.corrigerLigne(traits.traits.toList(), 'deux', c),
+        a.marquerEnvoyes(ids),
+      ];
+      traits.chargerDocument(_document('AB_egal'));
+      taches.add(a.corrigerLigne(traits.traits.toList(), 'trois', c));
+      await Future.wait(taches);
+      final b = Ecritures(fichier: fichier);
+      await b.charger();
+      expect(b.liste.map((e) => e.attendu), ['un', 'deux', 'trois']);
+      expect(File('${fichier.path}.tmp').existsSync(), isFalse);
+    });
+
+    test('une ligne de mauvaise forme ne coupe pas la lecture', () async {
+      final dossier = Directory.systemTemp.createTempSync('ecritures');
+      addTearDown(() => dossier.deleteSync(recursive: true));
+      final fichier = File('${dossier.path}/ecritures/ecritures.jsonl');
+      final a = Ecritures(fichier: fichier);
+      const c = Rect.fromLTWH(0, 0, 100, 40);
+      await a.corrigerLigne(encre.traits.toList(), 'avant', c);
+      final bonne = fichier.readAsLinesSync().single;
+      fichier.writeAsStringSync(
+        '$bonne\n{"type":3,"traits":"non"}\n[1,2]\n{coupé\n$bonne\n',
+      );
+      final b = Ecritures(fichier: fichier);
+      await b.charger();
+      expect(b.liste.map((e) => e.attendu), ['avant', 'avant']);
+    });
+
     test(
       'exporte au format de collecte/FORMAT.md, un fichier par outil',
       () async {

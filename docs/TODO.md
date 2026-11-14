@@ -68,6 +68,14 @@ Déjà livré ce jour : rature et stylet (0.6.1), lueur et trait ondulé (0.7.1)
    `essai_local.sh` l'accepte. Écrit depuis le cloud, **jamais lancé** (pas de KVM dans le conteneur) : à essayer sur
    l'ordinateur (`creer`, `lancer`, `essai_local.sh`), noter la mémoire réelle.
 
+## Sécurité et robustesse (Antsa, 2026-11-14, ADR 0060)
+
+1. ✅ **Audit** : 240 dépendances sans faille connue (OSV) ; code relu (mise à jour, dons, Android, colle Giac, magasin d'écriture).
+2. ✅ **Corrigé** : calcul démesuré refusé (`9999999!`), moteur jamais bloqué sans fin, plantage Android 7 à l'installation d'une mise à jour, sauvegarde Android coupée (l'encre ne part plus chez Google), quotas du Worker des dons, écritures simultanées du magasin, téléchargement de mise à jour borné, liens `https`/`mailto` seulement. Tests : `moteur_test`, `ecritures_test`, `worker.test.mjs`.
+3. ⏳ ❓ Antsa : redéployer le Worker des dons (`cd plateforme/worker && npx wrangler deploy`) pour que les quotas soient en service.
+4. ⏳ ❓ Antsa, consentement : (a) cocher la case puis « retour » vaut oui sans « Continuer » : le garder ? (b) les lignes jugées avant le oui partent après le oui : le garder ? (c) l'heure d'une séance porte le décalage horaire (une position grossière) : passer en UTC ? (d) tirer un nouvel identifiant quand l'adresse de la plateforme change ?
+5. ⏳ Mêmes quotas dans `plateforme/recepteur.py` ; actions GitHub épinglées par SHA ; exports d'écriture effacés avec « Effacer » ; essai de `9999999!` sur appareil.
+
 ## Fluidité (accord d'Antsa, 2026-11-08)
 
 1. ✅ **Lecture au tracé affichée, Pix2Text en arrière-plan** (ADR 0050) : une ligne dont un signe doute s'affiche en quelques ms avec un pointillé « à confirmer », le modèle la relit pendant une pause et la remplace seulement s'il fait mieux ; jamais après une correction. Pad 7 : `x+1` 849 ms → 36 ms. ⏳ Vrai stylet ; part réelle des lignes d'Antsa concernées (8 → 9 lignes sur 58 fixtures : ses lignes difficiles échouent sur la structure, pas sur un signe).
@@ -132,7 +140,7 @@ Déjà livré ce jour : rature et stylet (0.6.1), lueur et trait ondulé (0.7.1)
 - 🔄 2026-11-07 : un trait commencé sur un résultat ou un `?` disparaît, donc on ne rature pas un résultat en partant de lui (Pad 7, stylet simulé). Cause : ces zones captent le pointeur. Elles le partagent avec la feuille (`TraverseEcriture`) ; même classe : boutons Arrêter, Tracer et cartes. Tests dans `traverse_ecriture_test.dart`. Vu sur le Pad 7 au stylet simulé : rature partie du résultat, Annuler, correction.
 - 🔄 2026-11-07 : `√29` se lit `(29` dans un résultat (Pad 7). Cause : signe de racine trop serré. Signe élargi, vu sur le Pad 7 ; test dans `ecriture_resultat_test.dart`.
 - ✅ 2026-11-07 : résultats faux sans avertissement, trouvés par inventaire (ADR 0025) : bornes d'intégrale perdues sans accolades, déterminant rendu comme une matrice, `\frac{d}{dx}` et `\operatorname{ppcm}` lus comme des produits, `u_{n+1}` lu `u_n+1`, `x=x>2` pour une inéquation. Même classe cherchée sur 131 cas ; protégés par `analyse_test.dart` et le banc SymPy. Reste : banc sur arm64 réel.
-- 🔄 2026-11-07 : un calcul peut figer le moteur : `rsolve` d'ordre 2 ne rend pas la main, même arrêté à 15 s (banc). Évité pour les suites (ADR 0027). Reste : comprendre l'arrêt de Giac, et ne plus bloquer la file si un calcul ne s'arrête pas.
+- 🔄 2026-11-07 : un calcul peut figer le moteur : `rsolve` d'ordre 2 ne rend pas la main, même arrêté à 15 s (banc). Évité pour les suites (ADR 0027). Depuis 2026-11-14 (ADR 0060) la file n'est plus bloquée : le calcul est rendu « arrêté » et le moteur dit « occupé » jusqu'au retour de Giac. Reste : comprendre l'arrêt de Giac, et ne plus bloquer la file si un calcul ne s'arrête pas.
 - ✅ 2026-11-06 : « la page est trop petite » (Antsa, Poco). Page sans bord, glisser et zoomer (ADR 0014).
 
 ## P0 — Une app qui calcule ce qu'on écrit (prioritaire)

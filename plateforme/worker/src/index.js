@@ -124,6 +124,34 @@ function refusAdmin(request, env) {
 
 // --- Routes ---------------------------------------------------------------------------------------
 
+/** Séances acceptées par identifiant et par jour (UTC) ; l'app en envoie quelques-unes. */
+export const DONS_PAR_JOUR = 200;
+
+/** Compte les clés sous `prefixe`, sans dépasser `plafond`. */
+async function compter(env, prefixe, plafond) {
+  let n = 0;
+  let curseur;
+  do {
+    const page = await env.DONS.list({ prefix: prefixe, cursor: curseur, limit: Math.min(1000, plafond - n) });
+    n += page.objects.length;
+    curseur = page.truncated && n < plafond ? page.cursor : undefined;
+  } while (curseur);
+  return n;
+}
+
+/** La clé du limiteur : l'adresse en IPv4, le préfixe /64 en IPv6 (un abonné en a une infinité). */
+export function cleDebit(ip) {
+  if (!ip.includes(":")) return ip;
+  const [tete, queue = ""] = ip.split("::");
+  const debut = tete.split(":").filter(Boolean);
+  if (ip.includes("::")) {
+    const fin = queue.split(":").filter(Boolean);
+    while (debut.length + fin.length < 8) debut.push("0");
+    debut.push(...fin);
+  }
+  return debut.slice(0, 4).join(":") + "::/64";
+}
+
 async function don(request, env) {
   const seance = await corpsJson(request, TAILLE_MAX);
   let n;
@@ -137,7 +165,13 @@ async function don(request, env) {
   if (await env.DONS.head(`retraits/${c}.json`)) {
     throw new Refus(410, "identifiant retiré : en tirer un nouveau");
   }
-  const cle = `dons/${c}/${horodatage(new Date())}-${hasard(6)}.json`;
+  // Plafond par identifiant et par jour : un seul identifiant ne remplit pas le seau (audit 2026-11-14).
+  const maintenant = new Date();
+  const jour = horodatage(maintenant).slice(0, 9); // « AAAAMMJJT »
+  if ((await compter(env, `dons/${c}/${jour}`, DONS_PAR_JOUR)) >= DONS_PAR_JOUR) {
+    throw new Refus(429, "trop de dons aujourd'hui", { "Retry-After": "3600" });
+  }
+  const cle = `dons/${c}/${horodatage(maintenant)}-${hasard(6)}.json`;
   await env.DONS.put(cle, JSON.stringify(seance), { httpMetadata: { contentType: "application/json" } });
   return json(201, { recu: n });
 }
@@ -154,6 +188,10 @@ async function retrait(request, env) {
     throw e;
   }
   const c = demande.contributeur;
+  // Un identifiant qui n'a jamais rien donné ne laisse pas de note : sinon chacun en écrirait sans fin.
+  if (!(await env.DONS.head(`retraits/${c}.json`)) && (await compter(env, `dons/${c}/`, 1)) === 0) {
+    return json(202, { retire: 0 });
+  }
   // La note d'abord : un don qui arriverait pendant l'effacement sera refusé.
   const note = { contributeur: c, date: new Date().toISOString() };
   await env.DONS.put(`retraits/${c}.json`, JSON.stringify(note), { httpMetadata: { contentType: "application/json" } });
@@ -265,7 +303,7 @@ async function router(request, env) {
   if (chemin !== "/v1/sante" && env.LIMITEUR) {
     // CF-Connecting-IP est posé par Cloudflare ; l'IP n'est ni journalisée ni stockée par ce code.
     const ip = request.headers.get("CF-Connecting-IP") || "";
-    const { success } = await env.LIMITEUR.limit({ key: ip });
+    const { success } = await env.LIMITEUR.limit({ key: cleDebit(ip) });
     if (!success) return json(429, { erreur: "trop de requêtes" }, { "Retry-After": "60" });
   }
   try {

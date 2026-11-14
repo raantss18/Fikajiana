@@ -4,6 +4,8 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Sécurité : un calcul démesuré (9999999!) est refusé au lieu de figer l'app ; la sauvegarde Android n'emporte plus vos feuilles ni votre écriture hors de l'appareil ; l'installation d'une mise à jour ne plante plus sous Android 7 ; téléchargement de mise à jour borné. / Security: an oversized computation (9999999!) is refused instead of freezing the app; Android backup no longer takes your sheets or handwriting off the device; installing an update no longer crashes on Android 7; bounded update download.
+
 - Supérieur : DL(e^x;0;4) donne le développement limité avec son o(x⁴), laplace(t²) et invlaplace(…) la transformée de Laplace, et sur une matrice rang, tr, noyau, valeurspropres, vecteurspropres, polycar et diagonaliser (P et D) ; à la main ou au clavier. / Higher maths: DL(e^x;0;4) gives the Taylor expansion with its o(x⁴), laplace(t²) and invlaplace(…) the Laplace transform, and on a matrix rank, tr, kernel, eigenvalues, eigenvectors, characteristic polynomial and diagonalize (P and D); by hand or keyboard.
 
 - Nombres complexes : formeexp(1+i) donne √2 e^{iπ/4}, formetrigo(1+i) la forme trigonométrique, racines(3;8i) les racines n-ièmes ; z²−2z+5=0 se résout dans ℂ (degré 1 ou 2) ; à la main ou au clavier. / Complex numbers: formeexp(1+i) gives √2 e^{iπ/4}, formetrigo(1+i) the trigonometric form, racines(3;8i) the n-th roots; z²−2z+5=0 is solved in ℂ (degree 1 or 2); by hand or keyboard.
