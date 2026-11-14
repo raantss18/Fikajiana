@@ -595,6 +595,8 @@ class RepereBloc extends StatelessWidget {
                   children: [
                     _Formule(latex: ecrit, couleur: encre, manuscrite: true),
                     _Formule(latex: reponse, couleur: accent, manuscrite: true),
+                    // Une ligne tapée a aussi sa liste (étapes, corriger).
+                    if (!enExport) ?_bouton(context),
                   ],
                 )
               : _Formule(latex: reponse, couleur: accent, manuscrite: true);

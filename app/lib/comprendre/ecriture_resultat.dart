@@ -259,6 +259,10 @@ final Map<String, _Glyphe> _glyphes = {
     _arc(0.28, 0.73, 0.22, 0.26, -_pi / 2, 3 * _pi / 2),
     _l([0.28, 0.47, 0.62, 0.45]),
   ]),
+  // Δ, le discriminant (étapes de résolution, ADR 0061) : un triangle.
+  'Δ': _Glyphe(0.74, [
+    _l([0.06, 1, 0.36, 0.06, 0.68, 1, 0.06, 1]),
+  ]),
   'π': _Glyphe(0.6, [
     _l([0.02, 0.46, 0.2, 0.4, 0.58, 0.42]),
     _l([0.2, 0.42, 0.16, 1]),
@@ -651,6 +655,9 @@ class _Compositeur {
           ? _rangee([_lettre('|'), _lettre('|')])
           : signe == ','
           ? const _Boite(0.1, 0, 0, [])
+          // `\ ` : une espace entre deux morceaux (`x=1\ \text{ou}\ x=2`).
+          : signe == ' '
+          ? const _Boite(0.35, 0, 0, [])
           : throw const _NonPrisEnCharge();
     }
     while (!_fini && RegExp('[a-zA-Z]').hasMatch(_s[_i])) {
@@ -684,6 +691,7 @@ class _Compositeur {
         _lettre(')'),
       ]),
       'sigma' => _lettre('σ'),
+      'Delta' => _lettre('Δ'),
       'mathcal' || 'mathscr' => _groupe(),
       'emptyset' => _lettre('∅'),
       'frac' => _fraction(),

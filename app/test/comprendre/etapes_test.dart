@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'dart:ui';
+
+import 'package:fikajiana/comprendre/ecriture_resultat.dart';
 import 'package:fikajiana/comprendre/etapes.dart';
 import 'package:fikajiana/moteur/giac.dart';
 import 'package:fikajiana/moteur/moteur.dart';
@@ -97,6 +100,33 @@ void main() {
     final aucune = (await _etapes('x^{2}+x+1=0'))!;
     expect(aucune.last, r'aucuneSolution : \Delta<0');
     expect(aucune[aucune.length - 2], contains('=-3'));
+  });
+
+  test('chaque ligne s’écrit à la main, comme au tableau', () async {
+    for (final equation in [
+      '2x+3=7',
+      r'\frac{x}{2}=3',
+      '2x^{2}-3x-5=0',
+      'x^{2}=2',
+      'x^{2}-2x+1=0',
+      'x^{2}+x+1=0',
+    ]) {
+      final a = analyserLatex(equation);
+      final etapes = await etapesEquation(
+        _GiacEnregistre(),
+        ecrit: equation,
+        gauche: a.membres!.$1,
+        droite: a.membres!.$2,
+        x: a.inconnues.single,
+      );
+      for (final e in etapes!) {
+        expect(
+          ecrireResultat(e.latex, const Rect.fromLTWH(0, 0, 40, 40)),
+          isNotNull,
+          reason: e.toString(),
+        );
+      }
+    }
   });
 
   test('pas d’étapes plutôt que des étapes fausses', () async {
