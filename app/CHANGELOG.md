@@ -4,6 +4,8 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Vérifier ma copie : écrivez votre démarche ligne sous ligne ; « vérifier » compare chaque ligne à la précédente et montre où est l'erreur, sans donner la réponse. / Check my work: write your working line under line; “check” compares each line with the previous one and shows where the mistake is, without giving the answer.
+
 - Étapes de résolution : sur une équation du premier ou du second degré, la liste de la ligne propose « étapes » ; la résolution s'écrit ligne par ligne, comme au tableau, avec la raison de chaque ligne (tout à gauche, discriminant, solutions). / Solution steps: on a first- or second-degree equation, the line's list offers “steps”; the solution is written line by line, as on a blackboard, with the reason for each line (everything to the left, discriminant, solutions).
 
 - Sécurité : un calcul démesuré (9999999!) est refusé au lieu de figer l'app ; la sauvegarde Android n'emporte plus vos feuilles ni votre écriture hors de l'appareil ; l'installation d'une mise à jour ne plante plus sous Android 7 ; téléchargement de mise à jour borné. / Security: an oversized computation (9999999!) is refused instead of freezing the app; Android backup no longer takes your sheets or handwriting off the device; installing an update no longer crashes on Android 7; bounded update download.

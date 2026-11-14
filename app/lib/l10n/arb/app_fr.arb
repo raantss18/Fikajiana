@@ -856,5 +856,19 @@
     "etapeConclusion": "Conclusion.",
     "guideEtapesTitre": "Étapes de résolution",
     "guideEtapesPhrase": "Sur une équation du premier ou du second degré, le bouton de la ligne propose « étapes » : la résolution s'écrit ligne par ligne, comme au tableau, avec la raison de chaque ligne (tout à gauche, discriminant, solutions).",
-    "guideEtapesMots": "étapes pas à pas détail résolution discriminant delta méthode démarche expliquer comment"
+    "guideEtapesMots": "étapes pas à pas détail résolution discriminant delta méthode démarche expliquer comment",
+    "motVerifier": "vérifier",
+    "copieVerifier": "Vérifier ma copie : relire la démarche ligne par ligne",
+    "copieTitre": "Ma copie, ligne par ligne",
+    "copieCalcul": "Vérification de la copie",
+    "copieDepart": "Le départ.",
+    "copieJuste": "Juste : cette ligne dit la même chose que la précédente.",
+    "copieFausse": "À revoir : cette ligne ne dit plus la même chose que la précédente. L'erreur est dans ce passage.",
+    "copieInconnue": "Je n'ai pas su comparer cette ligne à la précédente.",
+    "copieToutJuste": "Bravo, chaque ligne suit de la précédente.",
+    "copieBilan": "{n, plural, =1{Une ligne à revoir.} other{{n} lignes à revoir.}}",
+    "@copieBilan": {"placeholders": {"n": {"type": "int"}}},
+    "guideCopieTitre": "Vérifier ma copie",
+    "guideCopiePhrase": "Écris ta démarche, une ligne sous l'autre (une équation qu'on transforme, ou une expression qu'on développe). Le bouton d'une ligne propose « vérifier » : chaque ligne est comparée à la précédente, cochée si elle dit la même chose, signalée « à revoir » sinon. Tu vois où est l'erreur, sans qu'on te donne la réponse.",
+    "guideCopieMots": "vérifier copie démarche correction erreur faute ligne par ligne équivalent relire professeur devoir exercice"
 }

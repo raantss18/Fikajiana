@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:fikajiana/comprendre/blocs.dart';
+import 'package:fikajiana/comprendre/copie.dart';
 import 'package:fikajiana/comprendre/decimale.dart';
 import 'package:fikajiana/comprendre/ecriture_resultat.dart';
 import 'package:fikajiana/comprendre/etapes.dart';
@@ -2023,6 +2024,60 @@ class CalculFeuille extends ChangeNotifier {
       x: e.x,
     );
   }
+
+  /// La ligne d'une démarche que [bloc] écrit, ou `null` (objet, commande,
+  /// ligne non comprise, question finie par `=`).
+  LigneCopie? _ligneCopie(BlocCalcul bloc) {
+    final latex = bloc.latex;
+    if (latex == null ||
+        bloc.objet != null ||
+        bloc.commande != null ||
+        bloc.finitParEgal) {
+      return null;
+    }
+    final Analyse analyse;
+    try {
+      analyse = analyserPour(bloc, latex);
+    } on FormatException {
+      return null;
+    }
+    final membres = analyse.membres;
+    final x = analyse.inconnues.singleOrNull;
+    if (analyse.type == TypeExpression.equation &&
+        membres != null &&
+        x != null) {
+      return LigneCopie.equation(latex, membres.$1, membres.$2, x);
+    }
+    if (analyse.type == TypeExpression.calcul && !analyse.demandeResultat) {
+      return LigneCopie(latex, analyse.giac);
+    }
+    return null;
+  }
+
+  /// La démarche dont [bloc] fait partie : les lignes de la même sorte
+  /// (équations de la même inconnue, ou expressions) écrites l'une sous
+  /// l'autre, de haut en bas. `null` s'il n'y en a pas au moins deux.
+  List<LigneCopie>? copieDe(BlocCalcul bloc) {
+    final ici = _ligneCopie(bloc);
+    if (ici == null) return null;
+    final ordre = blocs..sort((a, b) => a.cadre.top.compareTo(b.cadre.top));
+    final lignes = [for (final b in ordre) _ligneCopie(b)];
+    final i = ordre.indexOf(bloc);
+    var debut = i;
+    while (debut > 0 && lignes[debut - 1]?.sorte == ici.sorte) {
+      debut--;
+    }
+    var fin = i;
+    while (fin + 1 < lignes.length && lignes[fin + 1]?.sorte == ici.sorte) {
+      fin++;
+    }
+    if (fin == debut) return null;
+    return [for (var k = debut; k <= fin; k++) lignes[k]!];
+  }
+
+  /// Le verdict de chaque ligne de [copie], comparée à la précédente.
+  Future<List<VerdictLigne>> verifier(List<LigneCopie> copie) =>
+      verifierCopie(moteur, copie);
 
   /// [latex] compris sous tout ce qui est écrit : une ligne tapée.
   Analyse analyserEnBas(String latex) => _contextePour(

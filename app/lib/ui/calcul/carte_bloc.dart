@@ -10,6 +10,7 @@ import 'package:fikajiana/reglages/reglages.dart';
 import 'package:fikajiana/ui/calcul/action_manuscrite.dart';
 import 'package:fikajiana/ui/calcul/marques_bloc.dart';
 import 'package:fikajiana/ui/calcul/menu_actions.dart';
+import 'package:fikajiana/ui/calcul/panneau_copie.dart';
 import 'package:fikajiana/ui/calcul/panneau_etapes.dart';
 import 'package:fikajiana/ui/calcul/panneau_saisie.dart';
 import 'package:fikajiana/ui/calcul/placer_construction.dart';
@@ -113,6 +114,14 @@ class RepereBloc extends StatelessWidget {
           mot: l10n.motEtapes,
           libelle: l10n.etapesVoir,
           agir: () => unawaited(montrerEtapes(context, calcul, bloc)),
+        ),
+      // Vérifier ma copie : la démarche relue ligne par ligne (2026-11-14).
+      if (calcul.copieDe(bloc) case final copie?)
+        EntreeLigne(
+          cle: 'verifier',
+          mot: l10n.motVerifier,
+          libelle: l10n.copieVerifier,
+          agir: () => unawaited(montrerCopie(context, calcul, copie)),
         ),
       if (surProposer case final proposer?)
         for (final p in calcul.propositions(bloc))

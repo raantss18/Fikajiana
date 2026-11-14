@@ -284,6 +284,14 @@ List<EntreeGuide> catalogueGuide(AppLocalizations l10n) => [
     lignes: ['2x^{2}-3x-5=0'],
   ),
   EntreeGuide(
+    cle: 'copie',
+    famille: FamilleGuide.equations,
+    titre: l10n.guideCopieTitre,
+    phrase: l10n.guideCopiePhrase,
+    motsCles: l10n.guideCopieMots,
+    lignes: ['2x+3=7', '2x=4', 'x=2'],
+  ),
+  EntreeGuide(
     cle: 'inequation',
     famille: FamilleGuide.equations,
     titre: l10n.guideInequationTitre,

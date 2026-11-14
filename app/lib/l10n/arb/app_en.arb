@@ -1126,5 +1126,19 @@
     "etapeConclusion": "Conclusion.",
     "guideEtapesTitre": "Solution steps",
     "guideEtapesPhrase": "On a first- or second-degree equation, the line's button offers “steps”: the solution is written line by line, as on a blackboard, with the reason for each line (everything to the left, discriminant, solutions).",
-    "guideEtapesMots": "steps step by step detail solution discriminant delta method working explain how"
+    "guideEtapesMots": "steps step by step detail solution discriminant delta method working explain how",
+    "motVerifier": "check",
+    "copieVerifier": "Check my work: reread the working line by line",
+    "copieTitre": "My work, line by line",
+    "copieCalcul": "Checking the work",
+    "copieDepart": "The starting point.",
+    "copieJuste": "Right: this line says the same as the previous one.",
+    "copieFausse": "Check again: this line no longer says the same as the previous one. The mistake is in this step.",
+    "copieInconnue": "I could not compare this line with the previous one.",
+    "copieToutJuste": "Well done, every line follows from the previous one.",
+    "copieBilan": "{n, plural, =1{One line to check again.} other{{n} lines to check again.}}",
+    "@copieBilan": {"placeholders": {"n": {"type": "int"}}},
+    "guideCopieTitre": "Check my work",
+    "guideCopiePhrase": "Write your working, one line under the other (an equation being transformed, or an expression being expanded). A line's button offers “check”: each line is compared with the previous one, ticked if it says the same thing, flagged “check again” otherwise. You see where the mistake is, without being given the answer.",
+    "guideCopieMots": "check work working correction mistake error line by line equivalent reread teacher homework exercise"
 }

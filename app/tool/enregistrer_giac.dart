@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:fikajiana/comprendre/copie.dart';
 import 'package:fikajiana/comprendre/etapes.dart';
 import 'package:fikajiana/moteur/giac.dart';
 import 'package:fikajiana/moteur/moteur.dart';
@@ -47,8 +48,39 @@ const equations = [
   r'\sin(x)=0',
 ];
 
+/// Des démarches d'élève : justes, ou avec une faute à une ligne connue.
+const copies = [
+  ['2x+3=7', '2x=4', 'x=2'],
+  ['2x+3=7', '2x=10', 'x=5'],
+  ['3x-5=x+1', '2x=6', 'x=3'],
+  ['x^{2}-5x+6=0', '(x-2)(x-3)=0'],
+  ['x^{2}=4', 'x=2'],
+  ['2(x+1)+3', '2x+2+3', '2x+5'],
+  ['2(x+1)+3', '2x+1+3', '2x+4'],
+  ['(x+1)^{2}', 'x^{2}+2x+1'],
+  ['(x+1)^{2}', 'x^{2}+1'],
+  [r'\frac{x}{2}=3', 'x=6'],
+  [r'\sin(x)=0', 'x=0'],
+];
+
+LigneCopie ligneCopie(String latex) {
+  final a = analyserLatex(latex);
+  final x = a.inconnues.singleOrNull;
+  return a.membres != null && x != null
+      ? LigneCopie.equation(latex, a.membres!.$1, a.membres!.$2, x)
+      : LigneCopie(latex, a.giac);
+}
+
 Future<void> main() async {
   final moteur = _Enregistreur();
+  final copie = _Enregistreur();
+  for (final lignes in copies) {
+    final v = await verifierCopie(copie, lignes.map(ligneCopie).toList());
+    print('$lignes -> ${v.map((e) => e.name).toList()}');
+  }
+  File('test/fixtures/giac/copie.json').writeAsStringSync(
+    '${const JsonEncoder.withIndent(' ').convert(copie.reponses)}\n',
+  );
   for (final latex in equations) {
     final a = analyserLatex(latex);
     final x = a.inconnues.singleOrNull;
