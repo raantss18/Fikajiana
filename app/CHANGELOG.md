@@ -4,6 +4,8 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Accueil : sous le logo, des exemples s'écrivent à la main avec leur résultat, pour montrer ce que fait la Feuille. Sur téléphone, le message du modèle ne se coupe plus. / Home: under the logo, examples are handwritten with their result, to show what the Sheet does. On phones, the model message no longer breaks.
+
 - Réglages, Lecture de l'écriture : « Rechercher une mise à jour du modèle » installe, quand vous le demandez, un modèle de lecture plus récent, vérifié avant d'être posé ; l'ancien reste si quelque chose échoue. / Settings, Handwriting reading: “Check for a model update” installs, when you ask, a newer reading model, verified before it is put in place; the old one stays if anything fails.
 
 - Vérifier ma copie : écrivez votre démarche ligne sous ligne ; « vérifier » compare chaque ligne à la précédente et montre où est l'erreur, sans donner la réponse. / Check my work: write your working line under line; “check” compares each line with the previous one and shows where the mistake is, without giving the answer.

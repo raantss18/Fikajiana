@@ -75,7 +75,7 @@ Déjà livré ce jour : rature et stylet (0.6.1), lueur et trait ondulé (0.7.1)
 
 1. 🔄 **Étapes de résolution** (ADR 0061) : équations de degré 1 et 2, écrites ligne par ligne avec leur raison. Tests avec les réponses du vrai Giac ; vu sur l'émulateur léger (ligne tapée : bouton de ligne ajouté, Δ et espaces écrits à la main). Reste : Pad 7 ; dérivées, systèmes, inéquations.
 2. 🔄 **Vérifier ma copie** (ADR 0062) : la liste d'une ligne propose « vérifier » ; chaque ligne comparée à la précédente par Giac, « juste » ou « à revoir », jamais « faux » sans preuve. Tests avec les réponses du vrai Giac (11 démarches). Reste : à la main sur le Pad 7 ; inéquations, systèmes.
-3. ⏳ **Nouveau visage** : accueil, couleurs, animations.
+3. 🔄 **Nouveau visage** : l'accueil montre trois exemples du tour qui s'écrivent à la main avec leur résultat ; bandeau du modèle lisible sur téléphone ; une ligne tapée a son bouton. Vu sur l'émulateur léger. Reste : Pad 7 ; la palette (ADR 0010) est gardée.
 6. 🔄 **Mise à jour du modèle depuis l'app** (ADR 0064, Antsa 2026-11-14) : Réglages → « Rechercher une mise à jour du modèle », fiche `modele.json` signée publiée avec chaque version. Tests avec un serveur local. Reste : essai sur appareil avec une vraie version 2 du modèle.
 4. ⏳ **Site GitHub** du projet, dans l'esprit de celui de Zanak'i Antsa.
 5. ⏳ **Vidéo de démonstration**, sur l'émulateur léger, écriture rejouée, sous-titres en français.
