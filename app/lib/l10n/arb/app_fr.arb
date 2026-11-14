@@ -706,24 +706,13 @@
     "signeLuAutres": "Ce signe peut aussi se lire :",
     "effacer": "Effacer",
     "exporterEcritures": "Exporter mes écritures",
-    "exporterEcrituresAide": "{n} échantillons, {taille}, au format de collecte (CC0), pour l'entraînement.",
+    "exporterEcrituresAide": "{n} échantillons, {taille} : votre écriture jugée, dans un fichier à garder ou à partager vous-même.",
     "aucuneEcriture": "Aucune écriture gardée pour l'instant",
     "effacerEcritures": "Effacer mes écritures",
     "effacerEcrituresQuestion": "Oublier toute l'écriture gardée sur cet appareil, corrections comprises ?",
     "ecrituresExportees": "Écritures enregistrées dans {chemin}",
     "tailleKo": "{n} ko",
     "tailleMo": "{n} Mo",
-    "donsTitre": "Aider à améliorer la reconnaissance",
-    "donsExplication": "Les lignes que vous jugez (👍, ou 👎 puis corrigées) peuvent partir, sans votre nom, pour entraîner la lecture de l'écriture. Rien ne part sans votre accord, et vous pouvez changer d'avis à tout moment dans les Réglages.",
-    "donsCase": "Aider à améliorer la reconnaissance",
-    "continuer": "Continuer",
-    "donsWifi": "Wi-Fi seulement",
-    "donsAdresse": "Adresse de la plateforme",
-    "donsAdresseAide": "Vide : rien n'est envoyé. https:// seulement.",
-    "donsEnAttente": "{n, plural, =0{Aucune ligne en attente} =1{1 ligne en attente d'envoi} other{{n} lignes en attente d'envoi}}",
-    "donsRetrait": "Demander le retrait de mes dons",
-    "donsRetraitFait": "Retrait demandé : vos dons seront effacés de la plateforme.",
-    "donsRetraitEchec": "Le retrait n'a pas pu être demandé ; réessayez avec du réseau.",
     "ligneJuste": "Lecture juste",
     "ligneFausse": "Lecture fausse : corriger",
     "guideRejouer": "réécrire l'exemple",
@@ -821,9 +810,6 @@
     "guideEcrituresTitre": "Mes écritures",
     "guideEcrituresPhrase": "Réglages › Exporter mes écritures les enregistre au format de collecte, là où vous choisissez ; Effacer mes écritures les oublie, corrections comprises.",
     "guideEcrituresMots": "écritures exporter effacer corrections collecte",
-    "guideDonsTitre": "Aider à améliorer la reconnaissance",
-    "guideDonsPhrase": "Réglages : si vous cochez la case, vos lignes jugées partent sans votre nom, sur le Wi-Fi seulement si vous le voulez. Décochez à tout moment, ou demandez le retrait de vos dons.",
-    "guideDonsMots": "dons aider améliorer reconnaissance envoyer consentement retrait wifi",
     "guideTourTitre": "Le tour",
     "guideTourPhrase": "Six étapes pour les usages de base, proposées après chaque mise à jour ; le bouton Faire le tour, en haut du Guide, le relance.",
     "guideTourMots": "tour visite découvrir débuter premiers pas",
@@ -866,18 +852,39 @@
     "copieInconnue": "Je n'ai pas su comparer cette ligne à la précédente.",
     "copieToutJuste": "Bravo, chaque ligne suit de la précédente.",
     "copieBilan": "{n, plural, =1{Une ligne à revoir.} other{{n} lignes à revoir.}}",
-    "@copieBilan": {"placeholders": {"n": {"type": "int"}}},
+    "@copieBilan": {
+        "placeholders": {
+            "n": {
+                "type": "int"
+            }
+        }
+    },
     "guideCopieTitre": "Vérifier ma copie",
     "guideCopiePhrase": "Écris ta démarche, une ligne sous l'autre (une équation qu'on transforme, ou une expression qu'on développe). Le bouton d'une ligne propose « vérifier » : chaque ligne est comparée à la précédente, cochée si elle dit la même chose, signalée « à revoir » sinon. Tu vois où est l'erreur, sans qu'on te donne la réponse.",
     "guideCopieMots": "vérifier copie démarche correction erreur faute ligne par ligne équivalent relire professeur devoir exercice",
     "modelePresentVersion": "Modèle installé (version {v})",
-    "@modelePresentVersion": {"placeholders": {"v": {"type": "int"}}},
+    "@modelePresentVersion": {
+        "placeholders": {
+            "v": {
+                "type": "int"
+            }
+        }
+    },
     "modeleMajRechercher": "Rechercher une mise à jour du modèle",
     "modeleMajRecherche": "Recherche d'un modèle plus récent…",
     "modeleMajAJour": "Le modèle est à jour.",
     "modeleMajEchec": "La mise à jour du modèle n'a pas abouti. L'ancien modèle reste en place. Réessaie avec du réseau.",
     "modeleMajDisponible": "Un modèle plus récent est disponible : version {v}, {mo} Mo.",
-    "@modeleMajDisponible": {"placeholders": {"v": {"type": "int"}, "mo": {"type": "int"}}},
+    "@modeleMajDisponible": {
+        "placeholders": {
+            "v": {
+                "type": "int"
+            },
+            "mo": {
+                "type": "int"
+            }
+        }
+    },
     "modeleMajInstaller": "Installer le nouveau modèle",
     "modeleMajInstallee": "Nouveau modèle installé. Il servira au prochain démarrage de l'application.",
     "guideMajModeleTitre": "Mettre à jour le modèle de lecture",

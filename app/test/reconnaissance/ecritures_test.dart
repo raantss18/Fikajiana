@@ -81,7 +81,6 @@ void main() {
         ('signe', r'\times', Origine.juste),
         ('signe', '8', Origine.juste),
       ]);
-      expect(ecritures.lignesEnAttente, 1);
     });
 
     test(
@@ -171,21 +170,24 @@ void main() {
       final a = Ecritures(fichier: fichier);
       final traits = Encre()..chargerDocument(_document('trente_fois_8'));
       const c = Rect.fromLTWH(0, 0, 100, 40);
-      await a.corrigerLigne(traits.traits.toList(), 'un', c);
-      // Sans attendre : envoi marqué (réécriture), correction, autre envoi.
-      final ids = a.liste.map((e) => e.id).toList();
+      final premiere = traits.traits.toList();
+      await a.corrigerLigne(premiere, 'un', c);
+      // Sans attendre : une ligne corrigée à nouveau (réécriture du
+      // fichier), une ligne ajoutée, une autre réécriture, un autre ajout.
       traits.chargerDocument(_document('e_x_egal_7'));
-      final taches = [
-        a.marquerEnvoyes(ids),
-        a.corrigerLigne(traits.traits.toList(), 'deux', c),
-        a.marquerEnvoyes(ids),
-      ];
+      final deuxieme = traits.traits.toList();
       traits.chargerDocument(_document('AB_egal'));
-      taches.add(a.corrigerLigne(traits.traits.toList(), 'trois', c));
-      await Future.wait(taches);
+      final troisieme = traits.traits.toList();
+      await Future.wait<void>([
+        a.corrigerLigne(premiere, 'un bis', c),
+        a.corrigerLigne(deuxieme, 'deux', c),
+        a.corrigerLigne(premiere, 'un ter', c),
+        a.corrigerLigne(troisieme, 'trois', c),
+      ]);
       final b = Ecritures(fichier: fichier);
       await b.charger();
-      expect(b.liste.map((e) => e.attendu), ['un', 'deux', 'trois']);
+      expect(b.liste.map((e) => e.attendu), ['deux', 'un ter', 'trois']);
+      expect(b.liste.map((e) => e.attendu), a.liste.map((e) => e.attendu));
       expect(File('${fichier.path}.tmp').existsSync(), isFalse);
     });
 

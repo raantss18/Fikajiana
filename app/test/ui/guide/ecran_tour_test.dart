@@ -58,7 +58,6 @@ Future<void> _lancer(
   WidgetTester t, {
   required Services services,
   Reglages? reglages,
-  bool consentement = false,
   Size taille = const Size(400, 800),
   Locale langue = const Locale('fr'),
 }) async {
@@ -67,13 +66,7 @@ Future<void> _lancer(
   t.platformDispatcher.localesTestValue = [langue];
   addTearDown(t.view.reset);
   addTearDown(t.platformDispatcher.clearAllTestValues);
-  await t.pumpWidget(
-    App(
-      services: services,
-      reglages: reglages,
-      demanderConsentement: consentement,
-    ),
-  );
+  await t.pumpWidget(App(services: services, reglages: reglages));
   await t.pumpAndSettle();
 }
 
@@ -118,21 +111,6 @@ void main() {
       expect(_proposition, findsNothing);
 
       modele.arriver();
-      await t.pumpAndSettle();
-      expect(_proposition, findsOneWidget);
-    });
-
-    testWidgets('la question des dons d’abord, le tour ensuite', (t) async {
-      await _lancer(
-        t,
-        services: _services(_Modele(EtatModele.present)),
-        reglages: Reglages(),
-        consentement: true,
-      );
-      expect(find.text('Continuer'), findsOneWidget);
-      expect(_proposition, findsNothing);
-
-      await t.tap(find.text('Continuer'));
       await t.pumpAndSettle();
       expect(_proposition, findsOneWidget);
     });

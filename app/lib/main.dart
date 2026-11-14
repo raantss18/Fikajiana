@@ -1,4 +1,3 @@
-import 'package:fikajiana/dons/envoi_dons.dart';
 import 'package:fikajiana/reglages/reglages.dart';
 import 'package:fikajiana/ui/app.dart';
 import 'package:fikajiana/ui/services.dart';
@@ -13,19 +12,7 @@ Future<void> main() async {
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   final reglages = await Reglages.charger();
   final services = await Services.charger();
-  // Les dons consentis (ADR 0042) : rien ne part sans « oui » ni adresse.
-  final ecritures = services.classeur.ecritures;
-  if (ecritures != null) {
-    services.dons = EnvoiDons(
-      ecritures: ecritures,
-      reglages: reglages,
-      infos: infosAndroid,
-      reseau: reseauAndroid,
-    )..demarrer();
-  }
-  runApp(
-    App(reglages: reglages, services: services, demanderConsentement: true),
-  );
+  runApp(App(reglages: reglages, services: services));
 }
 
 /// Les polices sous SIL OFL 1.1 : leur licence doit les accompagner.

@@ -935,7 +935,7 @@
     "signeLuAutres": "This sign could also be:",
     "effacer": "Delete",
     "exporterEcritures": "Export my writing",
-    "exporterEcrituresAide": "{n} samples, {taille}, in the collection format (CC0), for training.",
+    "exporterEcrituresAide": "{n} samples, {taille}: your judged handwriting, in a file to keep or share yourself.",
     "aucuneEcriture": "No writing kept yet",
     "effacerEcritures": "Delete my writing",
     "effacerEcrituresQuestion": "Forget all the writing kept on this device, corrections included?",
@@ -973,26 +973,8 @@
             }
         }
     },
-    "donsTitre": "Help improve recognition",
-    "donsExplication": "The lines you judge (👍, or 👎 then corrected) can be sent, without your name, to train handwriting reading. Nothing is sent without your consent, and you can change your mind at any time in Settings.",
-    "donsCase": "Help improve recognition",
-    "continuer": "Continue",
-    "donsWifi": "Wi-Fi only",
-    "donsAdresse": "Platform address",
-    "donsAdresseAide": "Empty: nothing is sent. https:// only.",
-    "donsEnAttente": "{n, plural, =0{No line waiting} =1{1 line waiting to be sent} other{{n} lines waiting to be sent}}",
-    "donsRetrait": "Ask to withdraw my donations",
-    "donsRetraitFait": "Withdrawal requested: your donations will be erased from the platform.",
-    "donsRetraitEchec": "The withdrawal could not be requested; try again with a network.",
     "ligneJuste": "Reading is right",
     "ligneFausse": "Reading is wrong: correct it",
-    "@donsEnAttente": {
-        "placeholders": {
-            "n": {
-                "type": "int"
-            }
-        }
-    },
     "guideRejouer": "write the example again",
     "guideTour": "Take the tour",
     "tourTitre": "The Fikajiana tour",
@@ -1088,9 +1070,6 @@
     "guideEcrituresTitre": "My writing",
     "guideEcrituresPhrase": "Settings › Export my writing saves it in the collection format, wherever you choose; Delete my writing forgets it, corrections included.",
     "guideEcrituresMots": "handwriting export erase corrections collection",
-    "guideDonsTitre": "Help improve recognition",
-    "guideDonsPhrase": "Settings: if you tick the box, your judged lines are sent without your name, on Wi-Fi only if you want. Untick at any time, or ask to withdraw your donations.",
-    "guideDonsMots": "donations help improve recognition send consent withdraw wifi",
     "guideTourTitre": "The tour",
     "guideTourPhrase": "Six steps for the basics, offered after each update; the Take the tour button, at the top of the Guide, starts it again.",
     "guideTourMots": "tour discover start first steps",
@@ -1133,18 +1112,39 @@
     "copieInconnue": "I could not compare this line with the previous one.",
     "copieToutJuste": "Well done, every line follows from the previous one.",
     "copieBilan": "{n, plural, =1{One line to check again.} other{{n} lines to check again.}}",
-    "@copieBilan": {"placeholders": {"n": {"type": "int"}}},
+    "@copieBilan": {
+        "placeholders": {
+            "n": {
+                "type": "int"
+            }
+        }
+    },
     "guideCopieTitre": "Check my work",
     "guideCopiePhrase": "Write your working, one line under the other (an equation being transformed, or an expression being expanded). A line's button offers “check”: each line is compared with the previous one, ticked if it says the same thing, flagged “check again” otherwise. You see where the mistake is, without being given the answer.",
     "guideCopieMots": "check work working correction mistake error line by line equivalent reread teacher homework exercise",
     "modelePresentVersion": "Model installed (version {v})",
-    "@modelePresentVersion": {"placeholders": {"v": {"type": "int"}}},
+    "@modelePresentVersion": {
+        "placeholders": {
+            "v": {
+                "type": "int"
+            }
+        }
+    },
     "modeleMajRechercher": "Check for a model update",
     "modeleMajRecherche": "Looking for a newer model…",
     "modeleMajAJour": "The model is up to date.",
     "modeleMajEchec": "The model update did not complete. The previous model stays in place. Try again with a connection.",
     "modeleMajDisponible": "A newer model is available: version {v}, {mo} MB.",
-    "@modeleMajDisponible": {"placeholders": {"v": {"type": "int"}, "mo": {"type": "int"}}},
+    "@modeleMajDisponible": {
+        "placeholders": {
+            "v": {
+                "type": "int"
+            },
+            "mo": {
+                "type": "int"
+            }
+        }
+    },
     "modeleMajInstaller": "Install the new model",
     "modeleMajInstallee": "New model installed. It will be used the next time the app starts.",
     "guideMajModeleTitre": "Update the reading model",
