@@ -48,6 +48,9 @@ String latexLisible(String latex) => latex
       (m) => '\\frac{1}{${m[1]}}',
     )
     .replaceAll(RegExp(r'e\^\{1\}(?![0-9])'), 'e')
+    // `\{1+2*i\}`, `\frac{1-3*i}{2}` (csolve, ADR 0058) : `2i`, comme au tableau.
+    .replaceAllMapped(RegExp(r'(\d|\))\*i(?![a-zA-Z])'), (m) => '${m[1]}i')
+    .replaceAll('*', r'\cdot ')
     // La constante d'une équation différentielle : `C_{0}`, pas `c\_0`.
     .replaceAllMapped(RegExp(r'\\mathrm\{c\\_(\d+)\}'), (m) => 'C_{${m[1]}}')
     // `y(x)=(…)` rendu par desolve : `y=…`.

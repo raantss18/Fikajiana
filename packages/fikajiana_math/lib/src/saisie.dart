@@ -326,6 +326,8 @@ String? _commandeDeCalcul(String texte) {
         'arrangement',
         'division',
         'bezout',
+        'racines',
+        'nthroots',
       }.contains(nom);
   var morceaux = unSeul ? [dedans] : _separer(dedans, ';');
   if (!unSeul && morceaux.length == 1) morceaux = _separer(dedans, ',');

@@ -658,7 +658,13 @@ class _Compositeur {
     }
     final nom = _s.substring(debut, _i);
     return switch (nom) {
-      'sin' || 'cos' || 'tan' || 'ln' || 'log' || 'exp' => _mot(nom),
+      'sin' ||
+      'cos' ||
+      'tan' ||
+      'ln' ||
+      'log' ||
+      'exp' ||
+      'arctan' => _mot(nom),
       'mathbb' => _dansEnsemble(),
       'mathrm' || 'operatorname' || 'text' => _groupe(),
       'iff' || 'Leftrightarrow' => _lettre('⇔'),

@@ -17,4 +17,14 @@ void main() {
   test('la constante de desolve s’écrit C_{0}', () {
     expect(latexLisible(r'y(x)=(\mathrm{c\_0} e^{-x})'), 'y=C_{0} e^{-x}');
   });
+
+  test('2*i de csolve s’écrit 2i, et * devient un point (ADR 0058)', () {
+    expect(latexLisible(r'\{1+2*i,1-2*i\}'), r'\{1+2i,1-2i\}');
+    expect(latexLisible(r'\frac{1-3*i}{2}'), r'\frac{1-3i}{2}');
+    expect(
+      latexLisible(r'\frac{(1+i)}{2} \cdot \sqrt{2}'),
+      r'\frac{(1+i)}{2} \cdot \sqrt{2}',
+    );
+    expect(latexLisible('a*b'), r'a\cdot b');
+  });
 }

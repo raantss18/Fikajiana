@@ -176,6 +176,22 @@ const List<(String, List<String>)> problemes = [
       '6!=',
     ],
   ),
+  // Vague 6 : nombres complexes (ADR 0058).
+  (
+    'complexes',
+    [
+      r'\text{formeexp}(1+i)=',
+      r'\text{formeexp}(-1-i\sqrt{3})=',
+      r'\text{formetrigo}(\sqrt{3}-i)=',
+      r'\text{formeexp}(\frac{1+i\sqrt{3}}{1-i})=',
+      r'\text{racines}(3;8i)',
+      r'\text{racines}(4;-16)',
+      'z^{2}-2z+5=0',
+      'z^{2}+4=0',
+      '(1+i)z=3+i',
+      'z^{3}=-8',
+    ],
+  ),
   // Vague 3 : statistiques à deux variables.
   (
     'statistiques à deux variables',

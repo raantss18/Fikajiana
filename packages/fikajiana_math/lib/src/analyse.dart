@@ -340,13 +340,33 @@ Analyse analyserLatex(
   );
   if (matricielle != null) return matricielle;
   final variable = _ordonner(symboles).first;
+  final gauche = expression.gauche.giac;
+  if (dansC(variable, gauche, droite.giac)) {
+    // `z^2+1=0` : dans ℂ (ADR 0058). `csolve` fait tomber Giac dès le degré 3
+    // (`z^3=-8`, `z^4=16` : vu sur Giac compilé pour Linux, même commit) ;
+    // il n'est appelé qu'en degré 1 ou 2, sinon `undef` : pas de résultat.
+    final p = 'numer(normal(($gauche)-(${droite.giac})))';
+    final degre = 'degree($p,$variable)>=1 and degree($p,$variable)<=2';
+    final resolution = 'csolve(($gauche)=(${droite.giac}),$variable)';
+    return Analyse(
+      TypeExpression.equation,
+      'ifte($degre,$resolution,undef)',
+      inconnues: [variable],
+    );
+  }
   return Analyse(
     TypeExpression.equation,
-    'solve(${expression.gauche.giac}=${droite.giac},$variable)',
+    'solve($gauche=${droite.giac},$variable)',
     inconnues: [variable],
-    membres: (expression.gauche.giac, droite.giac),
+    membres: (gauche, droite.giac),
   );
 }
+
+/// Une équation se résout dans ℂ si son inconnue est `z`, ou si `i` y paraît
+/// (au lycée, z est l'inconnue complexe).
+bool dansC(String variable, String gauche, String droite) =>
+    variable == 'z' ||
+    RegExp('(?<![A-Za-z_])i(?![A-Za-z_(])').hasMatch('$gauche $droite');
 
 /// `y' - 3y = \cos(x)`, `y'' + y = 0` : y fonction de x (ou de t), sans
 /// `y(` écrit ; le modèle lit `y^{1}` pour `y'`. Giac la résout
