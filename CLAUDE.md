@@ -11,9 +11,11 @@
 2. **Plan d'abord**, puis une tranche verticale minimale, puis élargissement.
 3. **Rien casser.** Une décision = un ADR ≤ 15 lignes (`docs/adr/NNNN-titre.md`). Commits courts en français
    (Conventional Commits), chemins explicites (jamais `git add -A`), `main` toujours vert.
-4. **Ne jamais dire « fini » sans l'avoir fait tourner** : `flutter analyze`, tests, puis essai sur le Xiaomi Pad 7 (arm64 réel),
+4. **Ne jamais dire « fini » sans l'avoir fait tourner** : `flutter analyze`, tests, puis essai sur le Xiaomi Pad 7 (arm64 réel)
+   **par ADB sans fil** (Antsa, 2026-11-14 : « j'ai activé le wireless debugging » ; `adb mdns services`, puis `adb -s <ip:port>`),
    capture à l'appui : tablette en plein écran, et format téléphone en fenêtre flottante (`--windowingMode 5`), portrait **et**
-   paysage, chaque support. Entre deux essais réels, émulateur **léger** seulement (`tool/emulateur_leger.sh`, ADR 0057) ; jamais l'ancien `fikajiana_resizable`, trop lourd (Antsa, 2026-11-08).
+   paysage, chaque support. Si le Pad n'est pas joignable : émulateur **léger** (`tool/emulateur_leger.sh`, ADR 0057, 0065), et ce qu'il
+   ne couvre pas (arm64, stylet réel) reste « à tester ». Jamais l'ancien `fikajiana_resizable`, trop lourd (Antsa, 2026-11-08).
 5. **Libre et 100 % hors ligne.** Licence du code : voir ADR 0001. Aucune dépendance non OSI (ni ML Kit, ni MyScript),
    modèles et poids sous licence compatible. Aucun compte, aucune pub, aucune télémétrie. L'encre ne quitte l'appareil
    qu'avec le consentement de la personne (case à cocher, révocable à tout moment), et seulement les lignes qu'elle a jugées

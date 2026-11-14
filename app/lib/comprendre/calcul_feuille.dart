@@ -2016,7 +2016,8 @@ class CalculFeuille extends ChangeNotifier {
 
   /// Les étapes de la résolution de [bloc], ou `null` s'il n'y en a pas
   /// (degré 3 et plus, coefficients littéraux).
-  Future<List<Etape>?> etapes(BlocCalcul bloc) {
+  /// [ou] : le mot entre deux solutions, dans la langue de l'app.
+  Future<List<Etape>?> etapes(BlocCalcul bloc, {String ou = 'ou'}) {
     final e = equationAEtapes(bloc);
     if (e == null) return Future.value();
     return etapesEquation(
@@ -2025,6 +2026,7 @@ class CalculFeuille extends ChangeNotifier {
       gauche: e.gauche,
       droite: e.droite,
       x: e.x,
+      ou: ou,
     );
   }
 
