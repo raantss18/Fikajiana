@@ -95,7 +95,9 @@ Future<List<Etape>?> etapesEquation(
       : '\\left(${c.latex}\\right)';
 
   final etapes = <Etape>[Etape(RaisonEtape.depart, ecrit)];
-  final dejaReduit = droite.trim() == '0' && reduit.exact == gauche.trim();
+  // Déjà « = 0 » sans rien à développer : la ligne serait la même.
+  final dejaReduit =
+      droite.trim() == '0' && !RegExp(r'[()]|\\frac').hasMatch(ecrit);
   if (!dejaReduit) {
     etapes.add(Etape(RaisonEtape.toutAGauche, '${reduit.latex}=0'));
   }

@@ -68,6 +68,17 @@ Déjà livré ce jour : rature et stylet (0.6.1), lueur et trait ondulé (0.7.1)
    `essai_local.sh` l'accepte. Écrit depuis le cloud, **jamais lancé** (pas de KVM dans le conteneur) : à essayer sur
    l'ordinateur (`creer`, `lancer`, `essai_local.sh`), noter la mémoire réelle.
 
+## Innovation (Antsa, 2026-11-14 : « je veux que tu innoves »)
+
+> Pistes choisies par Antsa : étapes de résolution, vérifier ma copie, nouveau visage ; puis un site GitHub et une vidéo de démonstration.
+> **L'entraînement du petit modèle est abandonné** (Antsa, 2026-11-14 : « on oublie l'entraînement ») : les gabarits et Pix2Text lisent seuls ; `entrainement/` n'est plus poursuivi.
+
+1. 🔄 **Étapes de résolution** (ADR 0061) : équations de degré 1 et 2, écrites ligne par ligne avec leur raison. Tests avec les réponses du vrai Giac. Reste : essai à l'écran ; dérivées, systèmes, inéquations.
+2. ⏳ **Vérifier ma copie** : chaque ligne d'une démarche cochée si elle suit de la précédente, la première ligne fausse montrée.
+3. ⏳ **Nouveau visage** : accueil, couleurs, animations.
+4. ⏳ **Site GitHub** du projet, dans l'esprit de celui de Zanak'i Antsa.
+5. ⏳ **Vidéo de démonstration**, sur l'émulateur léger, écriture rejouée, sous-titres en français.
+
 ## Sécurité et robustesse (Antsa, 2026-11-14, ADR 0060)
 
 1. ✅ **Audit** : 240 dépendances sans faille connue (OSV) ; code relu (mise à jour, dons, Android, colle Giac, magasin d'écriture).
