@@ -28,6 +28,9 @@ const String urlPublication = String.fromEnvironment(
 /// Clé publique Ed25519. La clé privée est dans `release-keys/`, hors de Git.
 const String clePubliqueBase64 = 'x0K7GNrUrRDDYSy/P7+mMtVLczvkVtRJM3vEIlpJQHg=';
 
+/// Taille maximale de `release.json` et de sa signature.
+const int _descriptionMax = 64 * 1024;
+
 class VersionPubliee {
   new(Map<String, dynamic> json)
     : build = json['build'] as int,
@@ -138,7 +141,15 @@ class MiseAJour extends ChangeNotifier {
     if (reponse.statusCode != HttpStatus.ok) {
       throw HttpException('statut ${reponse.statusCode}');
     }
-    return await reponse.fold<List<int>>([], (s, m) => s..addAll(m));
+    // Bornés en taille et en temps : release.json fait moins d'un kilo-octet.
+    final octets = <int>[];
+    await for (final morceau in reponse.timeout(const Duration(seconds: 20))) {
+      octets.addAll(morceau);
+      if (octets.length > _descriptionMax) {
+        throw const FormatException('description trop grande');
+      }
+    }
+    return octets;
   }
 
   /// Télécharge, vérifie l'empreinte, puis ouvre l'installateur d'Android.
@@ -148,11 +159,15 @@ class MiseAJour extends ChangeNotifier {
     _etat(EtatMiseAJour.telechargement);
     final client = HttpClient();
     try {
-      final dossier = Directory('$dossierCache/updates')
-        ..createSync(recursive: true);
+      final dossier = Directory('$dossierCache/updates');
+      // Les téléchargements d'avant ne restent pas dans le cache.
+      if (dossier.existsSync()) dossier.deleteSync(recursive: true);
+      dossier.createSync(recursive: true);
       final fichier = File('${dossier.path}/fikajiana-${version.build}.apk');
       final requete = await client.getUrl(Uri.parse(version.url));
-      final reponse = await requete.close();
+      final reponse = await requete.close().timeout(
+        const Duration(seconds: 20),
+      );
       if (reponse.statusCode != HttpStatus.ok) {
         throw HttpException('statut ${reponse.statusCode}');
       }
@@ -160,10 +175,18 @@ class MiseAJour extends ChangeNotifier {
       final condense = AccumulatorSink<crypto.Digest>();
       final empreinte = crypto.sha256.startChunkedConversion(condense);
       var recus = 0;
-      await for (final morceau in reponse) {
+      // Un flux muet une minute, ou plus long qu'annoncé, est abandonné.
+      await for (final morceau in reponse.timeout(
+        const Duration(seconds: 60),
+      )) {
+        recus += morceau.length;
+        if (version.octets > 0 && recus > version.octets) {
+          await sortie.close();
+          await fichier.delete();
+          throw const FormatException('fichier plus grand qu’annoncé');
+        }
         sortie.add(morceau);
         empreinte.add(morceau);
-        recus += morceau.length;
         progression = version.octets > 0 ? recus / version.octets : 0;
         notifyListeners();
       }

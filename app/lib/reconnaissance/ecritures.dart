@@ -183,17 +183,36 @@ class Ecritures extends ChangeNotifier {
         final n = utf8.encode(ligne).length + 1;
         _liste.add((e, n));
         _octets += n;
-      } on FormatException {
-        // Une ligne abîmée (arrêt brutal) : les autres restent.
+      } on Object {
+        // Une ligne abîmée (arrêt brutal) ou de mauvaise forme : les autres
+        // restent, sinon la réécriture suivante effacerait la fin du fichier.
       }
     }
     notifyListeners();
   }
 
+  /// Les écritures sur le disque, l'une après l'autre : deux réécritures
+  /// mêlées, ou un ajout pendant une réécriture, perdaient des lignes
+  /// (audit 2026-11-14, M4).
+  Future<void> _ecriture = Future.value();
+
+  Future<void> _enFile(Future<void> Function() tache) {
+    final suite = _ecriture.then((_) => tache());
+    _ecriture = suite.then((_) {}, onError: (_) {});
+    return suite;
+  }
+
   /// Écrit tout le fichier : après un retrait.
-  Future<void> _reecrire() async {
+  Future<void> _reecrire() => _enFile(_reecrireMaintenant);
+
+  /// Nombre de réécritures faites : un ajout mis en file avant l'une d'elles
+  /// est déjà dans le fichier, la réécriture ayant pris toute la liste.
+  int _reecritures = 0;
+
+  Future<void> _reecrireMaintenant() async {
     final f = fichier;
     if (f == null) return;
+    _reecritures++;
     await f.parent.create(recursive: true);
     final provisoire = File('${f.path}.tmp');
     final sortie = provisoire.openWrite();
@@ -230,14 +249,16 @@ class Ecritures extends ChangeNotifier {
     final f = fichier;
     if (f == null) return Future.value();
     if (retire) return _reecrire();
-    return () async {
+    final avant = _reecritures;
+    return _enFile(() async {
+      if (_reecritures != avant) return;
       await f.parent.create(recursive: true);
       await f.writeAsString(
         lignes.map((l) => '$l\n').join(),
         mode: FileMode.append,
         flush: true,
       );
-    }();
+    });
   }
 
   String _id() =>

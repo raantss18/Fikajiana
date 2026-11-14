@@ -6,20 +6,41 @@
 #include <exception>
 #include <string>
 
+namespace {
+// Au-delà, le résultat ne tient ni sur la feuille ni dans la mémoire du téléphone (audit 2026-11-14).
+const int kFactorielleMax = 2000;
+const size_t kBitsEntierMax = 200000; // environ 60 000 chiffres
+const size_t kSortieMax = 400000;     // caractères
+
+char *rendre(const std::string &sortie) {
+  char *copie = strdup(sortie.c_str());
+  return copie ? copie : strdup("ERREUR: mémoire");
+}
+
+bool tropGrand(const giac::gen &g) {
+  return g.type == giac::_ZINT && mpz_sizeinbase(*g._ZINTptr, 2) > kBitsEntierMax;
+}
+} // namespace
+
 extern "C" {
 
 // Évalue une expression Giac et rend le résultat, à libérer avec fikajiana_giac_liberer.
 // Une erreur de Giac rend une chaîne commençant par « ERREUR: ».
 __attribute__((visibility("default"))) char *fikajiana_giac_eval(const char *entree) {
   static giac::context contexte;
+  giac::FACTORIAL_SIZE_LIMIT = kFactorielleMax;
   std::string sortie;
   try {
     giac::gen expression(entree, &contexte);
-    sortie = giac::eval(expression, 1, &contexte).print(&contexte);
+    giac::gen resultat = giac::eval(expression, 1, &contexte);
+    sortie = tropGrand(resultat) ? std::string("ERREUR: trop grand") : resultat.print(&contexte);
   } catch (const std::exception &erreur) {
     sortie = std::string("ERREUR: ") + erreur.what();
+  } catch (...) {
+    // Giac lance aussi des valeurs qui ne sont pas des std::exception : rien ne doit traverser la FFI.
+    sortie = "ERREUR: inconnue";
   }
-  return strdup(sortie.c_str());
+  return rendre(sortie);
 }
 
 // Calcule et rend « exact␟latex␟approché » (séparateur 0x1F). « ARRET » si le calcul a été interrompu.
@@ -31,12 +52,15 @@ __attribute__((visibility("default"))) char *fikajiana_giac_calculer(const char 
   giac::all_trig_sol(true, &contexte);
   giac::ctrl_c = false;
   giac::interrupted = false;
+  giac::FACTORIAL_SIZE_LIMIT = kFactorielleMax;
   std::string sortie;
   try {
     giac::gen expression(entree, &contexte);
     giac::gen resultat = giac::eval(expression, 1, &contexte);
     if (giac::ctrl_c || giac::interrupted) {
       sortie = "ARRET";
+    } else if (tropGrand(resultat)) {
+      sortie = "ERREUR: trop grand";
     } else {
       sortie = resultat.print(&contexte);
       sortie += '\x1f';
@@ -57,10 +81,15 @@ __attribute__((visibility("default"))) char *fikajiana_giac_calculer(const char 
     }
   } catch (const std::exception &erreur) {
     sortie = (giac::ctrl_c || giac::interrupted) ? std::string("ARRET") : std::string("ERREUR: ") + erreur.what();
+  } catch (...) {
+    sortie = (giac::ctrl_c || giac::interrupted) ? "ARRET" : "ERREUR: inconnue";
+  }
+  if (sortie.size() > kSortieMax) {
+    sortie = "ERREUR: trop grand";
   }
   giac::ctrl_c = false;
   giac::interrupted = false;
-  return strdup(sortie.c_str());
+  return rendre(sortie);
 }
 
 // Demande l'arrêt du calcul en cours. Giac teste ce drapeau dans ses boucles, pas dans GMP.
