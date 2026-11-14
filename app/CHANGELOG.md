@@ -4,6 +4,18 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+## [1.1.5] — 2026-11-14
+
+### Message fr
+
+Votre écriture ne quitte plus jamais l'appareil : la question « Aider à améliorer la reconnaissance » et l'envoi des lignes jugées sont retirés. 👍 et 👎 servent toujours à mieux lire votre écriture, sur place. Les étapes en anglais écrivent « or ».
+
+### Message en
+
+Your handwriting never leaves the device anymore: the “Help improve recognition” question and the sending of judged lines are removed. 👍 and 👎 still help read your handwriting, on the device. Steps in English now write “or”.
+
+### Changements
+
 - Plus aucun envoi de votre écriture : la question « Aider à améliorer la reconnaissance » et l'envoi des lignes jugées sont retirés. 👍 et 👎 servent toujours à mieux lire votre écriture, sur l'appareil seulement. / Your handwriting is never sent anymore: the “Help improve recognition” question and the sending of judged lines are removed. 👍 and 👎 still help read your handwriting, on the device only.
 
 - Étapes en anglais : « or » entre les deux solutions. / Steps in English: “or” between the two solutions.
