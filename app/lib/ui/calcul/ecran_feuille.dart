@@ -922,15 +922,20 @@ class _Invitation extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppEspacement.lg,
                 ),
-                child: ExcludeSemantics(
-                  child: EcritureAnimee(
-                    delai: const Duration(milliseconds: 600),
-                    hauteurChiffre: 22,
-                    lignes: [
-                      for (final etape in etapesTour(context.l10n).take(3))
-                        for (final (question, reponse) in etape.lignes)
-                          LigneEcrite(question, reponse),
-                    ],
+                // Un bloc centré de la largeur d'un téléphone : sur une
+                // tablette, les exemples ne restent pas collés au bord.
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 340),
+                  child: ExcludeSemantics(
+                    child: EcritureAnimee(
+                      delai: const Duration(milliseconds: 600),
+                      hauteurChiffre: 22,
+                      lignes: [
+                        for (final etape in etapesTour(context.l10n).take(3))
+                          for (final (question, reponse) in etape.lignes)
+                            LigneEcrite(question, reponse),
+                      ],
+                    ),
                   ),
                 ),
               ),
