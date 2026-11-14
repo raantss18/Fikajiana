@@ -12,13 +12,13 @@ sortie="$racine/app/build/captures"
 # Seul l'émulateur de Fikajiana : les autres projets peuvent en avoir un en cours d'usage.
 emulateur=""
 for serie in $(adb devices | awk '/^emulator-/ {print $1}'); do
-  if [ "$(adb -s "$serie" emu avd name | head -1 | tr -d '\r')" = fikajiana_resizable ]; then
-    emulateur=$serie
-  fi
+  case "$(adb -s "$serie" emu avd name | head -1 | tr -d '\r')" in
+    fikajiana_leger|fikajiana_resizable) emulateur=$serie ;;
+  esac
 done
 if [ -z "$emulateur" ]; then
-  echo "L'émulateur fikajiana_resizable n'est pas lancé :" >&2
-  echo "  emulator -avd fikajiana_resizable -gpu swiftshader_indirect" >&2
+  echo "Aucun émulateur de Fikajiana n'est lancé :" >&2
+  echo "  tool/emulateur_leger.sh lancer   (après tool/emulateur_leger.sh creer, une fois)" >&2
   exit 1
 fi
 export ANDROID_SERIAL=$emulateur

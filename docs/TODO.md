@@ -62,6 +62,12 @@ Déjà livré ce jour : rature et stylet (0.6.1), lueur et trait ondulé (0.7.1)
 7. ⏳ **Nombres complexes** : module, argument, forme exponentielle.
 8. ⏳ **Supérieur** : séries de Taylor, transformée de Laplace, valeurs propres, diagonalisation (`jordan`), rang, noyau.
 
+## Émulateur léger (Antsa, 2026-11-14)
+
+1. 🔄 `tool/emulateur_leger.sh` + ADR 0057 : AVD ATD 2 Go, 2 cœurs, sans fenêtre, refus si la mémoire libre manque ;
+   `essai_local.sh` l'accepte. Écrit depuis le cloud, **jamais lancé** (pas de KVM dans le conteneur) : à essayer sur
+   l'ordinateur (`creer`, `lancer`, `essai_local.sh`), noter la mémoire réelle.
+
 ## Fluidité (accord d'Antsa, 2026-11-08)
 
 1. ✅ **Lecture au tracé affichée, Pix2Text en arrière-plan** (ADR 0050) : une ligne dont un signe doute s'affiche en quelques ms avec un pointillé « à confirmer », le modèle la relit pendant une pause et la remplace seulement s'il fait mieux ; jamais après une correction. Pad 7 : `x+1` 849 ms → 36 ms. ⏳ Vrai stylet ; part réelle des lignes d'Antsa concernées (8 → 9 lignes sur 58 fixtures : ses lignes difficiles échouent sur la structure, pas sur un signe).
