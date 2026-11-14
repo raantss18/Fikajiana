@@ -1,0 +1,86 @@
+name: Site vitrine
+
+# Construit le dossier site/ et le publie sur GitHub Pages (ADR 0063). Le numéro de version, la taille, l'empreinte et
+# le lien de téléchargement viennent de la dernière version publiée : le site est donc reconstruit à chaque version.
+# Sur une demande de fusion, le site est seulement testé et construit, jamais publié.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'site/**'
+      - 'tool/build_site.py'
+      - 'tool/test_build_site.py'
+      - 'tool/site_exemple/**'
+      - '.github/workflows/site.yml'
+  pull_request:
+    paths:
+      - 'site/**'
+      - 'tool/build_site.py'
+      - 'tool/test_build_site.py'
+      - 'tool/site_exemple/**'
+      - '.github/workflows/site.yml'
+  release:
+    types: [published, edited, deleted]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: site-${{ github.event_name == 'pull_request' && github.ref || 'pages' }}
+  cancel-in-progress: true
+
+jobs:
+  # Une version publiée arrive sur une étiquette, et l'environnement github-pages n'accepte que main (constaté sur
+  # zanakiantsa, ADR 0055 de ce dépôt) : on relance ce même flux sur main, sans élargir ce qui a le droit de publier.
+  relancer:
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          DEPOT: ${{ github.repository }}
+        run: gh workflow run site.yml --repo "$DEPOT" --ref main
+
+  construire:
+    if: github.event_name != 'release'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Tests du site
+        run: python3 -m unittest tool/test_build_site.py
+
+      - name: Versions publiées
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEPOT: ${{ github.repository }}
+        run: gh api "repos/$DEPOT/releases?per_page=30" > "$RUNNER_TEMP/releases.json"
+
+      - name: Construire le site
+        run: python3 tool/build_site.py --releases "$RUNNER_TEMP/releases.json" --out _site
+
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
+        with:
+          path: _site
+
+  publier:
+    if: github.event_name != 'release' && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: construire
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.pages.outputs.page_url }}
+    steps:
+      - id: pages
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5

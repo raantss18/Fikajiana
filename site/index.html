@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fikajiana : écris tes maths à la main, l'app calcule</title>
+<meta name="description" content="Application Android libre : on écrit des maths à la main, au stylet ou au doigt, et l'app calcule. Équations, dérivées, intégrales, matrices, courbes, géométrie. Sans compte, sans publicité, hors ligne.">
+<meta name="theme-color" content="#006A9A">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="img/icone.svg" type="image/svg+xml">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:title" content="Fikajiana : écris tes maths à la main, l'app calcule">
+<meta property="og:description" content="Application Android libre et hors ligne : une feuille, un stylet, et le calcul s'écrit tout seul.">
+<meta property="og:url" content="https://raantss18.github.io/Fikajiana/">
+<link rel="preload" href="fonts/nunito.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="fonts/caveat.woff" as="font" type="font/woff" crossorigin>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="evitement" href="#contenu">Aller au contenu</a>
+
+<header class="entete">
+  <a class="marque" href="./" aria-label="Fikajiana, haut de la page">
+    <img src="img/icone.svg" width="44" height="44" alt="">
+    <span>Fikajiana</span>
+  </a>
+  <nav aria-label="Principal">
+    <ul>
+      <li class="nav-large"><a href="#calcule">Ce que l'app calcule</a></li>
+      <li class="nav-large"><a href="#libre">Libre et hors ligne</a></li>
+      <li class="nav-large"><a href="#nouveautes">Nouveautés</a></li>
+      <li><a class="nav-bouton" href="#telecharger">Télécharger</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main id="contenu">
+
+<section class="accueil" aria-labelledby="titre">
+  <div class="accueil-texte">
+    <h1 id="titre">Écris tes maths à la main. Fikajiana calcule.</h1>
+    <p class="chapo">Une feuille, un stylet ou ton doigt. Tu écris un calcul ou une équation comme dans ton cahier&nbsp;: l'application lit ton écriture et écrit la réponse à côté.</p>
+    <p>Pour téléphone et tablette Android. Libre, sans compte, sans publicité.</p>
+    <div class="appel">
+      <a class="bouton" href="{{APK_URL}}" download>
+        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 20h16"/></svg>
+        Télécharger pour Android
+      </a>
+      <a class="lien-etapes" href="#telecharger">Comment l'installer</a>
+    </div>
+    <p class="sous-bouton">Version {{VERSION}}, {{TAILLE}}. Android 7 ou plus récent, 64 bits.</p>
+  </div>
+
+  <!-- SI video -->
+  <div class="demo" id="demo">
+    <figure>
+      <video controls playsinline preload="metadata"{{AFFICHE}} width="1280" height="720"
+             aria-label="Vidéo de démonstration de Fikajiana">
+        <source src="video/demo.mp4" type="video/mp4">{{PISTE}}
+        Ton navigateur ne sait pas lire cette vidéo : <a href="video/demo.mp4">ouvre-la directement</a>.
+      </video>
+      <figcaption>La démonstration en vidéo. Choisis un passage :</figcaption>
+    </figure>
+    <ol class="chapitres" aria-label="Passages de la vidéo">
+      {{CHAPITRES}}
+    </ol>
+  </div>
+  <!-- SINON -->
+  <figure class="feuille pile feuille-accueil" aria-label="Exemple : trois lignes écrites à la main, chacune suivie de sa réponse.">
+    <p class="main"><span class="ecrit">2 + 3 =</span> <span class="res r1">5</span></p>
+    <p class="main"><span class="ecrit">x + 3 = 4</span></p>
+    <p class="main retrait"><span class="res r2">x = 1</span></p>
+    <p class="main"><span class="ecrit"><span class="frac"><span>1</span><span>3</span></span> + <span class="frac"><span>1</span><span>6</span></span> =</span> <span class="res r3"><span class="frac"><span>1</span><span>2</span></span></span></p>
+    <figcaption>La réponse s'écrit après le signe égal, ou sous l'équation.</figcaption>
+  </figure>
+  <!-- FIN -->
+</section>
+
+<section class="bloc deux" id="ecrire" aria-labelledby="t-ecrire">
+  <div>
+    <h2 id="t-ecrire">Écrire comme sur papier</h2>
+    <p>Tu écris au stylet ou au doigt. À chaque pause, la ligne est lue puis calculée. Écris <span class="main en-ligne">2 + 3 =</span> et le résultat s'écrit après le signe égal. Écris une équation et sa solution s'écrit dessous.</p>
+    <p>Tu choisis ton papier&nbsp;: feuille blanche, cahier à grands ou petits carreaux, tableau noir. Un gribouillis rapide sur une ligne l'efface.</p>
+    <p>La lecture se fait sur l'appareil. Elle se trompe encore souvent&nbsp;: dans <a href="https://github.com/raantss18/Fikajiana/blob/main/docs/recherche/spike-ocr.md">un essai avec une seule personne</a>, 37 expressions sur 50 ont été lues juste. Si un résultat te surprend, touche-le&nbsp;: tu vois ce qui a été lu et tu le corriges au clavier.</p>
+    <!-- SI fichier:img/capture-feuille.png -->
+    <figure class="capture">
+      <img src="img/capture-feuille.png" loading="lazy" alt="Capture de la Feuille de Fikajiana : des lignes écrites à la main et leurs résultats.">
+    </figure>
+    <!-- FIN -->
+  </div>
+  <figure class="feuille" aria-label="Exemple : une ligne raturée, puis racine de 18 égale 3 racine de 2.">
+    <p class="main"><span class="ecrit rature">2 + 8 =</span></p>
+    <p class="main"><span class="ecrit"><span class="rac"><svg viewBox="0 0 14 30" aria-hidden="true"><path d="M1 18l3-2 4 11L13 2"/></svg><span>18</span></span> =</span> <span class="res">3<span class="rac"><svg viewBox="0 0 14 30" aria-hidden="true"><path d="M1 18l3-2 4 11L13 2"/></svg><span>2</span></span></span></p>
+    <p class="main"><span class="ecrit">2<sup>10</sup> =</span> <span class="res">1024</span></p>
+    <figcaption>Une rature efface. Le résultat reste exact&nbsp;: <span class="main en-ligne">3√2</span>, pas 4,24.</figcaption>
+  </figure>
+</section>
+
+<section class="bloc" id="calcule" aria-labelledby="t-calcule">
+  <h2 id="t-calcule">Ce que l'app calcule</h2>
+  <p class="intro">Le calcul est fait par Giac, un moteur de calcul formel libre. Les réponses sont exactes d'abord, approchées si tu le demandes. Voici les familles du Guide de l'application, chacune avec un exemple à écrire.</p>
+  <dl class="familles">
+    <div>
+      <dt>Calcul</dt>
+      <dd class="exemple main" aria-label="un tiers plus un sixième égale un demi"><span class="ecrit"><span class="frac"><span>1</span><span>3</span></span> + <span class="frac"><span>1</span><span>6</span></span> =</span> <span class="res"><span class="frac"><span>1</span><span>2</span></span></span></dd>
+      <dd>Opérations, fractions, puissances, factorielle, racines, arrondi, valeurs exactes ou approchées, degrés ou radians.</dd>
+    </div>
+    <div>
+      <dt>Fonctions et expressions</dt>
+      <dd class="exemple main" aria-label="g de x égale x au cube moins 2 x ; g prime de x égale 3 x au carré moins 2"><span class="ecrit">g(x) = x<sup>3</sup> − 2x</span><br><span class="ecrit">g′(x) =</span> <span class="res">3x<sup>2</sup> − 2</span></dd>
+      <dd>Définir une fonction, dériver, développer, factoriser, simplifier, tangente, tableau de valeurs, équation différentielle.</dd>
+    </div>
+    <div>
+      <dt>Équations et systèmes</dt>
+      <dd class="exemple main" aria-label="x au carré moins 5 x plus 6 égale 0"><span class="ecrit">x<sup>2</sup> − 5x + 6 = 0</span></dd>
+      <dd>Équations, inéquations, systèmes, discriminant.</dd>
+    </div>
+    <div>
+      <dt>Suites</dt>
+      <dd class="exemple main" aria-label="u zéro égale 1 ; u n plus 1 égale 2 u n plus 1 ; u 5 égale 63"><span class="ecrit">u<sub>0</sub> = 1</span><br><span class="ecrit">u<sub>n+1</sub> = 2u<sub>n</sub> + 1</span><br><span class="ecrit">u<sub>5</sub> =</span> <span class="res">63</span></dd>
+      <dd>Suite définie par récurrence, puis n'importe quel terme.</dd>
+    </div>
+    <div>
+      <dt>Matrices</dt>
+      <dd class="exemple main" aria-label="A égale la matrice 1, 2 ; 3, 4. Déterminant de A égale moins 2"><span class="ecrit">A = [1, 2 ; 3, 4]</span><br><span class="ecrit">det(A) =</span> <span class="res">−2</span></dd>
+      <dd>Déterminant, inverse, équation AX&nbsp;=&nbsp;B. <!-- SI bientot:1.1.3 --><span class="bientot">Dans la prochaine version</span><!-- FIN --> Rang, trace, noyau, valeurs propres, diagonalisation.</dd>
+    </div>
+    <div>
+      <dt>Limites, sommes et intégrales</dt>
+      <dd class="exemple main" aria-label="intégrale de 0 à 1 de x au carré d x égale un tiers"><span class="ecrit"><span class="integ"><svg viewBox="0 0 14 44" aria-hidden="true"><path d="M12 4c-4-3-5 2-5 8v20c0 6-1 11-5 8"/></svg><span class="bornes"><span>1</span><span>0</span></span></span>x<sup>2</sup> dx =</span> <span class="res"><span class="frac"><span>1</span><span>3</span></span></span></dd>
+      <dd>Limite, somme, intégrale. <!-- SI bientot:1.1.3 --><span class="bientot">Dans la prochaine version</span><!-- FIN --> Développements limités, transformée de Laplace.</dd>
+    </div>
+    <div>
+      <dt>Statistiques</dt>
+      <dd class="exemple main" aria-label="moyenne de 2, 4 et 9 égale 5"><span class="ecrit">moyenne(2 ; 4 ; 9) =</span> <span class="res">5</span></dd>
+      <dd>Moyenne, médiane, variance, écart-type, quartiles, ajustement, corrélation. Lois binomiale, de Poisson, géométrique, normale, exponentielle, uniforme.</dd>
+    </div>
+    <div>
+      <dt>Arithmétique</dt>
+      <dd class="exemple main" aria-label="pgcd de 12 et 18 égale 6"><span class="ecrit">pgcd(12 ; 18) =</span> <span class="res">6</span></dd>
+      <dd>PGCD, PPCM, nombre premier, décomposition en facteurs premiers, division euclidienne, congruences, Bézout, arrangements et combinaisons.</dd>
+    </div>
+    <div>
+      <dt>Points et vecteurs</dt>
+      <dd class="exemple main" aria-label="milieu de A et B"><span class="ecrit">milieu(A ; B)</span></dd>
+      <dd>Point, vecteur, norme et longueur. Une construction écrite s'ouvre dans la Figure.</dd>
+    </div>
+    <div>
+      <dt>Nombres complexes</dt>
+      <dd class="exemple main" aria-label="z au carré moins 2 z plus 5 égale 0"><span class="ecrit">z<sup>2</sup> − 2z + 5 = 0</span></dd>
+      <dd><!-- SI bientot:1.1.3 --><span class="bientot">Dans la prochaine version</span><!-- FIN --> Forme exponentielle et trigonométrique, racines n-ièmes, équations du premier et du second degré dans ℂ.</dd>
+    </div>
+  </dl>
+  <p class="note">Tout est aussi possible au clavier. Le Guide, dans le Menu de l'application, montre chaque fonction avec un exemple à essayer.</p>
+</section>
+
+<section class="bloc deux" id="etapes" aria-labelledby="t-etapes">
+  <div>
+    <h2 id="t-etapes">Les étapes, comme au tableau</h2>
+    <!-- SI bientot:1.1.3 --><p class="bientot-ligne"><span class="bientot">Dans la prochaine version</span></p><!-- FIN -->
+    <p>Sur une équation du premier ou du second degré, le bouton de la ligne propose «&nbsp;étapes&nbsp;». La résolution s'écrit alors ligne par ligne, et chaque ligne dit sa raison&nbsp;: on passe tout à gauche, on calcule le discriminant, on écrit les solutions.</p>
+    <p>Chaque calcul des étapes est fait par le moteur. Pour une équation de degré 3 ou plus, l'app dit qu'elle n'a pas d'étapes à montrer, plutôt que d'en inventer.</p>
+  </div>
+  <figure class="feuille" aria-label="Exemple : la résolution de 2 x au carré moins 3 x moins 5 égale 0 en sept lignes.">
+    <ol class="pas">
+      <li><span class="main"><span class="ecrit">2x<sup>2</sup> − 3x − 5 = 0</span></span><span class="raison">L'équation à résoudre.</span></li>
+      <li><span class="main res">a = 2, b = −3, c = −5</span><span class="raison">On lit les coefficients a, b et c.</span></li>
+      <li><span class="main res"><svg class="delta" viewBox="0 0 22 22" role="img" aria-label="delta"><path d="M3 19 11 3l8 16-16 .4"/></svg> = b<sup>2</sup> − 4ac = 49</span><span class="raison">On calcule le discriminant.</span></li>
+      <li><span class="main res"><svg class="delta" viewBox="0 0 22 22" role="img" aria-label="delta"><path d="M3 19 11 3l8 16-16 .4"/></svg> &gt; 0</span><span class="raison">Le discriminant est positif&nbsp;: il y a deux solutions.</span></li>
+      <li><span class="main res">x<sub>1</sub> = −1</span><span class="raison">La première solution.</span></li>
+      <li><span class="main res">x<sub>2</sub> = <span class="frac"><span>5</span><span>2</span></span></span><span class="raison">La seconde solution.</span></li>
+      <li><span class="main res">x = −1 ou x = <span class="frac"><span>5</span><span>2</span></span></span><span class="raison">Conclusion.</span></li>
+    </ol>
+  </figure>
+</section>
+
+<section class="bloc deux" id="copie" aria-labelledby="t-copie">
+  <div>
+    <h2 id="t-copie">Vérifier ma copie</h2>
+    <!-- SI bientot:1.1.3 --><p class="bientot-ligne"><span class="bientot">Dans la prochaine version</span></p><!-- FIN -->
+    <p>Tu écris ta démarche, une ligne sous l'autre. Le bouton d'une ligne propose «&nbsp;vérifier&nbsp;»&nbsp;: chaque ligne est comparée à la précédente. Si elle dit la même chose, elle est cochée. Sinon elle est signalée «&nbsp;à revoir&nbsp;».</p>
+    <p>Tu vois où est l'erreur, mais l'app ne te donne pas la réponse&nbsp;: c'est à toi de la trouver. Quand elle n'arrive pas à comparer deux lignes, elle le dit, et ne dit jamais «&nbsp;faux&nbsp;» sans en être sûre.</p>
+  </div>
+  <figure class="feuille" aria-label="Exemple : une démarche de trois lignes, la deuxième est à revoir.">
+    <ol class="copie">
+      <li><span class="main"><span class="ecrit">2x + 3 = 7</span></span><span class="verdict">Le départ.</span></li>
+      <li class="a-revoir"><span class="main"><span class="ecrit">2x = 10</span></span><span class="verdict"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4a8 8 0 1 0 8 8"/><path d="M12 8v5m0 3.5v.2"/></svg>À revoir&nbsp;: cette ligne ne dit plus la même chose que la précédente.</span></li>
+      <li class="juste"><span class="main"><span class="ecrit">x = 5</span></span><span class="verdict"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13l5 5L20 6"/></svg>Juste&nbsp;: cette ligne dit la même chose que la précédente.</span></li>
+    </ol>
+    <figcaption>L'erreur est montrée là où elle est&nbsp;: la troisième ligne suit bien de la deuxième.</figcaption>
+  </figure>
+</section>
+
+<section class="bloc deux" id="figure" aria-labelledby="t-figure">
+  <div>
+    <h2 id="t-figure">Courbes et géométrie</h2>
+    <p>Écris <span class="main en-ligne">f(x) = x<sup>2</sup></span>, choisis Tracer&nbsp;: la courbe s'ouvre dans la Figure. Tu peux aussi tracer une courbe paramétrée, une courbe en polaires ou une équation en x et y. Tu glisses, tu pinces pour zoomer, et un toucher lit les coordonnées d'un point.</p>
+    <p>La Figure sert aussi à construire&nbsp;: 40 outils nommés, de la parallèle à la conique par cinq points. Polygones, tangentes, symétries, rotations, mesures, curseurs, lieux. Déplace un point et toute la figure suit.</p>
+    <p>La feuille, le graphe et la figure s'exportent en image PNG ou en PDF.</p>
+    <!-- SI fichier:img/capture-graphe.png -->
+    <figure class="capture">
+      <img src="img/capture-graphe.png" loading="lazy" alt="Capture de la Figure de Fikajiana : des courbes tracées, avec leur légende.">
+    </figure>
+    <!-- FIN -->
+    <!-- SI fichier:img/capture-figure.png -->
+    <figure class="capture">
+      <img src="img/capture-figure.png" loading="lazy" alt="Capture de la Figure de Fikajiana : une construction de géométrie.">
+    </figure>
+    <!-- FIN -->
+  </div>
+  <figure class="feuille feuille-figure">
+    <svg class="dessin" viewBox="0 0 360 300" role="img" aria-labelledby="d-titre d-desc">
+      <title id="d-titre">Une courbe et une construction</title>
+      <desc id="d-desc">La parabole d'équation y égale x au carré dans un repère, et à côté un segment AB avec son milieu I et sa médiatrice.</desc>
+      <g class="axes"><path d="M20 240h190M110 20v260"/><path d="M204 235l6 5-6 5M105 26l5-6 5 6"/><path d="M150 236v8M190 236v8M70 236v8M30 236v8M106 200h8M106 160h8M106 120h8M106 80h8M106 40h8"/></g>
+      <path class="courbe" d="M22 46.4Q110 433.6 198 46.4"/>
+      <g class="construction">
+        <path class="segment" d="M236 210 332 150"/>
+        <path class="mediatrice" d="M252.2 129.1 315.8 230.9"/>
+        <path class="codage" d="M257.3 190.8 262.7 199.2M305.3 160.8 310.7 169.200M291.6 175.2 296.4 182.9 288.8 187.6"/>
+        <circle cx="236" cy="210" r="4.5"/><circle cx="332" cy="150" r="4.5"/><circle cx="284" cy="180" r="4.5"/>
+      </g>
+      <g class="noms"><text x="220" y="230">A</text><text x="338" y="146">B</text><text x="299" y="196">I</text><text x="166" y="76">f</text><text x="198" y="262">x</text><text x="120" y="32">y</text></g>
+    </svg>
+    <figcaption>À gauche, la courbe de <span class="main en-ligne">f(x) = x<sup>2</sup></span>. À droite, le milieu et la médiatrice de [AB].</figcaption>
+  </figure>
+</section>
+
+<section class="bloc" id="libre" aria-labelledby="t-libre">
+  <h2 id="t-libre">Libre et hors ligne</h2>
+  <div class="promesses">
+    <div>
+      <h3>Il n'y a pas</h3>
+      <ul class="non">
+        <li>de compte à créer</li>
+        <li>de publicité</li>
+        <li>de télémétrie&nbsp;: l'app ne mesure pas ce que tu fais</li>
+      </ul>
+      <p>Tes feuilles restent sur ton appareil. Le code est public, sous licence libre <a href="https://github.com/raantss18/Fikajiana/blob/main/LICENSE">GPL version 3 ou ultérieure</a>&nbsp;: chacun peut le lire, le modifier et le partager.</p>
+    </div>
+    <div>
+      <h3>Quand l'app utilise internet</h3>
+      <p>Trois cas seulement, et jamais sans ton accord.</p>
+      <ol class="reseau">
+        <li><strong>Le modèle de lecture.</strong> Il n'est pas dans le fichier d'installation. Tu le télécharges une fois, depuis les Réglages (117&nbsp;Mo). Ensuite la lecture marche sans réseau. Sans lui, la saisie au clavier marche quand même.</li>
+        <li><strong>La recherche de mise à jour.</strong> L'app ne cherche une nouvelle version que si tu touches le bouton.</li>
+        <li><strong>Le don d'écriture, si tu le veux.</strong> L'app demande une fois si tu veux aider à améliorer la lecture. La case n'est pas cochée d'avance. Si tu la coches, seules les lignes que tu as jugées (bonne lecture, ou mauvaise lecture que tu as corrigée) sont envoyées&nbsp;: les traits, la bonne lecture, le modèle de l'appareil, la version de l'app, stylet ou doigt. Ni ton nom, ni ta position, ni le reste de la feuille. Tu peux décocher à tout moment et demander le retrait de tes dons.</li>
+      </ol>
+    </div>
+  </div>
+  <p class="note">À savoir&nbsp;: le modèle de lecture vient de <a href="https://huggingface.co/breezedeus/pix2text-mfr">la page de son auteur</a>, sous licence MIT. L'origine de ses données d'entraînement n'est pas publiée&nbsp;; c'est pour cela que Fikajiana ne le redistribue pas.</p>
+</section>
+
+<section class="bloc" id="telecharger" aria-labelledby="t-telecharger">
+  <h2 id="t-telecharger">Télécharger et installer</h2>
+  <div class="installer">
+    <ol class="etapes-installation">
+      <li><strong>Télécharge le fichier.</strong> Touche «&nbsp;Télécharger pour Android&nbsp;». Le fichier s'appelle <code>fikajiana-arm64-v8a.apk</code>.</li>
+      <li><strong>Ouvre-le.</strong> Autorise l'installation si Android le demande.</li>
+      <li><strong>Télécharge le modèle de lecture.</strong> Dans l'app&nbsp;: Menu, Réglages, «&nbsp;Télécharger le modèle&nbsp;» (117&nbsp;Mo, une seule fois).</li>
+      <li><strong>Écris.</strong> Essaie <span class="main en-ligne">2 + 3 =</span> sur la feuille. Le Guide du Menu propose un tour de l'application.</li>
+    </ol>
+    <aside class="fiche" aria-labelledby="t-fiche">
+      <h3 id="t-fiche">Le fichier</h3>
+      <dl>
+        <div><dt>Version</dt><dd>{{VERSION}}, du {{VERSION_DATE}}</dd></div>
+        <div><dt>Taille</dt><dd>{{TAILLE}}</dd></div>
+        <div><dt>Android</dt><dd>7 ou plus récent</dd></div>
+        <div><dt>Processeur</dt><dd>64 bits (arm64-v8a)</dd></div>
+        <div class="large"><dt>Empreinte SHA-256</dt><dd><code id="empreinte">{{SHA256}}</code> <button id="copier" type="button" hidden>Copier</button></dd></div>
+      </dl>
+      <a class="bouton" href="{{APK_URL}}" download>
+        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 20h16"/></svg>
+        Télécharger pour Android
+      </a>
+      <p class="petit">L'empreinte sert à vérifier que le fichier reçu est le bon. Sur un ordinateur&nbsp;: <code>sha256sum fikajiana-arm64-v8a.apk</code>. Les versions suivantes s'installent depuis l'app&nbsp;: Réglages, rechercher une mise à jour.</p>
+    </aside>
+  </div>
+  <p class="note">Fikajiana n'est pas sur Google Play. L'application est jeune&nbsp;: si quelque chose ne marche pas, <a href="#contact">écris-moi</a>.</p>
+</section>
+
+<section class="bloc" id="nouveautes" aria-labelledby="t-nouveautes">
+  <h2 id="t-nouveautes">Nouveautés</h2>
+  <div class="versions">
+    {{VERSIONS}}
+  </div>
+</section>
+
+<section class="bloc" id="contact" aria-labelledby="t-contact">
+  <h2 id="t-contact">Contact</h2>
+  <p>Fikajiana est conçue et développée par <strong>Antsa Malala RANIRIAMANJAKA</strong>. Une question, une erreur de calcul, une idée&nbsp;? Écris-moi.</p>
+  <ul class="contacts">
+    <li><a href="mailto:antsa.raniriamanjaka@univ-antananarivo.mg">antsa.raniriamanjaka@univ-antananarivo.mg</a></li>
+    <li><a href="https://github.com/raantss18/Fikajiana">Le code source sur GitHub</a></li>
+    <li><a href="https://github.com/raantss18/Fikajiana/issues">Signaler un problème</a></li>
+  </ul>
+</section>
+
+</main>
+
+<footer class="pied">
+  <p><strong>Fikajiana</strong> veut dire «&nbsp;calcul&nbsp;» en malgache.</p>
+  <p>Application sous licence <a href="https://github.com/raantss18/Fikajiana/blob/main/LICENSE">GPL-3.0-or-later</a>. Calcul formel&nbsp;: <a href="https://xcas.univ-grenoble-alpes.fr/en.html">Giac</a> (GPL-3.0-or-later). Lecture&nbsp;: ONNX Runtime (MIT) et le modèle Pix2Text-MFR (MIT, téléchargé à part). Toutes les dépendances&nbsp;: <a href="https://github.com/raantss18/Fikajiana/blob/main/THIRD_PARTY_LICENSES.md">licences des composants</a>.</p>
+  <p>Ce site&nbsp;: polices <a href="fonts/OFL-Nunito.txt">Nunito</a> et <a href="fonts/OFL-Caveat.txt">Caveat</a> (SIL Open Font License 1.1), servies depuis cette page. Aucun cookie, aucun traceur, aucune requête vers un autre site.</p>
+  <p>Page construite le {{CONSTRUIT}} à partir de la version {{VERSION}} (<a href="{{RELEASE_URL}}">notes de version</a>).</p>
+</footer>
+
+<script src="app.js" defer></script>
+</body>
+</html>
