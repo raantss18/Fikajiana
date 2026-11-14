@@ -4,6 +4,26 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+## [1.1.4] — 2026-11-14
+
+### Message fr
+
+Nouveau : « étapes » écrit la résolution d'une équation ligne par ligne, comme au tableau ; « vérifier » relit votre démarche et montre où est l'erreur, sans donner la réponse. Le modèle de lecture se met à jour depuis les Réglages. Plus sûr : un calcul géant ne fige plus l'app, et vos feuilles ne partent plus dans la sauvegarde Android. Aussi : nombres complexes, développements limités, Laplace, valeurs propres.
+
+### Message en
+
+New: “steps” writes the solution of an equation line by line, as on a blackboard; “check” rereads your working and shows where the mistake is, without giving the answer. The reading model can be updated from Settings. Safer: a huge computation no longer freezes the app, and your sheets no longer go into Android backup. Also: complex numbers, Taylor expansions, Laplace, eigenvalues.
+
+### Changements
+
+- Accueil : sous le logo, des exemples s'écrivent à la main avec leur résultat, pour montrer ce que fait la Feuille. Sur téléphone, le message du modèle ne se coupe plus. / Home: under the logo, examples are handwritten with their result, to show what the Sheet does. On phones, the model message no longer breaks.
+
+- Réglages, Lecture de l'écriture : « Rechercher une mise à jour du modèle » installe, quand vous le demandez, un modèle de lecture plus récent, vérifié avant d'être posé ; l'ancien reste si quelque chose échoue. / Settings, Handwriting reading: “Check for a model update” installs, when you ask, a newer reading model, verified before it is put in place; the old one stays if anything fails.
+
+- Vérifier ma copie : écrivez votre démarche ligne sous ligne ; « vérifier » compare chaque ligne à la précédente et montre où est l'erreur, sans donner la réponse. / Check my work: write your working line under line; “check” compares each line with the previous one and shows where the mistake is, without giving the answer.
+
+- Étapes de résolution : sur une équation du premier ou du second degré, la liste de la ligne propose « étapes » ; la résolution s'écrit ligne par ligne, comme au tableau, avec la raison de chaque ligne (tout à gauche, discriminant, solutions). / Solution steps: on a first- or second-degree equation, the line's list offers “steps”; the solution is written line by line, as on a blackboard, with the reason for each line (everything to the left, discriminant, solutions).
+
 - Sécurité : un calcul démesuré (9999999!) est refusé au lieu de figer l'app ; la sauvegarde Android n'emporte plus vos feuilles ni votre écriture hors de l'appareil ; l'installation d'une mise à jour ne plante plus sous Android 7 ; téléchargement de mise à jour borné. / Security: an oversized computation (9999999!) is refused instead of freezing the app; Android backup no longer takes your sheets or handwriting off the device; installing an update no longer crashes on Android 7; bounded update download.
 
 - Supérieur : DL(e^x;0;4) donne le développement limité avec son o(x⁴), laplace(t²) et invlaplace(…) la transformée de Laplace, et sur une matrice rang, tr, noyau, valeurspropres, vecteurspropres, polycar et diagonaliser (P et D) ; à la main ou au clavier. / Higher maths: DL(e^x;0;4) gives the Taylor expansion with its o(x⁴), laplace(t²) and invlaplace(…) the Laplace transform, and on a matrix rank, tr, kernel, eigenvalues, eigenvectors, characteristic polynomial and diagonalize (P and D); by hand or keyboard.

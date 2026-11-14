@@ -3,8 +3,10 @@ import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:fikajiana/comprendre/blocs.dart';
+import 'package:fikajiana/comprendre/copie.dart';
 import 'package:fikajiana/comprendre/decimale.dart';
 import 'package:fikajiana/comprendre/ecriture_resultat.dart';
+import 'package:fikajiana/comprendre/etapes.dart';
 import 'package:fikajiana/comprendre/fraction_ecrite.dart';
 import 'package:fikajiana/comprendre/mots.dart';
 import 'package:fikajiana/comprendre/solutions.dart';
@@ -1985,6 +1987,103 @@ class CalculFeuille extends ChangeNotifier {
   /// [latex] compris comme s'il était écrit à la place de [bloc].
   Analyse analyserPour(BlocCalcul bloc, String latex) =>
       _contextePour(bloc).analyser(latex);
+
+  /// L'équation de [bloc] dont on sait écrire les étapes : une seule
+  /// inconnue, deux membres. Le degré se voit au calcul ([etapes]).
+  ({String gauche, String droite, String x})? equationAEtapes(BlocCalcul bloc) {
+    final latex = bloc.latex;
+    if (latex == null || bloc.objet != null || bloc.commande != null) {
+      return null;
+    }
+    final Analyse analyse;
+    try {
+      analyse = analyserPour(bloc, latex);
+    } on Object {
+      // Une ligne mal lue ne se comprend pas, et l'analyse lance alors
+      // autre chose qu'une FormatException : sans ce filet, la Feuille
+      // entière devenait grise (vu sur l'émulateur, 2026-11-14).
+      return null;
+    }
+    final membres = analyse.membres;
+    final x = analyse.inconnues.singleOrNull;
+    if (analyse.type != TypeExpression.equation ||
+        membres == null ||
+        x == null) {
+      return null;
+    }
+    return (gauche: membres.$1, droite: membres.$2, x: x);
+  }
+
+  /// Les étapes de la résolution de [bloc], ou `null` s'il n'y en a pas
+  /// (degré 3 et plus, coefficients littéraux).
+  Future<List<Etape>?> etapes(BlocCalcul bloc) {
+    final e = equationAEtapes(bloc);
+    if (e == null) return Future.value();
+    return etapesEquation(
+      moteur,
+      ecrit: bloc.latex!.replaceFirst(RegExp(r'\s*$'), ''),
+      gauche: e.gauche,
+      droite: e.droite,
+      x: e.x,
+    );
+  }
+
+  /// La ligne d'une démarche que [bloc] écrit, ou `null` (objet, commande,
+  /// ligne non comprise, question finie par `=`).
+  LigneCopie? _ligneCopie(BlocCalcul bloc) {
+    final latex = bloc.latex;
+    if (latex == null ||
+        bloc.objet != null ||
+        bloc.commande != null ||
+        bloc.finitParEgal) {
+      return null;
+    }
+    final Analyse analyse;
+    try {
+      analyse = analyserPour(bloc, latex);
+    } on Object {
+      // Une ligne mal lue ne se comprend pas, et l'analyse lance alors
+      // autre chose qu'une FormatException : sans ce filet, la Feuille
+      // entière devenait grise (vu sur l'émulateur, 2026-11-14).
+      return null;
+    }
+    final membres = analyse.membres;
+    final x = analyse.inconnues.singleOrNull;
+    if (analyse.type == TypeExpression.equation &&
+        membres != null &&
+        x != null) {
+      return LigneCopie.equation(latex, membres.$1, membres.$2, x);
+    }
+    if (analyse.type == TypeExpression.calcul && !analyse.demandeResultat) {
+      return LigneCopie(latex, analyse.giac);
+    }
+    return null;
+  }
+
+  /// La démarche dont [bloc] fait partie : les lignes de la même sorte
+  /// (équations de la même inconnue, ou expressions) écrites l'une sous
+  /// l'autre, de haut en bas. `null` s'il n'y en a pas au moins deux.
+  List<LigneCopie>? copieDe(BlocCalcul bloc) {
+    final ici = _ligneCopie(bloc);
+    if (ici == null) return null;
+    final ordre = blocs..sort((a, b) => a.cadre.top.compareTo(b.cadre.top));
+    final lignes = [for (final b in ordre) _ligneCopie(b)];
+    final i = ordre.indexOf(bloc);
+    var debut = i;
+    while (debut > 0 && lignes[debut - 1]?.sorte == ici.sorte) {
+      debut--;
+    }
+    var fin = i;
+    while (fin + 1 < lignes.length && lignes[fin + 1]?.sorte == ici.sorte) {
+      fin++;
+    }
+    if (fin == debut) return null;
+    return [for (var k = debut; k <= fin; k++) lignes[k]!];
+  }
+
+  /// Le verdict de chaque ligne de [copie], comparée à la précédente.
+  Future<List<VerdictLigne>> verifier(List<LigneCopie> copie) =>
+      verifierCopie(moteur, copie);
 
   /// [latex] compris sous tout ce qui est écrit : une ligne tapée.
   Analyse analyserEnBas(String latex) => _contextePour(

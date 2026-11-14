@@ -16,8 +16,10 @@ RAM_MO=2048          # minimum accepté par l'émulateur : 1536 Mo
 COEURS=2
 MARGE_MO=1536        # mémoire qui doit rester libre pour l'ordinateur en plus de RAM_MO
 
-sdk=${ANDROID_SDK_ROOT:-${ANDROID_HOME:-$HOME/Android/Sdk}}
-export ANDROID_SDK_ROOT=$sdk
+# Le SDK d'Antsa est dans son dossier ; ANDROID_SDK_ROOT peut pointer ailleurs (un SDK sans images).
+sdk=$HOME/Android/Sdk
+[ -d "$sdk/cmdline-tools" ] || sdk=${ANDROID_SDK_ROOT:-${ANDROID_HOME:-$sdk}}
+export ANDROID_SDK_ROOT=$sdk ANDROID_HOME=$sdk # les deux : l'émulateur lit aussi ANDROID_HOME
 outils="$sdk/cmdline-tools/latest/bin"
 emulateur="$sdk/emulator/emulator"
 adb="$sdk/platform-tools/adb"
@@ -33,7 +35,8 @@ serie_de_l_avd() {
 }
 
 creer() {
-  yes | "$outils/sdkmanager" --install "emulator" "platform-tools" "$IMAGE" > /dev/null
+  # « yes » meurt d'un tube fermé quand sdkmanager a fini : ce n'est pas un échec (pipefail).
+  (yes || true) | "$outils/sdkmanager" --install "emulator" "platform-tools" "$IMAGE" > /dev/null
   echo no | "$outils/avdmanager" create avd --force --name "$AVD" --package "$IMAGE" --device "pixel_5"
   config="$HOME/.android/avd/$AVD.avd/config.ini"
   # Réglages légers : petit écran (la tablette est simulée par wm size), pas de caméra, de son ni de capteurs inutiles.

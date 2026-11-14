@@ -1,0 +1,382 @@
+{
+ "degree(expand(((2*x+3)-(7))),x)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(expand(((2*x+3)-(7))),x,1)": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "coeff(expand(((2*x+3)-(7))),x,0)": {
+  "exact": "-4",
+  "latex": "\\mathrm{-4}",
+  "approche": "-4.0"
+ },
+ "expand(((2*x+3)-(7)))": {
+  "exact": "2*x-4",
+  "latex": "2\\cdot x-4",
+  "approche": ""
+ },
+ "(2)*x": {
+  "exact": "2*x",
+  "latex": "2\\cdot x",
+  "approche": ""
+ },
+ "-(-4)": {
+  "exact": "4",
+  "latex": "4",
+  "approche": "4.0"
+ },
+ "-(-4)/(2)": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "degree(expand(((3*x-5)-(x+1))),x)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(expand(((3*x-5)-(x+1))),x,1)": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "coeff(expand(((3*x-5)-(x+1))),x,0)": {
+  "exact": "-6",
+  "latex": "\\mathrm{-6}",
+  "approche": "-6.0"
+ },
+ "expand(((3*x-5)-(x+1)))": {
+  "exact": "2*x-6",
+  "latex": "2\\cdot x-6",
+  "approche": ""
+ },
+ "-(-6)": {
+  "exact": "6",
+  "latex": "6",
+  "approche": "6.0"
+ },
+ "-(-6)/(2)": {
+  "exact": "3",
+  "latex": "3",
+  "approche": "3.0"
+ },
+ "degree(expand(((x+4)-(0))),x)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(expand(((x+4)-(0))),x,1)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(expand(((x+4)-(0))),x,0)": {
+  "exact": "4",
+  "latex": "4",
+  "approche": "4.0"
+ },
+ "expand(((x+4)-(0)))": {
+  "exact": "x+4",
+  "latex": "x+4",
+  "approche": ""
+ },
+ "(1)*x": {
+  "exact": "x",
+  "latex": "x",
+  "approche": ""
+ },
+ "-(4)": {
+  "exact": "-4",
+  "latex": "\\mathrm{-4}",
+  "approche": "-4.0"
+ },
+ "-(4)/(1)": {
+  "exact": "-4",
+  "latex": "\\mathrm{-4}",
+  "approche": "-4.0"
+ },
+ "degree(expand((((x)/(2))-(3))),x)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(expand((((x)/(2))-(3))),x,1)": {
+  "exact": "1/2",
+  "latex": "\\frac{1}{2}",
+  "approche": "0.5"
+ },
+ "coeff(expand((((x)/(2))-(3))),x,0)": {
+  "exact": "-3",
+  "latex": "\\mathrm{-3}",
+  "approche": "-3.0"
+ },
+ "expand((((x)/(2))-(3)))": {
+  "exact": "1/2*x-3",
+  "latex": "\\frac{1}{2} \\cdot x-3",
+  "approche": ""
+ },
+ "(1/2)*x": {
+  "exact": "1/2*x",
+  "latex": "\\frac{1}{2} \\cdot x",
+  "approche": ""
+ },
+ "-(-3)": {
+  "exact": "3",
+  "latex": "3",
+  "approche": "3.0"
+ },
+ "-(-3)/(1/2)": {
+  "exact": "6",
+  "latex": "6",
+  "approche": "6.0"
+ },
+ "degree(expand((((x)^(2)-5*x+6)-(0))),x)": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "coeff(expand((((x)^(2)-5*x+6)-(0))),x,2)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(expand((((x)^(2)-5*x+6)-(0))),x,1)": {
+  "exact": "-5",
+  "latex": "\\mathrm{-5}",
+  "approche": "-5.0"
+ },
+ "coeff(expand((((x)^(2)-5*x+6)-(0))),x,0)": {
+  "exact": "6",
+  "latex": "6",
+  "approche": "6.0"
+ },
+ "expand((((x)^(2)-5*x+6)-(0)))": {
+  "exact": "x^2-5*x+6",
+  "latex": "x^{2}-5\\cdot x+6",
+  "approche": ""
+ },
+ "(-5)^2-4*(1)*(6)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "simplify((-(-5)-sqrt(1))/(2*(1)))": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "simplify((-(-5)+sqrt(1))/(2*(1)))": {
+  "exact": "3",
+  "latex": "3",
+  "approche": "3.0"
+ },
+ "degree(expand(((2*(x)^(2)-3*x-5)-(0))),x)": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "coeff(expand(((2*(x)^(2)-3*x-5)-(0))),x,2)": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "coeff(expand(((2*(x)^(2)-3*x-5)-(0))),x,1)": {
+  "exact": "-3",
+  "latex": "\\mathrm{-3}",
+  "approche": "-3.0"
+ },
+ "coeff(expand(((2*(x)^(2)-3*x-5)-(0))),x,0)": {
+  "exact": "-5",
+  "latex": "\\mathrm{-5}",
+  "approche": "-5.0"
+ },
+ "expand(((2*(x)^(2)-3*x-5)-(0)))": {
+  "exact": "2*x^2-3*x-5",
+  "latex": "2\\cdot x^{2}-3\\cdot x-5",
+  "approche": ""
+ },
+ "(-3)^2-4*(2)*(-5)": {
+  "exact": "49",
+  "latex": "49",
+  "approche": "49.0"
+ },
+ "simplify((-(-3)-sqrt(49))/(2*(2)))": {
+  "exact": "-1",
+  "latex": "\\mathrm{-1}",
+  "approche": "-1.0"
+ },
+ "simplify((-(-3)+sqrt(49))/(2*(2)))": {
+  "exact": "5/2",
+  "latex": "\\frac{5}{2}",
+  "approche": "2.5"
+ },
+ "degree(expand((((x)^(2)-2*x+1)-(0))),x)": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "coeff(expand((((x)^(2)-2*x+1)-(0))),x,2)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(expand((((x)^(2)-2*x+1)-(0))),x,1)": {
+  "exact": "-2",
+  "latex": "\\mathrm{-2}",
+  "approche": "-2.0"
+ },
+ "coeff(expand((((x)^(2)-2*x+1)-(0))),x,0)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "expand((((x)^(2)-2*x+1)-(0)))": {
+  "exact": "x^2-2*x+1",
+  "latex": "x^{2}-2\\cdot x+1",
+  "approche": ""
+ },
+ "(-2)^2-4*(1)*(1)": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "-(-2)/(2*(1))": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "degree(expand((((x)^(2)+x+1)-(0))),x)": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "coeff(expand((((x)^(2)+x+1)-(0))),x,2)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(expand((((x)^(2)+x+1)-(0))),x,1)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(expand((((x)^(2)+x+1)-(0))),x,0)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "expand((((x)^(2)+x+1)-(0)))": {
+  "exact": "x^2+x+1",
+  "latex": "x^{2}+x+1",
+  "approche": ""
+ },
+ "(1)^2-4*(1)*(1)": {
+  "exact": "-3",
+  "latex": "\\mathrm{-3}",
+  "approche": "-3.0"
+ },
+ "degree(expand((((x)^(2))-(2))),x)": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "coeff(expand((((x)^(2))-(2))),x,2)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(expand((((x)^(2))-(2))),x,1)": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "coeff(expand((((x)^(2))-(2))),x,0)": {
+  "exact": "-2",
+  "latex": "\\mathrm{-2}",
+  "approche": "-2.0"
+ },
+ "expand((((x)^(2))-(2)))": {
+  "exact": "x^2-2",
+  "latex": "x^{2}-2",
+  "approche": ""
+ },
+ "(0)^2-4*(1)*(-2)": {
+  "exact": "8",
+  "latex": "8",
+  "approche": "8.0"
+ },
+ "simplify((-(0)-sqrt(8))/(2*(1)))": {
+  "exact": "-√2",
+  "latex": "-\\sqrt{2}",
+  "approche": "-1.41421356237"
+ },
+ "simplify((-(0)+sqrt(8))/(2*(1)))": {
+  "exact": "√2",
+  "latex": "\\sqrt{2}",
+  "approche": "1.41421356237"
+ },
+ "degree(expand((((x)^(2)+3*x)-(4*x+12))),x)": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "coeff(expand((((x)^(2)+3*x)-(4*x+12))),x,2)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(expand((((x)^(2)+3*x)-(4*x+12))),x,1)": {
+  "exact": "-1",
+  "latex": "\\mathrm{-1}",
+  "approche": "-1.0"
+ },
+ "coeff(expand((((x)^(2)+3*x)-(4*x+12))),x,0)": {
+  "exact": "-12",
+  "latex": "\\mathrm{-12}",
+  "approche": "-12.0"
+ },
+ "expand((((x)^(2)+3*x)-(4*x+12)))": {
+  "exact": "x^2-x-12",
+  "latex": "x^{2}-x-12",
+  "approche": ""
+ },
+ "(-1)^2-4*(1)*(-12)": {
+  "exact": "49",
+  "latex": "49",
+  "approche": "49.0"
+ },
+ "simplify((-(-1)-sqrt(49))/(2*(1)))": {
+  "exact": "-3",
+  "latex": "\\mathrm{-3}",
+  "approche": "-3.0"
+ },
+ "simplify((-(-1)+sqrt(49))/(2*(1)))": {
+  "exact": "4",
+  "latex": "4",
+  "approche": "4.0"
+ },
+ "degree(expand((((x)^(3))-(8))),x)": {
+  "exact": "3",
+  "latex": "3",
+  "approche": "3.0"
+ },
+ "degree(expand(((a*x+b)-(0))),x)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(expand(((a*x+b)-(0))),x,1)": {
+  "exact": "a",
+  "latex": "a",
+  "approche": ""
+ },
+ "degree(expand(((sin(x))-(0))),x)": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ }
+}

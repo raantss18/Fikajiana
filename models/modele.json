@@ -1,0 +1,24 @@
+{
+  "format": 1,
+  "modele": {
+    "version": 1,
+    "url": "https://huggingface.co/breezedeus/pix2text-mfr/resolve/bea257edb2653f2ae413b084f2ac0e8299d08df0",
+    "fichiers": [
+      {
+        "nom": "encoder_model.onnx",
+        "octets": 87496990,
+        "sha256": "bd8d5c322792e9ec45793af5569e9748f82a3d728a9e00213dbfc56c1486f37d"
+      },
+      {
+        "nom": "decoder_model.onnx",
+        "octets": 30114937,
+        "sha256": "fd0f92d7a012f3dae41e1ac79421aea0ea888b5a66cb3f9a004e424f82f3daed"
+      },
+      {
+        "nom": "tokenizer.json",
+        "octets": 39161,
+        "sha256": "3e2ab757277d22639bec28c9d7972e352d3d1dba223051fa674002dc5ab64df3"
+      }
+    ]
+  }
+}

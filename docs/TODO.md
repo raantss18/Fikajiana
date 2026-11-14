@@ -68,6 +68,18 @@ Déjà livré ce jour : rature et stylet (0.6.1), lueur et trait ondulé (0.7.1)
    `essai_local.sh` l'accepte. Écrit depuis le cloud, **jamais lancé** (pas de KVM dans le conteneur) : à essayer sur
    l'ordinateur (`creer`, `lancer`, `essai_local.sh`), noter la mémoire réelle.
 
+## Innovation (Antsa, 2026-11-14 : « je veux que tu innoves »)
+
+> Pistes choisies par Antsa : étapes de résolution, vérifier ma copie, nouveau visage ; puis un site GitHub et une vidéo de démonstration.
+> **L'entraînement du petit modèle est abandonné** (Antsa, 2026-11-14 : « on oublie l'entraînement ») : les gabarits et Pix2Text lisent seuls ; `entrainement/` n'est plus poursuivi.
+
+1. 🔄 **Étapes de résolution** (ADR 0061) : équations de degré 1 et 2, écrites ligne par ligne avec leur raison. Tests avec les réponses du vrai Giac ; vu sur l'émulateur léger (ligne tapée : bouton de ligne ajouté, Δ et espaces écrits à la main). Reste : Pad 7 ; dérivées, systèmes, inéquations.
+2. 🔄 **Vérifier ma copie** (ADR 0062) : la liste d'une ligne propose « vérifier » ; chaque ligne comparée à la précédente par Giac, « juste » ou « à revoir », jamais « faux » sans preuve. Tests avec les réponses du vrai Giac (11 démarches). Reste : à la main sur le Pad 7 ; inéquations, systèmes.
+3. 🔄 **Nouveau visage** : l'accueil montre trois exemples du tour qui s'écrivent à la main avec leur résultat ; bandeau du modèle lisible sur téléphone ; une ligne tapée a son bouton. Vu sur l'émulateur léger. Reste : Pad 7 ; la palette (ADR 0010) est gardée.
+6. 🔄 **Mise à jour du modèle depuis l'app** (ADR 0064, Antsa 2026-11-14) : Réglages → « Rechercher une mise à jour du modèle », fiche `modele.json` signée publiée avec chaque version. Tests avec un serveur local. Reste : essai sur appareil avec une vraie version 2 du modèle.
+4. ⏳ **Site GitHub** du projet, dans l'esprit de celui de Zanak'i Antsa.
+5. ⏳ **Vidéo de démonstration**, sur l'émulateur léger, écriture rejouée, sous-titres en français.
+
 ## Sécurité et robustesse (Antsa, 2026-11-14, ADR 0060)
 
 1. ✅ **Audit** : 240 dépendances sans faille connue (OSV) ; code relu (mise à jour, dons, Android, colle Giac, magasin d'écriture).
@@ -81,6 +93,8 @@ Déjà livré ce jour : rature et stylet (0.6.1), lueur et trait ondulé (0.7.1)
 1. ✅ **Lecture au tracé affichée, Pix2Text en arrière-plan** (ADR 0050) : une ligne dont un signe doute s'affiche en quelques ms avec un pointillé « à confirmer », le modèle la relit pendant une pause et la remplace seulement s'il fait mieux ; jamais après une correction. Pad 7 : `x+1` 849 ms → 36 ms. ⏳ Vrai stylet ; part réelle des lignes d'Antsa concernées (8 → 9 lignes sur 58 fixtures : ses lignes difficiles échouent sur la structure, pas sur un signe).
 
 ## 0. Erreurs signalées
+
+- ✅ 2026-11-14 : la Feuille entière devenait grise après une ligne mal lue (émulateur léger, écriture rejouée avec le modèle). Cause : le bouton de ligne appelait l'analyse pendant la construction (étapes, copie), qui lance autre chose qu'une `FormatException` sur une lecture absurde. Corrigé : `on Object` dans `equationAEtapes` et `_ligneCopie`. Même classe cherchée : les autres appels d'`analyserPour` pendant un `build` passent par `comprise`/`propositions`, déjà protégés. Test : `calcul_feuille_test` (« une ligne mal lue ne casse rien »).
 
 - ✅ 2026-11-09 : trouvé au banc et à l'essai clavier sur le Pad 7 (vagues 3 à 5) : `division(17;5) ⇔ q=3 et r=2`, `ajustement(…) ⇔ a=…` disaient une équivalence fausse, et `ln(x)>1` donnait `x>(e)`. Cause : toute réponse de type système recevait `⇔`, et la borne seule gardait les parenthèses de Giac. Corrigé : `⇔` seulement si la ligne pose une relation ou `résoudre` (`poseUneRelation`) ; parenthèses ôtées autour d'une borne seule. Même classe : quartiles, Bézout. Le comparateur du banc lit aussi fractions, e et π. Tests : `solutions_test`.
 - ✅ 2026-11-09 : trouvé par le banc de la feuille (vague 2) : `P(Y\le t)=0{,}975` n'était plus compris quand une loi T était déclarée plus haut. Cause : la tolérance des minuscules (le modèle lit `x` pour `X`), ajoutée en fin de PR #104 après le banc, prenait le seuil `t` pour la loi `T`. Corrigé : une minuscule ne vaut la majuscule que si aucune variable déclarée n'est écrite telle quelle dans P(…). Même classe : `E(x)` ne remplace x que si x n'a pas de valeur. Leçon : relancer le banc après toute retouche du calcul, pas seulement avant. Test : `probabilites_test` (« le seuil t reste t »).
