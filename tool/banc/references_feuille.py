@@ -288,4 +288,28 @@ for ligne, equation in [
     ref[f"{p} | {ligne}"] = parties
 # z^{3}=-8 : degré 3, refusé (csolve fait tomber Giac) : aucune valeur attendue.
 
+# Vague 7 : supérieur (SymPy, sans le lecteur de l'app).
+p = "supérieur"
+t, s_ = sp.symbols("t s", positive=True)
+def coefficients(f, ordre):
+    serie = sp.series(f, x, 0, ordre + 1).removeO()
+    return [float(serie.coeff(x, k)) for k in range(ordre + 1) if serie.coeff(x, k) != 0]
+ref[f"{p} | \\text{{DL}}(e^{{x}};0;4)="] = coefficients(sp.exp(x), 4)
+ref[f"{p} | \\text{{DL}}(\\ln(1+x);0;3)="] = coefficients(sp.log(1 + x), 3)
+assert sp.simplify(sp.laplace_transform(sp.exp(2 * t), t, s_, noconds=True) - 1 / (s_ - 2)) == 0
+ref[f"{p} | \\text{{laplace}}(e^{{2t}})="] = [1, -2]  # 1/(s-2) : le comparateur lit « -2 » dans s-2
+assert sp.inverse_laplace_transform(1 / (s_ - 2), s_, t) == sp.exp(2 * t)
+ref[f"{p} | \\text{{invlaplace}}(\\frac{{1}}{{s-2}})="] = [2]  # e^{2t}
+M3 = Matrix([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+ref[f"{p} | \\text{{rang}}\\begin{{pmatrix}}1&2&3\\\\4&5&6\\\\7&8&9\\end{{pmatrix}}="] = int(M3.rank())
+ref[f"{p} | \\text{{tr}}\\begin{{pmatrix}}1&2\\\\3&4\\end{{pmatrix}}="] = int(Matrix([[1, 2], [3, 4]]).trace())
+(v,) = M3.nullspace()
+v = v / v[0] * -1  # même normalisation que Giac : (-1 ; 2 ; -1)
+ref[f"{p} | \\text{{noyau}}\\begin{{pmatrix}}1&2&3\\\\4&5&6\\\\7&8&9\\end{{pmatrix}}="] = [float(c) for c in v]
+S = Matrix([[2, 1], [1, 2]])
+ref[f"{p} | \\text{{valeurspropres}}\\begin{{pmatrix}}2&1\\\\1&2\\end{{pmatrix}}="] = sorted(float(l) for l in S.eigenvals())
+ref[f"{p} | \\text{{polycar}}\\begin{{pmatrix}}2&1\\\\1&2\\end{{pmatrix}}="] = [float(c) for c in S.charpoly(x).all_coeffs()[1:]]
+P, D = S.diagonalize()
+ref[f"{p} | \\text{{diagonaliser}}\\begin{{pmatrix}}2&1\\\\1&2\\end{{pmatrix}}"] = sorted({float(d) for d in D if d != 0})
+
 print(json.dumps(ref, ensure_ascii=False, indent=1))

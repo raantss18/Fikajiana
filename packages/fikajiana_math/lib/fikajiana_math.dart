@@ -12,5 +12,6 @@ export 'src/probabilites.dart';
 export 'src/redressement.dart';
 export 'src/saisie.dart';
 export 'src/statistiques.dart';
+export 'src/superieur.dart';
 export 'src/tableau.dart';
 export 'src/traceur.dart';

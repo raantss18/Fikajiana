@@ -525,6 +525,42 @@ void main() {
     });
   });
 
+  group('supérieur (ADR 0059)', () {
+    test('DL : le reste de Giac s’écrit o(xⁿ)', () async {
+      lecteur.reponse = r'\text{DL}(e^{x};0;2)=';
+      moteur.reponse = const ReponseGiac(
+        exact: '1+x+1/2*x^2+x^3*order_size(x)',
+        latex: r'1+x+\frac{1}{2} \cdot x^{2}+x^{3} \mathrm{order\_size}\left(x\right)',
+        approche: '',
+      );
+      _trait(encre, 0, 0);
+      calcul.encreChangee();
+      await _attendre();
+      expect(
+        calcul.blocs.single.texte(approcheVoulue: false, virgule: true),
+        r'1+x+\frac{1}{2}x^{2}+o\left(x^{2}\right)',
+      );
+      expect(moteur.entrees.join('\n'), contains('taylor('));
+    });
+
+    test('valeurs propres : un ensemble', () async {
+      lecteur.reponse =
+          r'\text{valeurspropres}\begin{pmatrix}2&1\\1&2\end{pmatrix}=';
+      moteur.reponse = const ReponseGiac(
+        exact: '[3,1]',
+        latex: '[3,1]',
+        approche: '[3.0,1.0]',
+      );
+      _trait(encre, 0, 0);
+      calcul.encreChangee();
+      await _attendre();
+      expect(
+        calcul.blocs.single.texte(approcheVoulue: false, virgule: true),
+        r'\left\{3\,;\,1\right\}',
+      );
+    });
+  });
+
   group('modes', () {
     test('exact ou approché, sans recalculer', () async {
       moteur.reponse = const ReponseGiac(

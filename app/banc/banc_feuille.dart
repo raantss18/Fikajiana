@@ -176,6 +176,22 @@ const List<(String, List<String>)> problemes = [
       '6!=',
     ],
   ),
+  // Vague 7 : supérieur (ADR 0059).
+  (
+    'supérieur',
+    [
+      r'\text{DL}(e^{x};0;4)=',
+      r'\text{DL}(\ln(1+x);0;3)=',
+      r'\text{laplace}(e^{2t})=',
+      r'\text{invlaplace}(\frac{1}{s-2})=',
+      r'\text{rang}\begin{pmatrix}1&2&3\\4&5&6\\7&8&9\end{pmatrix}=',
+      r'\text{tr}\begin{pmatrix}1&2\\3&4\end{pmatrix}=',
+      r'\text{noyau}\begin{pmatrix}1&2&3\\4&5&6\\7&8&9\end{pmatrix}=',
+      r'\text{valeurspropres}\begin{pmatrix}2&1\\1&2\end{pmatrix}=',
+      r'\text{polycar}\begin{pmatrix}2&1\\1&2\end{pmatrix}=',
+      r'\text{diagonaliser}\begin{pmatrix}2&1\\1&2\end{pmatrix}',
+    ],
+  ),
   // Vague 6 : nombres complexes (ADR 0058).
   (
     'complexes',

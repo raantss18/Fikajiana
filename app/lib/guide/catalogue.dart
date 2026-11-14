@@ -468,6 +468,39 @@ List<EntreeGuide> catalogueGuide(AppLocalizations l10n) => [
     motsCles: l10n.guideEquationComplexeMots,
     lignes: ['z^{2}-2z+5=0'],
   ),
+  // Supérieur (ADR 0059).
+  EntreeGuide(
+    cle: 'dl',
+    famille: FamilleGuide.limites,
+    titre: l10n.guideDlTitre,
+    phrase: l10n.guideDlPhrase,
+    motsCles: l10n.guideDlMots,
+    lignes: [r'\text{DL}\left(e^{x};0;4\right)'],
+  ),
+  EntreeGuide(
+    cle: 'laplace',
+    famille: FamilleGuide.fonctions,
+    titre: l10n.guideLaplaceTitre,
+    phrase: l10n.guideLaplacePhrase,
+    motsCles: l10n.guideLaplaceMots,
+    lignes: [r'\text{laplace}\left(t^{2}\right)'],
+  ),
+  EntreeGuide(
+    cle: 'algebre_lineaire',
+    famille: FamilleGuide.matrices,
+    titre: l10n.guideAlgebreLineaireTitre,
+    phrase: l10n.guideAlgebreLineairePhrase,
+    motsCles: l10n.guideAlgebreLineaireMots,
+    lignes: [r'\text{rang}\begin{pmatrix}1&2\\2&4\end{pmatrix}'],
+  ),
+  EntreeGuide(
+    cle: 'diagonaliser',
+    famille: FamilleGuide.matrices,
+    titre: l10n.guideDiagonaliserTitre,
+    phrase: l10n.guideDiagonaliserPhrase,
+    motsCles: l10n.guideDiagonaliserMots,
+    lignes: [r'\text{diagonaliser}\begin{pmatrix}2&1\\1&2\end{pmatrix}'],
+  ),
   // Arithmétique.
   EntreeGuide(
     cle: 'division',
