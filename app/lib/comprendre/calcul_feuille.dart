@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:fikajiana/comprendre/blocs.dart';
 import 'package:fikajiana/comprendre/decimale.dart';
 import 'package:fikajiana/comprendre/ecriture_resultat.dart';
+import 'package:fikajiana/comprendre/etapes.dart';
 import 'package:fikajiana/comprendre/fraction_ecrite.dart';
 import 'package:fikajiana/comprendre/mots.dart';
 import 'package:fikajiana/comprendre/solutions.dart';
@@ -1985,6 +1986,43 @@ class CalculFeuille extends ChangeNotifier {
   /// [latex] compris comme s'il était écrit à la place de [bloc].
   Analyse analyserPour(BlocCalcul bloc, String latex) =>
       _contextePour(bloc).analyser(latex);
+
+  /// L'équation de [bloc] dont on sait écrire les étapes : une seule
+  /// inconnue, deux membres. Le degré se voit au calcul ([etapes]).
+  ({String gauche, String droite, String x})? equationAEtapes(BlocCalcul bloc) {
+    final latex = bloc.latex;
+    if (latex == null || bloc.objet != null || bloc.commande != null) {
+      return null;
+    }
+    final Analyse analyse;
+    try {
+      analyse = analyserPour(bloc, latex);
+    } on FormatException {
+      return null;
+    }
+    final membres = analyse.membres;
+    final x = analyse.inconnues.singleOrNull;
+    if (analyse.type != TypeExpression.equation ||
+        membres == null ||
+        x == null) {
+      return null;
+    }
+    return (gauche: membres.$1, droite: membres.$2, x: x);
+  }
+
+  /// Les étapes de la résolution de [bloc], ou `null` s'il n'y en a pas
+  /// (degré 3 et plus, coefficients littéraux).
+  Future<List<Etape>?> etapes(BlocCalcul bloc) {
+    final e = equationAEtapes(bloc);
+    if (e == null) return Future.value();
+    return etapesEquation(
+      moteur,
+      ecrit: bloc.latex!.replaceFirst(RegExp(r'\s*$'), ''),
+      gauche: e.gauche,
+      droite: e.droite,
+      x: e.x,
+    );
+  }
 
   /// [latex] compris sous tout ce qui est écrit : une ligne tapée.
   Analyse analyserEnBas(String latex) => _contextePour(

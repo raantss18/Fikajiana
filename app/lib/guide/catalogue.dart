@@ -276,6 +276,14 @@ List<EntreeGuide> catalogueGuide(AppLocalizations l10n) => [
     lignes: ['x^{2}-5x+6=0'],
   ),
   EntreeGuide(
+    cle: 'etapes',
+    famille: FamilleGuide.equations,
+    titre: l10n.guideEtapesTitre,
+    phrase: l10n.guideEtapesPhrase,
+    motsCles: l10n.guideEtapesMots,
+    lignes: ['2x^{2}-3x-5=0'],
+  ),
+  EntreeGuide(
     cle: 'inequation',
     famille: FamilleGuide.equations,
     titre: l10n.guideInequationTitre,

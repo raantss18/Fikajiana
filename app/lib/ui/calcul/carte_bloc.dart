@@ -10,6 +10,7 @@ import 'package:fikajiana/reglages/reglages.dart';
 import 'package:fikajiana/ui/calcul/action_manuscrite.dart';
 import 'package:fikajiana/ui/calcul/marques_bloc.dart';
 import 'package:fikajiana/ui/calcul/menu_actions.dart';
+import 'package:fikajiana/ui/calcul/panneau_etapes.dart';
 import 'package:fikajiana/ui/calcul/panneau_saisie.dart';
 import 'package:fikajiana/ui/calcul/placer_construction.dart';
 import 'package:fikajiana/ui/calcul/signes_lus.dart';
@@ -105,6 +106,14 @@ class RepereBloc extends StatelessWidget {
           agir: () => unawaited(calcul.corriger(bloc, autre)),
         ),
       ...?_entreeFigure(context),
+      // Les étapes de la résolution, comme au tableau (2026-11-14).
+      if (calcul.equationAEtapes(bloc) != null)
+        EntreeLigne(
+          cle: 'etapes',
+          mot: l10n.motEtapes,
+          libelle: l10n.etapesVoir,
+          agir: () => unawaited(montrerEtapes(context, calcul, bloc)),
+        ),
       if (surProposer case final proposer?)
         for (final p in calcul.propositions(bloc))
           EntreeLigne(
