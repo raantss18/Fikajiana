@@ -34,7 +34,13 @@ Future<void> montrerEtapes(
   useSafeArea: true,
   showDragHandle: true,
   constraints: const BoxConstraints(maxWidth: 640),
-  builder: (_) => PanneauEtapes(etapes: calcul.etapes(bloc)),
+  builder: (_) => PanneauEtapes(
+    etapes: calcul.etapes(
+      bloc,
+      // Comme le tour : « ou » en français, « or » sinon.
+      ou: context.l10n.localeName.startsWith('fr') ? 'ou' : 'or',
+    ),
+  ),
 );
 
 class PanneauEtapes extends StatelessWidget {

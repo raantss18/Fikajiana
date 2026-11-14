@@ -62,6 +62,7 @@ Future<List<Etape>?> etapesEquation(
   required String gauche,
   required String droite,
   required String x,
+  String ou = 'ou',
 }) async {
   Future<ReponseGiac?> giac(String entree) async {
     final r = await moteur.calculer(entree);
@@ -178,7 +179,7 @@ Future<List<Etape>?> etapesEquation(
     ..add(
       Etape(
         RaisonEtape.conclusion,
-        '$x=${x1.latex}\\ \\text{ou}\\ $x=${x2.latex}',
+        '$x=${x1.latex}\\ \\text{$ou}\\ $x=${x2.latex}',
       ),
     );
   return etapes;

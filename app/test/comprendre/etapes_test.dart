@@ -129,6 +129,19 @@ void main() {
     }
   });
 
+  test('en anglais, « or » entre les deux solutions', () async {
+    final a = analyserLatex('2x^{2}-3x-5=0');
+    final etapes = await etapesEquation(
+      _GiacEnregistre(),
+      ecrit: '2x^{2}-3x-5=0',
+      gauche: a.membres!.$1,
+      droite: a.membres!.$2,
+      x: 'x',
+      ou: 'or',
+    );
+    expect(etapes!.last.latex, r'x=-1\ \text{or}\ x=\frac{5}{2}');
+  });
+
   test('pas d’étapes plutôt que des étapes fausses', () async {
     expect(await _etapes('x^{3}=8'), isNull);
     expect(await _etapes('ax+b=0'), isNull);
