@@ -40,6 +40,9 @@ json.dump({"format": 1, "latest": {"build": int(build), "version": version, "not
           open(chemin, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
 PY
 openssl pkeyutl -sign -inkey "$cles/ed25519.pem" -rawin -in "$out/release.json" | base64 -w0 > "$out/release.json.sig"
+# Le modèle de lecture publié (ADR 0064) : l'app le cherche à la demande, signé par la même clé.
+cp "$racine/models/modele.json" "$out/modele.json"
+openssl pkeyutl -sign -inkey "$cles/ed25519.pem" -rawin -in "$out/modele.json" | base64 -w0 > "$out/modele.json.sig"
 (cd "$out" && sha256sum "$nom" fikajiana-arm64-v8a.apk > SHA256SUMS.txt)
 python3 -I "$racine/tool/notes_release.py" "$racine/app/CHANGELOG.md" "$version" "$nom" "$octets" > "$out/notes.md"
 echo "Prêt dans $out : $nom (build $build, $octets octets), release.json, release.json.sig"

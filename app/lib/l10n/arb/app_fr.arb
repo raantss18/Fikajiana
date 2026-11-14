@@ -59,7 +59,6 @@
             }
         }
     },
-    "modelePresent": "Modèle installé",
     "modeleEchec": "Le téléchargement a échoué. Réessaie.",
     "modeleSupprimer": "Supprimer le modèle",
     "blocVrai": "Vrai",
@@ -870,5 +869,18 @@
     "@copieBilan": {"placeholders": {"n": {"type": "int"}}},
     "guideCopieTitre": "Vérifier ma copie",
     "guideCopiePhrase": "Écris ta démarche, une ligne sous l'autre (une équation qu'on transforme, ou une expression qu'on développe). Le bouton d'une ligne propose « vérifier » : chaque ligne est comparée à la précédente, cochée si elle dit la même chose, signalée « à revoir » sinon. Tu vois où est l'erreur, sans qu'on te donne la réponse.",
-    "guideCopieMots": "vérifier copie démarche correction erreur faute ligne par ligne équivalent relire professeur devoir exercice"
+    "guideCopieMots": "vérifier copie démarche correction erreur faute ligne par ligne équivalent relire professeur devoir exercice",
+    "modelePresentVersion": "Modèle installé (version {v})",
+    "@modelePresentVersion": {"placeholders": {"v": {"type": "int"}}},
+    "modeleMajRechercher": "Rechercher une mise à jour du modèle",
+    "modeleMajRecherche": "Recherche d'un modèle plus récent…",
+    "modeleMajAJour": "Le modèle est à jour.",
+    "modeleMajEchec": "La mise à jour du modèle n'a pas abouti. L'ancien modèle reste en place. Réessaie avec du réseau.",
+    "modeleMajDisponible": "Un modèle plus récent est disponible : version {v}, {mo} Mo.",
+    "@modeleMajDisponible": {"placeholders": {"v": {"type": "int"}, "mo": {"type": "int"}}},
+    "modeleMajInstaller": "Installer le nouveau modèle",
+    "modeleMajInstallee": "Nouveau modèle installé. Il servira au prochain démarrage de l'application.",
+    "guideMajModeleTitre": "Mettre à jour le modèle de lecture",
+    "guideMajModelePhrase": "Réglages, Lecture de l'écriture : « Rechercher une mise à jour du modèle » demande, seulement quand tu le touches, s'il existe un modèle plus récent. S'il y en a un, « Installer le nouveau modèle » le télécharge, vérifie sa signature et ses empreintes, puis remplace l'ancien. Rien de ton écriture n'est envoyé.",
+    "guideMajModeleMots": "modèle mise à jour lecture reconnaissance écriture télécharger nouveau version améliorer"
 }

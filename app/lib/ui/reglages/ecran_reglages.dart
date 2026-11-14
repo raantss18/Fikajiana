@@ -124,10 +124,52 @@ class _SectionModele extends StatelessWidget {
               const SizedBox(height: AppEspacement.sm),
               ...switch (modele.etat) {
                 EtatModele.present => [
-                  Text(l10n.modelePresent),
-                  TextButton(
-                    onPressed: () => unawaited(modele.supprimer()),
-                    child: Text(l10n.modeleSupprimer),
+                  Text(l10n.modelePresentVersion(modele.version)),
+                  // La mise à jour du modèle, à la demande (ADR 0064).
+                  Semantics(
+                    liveRegion: true,
+                    child: switch (modele.maj) {
+                      EtatMajModele.repos => const SizedBox.shrink(),
+                      EtatMajModele.recherche => Text(l10n.modeleMajRecherche),
+                      EtatMajModele.aJour => Text(l10n.modeleMajAJour),
+                      EtatMajModele.echec => Text(l10n.modeleMajEchec),
+                      EtatMajModele.installe => Text(l10n.modeleMajInstallee),
+                      EtatMajModele.disponible => Text(
+                        l10n.modeleMajDisponible(
+                          modele.publie?.version ?? 0,
+                          (modele.publie?.fichiers.fold<int>(
+                                    0,
+                                    (s, f) => s + f.octets,
+                                  ) ??
+                                  0) ~/
+                              1000000,
+                        ),
+                      ),
+                    },
+                  ),
+                  Wrap(
+                    spacing: AppEspacement.sm,
+                    children: [
+                      if (modele.maj == EtatMajModele.disponible)
+                        FilledButton.icon(
+                          icon: const Icon(Icons.download_outlined),
+                          label: Text(l10n.modeleMajInstaller),
+                          onPressed: () =>
+                              unawaited(modele.installerMiseAJour()),
+                        )
+                      else
+                        OutlinedButton.icon(
+                          icon: const Icon(Icons.refresh),
+                          label: Text(l10n.modeleMajRechercher),
+                          onPressed: modele.maj == EtatMajModele.recherche
+                              ? null
+                              : () => unawaited(modele.rechercherMiseAJour()),
+                        ),
+                      TextButton(
+                        onPressed: () => unawaited(modele.supprimer()),
+                        child: Text(l10n.modeleSupprimer),
+                      ),
+                    ],
                   ),
                 ],
                 EtatModele.telechargement => [

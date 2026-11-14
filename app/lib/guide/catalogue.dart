@@ -923,6 +923,13 @@ List<EntreeGuide> catalogueGuide(AppLocalizations l10n) => [
     motsCles: l10n.guideHistoriqueMots,
   ),
   EntreeGuide(
+    cle: 'majModele',
+    famille: FamilleGuide.reglages,
+    titre: l10n.guideMajModeleTitre,
+    phrase: l10n.guideMajModelePhrase,
+    motsCles: l10n.guideMajModeleMots,
+  ),
+  EntreeGuide(
     cle: 'modele',
     famille: FamilleGuide.reglages,
     titre: l10n.guideModeleTitre,

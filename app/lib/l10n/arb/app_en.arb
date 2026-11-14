@@ -205,10 +205,6 @@
             }
         }
     },
-    "modelePresent": "Model installed",
-    "@modelePresent": {
-        "description": "The model is ready"
-    },
     "modeleEchec": "The download failed. Try again.",
     "@modeleEchec": {
         "description": "The download failed"
@@ -1140,5 +1136,18 @@
     "@copieBilan": {"placeholders": {"n": {"type": "int"}}},
     "guideCopieTitre": "Check my work",
     "guideCopiePhrase": "Write your working, one line under the other (an equation being transformed, or an expression being expanded). A line's button offers “check”: each line is compared with the previous one, ticked if it says the same thing, flagged “check again” otherwise. You see where the mistake is, without being given the answer.",
-    "guideCopieMots": "check work working correction mistake error line by line equivalent reread teacher homework exercise"
+    "guideCopieMots": "check work working correction mistake error line by line equivalent reread teacher homework exercise",
+    "modelePresentVersion": "Model installed (version {v})",
+    "@modelePresentVersion": {"placeholders": {"v": {"type": "int"}}},
+    "modeleMajRechercher": "Check for a model update",
+    "modeleMajRecherche": "Looking for a newer model…",
+    "modeleMajAJour": "The model is up to date.",
+    "modeleMajEchec": "The model update did not complete. The previous model stays in place. Try again with a connection.",
+    "modeleMajDisponible": "A newer model is available: version {v}, {mo} MB.",
+    "@modeleMajDisponible": {"placeholders": {"v": {"type": "int"}, "mo": {"type": "int"}}},
+    "modeleMajInstaller": "Install the new model",
+    "modeleMajInstallee": "New model installed. It will be used the next time the app starts.",
+    "guideMajModeleTitre": "Update the reading model",
+    "guideMajModelePhrase": "Settings, Handwriting reading: “Check for a model update” asks, only when you tap it, whether a newer model exists. If there is one, “Install the new model” downloads it, checks its signature and fingerprints, then replaces the old one. None of your handwriting is sent.",
+    "guideMajModeleMots": "model update reading recognition handwriting download new version improve"
 }
