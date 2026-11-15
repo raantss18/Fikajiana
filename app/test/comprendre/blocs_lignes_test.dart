@@ -59,6 +59,25 @@ void main() {
     expect(grouperTraits(encre.traits), hasLength(1));
   });
 
+  // `x² − 1 = 9` écrit en descendant un peu vers la droite : le `= 9`
+  // formait un « rang » à lui seul, lu comme une seconde ligne, et chaque
+  // membre était calculé à part (Pad 7 d'Antsa, 2026-11-15).
+  for (final pente in [0.0, 15.0, 25.0, 35.0, 50.0]) {
+    test('x² − 1 = 9 qui descend de $pente reste une ligne', () {
+      double y(double x) => pente * x / 240;
+      trait(0, y(0), 30, 40); // x
+      trait(30, y(0), -30, 40);
+      trait(38, y(38) - 28, 14, 18); // ²
+      trait(65, y(65) + 20, 25, 1); // −
+      trait(105, y(105), 2, 40); // 1
+      trait(150, y(150) + 14, 28, 1); // =
+      trait(150, y(150) + 26, 28, 1);
+      trait(200, y(200), 2, 40); // 9 : sa boucle,
+      trait(200, y(200), 22, 18); // puis sa queue.
+      expect(grouperTraits(encre.traits), hasLength(1));
+    });
+  }
+
   group('un groupe prolonge-t-il un bloc ?', () {
     const bloc = Rect.fromLTWH(0, 0, 300, 100);
     test('la ligne dessous, touchée par une queue, non', () {
@@ -72,6 +91,26 @@ void main() {
     test('à droite sur la même ligne, oui', () {
       const suite = Rect.fromLTWH(320, 20, 40, 40);
       expect(prolonge(bloc, suite, ferme: false), isTrue);
+    });
+    // `x² − 1 =` est lu dès le `=` posé, avant que le stylet n'arrive au
+    // `9` : chaque membre était calculé à part (Pad 7 d'Antsa, 2026-11-15).
+    test('après un =, le second membre écrit aussitôt, oui', () {
+      const neuf = Rect.fromLTWH(325, 20, 40, 60);
+      expect(prolonge(bloc, neuf, ferme: true), isTrue);
+    });
+    test('après un =, sur le résultat montré, oui', () {
+      const resultat = Rect.fromLTWH(310, 20, 120, 60);
+      const neuf = Rect.fromLTWH(390, 20, 40, 60);
+      expect(prolonge(bloc, neuf, ferme: true, resultat: resultat), isTrue);
+    });
+    test('après un =, passé son résultat, non : un autre calcul', () {
+      const resultat = Rect.fromLTWH(310, 20, 60, 60);
+      const autre = Rect.fromLTWH(390, 20, 40, 60);
+      expect(prolonge(bloc, autre, ferme: true, resultat: resultat), isFalse);
+    });
+    test('après un =, loin et sans résultat, non', () {
+      const autre = Rect.fromLTWH(390, 20, 40, 60);
+      expect(prolonge(bloc, autre, ferme: true), isFalse);
     });
   });
 

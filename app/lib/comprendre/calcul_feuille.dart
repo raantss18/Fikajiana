@@ -1130,6 +1130,7 @@ class CalculFeuille extends ChangeNotifier {
                     b.cadre,
                     cadre,
                     ferme: b.finitParEgal && !b.teteDeDefinition,
+                    resultat: b._ecrit?.cadre,
                   ) ||
                   (precede(b.cadre, cadre) && !finitParEgal(groupe)),
             )
