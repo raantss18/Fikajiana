@@ -94,6 +94,62 @@ void main() {
     });
   });
 
+  group('factorielle comme sur la capture d\u2019Antsa (53! lu 53.1)', () {
+    // Hampe qui s'arrête au-dessus de la ligne ; son point est un petit
+    // crochet tracé loin dessous, sous la ligne, un peu à gauche.
+    Trait polyligne(List<(double, double)> p) => Trait.depuisDocument({
+      'auStylet': true,
+      'points': [
+        for (var k = 0; k + 1 < p.length; k++)
+          for (var j = 0; j < 8; j++)
+            [
+              p[k].$1 + (p[k + 1].$1 - p[k].$1) * j / 8,
+              p[k].$2 + (p[k + 1].$2 - p[k].$2) * j / 8,
+              0.3,
+            ],
+        [p.last.$1, p.last.$2, 0.3],
+      ],
+    });
+    final crochet = polyligne([(476.4, 333), (481.9, 328.5), (480.1, 339.8)]);
+    for (final (nom, point) in [
+      ('crochet d\u2019un trait', [crochet]),
+      (
+        'crochet en deux traits',
+        [
+          polyligne([(476.4, 333), (481.9, 328.5)]),
+          polyligne([(481.9, 328.5), (480.1, 339.8)]),
+        ],
+      ),
+      ('point très bas', [_segment(479, 340, 480, 346)]),
+      ('toucher très bas', [_toucher(479, 342)]),
+      ('crochet tracé avant la hampe', null),
+    ]) {
+      test(nom, () {
+        expect(
+          lireAuTrace([
+            ..._traits('pad7', 'trente_fois_8'),
+            if (point == null) crochet,
+            _segment(481, 270, 481.5, 310),
+            ...?point,
+            ..._egal(),
+          ]),
+          r'30\times8!=',
+        );
+      });
+    }
+    test('hampe un peu penchée (au doigt)', () {
+      expect(
+        lireAuTrace([
+          ..._traits('pad7', 'trente_fois_8'),
+          _segment(484, 270, 479, 310),
+          crochet,
+          ..._egal(),
+        ]),
+        r'30\times8!=',
+      );
+    });
+  });
+
   group('autres signes faits de points (ADR 0071)', () {
     // `3`, `0` et `8` de `30×8` (Pad 7), sans le `×`.
     List<Trait> avec(List<Trait> milieu) {
@@ -130,6 +186,25 @@ void main() {
       expect(
         lireAuTrace(avec([_segment(379, 316, 377, 325), _toucher(381, 306)])),
         isNull,
+      );
+    });
+
+    test('un 1 suivi d’un point sur la ligne : décimal, jamais `!`', () {
+      final un = _segment(385, 271, 385, 319);
+      expect(
+        lireAuTrace(avec([un, _segment(394, 315, 395, 319)])),
+        anyOf('301.8', '301{,}8'),
+      );
+      // Le même point fait de deux petits traits, au doigt.
+      expect(
+        lireAuTrace(
+          avec([
+            un,
+            _segment(393, 315, 395, 317),
+            _segment(395, 317, 394, 319),
+          ]),
+        ),
+        anyOf('301.8', '301{,}8'),
       );
     });
 
