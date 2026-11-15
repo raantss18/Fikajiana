@@ -4,6 +4,18 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+## [1.2.0] — 2026-11-15
+
+### Message fr
+
+Une équation écrite d'un trait, comme x² − 1 = 9, n'est plus coupée en deux calculs quand vous marquez un temps après le signe = : ce qui suit aussitôt le = en est le second membre.
+
+### Message en
+
+An equation written in one go, such as x² − 1 = 9, is no longer split into two calculations when you pause after the = sign: what follows right after the = is its right-hand side.
+
+### Changements
+
 - Une équation écrite d'un trait, comme `x² − 1 = 9`, n'est plus coupée en deux calculs quand on marque un temps après le `=` : ce qui suit aussitôt le `=` en est le second membre. / An equation written in one go, such as `x² − 1 = 9`, is no longer split into two calculations when you pause after the `=`: what follows right after the `=` is its right-hand side.
 
 ## [1.1.9] — 2026-11-15
