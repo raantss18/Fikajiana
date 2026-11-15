@@ -1,0 +1,722 @@
+{
+ "simplify((((x+1))^(2))-((x)^(2)+1))": {
+  "exact": "2*x",
+  "latex": "2\\cdot x",
+  "approche": ""
+ },
+ "sommet((x+1))": {
+  "exact": "'+'",
+  "latex": "+",
+  "approche": ""
+ },
+ "size(feuille((x+1)))": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "feuille((x+1))[0]": {
+  "exact": "x",
+  "latex": "x",
+  "approche": ""
+ },
+ "feuille((x+1))[1]": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "(x+1)": {
+  "exact": "x+1",
+  "latex": "x+1",
+  "approche": ""
+ },
+ "simplify((((x)^2+(1)^2))-((x)^(2)+1))": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "expand(((x+1))^2)": {
+  "exact": "x^2+2*x+1",
+  "latex": "x^{2}+2\\cdot x+1",
+  "approche": ""
+ },
+ "simplify((((x-3))^(2))-((x)^(2)-9))": {
+  "exact": "-6*x+18",
+  "latex": "-6\\cdot x+18",
+  "approche": ""
+ },
+ "sommet((x-3))": {
+  "exact": "'+'",
+  "latex": "+",
+  "approche": ""
+ },
+ "size(feuille((x-3)))": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "feuille((x-3))[0]": {
+  "exact": "x",
+  "latex": "x",
+  "approche": ""
+ },
+ "feuille((x-3))[1]": {
+  "exact": "-3",
+  "latex": "\\mathrm{-3}",
+  "approche": "-3.0"
+ },
+ "(x-3)": {
+  "exact": "x-3",
+  "latex": "x-3",
+  "approche": ""
+ },
+ "simplify((((x)^2+(-3)^2))-((x)^(2)-9))": {
+  "exact": "18",
+  "latex": "18",
+  "approche": "18.0"
+ },
+ "simplify((((x)^2-(-3)^2))-((x)^(2)-9))": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "expand(((x-3))^2)": {
+  "exact": "x^2-6*x+9",
+  "latex": "x^{2}-6\\cdot x+9",
+  "approche": ""
+ },
+ "simplify((2*(x+1)+3)-(2*x+1+3))": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "sommet(x+1)": {
+  "exact": "'+'",
+  "latex": "+",
+  "approche": ""
+ },
+ "size(feuille(x+1))": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "feuille(x+1)[0]": {
+  "exact": "x",
+  "latex": "x",
+  "approche": ""
+ },
+ "feuille(x+1)[1]": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "x+1": {
+  "exact": "x+1",
+  "latex": "x+1",
+  "approche": ""
+ },
+ "simplify(((2*(x)+((x+1)-(x)))+3)-(2*x+1+3))": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "expand(2*(x+1))": {
+  "exact": "2*x+2",
+  "latex": "2\\cdot x+2",
+  "approche": ""
+ },
+ "simplify((5-(x+2))-(5-x+2))": {
+  "exact": "-4",
+  "latex": "\\mathrm{-4}",
+  "approche": "-4.0"
+ },
+ "sommet(x+2)": {
+  "exact": "'+'",
+  "latex": "+",
+  "approche": ""
+ },
+ "size(feuille(x+2))": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "feuille(x+2)[0]": {
+  "exact": "x",
+  "latex": "x",
+  "approche": ""
+ },
+ "feuille(x+2)[1]": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "x+2": {
+  "exact": "x+2",
+  "latex": "x+2",
+  "approche": ""
+ },
+ "simplify((5-(x)+((x+2)-(x)))-(5-x+2))": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "expand(-(x+2))": {
+  "exact": "-x-2",
+  "latex": "-x-2",
+  "approche": ""
+ },
+ "sort(simplify(solve((3*(x+1))=(12),x)))": {
+  "exact": "list[3]",
+  "latex": "\\{3\\}",
+  "approche": "list[3.0]"
+ },
+ "sort(simplify(solve((3*x+1)=(12),x)))": {
+  "exact": "list[11/3]",
+  "latex": "\\{\\frac{11}{3}\\}",
+  "approche": "list[3.66666666667]"
+ },
+ "sommet(3*(x+1))": {
+  "exact": "'*'",
+  "latex": "\\cdot ",
+  "approche": ""
+ },
+ "3*(x+1)": {
+  "exact": "3*(x+1)",
+  "latex": "3\\cdot (x+1)",
+  "approche": ""
+ },
+ "sort(simplify(solve(((3*(x)+((x+1)-(x))))=(12),x)))": {
+  "exact": "list[11/3]",
+  "latex": "\\{\\frac{11}{3}\\}",
+  "approche": "list[3.66666666667]"
+ },
+ "expand(3*(x+1))": {
+  "exact": "3*x+3",
+  "latex": "3\\cdot x+3",
+  "approche": ""
+ },
+ "sort(simplify(solve((2*x+3)=(7),x)))": {
+  "exact": "list[2]",
+  "latex": "\\{2\\}",
+  "approche": "list[2.0]"
+ },
+ "sort(simplify(solve((2*x)=(10),x)))": {
+  "exact": "list[5]",
+  "latex": "\\{5\\}",
+  "approche": "list[5.0]"
+ },
+ "sommet(2*x+3)": {
+  "exact": "'+'",
+  "latex": "+",
+  "approche": ""
+ },
+ "size(feuille(2*x+3))": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "feuille(2*x+3)[0]": {
+  "exact": "2*x",
+  "latex": "2\\cdot x",
+  "approche": ""
+ },
+ "feuille(2*x+3)[1]": {
+  "exact": "3",
+  "latex": "3",
+  "approche": "3.0"
+ },
+ "2*x+3": {
+  "exact": "2*x+3",
+  "latex": "2\\cdot x+3",
+  "approche": ""
+ },
+ "sommet(7)": {
+  "exact": "'id'",
+  "latex": "\\mathrm{id}",
+  "approche": ""
+ },
+ "7": {
+  "exact": "7",
+  "latex": "7",
+  "approche": "7.0"
+ },
+ "sommet(expand((2*x+3)))": {
+  "exact": "'+'",
+  "latex": "+",
+  "approche": ""
+ },
+ "size(feuille(expand((2*x+3))))": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "feuille(expand((2*x+3)))[0]": {
+  "exact": "2*x",
+  "latex": "2\\cdot x",
+  "approche": ""
+ },
+ "feuille(expand((2*x+3)))[1]": {
+  "exact": "3",
+  "latex": "3",
+  "approche": "3.0"
+ },
+ "has(2*x,x)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "has(3,x)": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "sort(simplify(solve((((2*x+3))-(3))=(((7))+(3)),x)))": {
+  "exact": "list[5]",
+  "latex": "\\{5\\}",
+  "approche": "list[5.0]"
+ },
+ "expand(((2*x+3))-(3))": {
+  "exact": "2*x",
+  "latex": "2\\cdot x",
+  "approche": ""
+ },
+ "expand(((7))-(3))": {
+  "exact": "4",
+  "latex": "4",
+  "approche": "4.0"
+ },
+ "sort(simplify(solve((5)=(x-2),x)))": {
+  "exact": "list[7]",
+  "latex": "\\{7\\}",
+  "approche": "list[7.0]"
+ },
+ "sort(simplify(solve((5+2)=(x+2),x)))": {
+  "exact": "list[5]",
+  "latex": "\\{5\\}",
+  "approche": "list[5.0]"
+ },
+ "sommet(5)": {
+  "exact": "'id'",
+  "latex": "\\mathrm{id}",
+  "approche": ""
+ },
+ "5": {
+  "exact": "5",
+  "latex": "5",
+  "approche": "5.0"
+ },
+ "sommet(x-2)": {
+  "exact": "'+'",
+  "latex": "+",
+  "approche": ""
+ },
+ "size(feuille(x-2))": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "feuille(x-2)[0]": {
+  "exact": "x",
+  "latex": "x",
+  "approche": ""
+ },
+ "feuille(x-2)[1]": {
+  "exact": "-2",
+  "latex": "\\mathrm{-2}",
+  "approche": "-2.0"
+ },
+ "x-2": {
+  "exact": "x-2",
+  "latex": "x-2",
+  "approche": ""
+ },
+ "sommet(expand((5)))": {
+  "exact": "'id'",
+  "latex": "\\mathrm{id}",
+  "approche": ""
+ },
+ "expand((5))": {
+  "exact": "5",
+  "latex": "5",
+  "approche": "5.0"
+ },
+ "sommet(expand((x-2)))": {
+  "exact": "'+'",
+  "latex": "+",
+  "approche": ""
+ },
+ "size(feuille(expand((x-2))))": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "feuille(expand((x-2)))[0]": {
+  "exact": "x",
+  "latex": "x",
+  "approche": ""
+ },
+ "feuille(expand((x-2)))[1]": {
+  "exact": "-2",
+  "latex": "\\mathrm{-2}",
+  "approche": "-2.0"
+ },
+ "has(x,x)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "sort(simplify(solve((((5))+(x))=(((x-2))-(x)),x)))": {
+  "exact": "list[-7]",
+  "latex": "\\{\\mathrm{-7}\\}",
+  "approche": "list[-7.0]"
+ },
+ "has(-2,x)": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "degree((x-2),x)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "subst(expand((5)),x=0)": {
+  "exact": "5",
+  "latex": "5",
+  "approche": "5.0"
+ },
+ "degree(expand((5)),x)": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "coeff(expand((5)),x,1)": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "sort(simplify(solve(subst(((5))-((x-2)),x=-x)=0,x)))": {
+  "exact": "list[-7]",
+  "latex": "\\{\\mathrm{-7}\\}",
+  "approche": "list[-7.0]"
+ },
+ "sort(simplify(solve((2*x)=(6),x)))": {
+  "exact": "list[3]",
+  "latex": "\\{3\\}",
+  "approche": "list[3.0]"
+ },
+ "sort(simplify(solve((x)=(4),x)))": {
+  "exact": "list[4]",
+  "latex": "\\{4\\}",
+  "approche": "list[4.0]"
+ },
+ "sommet(2*x)": {
+  "exact": "'*'",
+  "latex": "\\cdot ",
+  "approche": ""
+ },
+ "2*x": {
+  "exact": "2*x",
+  "latex": "2\\cdot x",
+  "approche": ""
+ },
+ "sommet(6)": {
+  "exact": "'id'",
+  "latex": "\\mathrm{id}",
+  "approche": ""
+ },
+ "6": {
+  "exact": "6",
+  "latex": "6",
+  "approche": "6.0"
+ },
+ "sommet(expand((2*x)))": {
+  "exact": "'*'",
+  "latex": "\\cdot ",
+  "approche": ""
+ },
+ "expand((2*x))": {
+  "exact": "2*x",
+  "latex": "2\\cdot x",
+  "approche": ""
+ },
+ "sommet(expand((6)))": {
+  "exact": "'id'",
+  "latex": "\\mathrm{id}",
+  "approche": ""
+ },
+ "expand((6))": {
+  "exact": "6",
+  "latex": "6",
+  "approche": "6.0"
+ },
+ "degree((6),x)": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "subst(expand((2*x)),x=0)": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "degree(expand((2*x)),x)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(expand((2*x)),x,1)": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "normal(((6))/(2))": {
+  "exact": "3",
+  "latex": "3",
+  "approche": "3.0"
+ },
+ "(6)": {
+  "exact": "6",
+  "latex": "6",
+  "approche": "6.0"
+ },
+ "sort(simplify(solve(x=((6))-(2),x)))": {
+  "exact": "list[4]",
+  "latex": "\\{4\\}",
+  "approche": "list[4.0]"
+ },
+ "sort(simplify(solve((x)=(12),x)))": {
+  "exact": "list[12]",
+  "latex": "\\{12\\}",
+  "approche": "list[12.0]"
+ },
+ "sort(simplify(solve(x=((6))*(2),x)))": {
+  "exact": "list[12]",
+  "latex": "\\{12\\}",
+  "approche": "list[12.0]"
+ },
+ "sort(simplify(solve((4*x)=(2),x)))": {
+  "exact": "list[1/2]",
+  "latex": "\\{\\frac{1}{2}\\}",
+  "approche": "list[0.5]"
+ },
+ "sort(simplify(solve((x)=(2),x)))": {
+  "exact": "list[2]",
+  "latex": "\\{2\\}",
+  "approche": "list[2.0]"
+ },
+ "sommet(4*x)": {
+  "exact": "'*'",
+  "latex": "\\cdot ",
+  "approche": ""
+ },
+ "4*x": {
+  "exact": "4*x",
+  "latex": "4\\cdot x",
+  "approche": ""
+ },
+ "sommet(2)": {
+  "exact": "'id'",
+  "latex": "\\mathrm{id}",
+  "approche": ""
+ },
+ "2": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "sommet(expand((4*x)))": {
+  "exact": "'*'",
+  "latex": "\\cdot ",
+  "approche": ""
+ },
+ "expand((4*x))": {
+  "exact": "4*x",
+  "latex": "4\\cdot x",
+  "approche": ""
+ },
+ "sommet(expand((2)))": {
+  "exact": "'id'",
+  "latex": "\\mathrm{id}",
+  "approche": ""
+ },
+ "expand((2))": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "degree((2),x)": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "subst(expand((4*x)),x=0)": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "degree(expand((4*x)),x)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(expand((4*x)),x,1)": {
+  "exact": "4",
+  "latex": "4",
+  "approche": "4.0"
+ },
+ "normal(((2))/(4))": {
+  "exact": "1/2",
+  "latex": "\\frac{1}{2}",
+  "approche": "0.5"
+ },
+ "(2)": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "sort(simplify(solve(x=((2))-(4),x)))": {
+  "exact": "list[-2]",
+  "latex": "\\{\\mathrm{-2}\\}",
+  "approche": "list[-2.0]"
+ },
+ "sort(simplify(solve(x=((2))*(4),x)))": {
+  "exact": "list[8]",
+  "latex": "\\{8\\}",
+  "approche": "list[8.0]"
+ },
+ "sort(simplify(solve(x=(4)/((2)),x)))": {
+  "exact": "list[2]",
+  "latex": "\\{2\\}",
+  "approche": "list[2.0]"
+ },
+ "sort(simplify(solve((x+3)=(1),x)))": {
+  "exact": "list[-2]",
+  "latex": "\\{\\mathrm{-2}\\}",
+  "approche": "list[-2.0]"
+ },
+ "sommet(x+3)": {
+  "exact": "'+'",
+  "latex": "+",
+  "approche": ""
+ },
+ "size(feuille(x+3))": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "feuille(x+3)[0]": {
+  "exact": "x",
+  "latex": "x",
+  "approche": ""
+ },
+ "feuille(x+3)[1]": {
+  "exact": "3",
+  "latex": "3",
+  "approche": "3.0"
+ },
+ "x+3": {
+  "exact": "x+3",
+  "latex": "x+3",
+  "approche": ""
+ },
+ "sommet(1)": {
+  "exact": "'id'",
+  "latex": "\\mathrm{id}",
+  "approche": ""
+ },
+ "1": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "sommet(expand((x+3)))": {
+  "exact": "'+'",
+  "latex": "+",
+  "approche": ""
+ },
+ "size(feuille(expand((x+3))))": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "feuille(expand((x+3)))[0]": {
+  "exact": "x",
+  "latex": "x",
+  "approche": ""
+ },
+ "feuille(expand((x+3)))[1]": {
+  "exact": "3",
+  "latex": "3",
+  "approche": "3.0"
+ },
+ "sort(simplify(solve((((x+3))-(3))=(((1))+(3)),x)))": {
+  "exact": "list[4]",
+  "latex": "\\{4\\}",
+  "approche": "list[4.0]"
+ },
+ "sommet(expand((1)))": {
+  "exact": "'id'",
+  "latex": "\\mathrm{id}",
+  "approche": ""
+ },
+ "expand((1))": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "degree((1),x)": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "subst(expand((x+3)),x=0)": {
+  "exact": "3",
+  "latex": "3",
+  "approche": "3.0"
+ },
+ "degree(expand((x+3)),x)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(expand((x+3)),x,1)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "sort(simplify(solve(subst(((x+3))-((1)),x=-x)=0,x)))": {
+  "exact": "list[2]",
+  "latex": "\\{2\\}",
+  "approche": "list[2.0]"
+ },
+ "solve((x+3)=(1),x)[0]": {
+  "exact": "-2",
+  "latex": "\\mathrm{-2}",
+  "approche": "-2.0"
+ },
+ "size(solve((x+3)=(1),x))": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "sort(simplify(solve((x)=(5),x)))": {
+  "exact": "list[5]",
+  "latex": "\\{5\\}",
+  "approche": "list[5.0]"
+ },
+ "simplify((((x+1))^(2))-((x)^(2)+3*x+1))": {
+  "exact": "-x",
+  "latex": "-x",
+  "approche": ""
+ },
+ "simplify((((x)^2+(1)^2))-((x)^(2)+3*x+1))": {
+  "exact": "-3*x",
+  "latex": "-3\\cdot x",
+  "approche": ""
+ },
+ "simplify((((x)^2-(1)^2))-((x)^(2)+3*x+1))": {
+  "exact": "-3*x-2",
+  "latex": "-3\\cdot x-2",
+  "approche": ""
+ }
+}

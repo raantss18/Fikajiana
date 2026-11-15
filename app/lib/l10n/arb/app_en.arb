@@ -1133,6 +1133,17 @@
     "copieJuste": "Right: this line says the same as the previous one.",
     "copieFausse": "Check again: this line no longer says the same as the previous one. The mistake is in this step.",
     "copieInconnue": "I could not compare this line with the previous one.",
+    "fautePiste": "Hint:",
+    "fauteVoirLigneJuste": "Show the correct line",
+    "fauteIlFallait": "It should be:",
+    "fauteDoubleProduit": "the cross term is missing: (a + b)² = a² + 2ab + b².",
+    "fauteDistribution": "the factor only multiplied the first term in the brackets.",
+    "fauteSigneParenthese": "a minus sign in front of brackets changes the sign of every term, not only the first.",
+    "fauteDeplacementSansSigne": "a term moved to the other side of the = sign without changing sign.",
+    "fauteSoustraire": "the coefficient was subtracted instead of divided by.",
+    "fauteMultiplier": "the coefficient was multiplied instead of divided by.",
+    "fauteDivisionALEnvers": "the division is upside down: the right-hand side is divided by the coefficient.",
+    "fauteSigneSolution": "the solution has the wrong sign.",
     "copieToutJuste": "Well done, every line follows from the previous one.",
     "copieBilan": "{n, plural, =1{One line to check again.} other{{n} lines to check again.}}",
     "@copieBilan": {
@@ -1143,8 +1154,8 @@
         }
     },
     "guideCopieTitre": "Check my work",
-    "guideCopiePhrase": "Write your working, one line under the other (an equation being transformed, or an expression being expanded). A line's button offers “check”: each line is compared with the previous one, ticked if it says the same thing, flagged “check again” otherwise. You see where the mistake is, without being given the answer.",
-    "guideCopieMots": "check work working correction mistake error line by line equivalent reread teacher homework exercise",
+    "guideCopiePhrase": "Write your working, one line under the other (an equation being transformed, or an expression being expanded). A line's button offers “check”: each line is compared with the previous one, ticked if it says the same thing, flagged “check again” otherwise. When the mistake is a classic one (sign forgotten when moving a term, missing cross term, brackets badly expanded, wrong division), a hint names it, and “Show the correct line” reveals the correction only if you ask.",
+    "guideCopieMots": "check work working correction mistake error line by line equivalent reread teacher homework exercise hint where is my mistake sign cross term",
     "modelePresentVersion": "Model installed (version {v})",
     "@modelePresentVersion": {
         "placeholders": {

@@ -4,6 +4,8 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- « Où est ma faute ? » : dans « Vérifier ma copie », une ligne fausse reçoit une piste quand la faute est classique (signe oublié en changeant de côté, double produit, parenthèse mal développée, soustraire au lieu de diviser…) ; la ligne juste ne s'affiche que si on la demande. / “Where is my mistake?”: in “Check my work”, a wrong line gets a hint when the mistake is a classic one (sign forgotten when moving a term, missing cross term, brackets badly expanded, subtracting instead of dividing…); the correct line is shown only on request.
+
 ## [1.1.8] — 2026-11-15
 
 ### Message fr
