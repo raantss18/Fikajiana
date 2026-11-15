@@ -188,7 +188,7 @@ Déjà livré ce jour : rature et stylet (0.6.1), lueur et trait ondulé (0.7.1)
 5. ✅ Provenance des poids : contournée, pas de redistribution (ADR 0016). La question reste ouverte pour un modèle embarqué (P6)
 6. ✅ Première version publique : [`app-v0.1.0`](https://github.com/raantss18/Fikajiana/releases/tag/app-v0.1.0) (demandée par Antsa le 2026-11-06)
 7. ✅ Version corrective `app-v0.1.1`, retours du Poco (demandée par Antsa le 2026-11-06)
-8. ✅ Version signée installée sur le Pad 7 (1.2.0, 2026-11-15, publiée sur GitHub ; 1.2.1 publiée le même jour, pas encore installée : tablettes injoignables par ADB sans fil). Reste : le Poco, et un essai au vrai stylet.
+8. ✅ Version signée installée sur le Pad 7 (1.2.0, 2026-11-15, publiée sur GitHub ; 1.2.1 puis 1.2.2 publiées le même jour, la 1.2.2 installée sur le Pad 7, `53!=` y donne une factorielle au stylet simulé). Reste : le Poco, et un essai au vrai stylet.
 
 ## P2 — Écriture et reconnaissance de qualité
 
