@@ -9,6 +9,7 @@ import 'dart:io';
 import 'package:fikajiana/comprendre/copie.dart';
 import 'package:fikajiana/comprendre/etapes.dart';
 import 'package:fikajiana/comprendre/etapes_derivee.dart';
+import 'package:fikajiana/comprendre/etapes_systeme.dart';
 import 'package:fikajiana/moteur/giac.dart';
 import 'package:fikajiana/moteur/moteur.dart';
 import 'package:fikajiana_math/fikajiana_math.dart';
@@ -87,6 +88,19 @@ const derivees = [
   r'\tan(x^{2})',
 ];
 
+/// Des systèmes : substitution, combinaison, une ligne à une inconnue,
+/// et deux sans étapes (déterminant nul, non linéaire).
+const systemes = [
+  ['2x+y=5', 'x-y=1'],
+  ['3x+2y=12', '5x-3y=1'],
+  ['2x=6', 'x+3y=9'],
+  ['4x+6y=10', '6x-4y=2'],
+  ['2x+3y=7', '2x-y=-1'],
+  [r'\frac{x}{2}+y=3', 'x-y=0'],
+  ['x+y=3', '2x+2y=6'],
+  ['x^{2}+y=1', 'x-y=0'],
+];
+
 /// Des démarches d'élève : justes, ou avec une faute à une ligne connue.
 const copies = [
   ['2x+3=7', '2x=4', 'x=2'],
@@ -161,6 +175,23 @@ Future<void> main() async {
     print('== $latex  (${a.giac})');
     if (d == null) continue;
     final etapes = await etapesDerivee(moteur, corps: d.corps, x: d.x);
+    for (final e in etapes ?? const <Etape>[]) {
+      print('   $e');
+    }
+    if (etapes == null) print('   (pas d’étapes)');
+  }
+  for (final [l1, l2] in systemes) {
+    final latex = '\\begin{cases}$l1\\\\$l2\\end{cases}';
+    final s = lireSysteme(analyserLatex(latex).giac);
+    print('== $l1 ; $l2  ($s)');
+    if (s == null) continue;
+    final etapes = await etapesSysteme(
+      moteur,
+      ecrit: latex,
+      equations: s.equations,
+      x: s.x,
+      y: s.y,
+    );
     for (final e in etapes ?? const <Etape>[]) {
       print('   $e');
     }

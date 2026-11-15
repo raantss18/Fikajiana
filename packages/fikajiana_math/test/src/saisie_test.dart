@@ -257,4 +257,10 @@ void main() {
     );
     expect(a.giac, 'normal(diff((x)^(2),x))');
   });
+
+  test('{2x+y=5 ; x-y=1} tapé au clavier : un système', () {
+    final latex = lireSaisie('{2x+y=5 ; x-y=1}').latex!;
+    expect(latex, r'\begin{cases}2x+y=5\\x-y=1\end{cases}');
+    expect(analyserLatex(latex).type, TypeExpression.systeme);
+  });
 }

@@ -53,6 +53,18 @@ class Saisie {
 Saisie lireSaisie(String texte) {
   final propre = texte.trim();
   if (propre.isEmpty) return const Saisie.refusee(ProblemeSaisie.incomplet);
+  // `{2x+y=5 ; x-y=1}` : un système, une équation par ligne (2026-11-15).
+  final systeme = RegExp(r'^\{([^\\{}]*=[^\\{}]*)\}$').firstMatch(propre);
+  if (systeme != null && systeme[1]!.contains(';')) {
+    try {
+      final lignes = _separer(systeme[1]!, ';')
+          .map((l) => _Traducteur(_decouper(l.trim())).traduire())
+          .toList();
+      return Saisie('\\begin{cases}${lignes.join(r'\\')}\\end{cases}');
+    } on _Refus catch (refus) {
+      return Saisie.refusee(refus.probleme, detail: refus.detail);
+    }
+  }
   if (propre.contains(r'\') || propre.contains('{')) return Saisie(propre);
   // `A(1;2)`, `AB(1;3)` : un point ou un vecteur, tel quel.
   if (lireObjet(propre) != null || lireCommande(propre) != null) {
