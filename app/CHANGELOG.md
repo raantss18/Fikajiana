@@ -4,7 +4,7 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
-- Écriture : 53! se lit enfin factorielle (et non 53.1) ; ÷ et : aux points tapés se lisent division, le point-virgule n'est plus pris pour une virgule décimale. / Handwriting: 53! is now read as a factorial (not 53.1); ÷ and : with tapped dots are read as division, and a semicolon is no longer taken for a decimal comma.
+- Écriture : 53! se lit enfin factorielle (et non 53.1), même au doigt, point loin sous le trait ou fait en deux traits ; ÷ et : aux points tapés se lisent division, le point-virgule n'est plus pris pour une virgule décimale. / Handwriting: 53! is now read as a factorial (not 53.1), even by finger, with the dot far below or made of two strokes; ÷ and : with tapped dots are read as division, and a semicolon is no longer taken for a decimal comma.
 
 ## [1.2.0] — 2026-11-15
 

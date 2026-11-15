@@ -510,7 +510,8 @@ List<Trait> _signesAPoints(
   /// retiré de la ligne ou des touchers.
   List<Trait>? prendre(bool Function(Rect) ou, {Set<_Glyphe> sauf = const {}}) {
     for (final g in glyphes) {
-      if (sauf.contains(g) || g.traits.length != 1 || g.aPoints != null) {
+      // Au doigt, un point se fait parfois en deux petits traits.
+      if (sauf.contains(g) || g.traits.length > 2 || g.aPoints != null) {
         continue;
       }
       final c = g.cadre;
@@ -539,13 +540,15 @@ List<Trait> _signesAPoints(
     final h = g.cadre;
     final t = g.traits.single;
     // `!`. Un `1` suivi d'un point ou d'une virgule n'en est pas un : son
-    // pied est sur la ligne, et le point part de la ligne, sans écart.
+    // pied est sur la ligne, et le point part de la ligne, sans écart. Le
+    // point peut tomber loin sous la hampe, jusqu'à une hampe plus bas
+    // (`53!` au doigt, lu `53.1`, capture d'Antsa du 2026-11-15).
     if (_debout(h) && _presqueDroit(t) && h.height >= 0.6 * hauteur) {
       final point = prendre(
         (c) =>
-            (c.center.dx - h.center.dx).abs() <= 0.2 * h.height &&
+            (c.center.dx - h.center.dx).abs() <= 0.3 * h.height &&
             c.top >= h.bottom - 0.02 * h.height &&
-            c.top - h.bottom <= 0.7 * h.height &&
+            c.top - h.bottom <= h.height &&
             (c.top > h.bottom + 0.1 * h.height ||
                 (base != null && h.bottom < base - 0.08 * hauteur)),
         sauf: {g},
