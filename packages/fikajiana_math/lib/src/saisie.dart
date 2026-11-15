@@ -57,9 +57,10 @@ Saisie lireSaisie(String texte) {
   final systeme = RegExp(r'^\{([^\\{}]*=[^\\{}]*)\}$').firstMatch(propre);
   if (systeme != null && systeme[1]!.contains(';')) {
     try {
-      final lignes = _separer(systeme[1]!, ';')
-          .map((l) => _Traducteur(_decouper(l.trim())).traduire())
-          .toList();
+      final lignes = _separer(
+        systeme[1]!,
+        ';',
+      ).map((l) => _Traducteur(_decouper(l.trim())).traduire()).toList();
       return Saisie('\\begin{cases}${lignes.join(r'\\')}\\end{cases}');
     } on _Refus catch (refus) {
       return Saisie.refusee(refus.probleme, detail: refus.detail);
