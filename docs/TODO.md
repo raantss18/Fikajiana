@@ -180,11 +180,11 @@ Déjà livré ce jour : rature et stylet (0.6.1), lueur et trait ondulé (0.7.1)
 1. ✅ Clés créées dans `release-keys/`, hors de Git, et sauvegardées ailleurs par Antsa (2026-11-15).
 2. ✅ `tool/release.sh` : APK arm64, `release.json` signé, message sur ce que la version permet de faire (`app/CHANGELOG.md`)
 3. ✅ Réglages → Mises à jour : version installée, « Rechercher » ; signature, SHA-256, même clé Android (ADR 0015). Rien sans le réseau, aucune donnée envoyée
-4. ✅ Essai réel : la 1.1.4 s'installe par-dessus la 1.1.3 sur le Pad 7, feuille conservée (2026-11-14), puis la 1.1.5.
+4. ✅ Essai réel : la 1.1.4 s'installe par-dessus la 1.1.3 sur le Pad 7, feuille conservée (2026-11-14), puis la 1.1.5, puis la 1.1.6 (2026-11-15).
 5. ✅ Provenance des poids : contournée, pas de redistribution (ADR 0016). La question reste ouverte pour un modèle embarqué (P6)
 6. ✅ Première version publique : [`app-v0.1.0`](https://github.com/raantss18/Fikajiana/releases/tag/app-v0.1.0) (demandée par Antsa le 2026-11-06)
 7. ✅ Version corrective `app-v0.1.1`, retours du Poco (demandée par Antsa le 2026-11-06)
-8. ✅ Version signée installée sur le Pad 7 (1.1.5, 2026-11-14). Reste : le Poco, et un essai au vrai stylet.
+8. ✅ Version signée installée sur le Pad 7 (1.1.6, 2026-11-15, publiée sur GitHub). Reste : le Poco, et un essai au vrai stylet.
 
 ## P2 — Écriture et reconnaissance de qualité
 
