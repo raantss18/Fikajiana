@@ -29,11 +29,7 @@
 
 Déjà livré ce jour : rature et stylet (0.6.1), lueur et trait ondulé (0.7.1), main qui défile (0.7.2). Fusionné, pas encore publié : saisie naturelle, mémoire de la feuille, `det`, points et vecteurs, calcul formel de la PR 29 (0.8.0).
 
-13. 🔄 **Petit modèle par signe** (ADR 0038, décision d'Antsa 2026-11-08) : app de collecte (tablette et téléphone), entraînement en une commande, intégration dans Fikajiana. Antsa fournit ses écritures. L'app de collecte séparée est retirée (Antsa, 2026-11-08) : Fikajiana recueille elle-même l'écriture jugée (👍/👎) et l'envoie avec consentement (ADR 0042). Une séance d'Antsa déjà recueillie (102 signes) reste dans `donnees/ecriture/antsa/`.
-    Entraînement en une commande fait (`uv run entrainement/entrainer.py`, ADR 0040, contrat `entrainement/CONTRAT.md`) : polices OFL + fixtures, test sur police et séances jamais vues. ⏳ Relancer dès qu'Antsa dépose ses séances dans `donnees/ecriture/` ; choisir la version adoptée des poids.
-    Intégration (ADR 0041) : `ClasseurSignes` (gabarits, corrections, cache), signes lus dès qu'ils sont finis et pause réduite à 400 ms, temps par voie dans le journal, « toucher un signe » dans Corriger, exemples personnels (plus proche voisin) et « Exporter mes corrections ». Banc Pad 7 (`banc/banc_lecture.dart`) : ligne simple 9–23 ms → 0,1–0,2 ms. Essai au stylet simulé (nouveau document) : `30×8=` lu en 3,3 ms (5 signes en cache), toucher le `8` propose `0`, `1`, le choix relit `30×0 = 0` ; export ouvre l'enregistrement Android ; « Effacer mes corrections » vide l'exemple. `ClasseurOnnx` (contrat v1) : rendu Dart = `rendu.py`, seuil 0,7 réglé sur les séances jamais vues, 3,6 ms par signe sur le Pad 7 ; aucune ligne des fixtures ne change. ⏳ ❓ Antsa : adopter une version des poids (hors Git) ; laisser le modèle passer devant les gabarits (sur signes isolés : modèle 36/45, gabarits sûrs 26 justes / 13 faux) quand l'écriture collectée le confirmera ; mesure sur le téléphone.
-    Dons consentis (ADR 0042) : récepteur de référence Python (`plateforme/`, ADR 0043) et **Worker Cloudflare en service** (`plateforme/worker/`, ADR 0045, <https://fikajiana-dons.fikajiana-dons-worker.workers.dev>, seau R2 `fikajiana-dons`) ; récupération triée et par pages (`uv run entrainement/recuperer_dons.py`). Cloud Run abandonné (carte refusée par Google). ⏳ Mettre l'adresse dans l'app ; essai depuis l'app ; projet Google vide `fikajiana-dons-5b2c` supprimé le 2026-11-08 (effacement définitif sous 30 jours, sauf restauration).
-    Lignes jugées et dons (ADR 0042, 0044) : 👍/👎 à côté de chaque ligne, magasin unique `Ecritures`, consentement une fois (case non cochée), envoi `POST /v1/dons` en arrière-plan (Wi-Fi seulement par défaut, adresse vide par défaut), retrait. ⏳ Adresse de la plateforme à régler quand elle sera hébergée (Antsa) ; envoi app fermée (tâche de fond Android) non fait.
+13. ✅ **Petit modèle par signe** : abandonné (Antsa, 2026-11-14, ADR 0066) ; le lecteur `ClasseurOnnx` reste, inactif sans poids. Les gabarits, les corrections de la personne et Pix2Text lisent.
 
 ## Améliorations demandées (2026-11-08)
 
@@ -179,14 +175,14 @@ Déjà livré ce jour : rature et stylet (0.6.1), lueur et trait ondulé (0.7.1)
 
 > Modèle commun à COMIMa, zanakiantsa et academik (`docs/RELEASING.md`). **Seul Antsa décide d'une publication.**
 
-1. 🔄 Clés créées dans `release-keys/`, hors de Git. Reste : **Antsa doit les sauvegarder ailleurs**. Passage de la clé de débogage : désinstaller une fois
+1. ✅ Clés créées dans `release-keys/`, hors de Git, et sauvegardées ailleurs par Antsa (2026-11-15).
 2. ✅ `tool/release.sh` : APK arm64, `release.json` signé, message sur ce que la version permet de faire (`app/CHANGELOG.md`)
 3. ✅ Réglages → Mises à jour : version installée, « Rechercher » ; signature, SHA-256, même clé Android (ADR 0015). Rien sans le réseau, aucune donnée envoyée
-4. 🔄 Essai réel : sur émulateur, 0.0.9 trouve la 0.1.0 publiée, vérifie signature et empreinte, l'installateur la pose. Reste : sur un appareil réel, avec une feuille conservée, à la version suivante
+4. ✅ Essai réel : la 1.1.4 s'installe par-dessus la 1.1.3 sur le Pad 7, feuille conservée (2026-11-14), puis la 1.1.5.
 5. ✅ Provenance des poids : contournée, pas de redistribution (ADR 0016). La question reste ouverte pour un modèle embarqué (P6)
 6. ✅ Première version publique : [`app-v0.1.0`](https://github.com/raantss18/Fikajiana/releases/tag/app-v0.1.0) (demandée par Antsa le 2026-11-06)
 7. ✅ Version corrective `app-v0.1.1`, retours du Poco (demandée par Antsa le 2026-11-06)
-8. ⏳ Installer cette version signée sur le Pad 7 et le Poco : à faire par Antsa (désinstaller l'ancienne d'abord), puis essai au vrai stylet
+8. ✅ Version signée installée sur le Pad 7 (1.1.5, 2026-11-14). Reste : le Poco, et un essai au vrai stylet.
 
 ## P2 — Écriture et reconnaissance de qualité
 
@@ -224,7 +220,7 @@ Déjà livré ce jour : rature et stylet (0.6.1), lueur et trait ondulé (0.7.1)
 > Méthode : `docs/design.md`. Le plus visible passe en P0 et P2 ; ici, la finition.
 
 1. ⏳ Passe de design sur chaque écran : barre d'outils, Réglages, états vides ; maquettes Penpot si utile
-2. ⏳ Choix de la langue dans les réglages, malgré la langue de l'appareil ; revue fr/en de tous les textes
+2. 🔄 ✅ Choix de la langue dans les Réglages (Celle du système, Français, English). Reste : revue fr/en de tous les textes.
 3. ⏳ Historique : feuilles enregistrées, renommer, supprimer avec annulation
 4. ⏳ TalkBack réel, grands textes, animations coupées (dont l'indicateur de la barre du bas)
 5. 🔄 ✅ **Exporter en PDF ou PNG** Feuille, Graphe, Figure (ADR 0022), sur émulateur. Reste : essai sur appareil arm64 réel ; partager vers une autre app si Antsa le demande
@@ -234,7 +230,7 @@ Déjà livré ce jour : rature et stylet (0.6.1), lueur et trait ondulé (0.7.1)
 ## P6 — Plus tard
 
 1. ⏳ F-Droid : Giac, GMP, MPFR compilés dans la recette ; builds reproductibles
-2. ⏳ Modèle d'encre maison sur données libres (synthétiques + collecte CC0)
+2. ✅ Abandonné : plus d'entraînement (ADR 0066) ; un meilleur modèle publié s'installe par sa mise à jour depuis l'app (ADR 0064).
 3. ⏳ Vérifier les signatures GNU de GMP et MPFR, licence des gabarits Very Good CLI, Maxima (`reverification.md`)
 4. ⏳ Poids du modèle réduit ; `pix2text-mfr-1.5` à réévaluer sur une nouvelle mesure
 4b. ⏳ Résultat dans l'écriture de l'utilisateur, à partir de ses propres chiffres (non étudié) ; élargir l'alphabet
