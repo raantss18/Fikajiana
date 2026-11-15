@@ -10,6 +10,7 @@ import 'package:fikajiana/comprendre/copie.dart';
 import 'package:fikajiana/comprendre/etapes.dart';
 import 'package:fikajiana/comprendre/etapes_derivee.dart';
 import 'package:fikajiana/comprendre/etapes_systeme.dart';
+import 'package:fikajiana/comprendre/fautes.dart';
 import 'package:fikajiana/moteur/giac.dart';
 import 'package:fikajiana/moteur/moteur.dart';
 import 'package:fikajiana_math/fikajiana_math.dart';
@@ -101,6 +102,23 @@ const systemes = [
   ['x^{2}+y=1', 'x-y=0'],
 ];
 
+/// Des fautes classiques, une par sorte, et des fautes hors catalogue.
+const fautes = [
+  ['(x+1)^{2}', 'x^{2}+1'],
+  ['(x-3)^{2}', 'x^{2}-9'],
+  ['2(x+1)+3', '2x+1+3'],
+  ['5-(x+2)', '5-x+2'],
+  ['3(x+1)=12', '3x+1=12'],
+  ['2x+3=7', '2x=10'],
+  ['5=x-2', '5+2=x+2'],
+  ['2x=6', 'x=4'],
+  ['2x=6', 'x=12'],
+  ['4x=2', 'x=2'],
+  ['x+3=1', 'x=2'],
+  ['2x+3=7', 'x=5'],
+  ['(x+1)^{2}', 'x^{2}+3x+1'],
+];
+
 /// Des démarches d'élève : justes, ou avec une faute à une ligne connue.
 const copies = [
   ['2x+3=7', '2x=4', 'x=2'],
@@ -131,6 +149,16 @@ Future<void> main() async {
     final v = await verifierCopie(copie, lignes.map(ligneCopie).toList());
     print('$lignes -> ${v.map((e) => e.name).toList()}');
   }
+  final pistes = _Enregistreur();
+  for (final [a, b] in fautes) {
+    final lignes = [ligneCopie(a), ligneCopie(b)];
+    final v = await verifierCopie(pistes, lignes);
+    final p = await pistesCopie(pistes, lignes, v);
+    print('faute $a -> $b : ${v.last.name}, ${p.last}');
+  }
+  File('test/fixtures/giac/fautes.json').writeAsStringSync(
+    '${const JsonEncoder.withIndent(' ').convert(pistes.reponses)}\n',
+  );
   File('test/fixtures/giac/copie.json').writeAsStringSync(
     '${const JsonEncoder.withIndent(' ').convert(copie.reponses)}\n',
   );

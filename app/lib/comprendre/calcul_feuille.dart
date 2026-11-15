@@ -9,6 +9,7 @@ import 'package:fikajiana/comprendre/ecriture_resultat.dart';
 import 'package:fikajiana/comprendre/etapes.dart';
 import 'package:fikajiana/comprendre/etapes_derivee.dart';
 import 'package:fikajiana/comprendre/etapes_systeme.dart';
+import 'package:fikajiana/comprendre/fautes.dart';
 import 'package:fikajiana/comprendre/fraction_ecrite.dart';
 import 'package:fikajiana/comprendre/mots.dart';
 import 'package:fikajiana/comprendre/solutions.dart';
@@ -2203,6 +2204,13 @@ class CalculFeuille extends ChangeNotifier {
   /// Le verdict de chaque ligne de [copie], comparée à la précédente.
   Future<List<VerdictLigne>> verifier(List<LigneCopie> copie) =>
       verifierCopie(moteur, copie);
+
+  /// La faute classique de chaque ligne fausse de [copie], s'il y en a une
+  /// (« Où est ma faute ? »).
+  Future<List<PisteFaute?>> pistes(
+    List<LigneCopie> copie,
+    List<VerdictLigne> verdicts,
+  ) => pistesCopie(moteur, copie, verdicts);
 
   /// [latex] compris sous tout ce qui est écrit : une ligne tapée.
   Analyse analyserEnBas(String latex) => _contextePour(

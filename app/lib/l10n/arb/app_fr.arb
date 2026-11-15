@@ -873,6 +873,17 @@
     "copieJuste": "Juste : cette ligne dit la même chose que la précédente.",
     "copieFausse": "À revoir : cette ligne ne dit plus la même chose que la précédente. L'erreur est dans ce passage.",
     "copieInconnue": "Je n'ai pas su comparer cette ligne à la précédente.",
+    "fautePiste": "Piste :",
+    "fauteVoirLigneJuste": "Voir la ligne juste",
+    "fauteIlFallait": "Il fallait :",
+    "fauteDoubleProduit": "il manque le double produit : (a + b)² = a² + 2ab + b².",
+    "fauteDistribution": "le facteur n'a multiplié que le premier terme de la parenthèse.",
+    "fauteSigneParenthese": "un moins devant une parenthèse change le signe de chaque terme, pas seulement du premier.",
+    "fauteDeplacementSansSigne": "un terme est passé de l'autre côté du signe = sans changer de signe.",
+    "fauteSoustraire": "on a soustrait le coefficient au lieu de diviser par lui.",
+    "fauteMultiplier": "on a multiplié par le coefficient au lieu de diviser par lui.",
+    "fauteDivisionALEnvers": "la division est à l'envers : c'est le second membre qu'on divise par le coefficient.",
+    "fauteSigneSolution": "la solution a le mauvais signe.",
     "copieToutJuste": "Bravo, chaque ligne suit de la précédente.",
     "copieBilan": "{n, plural, =1{Une ligne à revoir.} other{{n} lignes à revoir.}}",
     "@copieBilan": {
@@ -883,8 +894,8 @@
         }
     },
     "guideCopieTitre": "Vérifier ma copie",
-    "guideCopiePhrase": "Écris ta démarche, une ligne sous l'autre (une équation qu'on transforme, ou une expression qu'on développe). Le bouton d'une ligne propose « vérifier » : chaque ligne est comparée à la précédente, cochée si elle dit la même chose, signalée « à revoir » sinon. Tu vois où est l'erreur, sans qu'on te donne la réponse.",
-    "guideCopieMots": "vérifier copie démarche correction erreur faute ligne par ligne équivalent relire professeur devoir exercice",
+    "guideCopiePhrase": "Écris ta démarche, une ligne sous l'autre (une équation qu'on transforme, ou une expression qu'on développe). Le bouton d'une ligne propose « vérifier » : chaque ligne est comparée à la précédente, cochée si elle dit la même chose, signalée « à revoir » sinon. Quand la faute est classique (signe oublié en changeant de côté, double produit, parenthèse mal développée, division ratée), une piste la nomme, et « Voir la ligne juste » ne montre la correction que si tu la demandes.",
+    "guideCopieMots": "vérifier copie démarche correction erreur faute ligne par ligne équivalent relire professeur devoir exercice piste où est ma faute signe double produit",
     "modelePresentVersion": "Modèle installé (version {v})",
     "@modelePresentVersion": {
         "placeholders": {
