@@ -4,6 +4,18 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+## [1.2.2] — 2026-11-15
+
+### Message fr
+
+Le point d'un ! ou d'un ÷ écrit à la main n'est plus pris pour une virgule, même quand un autre signe de la ligne est fait de plusieurs traits : 53! calcule bien une factorielle.
+
+### Message en
+
+The dot of a handwritten ! or ÷ is no longer taken for a decimal comma, even when another sign on the line is made of several strokes: 53! is computed as a factorial.
+
+### Changements
+
 - Écriture : le point d'un ! ou d'un ÷ n'est plus pris pour une virgule quand un signe de la ligne est fait de plusieurs traits. / Handwriting: the dot of a ! or ÷ is no longer taken for a decimal comma when a sign on the line is made of several strokes.
 
 ## [1.2.1] — 2026-11-15
