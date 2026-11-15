@@ -302,8 +302,13 @@ Rect _cadreDe(List<Offset> s) => s
 
 /// Un signe de la ligne et ce qu'on en sait.
 class _Glyphe {
-  new(this.traits, {this.arcs = false, this.miette = false, this.mot = false})
-    : cadre = cadreDuGroupe(traits);
+  new(
+    this.traits, {
+    this.arcs = false,
+    this.miette = false,
+    this.mot = false,
+    this.aPoints,
+  }) : cadre = cadreDuGroupe(traits);
 
   final List<Trait> traits;
   final Rect cadre;
@@ -316,6 +321,10 @@ class _Glyphe {
 
   /// Un nom de fonction, `\sin` (ADR 0046).
   final bool mot;
+
+  /// Un signe fait d'un trait et de points, ou de points seuls (ADR 0071) :
+  /// `!`, `\div` (pour `÷` et `:`), `;`.
+  final String? aPoints;
 
   /// Le signe décidé, ou `null`.
   String? signe;
@@ -383,7 +392,7 @@ const _basses = {
 /// garde sa règle (sa hauteur ne dit rien).
 const _jambages = {'g', 'p', 'q'};
 
-String? _ligne(List<Trait> nets, List<Trait> miettes, int minimum) {
+String? _ligne(List<Trait> nets, List<Trait> touchers, int minimum) {
   // Une barre de fraction qu'on n'a pas su lire : au modèle.
   for (final t in nets) {
     final c = _c(t);
@@ -417,6 +426,10 @@ String? _ligne(List<Trait> nets, List<Trait> miettes, int minimum) {
     return _classer(g, g.cadre.width) ? g.signe : null;
   }
   final hauteur = hauteurs[hauteurs.length ~/ 2];
+  // `53!`, `6÷3`, `6:3`, `A(1;2)` : les points vont avec leur signe, avant
+  // de passer pour un point décimal (`53.1`, Pad 7 d'Antsa) ou, touchers du
+  // stylet, d'être oubliés (`6−3`, `63`).
+  final miettes = _signesAPoints(glyphes, touchers, hauteur);
   // Une structure qu'on ne lit pas ici : au modèle.
   for (final g in glyphes) {
     if (g.cadre.height > 2.6 * hauteur) return null;
@@ -469,9 +482,173 @@ String? _ligne(List<Trait> nets, List<Trait> miettes, int minimum) {
   return _ecrire(glyphes);
 }
 
+/// Les signes faits de points (ADR 0071), fondus chacun en un seul signe :
+///
+/// - `!` : une hampe droite et debout, un petit trait ou un toucher juste
+///   sous son pied ;
+/// - `÷` : un plat, un point dessus et un point dessous, écrit `\div` ;
+/// - `;` : une virgule et un point dessus ;
+/// - `:` : deux points l'un sur l'autre entre deux signes, la division du
+///   collège, écrite `\div`.
+///
+/// Un point est un petit trait d'un seul tenant ou un toucher du stylet.
+/// Rend les touchers qui restent.
+List<Trait> _signesAPoints(
+  List<_Glyphe> glyphes,
+  List<Trait> miettes,
+  double hauteur,
+) {
+  final restes = miettes.toList();
+  // La ligne de base : le pied des signes hauts.
+  final pieds = [
+    for (final g in glyphes)
+      if (g.cadre.height >= 0.5 * hauteur) g.cadre.bottom,
+  ]..sort();
+  final base = pieds.isEmpty ? null : pieds[pieds.length ~/ 2];
+
+  /// Un point qui vérifie [ou], petit trait de la ligne ou toucher ; il est
+  /// retiré de la ligne ou des touchers.
+  List<Trait>? prendre(bool Function(Rect) ou, {Set<_Glyphe> sauf = const {}}) {
+    for (final g in glyphes) {
+      if (sauf.contains(g) || g.traits.length != 1 || g.aPoints != null) {
+        continue;
+      }
+      final c = g.cadre;
+      if (math.max(c.width, c.height) > 0.35 * hauteur || !ou(c)) continue;
+      glyphes.remove(g);
+      return g.traits;
+    }
+    final toucher = restes.where((m) => ou(_c(m))).firstOrNull;
+    if (toucher == null) return null;
+    restes.remove(toucher);
+    return [toucher];
+  }
+
+  void fondre(_Glyphe g, List<List<Trait>> points, String signe) {
+    final fondu = _Glyphe([
+      ...g.traits,
+      for (final p in points) ...p,
+    ], aPoints: signe);
+    glyphes[glyphes.indexOf(g)] = fondu;
+  }
+
+  for (final g in glyphes.toList()) {
+    if (!glyphes.contains(g) || g.traits.length != 1 || g.aPoints != null) {
+      continue;
+    }
+    final h = g.cadre;
+    final t = g.traits.single;
+    // `!`. Un `1` suivi d'un point ou d'une virgule n'en est pas un : son
+    // pied est sur la ligne, et le point part de la ligne, sans écart.
+    if (_debout(h) && _presqueDroit(t) && h.height >= 0.6 * hauteur) {
+      final point = prendre(
+        (c) =>
+            (c.center.dx - h.center.dx).abs() <= 0.2 * h.height &&
+            c.top >= h.bottom - 0.02 * h.height &&
+            c.top - h.bottom <= 0.7 * h.height &&
+            (c.top > h.bottom + 0.1 * h.height ||
+                (base != null && h.bottom < base - 0.08 * hauteur)),
+        sauf: {g},
+      );
+      if (point != null) fondre(g, [point], '!');
+      continue;
+    }
+    // `÷` : il faut les deux points, sinon c'est un `-`.
+    if (_plat(h) && _presqueDroit(t)) {
+      bool dedans(Rect c) =>
+          c.center.dx >= h.left - 0.1 * h.width &&
+          c.center.dx <= h.right + 0.1 * h.width;
+      final restesAvant = restes.toList();
+      final glyphesAvant = glyphes.toList();
+      final dessus = prendre(
+        (c) =>
+            dedans(c) &&
+            c.bottom <= h.top + 0.05 * hauteur &&
+            h.top - c.bottom <= 0.6 * hauteur,
+        sauf: {g},
+      );
+      final dessous = dessus == null
+          ? null
+          : prendre(
+              (c) =>
+                  dedans(c) &&
+                  c.top >= h.bottom - 0.05 * hauteur &&
+                  c.top - h.bottom <= 0.6 * hauteur,
+              sauf: {g},
+            );
+      if (dessus != null && dessous != null) {
+        fondre(g, [dessus, dessous], r'\div');
+      } else {
+        restes
+          ..clear()
+          ..addAll(restesAvant);
+        glyphes
+          ..clear()
+          ..addAll(glyphesAvant);
+      }
+      continue;
+    }
+    // `;` : une virgule qui descend sous la ligne, son point dessus. Un `i`
+    // reste sur la ligne.
+    if (base != null &&
+        h.height < 0.7 * hauteur &&
+        h.width < 0.5 * hauteur &&
+        h.bottom > base + 0.05 * hauteur &&
+        h.top > base - 0.5 * hauteur) {
+      final point = prendre(
+        (c) =>
+            (c.center.dx - h.center.dx).abs() <= 0.3 * hauteur &&
+            c.bottom <= h.top + 0.1 * hauteur &&
+            h.top - c.bottom <= 0.6 * hauteur,
+        sauf: {g},
+      );
+      if (point != null) fondre(g, [point], ';');
+    }
+  }
+  // `:` : deux points l'un sur l'autre, entre deux signes.
+  final points = [
+    for (final g in glyphes)
+      // Un point est rond : pas le trait court d'un petit `=`.
+      if (g.traits.length == 1 &&
+          g.aPoints == null &&
+          math.max(g.cadre.width, g.cadre.height) <= 0.3 * hauteur &&
+          !(_plat(g.cadre) && g.cadre.width > 0.2 * hauteur))
+        (g.traits, g.cadre),
+    for (final m in restes) ([m], _c(m)),
+  ];
+  for (final (haut, ch) in points) {
+    for (final (bas, cb) in points) {
+      if (identical(haut, bas) ||
+          (ch.center.dx - cb.center.dx).abs() > 0.25 * hauteur ||
+          ch.bottom >= cb.top ||
+          cb.top - ch.bottom > 0.8 * hauteur) {
+        continue;
+      }
+      final x = (ch.center.dx + cb.center.dx) / 2;
+      final avant = glyphes.where((g) => g.cadre.right < x - 0.05 * hauteur);
+      final apres = glyphes.where((g) => g.cadre.left > x + 0.05 * hauteur);
+      if (avant.isEmpty || apres.isEmpty) continue;
+      // Retirer les deux points, puis placer `:` entre ses voisins.
+      for (final traits in [haut, bas]) {
+        glyphes.removeWhere((g) => identical(g.traits, traits));
+        restes.removeWhere(traits.contains);
+      }
+      final deux = _Glyphe([...haut, ...bas], aPoints: r'\div');
+      final rang = glyphes.indexWhere((g) => g.cadre.left > x);
+      glyphes.insert(rang < 0 ? glyphes.length : rang, deux);
+      return _signesAPoints(glyphes, restes, hauteur);
+    }
+  }
+  return restes;
+}
+
 /// Ce que le tracé seul dit de [g] ; `false` s'il ne ressemble à rien.
 bool _classer(_Glyphe g, double hauteur) {
   if (g.mot) return true;
+  if (g.aPoints != null) {
+    g.signe = g.aPoints;
+    return true;
+  }
   final c = g.cadre;
   if (g.miette || math.max(c.width, c.height) < 0.25 * hauteur) {
     g.petit = true;
@@ -1268,7 +1445,8 @@ bool _simple(Trait t) {
   return tours <= 1;
 }
 
-bool _operateur(String s) => const {'+', '-', '=', r'\times'}.contains(s);
+bool _operateur(String s) =>
+    const {'+', '-', '=', r'\times', r'\div'}.contains(s);
 
 Rect _c(Trait t) => cadreDuGroupe([t]);
 
