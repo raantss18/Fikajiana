@@ -4,6 +4,8 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Une équation écrite d'un trait, comme `x² − 1 = 9`, n'est plus coupée en deux calculs quand on marque un temps après le `=` : ce qui suit aussitôt le `=` en est le second membre. / An equation written in one go, such as `x² − 1 = 9`, is no longer split into two calculations when you pause after the `=`: what follows right after the `=` is its right-hand side.
+
 ## [1.1.9] — 2026-11-15
 
 ### Message fr

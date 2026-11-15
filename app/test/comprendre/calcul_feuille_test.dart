@@ -483,6 +483,22 @@ void main() {
       expect(calcul.blocs, hasLength(2));
     });
 
+    // `x² − 1 =` lu dès le `=`, puis le `9` : une seule équation (Pad 7
+    // d'Antsa, 2026-11-15 : les deux membres étaient lus séparément).
+    test('le second membre écrit juste après un = le rejoint', () async {
+      lecteur.reponse = 'x^{2}-1=';
+      _trait(encre, 0, 0);
+      calcul.encreChangee();
+      await _attendre();
+      expect(calcul.blocs.single.finitParEgal, isTrue);
+      lecteur.reponse = 'x^{2}-1=9';
+      _trait(encre, 45, 0);
+      calcul.encreChangee();
+      await _attendre();
+      expect(calcul.blocs, hasLength(1));
+      expect(calcul.blocs.single.latex, 'x^{2}-1=9');
+    });
+
     test('un trait qui touche le bloc le fait relire', () async {
       _trait(encre, 0, 0);
       calcul.encreChangee();

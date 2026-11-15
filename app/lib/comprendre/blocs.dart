@@ -145,9 +145,13 @@ Rect cadreDuGroupe(List<Trait> groupe) =>
 /// Ce nouveau [groupe] modifie-t-il un bloc déjà lu ?
 ///
 /// Oui s'il le touche. Oui aussi s'il le continue sur la même ligne, juste à sa
-/// droite, tant que le bloc n'est pas [ferme] par un `=`. Sinon c'est un autre
-/// calcul : le résultat du bloc reste en place.
-bool prolonge(Rect bloc, Rect groupe, {required bool ferme}) {
+/// droite. Un bloc [ferme] par un `=` est lu dès le `=` posé : ce qui s'écrit
+/// aussitôt après, avant la fin de son [resultat] (ou à moins des trois
+/// quarts d'une hauteur de ligne s'il n'en montre pas), en est le second
+/// membre (`x² − 1 =` lu pendant que le stylet allait au `9`, Pad 7
+/// d'Antsa). Plus loin, c'est un autre calcul : le résultat du bloc reste
+/// en place.
+bool prolonge(Rect bloc, Rect groupe, {required bool ferme, Rect? resultat}) {
   final zone = bloc.inflate(_marge);
   if (zone.overlaps(groupe)) {
     // La queue d'un `g` qui descend ne fait pas de la ligne d'en dessous une
@@ -156,14 +160,21 @@ bool prolonge(Rect bloc, Rect groupe, {required bool ferme}) {
     if (commun.height >= 0.5 * groupe.height) return true;
     if (groupe.center.dy <= zone.bottom) return true;
   }
-  if (ferme) return false;
   final milieu = groupe.center.dy;
   final memeLigne = milieu >= bloc.top && milieu <= bloc.bottom;
   final hauteur = bloc.height < _hauteurMinimale
       ? _hauteurMinimale
       : bloc.height;
   final ecart = groupe.left - bloc.right;
-  return memeLigne && ecart >= 0 && ecart <= 1.5 * hauteur;
+  if (!memeLigne || ecart < 0) return false;
+  if (!ferme) return ecart <= 1.5 * hauteur;
+  final aDroite =
+      resultat != null &&
+      resultat.left >= bloc.right - _marge &&
+      resultat.center.dy >= bloc.top &&
+      resultat.center.dy <= bloc.bottom;
+  final limite = aDroite ? resultat.right - bloc.right : 0.75 * hauteur;
+  return ecart <= math.min(limite, 1.5 * hauteur);
 }
 
 /// Ce [groupe] commence le bloc, juste à sa gauche sur la même ligne :
