@@ -359,6 +359,22 @@ void main() {
       expect(calcul.copieDe(derniere)!.map((l) => l.latex), ['2x+3=7', '2x=4']);
     });
 
+    test('une dérivée a ses étapes, avec le nom écrit', () async {
+      await calcul.saisir(r'g(x)=x^{2}\sin(x)', Offset.zero);
+      await calcul.saisir("g'(x)=", const Offset(0, 100));
+      await calcul.saisir("g'(2)=", const Offset(0, 200));
+      await calcul.saisir(
+        r'\frac{d}{dx}\left(x^{3}\right)=',
+        const Offset(0, 300),
+      );
+      final [definition, derivee, enDeux, ddx] = calcul.blocs;
+      expect(calcul.deriveeAEtapes(derivee)?.nom, 'g');
+      expect(calcul.deriveeAEtapes(ddx)?.nom, 'f');
+      expect(calcul.aDesEtapes(derivee), isTrue);
+      expect(calcul.aDesEtapes(enDeux), isFalse);
+      expect(calcul.aDesEtapes(definition), isFalse);
+    });
+
     test('une inéquation a ses étapes, pas un encadrement', () async {
       await calcul.saisir(r'-3x+1\geq 4', Offset.zero);
       await calcul.saisir('1<x<3', const Offset(0, 100));

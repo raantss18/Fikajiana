@@ -7,6 +7,7 @@ import 'package:fikajiana/comprendre/copie.dart';
 import 'package:fikajiana/comprendre/decimale.dart';
 import 'package:fikajiana/comprendre/ecriture_resultat.dart';
 import 'package:fikajiana/comprendre/etapes.dart';
+import 'package:fikajiana/comprendre/etapes_derivee.dart';
 import 'package:fikajiana/comprendre/fraction_ecrite.dart';
 import 'package:fikajiana/comprendre/mots.dart';
 import 'package:fikajiana/comprendre/solutions.dart';
@@ -2054,9 +2055,34 @@ class CalculFeuille extends ChangeNotifier {
     return lireInequation(analyse.giac, x);
   }
 
-  /// Vrai si [bloc] a des étapes à montrer : équation ou inéquation.
+  /// La dérivée de [bloc] dont on sait écrire les étapes : `f'(x)=` sous
+  /// une fonction définie, ou `\frac{d}{dx}(…)` ; le nom écrit (`f`).
+  ({String corps, String x, String nom})? deriveeAEtapes(BlocCalcul bloc) {
+    final latex = bloc.latex;
+    if (latex == null || bloc.objet != null || bloc.commande != null) {
+      return null;
+    }
+    final Analyse analyse;
+    try {
+      analyse = analyserPour(bloc, latex);
+    } on Object {
+      return null; // Comme pour les équations : une ligne mal lue.
+    }
+    if (analyse.type != TypeExpression.calcul) return null;
+    final d = lireDerivee(analyse.giac);
+    if (d == null) return null;
+    final nom =
+        RegExp(r"^\s*([a-zA-Z])\s*(?:'|\^\s*\{?\s*\\prime)")
+            .firstMatch(latex)?[1] ??
+        'f';
+    return (corps: d.corps, x: d.x, nom: nom);
+  }
+
+  /// Vrai si [bloc] a des étapes à montrer : équation, inéquation, dérivée.
   bool aDesEtapes(BlocCalcul bloc) =>
-      equationAEtapes(bloc) != null || inequationAEtapes(bloc) != null;
+      equationAEtapes(bloc) != null ||
+      inequationAEtapes(bloc) != null ||
+      deriveeAEtapes(bloc) != null;
 
   /// Les étapes de la résolution de [bloc], ou `null` s'il n'y en a pas
   /// (degré 3 et plus, coefficients littéraux).
@@ -2073,6 +2099,10 @@ class CalculFeuille extends ChangeNotifier {
         x: e.x,
         ou: ou,
       );
+    }
+    final d = deriveeAEtapes(bloc);
+    if (d != null) {
+      return etapesDerivee(moteur, corps: d.corps, x: d.x, nom: d.nom);
     }
     final i = inequationAEtapes(bloc);
     if (i == null) return Future.value();

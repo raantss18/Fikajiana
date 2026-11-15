@@ -54,6 +54,30 @@ enum RaisonEtape {
 
   /// Le trinôme a le signe de a hors des racines, l'autre entre elles.
   signeTrinome,
+
+  /// Dérivée : la fonction à dériver.
+  deriveeDepart,
+
+  /// Une formule du cours appliquée directement (xⁿ, sin x, eˣ…).
+  usuelle,
+
+  /// La dérivée d'une somme est la somme des dérivées.
+  somme,
+
+  /// Un nombre fois u : (ku)' = ku'.
+  nombreFois,
+
+  /// On nomme les morceaux : u, et v.
+  poser,
+
+  /// On dérive les morceaux.
+  deriverMorceaux,
+
+  /// La formule du cours utilisée (produit, quotient, composée…).
+  formule,
+
+  /// On remplace dans la formule.
+  remplacer,
 }
 
 /// Une ligne de la résolution, et sa raison.
@@ -69,6 +93,9 @@ class Etape {
 
 /// Le calcul de Giac écrit comme au tableau : `-5` et `2x`, pas
 /// `\mathrm{-5}` ni `2\cdot x`. `null` si Giac échoue.
+Future<ReponseGiac?> giacAuTableau(Moteur moteur, String entree) =>
+    _giac(moteur, entree);
+
 Future<ReponseGiac?> _giac(Moteur moteur, String entree) async {
   final r = await moteur.calculer(entree);
   if (r.arrete || r.erreur != null || r.exact.trim().isEmpty) return null;
@@ -77,8 +104,46 @@ Future<ReponseGiac?> _giac(Moteur moteur, String entree) async {
       .replaceAllMapped(
         RegExp(r'(\d|\}) ?\\cdot ([a-zA-Z])'),
         (m) => '${m[1]}${m[2]}',
+      )
+      // `2\cdot \sin`, `x^{2}\cdot e^{x}` : `2\sin`, `x^{2}e^{x}`.
+      .replaceAllMapped(
+        RegExp(r'([\da-zA-Z}]) ?\\cdot (\\(?:sin|cos|tan|ln|sqrt|left)|e\^)'),
+        (m) => '${m[1]}${m[1]!.contains(RegExp('[a-zA-Z]')) ? ' ' : ''}${m[2]}',
       );
-  return ReponseGiac(exact: r.exact, latex: latex, approche: r.approche);
+  return ReponseGiac(
+    exact: r.exact,
+    latex: _sansParenthesesSeules(latex),
+    approche: r.approche,
+  );
+}
+
+/// `\frac{(x+1)}{(x-1)}` : `\frac{x+1}{x-1}`. Les parenthèses qui occupent
+/// tout un groupe `{…}` ne servent à rien.
+String _sansParenthesesSeules(String latex) {
+  final s = StringBuffer();
+  var i = 0;
+  while (i < latex.length) {
+    if (latex.startsWith('{(', i)) {
+      var profondeur = 0;
+      var fin = -1;
+      for (var j = i + 1; j < latex.length; j++) {
+        if (latex[j] == '(') profondeur++;
+        if (latex[j] == ')') profondeur--;
+        if (profondeur == 0) {
+          fin = j;
+          break;
+        }
+      }
+      if (fin > 0 && fin + 1 < latex.length && latex[fin + 1] == '}') {
+        s.write('{${_sansParenthesesSeules(latex.substring(i + 2, fin))}}');
+        i = fin + 2;
+        continue;
+      }
+    }
+    s.write(latex[i]);
+    i++;
+  }
+  return s.toString();
 }
 
 /// Le degré de `p` en [x] (1 ou 2) et ses coefficients numériques, du plus

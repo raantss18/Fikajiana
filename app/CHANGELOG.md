@@ -4,6 +4,10 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Au clavier, f'(x)= se tape comme à la main. / With the keyboard, f'(x)= can be typed as by hand.
+
+- Étapes des dérivées : la forme reconnue (somme, produit, quotient, puissance, sin, cos, exp, ln de u), u et v dérivés, la formule du cours, puis le résultat simplifié. / Steps for derivatives: the recognised form (sum, product, quotient, power, sin, cos, exp, ln of u), u and v differentiated, the formula, then the simplified result.
+
 ## [1.1.6] — 2026-11-15
 
 ### Message fr
