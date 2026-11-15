@@ -150,6 +150,49 @@ void main() {
     });
   });
 
+  group('factorielle : le point ne fait pas baisser la ligne', () {
+    // Les traits de l'essai au Pad 7 (1.2.1, 2026-11-15), en pixels
+    // physiques (densité 2,75) : un `3` en deux traits et le crochet du `!`
+    // faisaient baisser la hauteur de la ligne ; le crochet, jugé trop gros
+    // pour un point, était lu virgule : `373{,}1=`.
+    Trait pad(List<(double, double)> p, {int n = 4}) => Trait.depuisDocument({
+      'auStylet': true,
+      'points': [
+        for (var k = 0; k + 1 < p.length; k++)
+          for (var i = 0; i < n; i++)
+            [
+              (p[k].$1 + (p[k + 1].$1 - p[k].$1) * i / n) / 2.75,
+              (p[k].$2 + (p[k + 1].$2 - p[k].$2) * i / n) / 2.75,
+              0.3,
+            ],
+        [p.last.$1 / 2.75, p.last.$2 / 2.75, 0.3],
+      ],
+    });
+    test('53!= au Pad 7 : `!`, jamais une virgule', () {
+      final lecture = lireAuTraceDetaille(indulgent: true, [
+        pad([
+          (900, 600),
+          (830, 600),
+          (820, 700),
+          (880, 690),
+          (915, 740),
+          (900, 800),
+          (825, 810),
+        ]),
+        pad([(985, 615), (1055, 605), (1050, 670), (1005, 700)]),
+        pad([(1005, 700), (1068, 735), (1058, 800), (985, 812)]),
+        pad([(1150, 600), (1152, 760)]),
+        pad([(1130, 855), (1156, 832), (1148, 885)], n: 3),
+        pad([(1230, 690), (1330, 690)]),
+        pad([(1230, 745), (1330, 745)]),
+      ]);
+      // Les chiffres simulés, raides, ne se lisent pas toujours bien ; le
+      // `!` doit l'être.
+      expect(lecture?.latex, endsWith('!='));
+      expect(lecture?.latex, isNot(contains(',')));
+    });
+  });
+
   group('autres signes faits de points (ADR 0071)', () {
     // `3`, `0` et `8` de `30×8` (Pad 7), sans le `×`.
     List<Trait> avec(List<Trait> milieu) {

@@ -11,5 +11,5 @@
 - **Garde-fous** : un `1` suivi d'un point ou d'une virgule n'est pas un `!` (le `!` s'arrête au-dessus de la ligne, ou son point
   s'en écarte) ; un plat sans ses deux points reste `-` ; un trait court de `=` n'est pas un point. `30;8` ne se calcule pas :
   la ligne va au modèle au lieu d'être lue `30,8`.
-- **Élargi** (capture d'Antsa au téléphone, 2026-11-15) : au doigt, le point du `!` peut faire deux petits traits et tomber jusqu'à une hampe sous elle, un peu de côté (0,3 hampe).
+- **Élargi** (2026-11-15) : point du `!` en deux petits traits, jusqu'à une hampe dessous, 0,3 de côté, mesuré à sa hampe ; les points ne comptent plus dans la hauteur de la ligne (essai Pad 7 : `373,1`).
 - **Vérifié** : tests sur le tracé réel `30×8` du Pad 7 (`trace_ligne_test`), par la CI. **Reste à tester** : au stylet sur le Pad 7.

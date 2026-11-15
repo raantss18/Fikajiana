@@ -415,9 +415,17 @@ String? _ligne(List<Trait> nets, List<Trait> touchers, int minimum) {
     for (final (g, arcs) in _fondreArcs(_grouper(nets))) _Glyphe(g, arcs: arcs),
   ];
   if (glyphes.length < minimum) return null;
-  final hauteurs = [
+  final debout = [
     for (final g in glyphes)
       if (g.cadre.height > 0.5 * g.cadre.width) g.cadre.height,
+  ];
+  // Un point (celui d'un `!`, d'un `÷`) ne compte pas : il ferait baisser la
+  // hauteur de la ligne, et un vrai point paraîtrait trop gros (`53!=` lu
+  // `373,1`, Pad 7, 2026-11-15). Les exposants, plus grands, comptent.
+  final grand = debout.fold<double>(0, math.max);
+  final hauteurs = [
+    for (final h in debout)
+      if (h >= 0.35 * grand) h,
   ]..sort();
   if (hauteurs.isEmpty) {
     // Que des plats : un `-` ou un `=` seul.
@@ -508,14 +516,23 @@ List<Trait> _signesAPoints(
 
   /// Un point qui vérifie [ou], petit trait de la ligne ou toucher ; il est
   /// retiré de la ligne ou des touchers.
-  List<Trait>? prendre(bool Function(Rect) ou, {Set<_Glyphe> sauf = const {}}) {
+  ///
+  /// [taille] : la plus grande taille d'un point ; par défaut, celle d'un
+  /// petit signe de la ligne.
+  List<Trait>? prendre(
+    bool Function(Rect) ou, {
+    Set<_Glyphe> sauf = const {},
+    double? taille,
+  }) {
     for (final g in glyphes) {
       // Au doigt, un point se fait parfois en deux petits traits.
       if (sauf.contains(g) || g.traits.length > 2 || g.aPoints != null) {
         continue;
       }
       final c = g.cadre;
-      if (math.max(c.width, c.height) > 0.35 * hauteur || !ou(c)) continue;
+      if (math.max(c.width, c.height) > (taille ?? 0.35 * hauteur) || !ou(c)) {
+        continue;
+      }
       glyphes.remove(g);
       return g.traits;
     }
@@ -552,6 +569,10 @@ List<Trait> _signesAPoints(
             (c.top > h.bottom + 0.1 * h.height ||
                 (base != null && h.bottom < base - 0.08 * hauteur)),
         sauf: {g},
+        // Le point se mesure à sa hampe : la hauteur de la ligne baisse
+        // quand un signe est fait de morceaux, ou à cause du point lui-même
+        // (`53!=` lu `373,1`, Pad 7, 2026-11-15).
+        taille: 0.4 * math.max(h.height, hauteur),
       );
       if (point != null) fondre(g, [point], '!');
       continue;
