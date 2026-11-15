@@ -359,6 +359,21 @@ void main() {
       expect(calcul.copieDe(derniere)!.map((l) => l.latex), ['2x+3=7', '2x=4']);
     });
 
+    test('un système de deux équations a ses étapes', () async {
+      await calcul.saisir(
+        r'\begin{cases}2x+y=5\\x-y=1\end{cases}',
+        Offset.zero,
+      );
+      await calcul.saisir(
+        r'\begin{cases}x+y+z=6\\x-y=0\\z=3\end{cases}',
+        const Offset(0, 100),
+      );
+      final [deux, trois] = calcul.blocs;
+      expect(calcul.systemeAEtapes(deux)?.x, 'x');
+      expect(calcul.aDesEtapes(deux), isTrue);
+      expect(calcul.aDesEtapes(trois), isFalse);
+    });
+
     test('une dérivée a ses étapes, avec le nom écrit', () async {
       await calcul.saisir(r'g(x)=x^{2}\sin(x)', Offset.zero);
       await calcul.saisir("g'(x)=", const Offset(0, 100));

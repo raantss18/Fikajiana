@@ -78,6 +78,33 @@ enum RaisonEtape {
 
   /// On remplace dans la formule.
   remplacer,
+
+  /// Système : tel qu'il est écrit.
+  departSysteme,
+
+  /// Chaque ligne écrite a·x + b·y = c.
+  reduireSysteme,
+
+  /// Une ligne n'a qu'une inconnue : on la résout d'abord.
+  uneSeuleInconnue,
+
+  /// On isole l'inconnue de coefficient 1 ou −1.
+  isolerSysteme,
+
+  /// On la remplace dans l'autre ligne.
+  substituer,
+
+  /// Il ne reste qu'une inconnue : on développe et on réduit.
+  reduireUne,
+
+  /// On résout l'équation à une inconnue.
+  resoudreUne,
+
+  /// On multiplie et on soustrait les lignes : une inconnue disparaît.
+  combiner,
+
+  /// On remplace la valeur trouvée pour avoir l'autre inconnue.
+  remonter,
 }
 
 /// Une ligne de la résolution, et sa raison.

@@ -8,6 +8,7 @@ import 'package:fikajiana/comprendre/decimale.dart';
 import 'package:fikajiana/comprendre/ecriture_resultat.dart';
 import 'package:fikajiana/comprendre/etapes.dart';
 import 'package:fikajiana/comprendre/etapes_derivee.dart';
+import 'package:fikajiana/comprendre/etapes_systeme.dart';
 import 'package:fikajiana/comprendre/fraction_ecrite.dart';
 import 'package:fikajiana/comprendre/mots.dart';
 import 'package:fikajiana/comprendre/solutions.dart';
@@ -2078,11 +2079,31 @@ class CalculFeuille extends ChangeNotifier {
     return (corps: d.corps, x: d.x, nom: nom);
   }
 
-  /// Vrai si [bloc] a des étapes à montrer : équation, inéquation, dérivée.
+  /// Le système de deux équations à deux inconnues de [bloc].
+  ({List<(String, String)> equations, String x, String y})? systemeAEtapes(
+    BlocCalcul bloc,
+  ) {
+    final latex = bloc.latex;
+    if (latex == null || bloc.objet != null || bloc.commande != null) {
+      return null;
+    }
+    final Analyse analyse;
+    try {
+      analyse = analyserPour(bloc, latex);
+    } on Object {
+      return null; // Comme pour les équations : une ligne mal lue.
+    }
+    if (analyse.type != TypeExpression.systeme) return null;
+    return lireSysteme(analyse.giac);
+  }
+
+  /// Vrai si [bloc] a des étapes à montrer : équation, inéquation, dérivée,
+  /// système.
   bool aDesEtapes(BlocCalcul bloc) =>
       equationAEtapes(bloc) != null ||
       inequationAEtapes(bloc) != null ||
-      deriveeAEtapes(bloc) != null;
+      deriveeAEtapes(bloc) != null ||
+      systemeAEtapes(bloc) != null;
 
   /// Les étapes de la résolution de [bloc], ou `null` s'il n'y en a pas
   /// (degré 3 et plus, coefficients littéraux).
@@ -2098,6 +2119,16 @@ class CalculFeuille extends ChangeNotifier {
         droite: e.droite,
         x: e.x,
         ou: ou,
+      );
+    }
+    final systeme = systemeAEtapes(bloc);
+    if (systeme != null) {
+      return etapesSysteme(
+        moteur,
+        ecrit: ecrit!,
+        equations: systeme.equations,
+        x: systeme.x,
+        y: systeme.y,
       );
     }
     final d = deriveeAEtapes(bloc);

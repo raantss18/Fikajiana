@@ -6,6 +6,7 @@ import 'dart:ui';
 import 'package:fikajiana/comprendre/ecriture_resultat.dart';
 import 'package:fikajiana/comprendre/etapes.dart';
 import 'package:fikajiana/comprendre/etapes_derivee.dart';
+import 'package:fikajiana/comprendre/etapes_systeme.dart';
 import 'package:fikajiana/moteur/giac.dart';
 import 'package:fikajiana/moteur/moteur.dart';
 import 'package:fikajiana_math/fikajiana_math.dart';
@@ -364,6 +365,109 @@ void main() {
       expect(lireDerivee('normal(diff(x^2,x))'), (corps: 'x^2', x: 'x'));
       expect(lireDerivee('subst(diff(x^2,x),x=2)'), isNull);
       expect(lireDerivee('diff(x^2,x,2)'), isNull);
+    });
+  });
+
+  group('systèmes', () {
+    Future<List<String>?> systeme(String l1, String l2) async {
+      final latex = '\\begin{cases}$l1\\\\$l2\\end{cases}';
+      final s = lireSysteme(analyserLatex(latex).giac)!;
+      final etapes = await etapesSysteme(
+        _GiacEnregistre(),
+        ecrit: latex,
+        equations: s.equations,
+        x: s.x,
+        y: s.y,
+      );
+      return etapes?.map((e) => e.toString()).toList();
+    }
+
+    test('substitution : isoler, remplacer, réduire, remonter', () async {
+      expect((await systeme('2x+y=5', 'x-y=1'))!.skip(1), [
+        r'isolerSysteme : E_{1}:\ y=-2x+5',
+        r'substituer : E_{2}:\ x-\left(-2x+5\right)=1',
+        'reduireUne : 3x-5=1',
+        'resoudreUne : x=2',
+        r'remonter : y=-2\cdot \left(2\right)+5=1',
+        r'conclusion : S=\left\{\left(2;1\right)\right\}',
+      ]);
+    });
+
+    test('combinaison : x disparaît entre E₁ et E₂', () async {
+      expect((await systeme('3x+2y=12', '5x-3y=1'))!.skip(1), [
+        r'combiner : 5E_{1}-3E_{2}:\ 19y=57',
+        'resoudreUne : y=3',
+        r'remonter : E_{1}:\ 3x+2\cdot \left(3\right)=12',
+        'resoudreUne : x=2',
+        r'conclusion : S=\left\{\left(2;3\right)\right\}',
+      ]);
+      // Coefficients 4 et 6 : on multiplie par 3 et 2, pas par 6 et 4.
+      expect(
+        await systeme('4x+6y=10', '6x-4y=2'),
+        contains(r'combiner : 3E_{1}-2E_{2}:\ 26y=26'),
+      );
+    });
+
+    // Valeurs de référence : résolues à la main (formules de Cramer) et
+    // égales à ce que rend solve de Giac.
+    test('chaque méthode donne la solution', () async {
+      final solutions = {
+        ('2x=6', 'x+3y=9'): r'S=\left\{\left(3;2\right)\right\}',
+        ('4x+6y=10', '6x-4y=2'): r'S=\left\{\left(1;1\right)\right\}',
+        ('2x+3y=7', '2x-y=-1'): r'S=\left\{\left(\frac{1}{2};2\right)\right\}',
+        (r'\frac{x}{2}+y=3', 'x-y=0'): r'S=\left\{\left(2;2\right)\right\}',
+      };
+      for (final MapEntry(key: (l1, l2), :value) in solutions.entries) {
+        expect(
+          (await systeme(l1, l2))!.last,
+          'conclusion : $value',
+          reason: '$l1 ; $l2',
+        );
+      }
+    });
+
+    test(
+      'déjà réduit : pas de ligne répétée ; sinon, la forme réduite',
+      () async {
+        expect(
+          (await systeme('2x+y=5', 'x-y=1'))!.map((e) => e.split(' : ')[0]),
+          isNot(contains('reduireSysteme')),
+        );
+        expect(
+          await systeme(r'\frac{x}{2}+y=3', 'x-y=0'),
+          contains(
+            r'reduireSysteme : \begin{cases}\frac{1}{2}x+y=3\\x-y=0\end{cases}',
+          ),
+        );
+      },
+    );
+
+    test('chaque ligne s’écrit à la main', () async {
+      for (final (l1, l2) in [
+        ('2x+y=5', 'x-y=1'),
+        ('3x+2y=12', '5x-3y=1'),
+        ('2x=6', 'x+3y=9'),
+        ('2x+3y=7', '2x-y=-1'),
+        (r'\frac{x}{2}+y=3', 'x-y=0'),
+      ]) {
+        for (final e in (await systeme(l1, l2))!) {
+          expect(
+            ecrireResultat(
+              e.split(' : ').skip(1).join(' : '),
+              const Rect.fromLTWH(0, 0, 40, 40),
+            ),
+            isNotNull,
+            reason: e,
+          );
+        }
+      }
+    });
+
+    test('rien sans solution unique ni pour un système non linéaire', () async {
+      expect(await systeme('x+y=3', '2x+2y=6'), isNull);
+      expect(await systeme('x^{2}+y=1', 'x-y=0'), isNull);
+      expect(lireSysteme('solve([x+y=3,x-y=1,z=2],[x,y,z])'), isNull);
+      expect(lireSysteme('solve([x+y<3,x-y=1],[x,y])'), isNull);
     });
   });
 }

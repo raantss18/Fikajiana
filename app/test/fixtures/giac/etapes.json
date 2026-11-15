@@ -1318,5 +1318,640 @@
   "exact": "'tan'",
   "latex": "\\tan",
   "approche": ""
+ },
+ "degree(expand((2*x+y)-(5)),x)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "degree(expand((2*x+y)-(5)),y)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(coeff(expand((2*x+y)-(5)),x,1),y,1)": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "coeff(expand((2*x+y)-(5)),x,1)": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "coeff(expand((2*x+y)-(5)),y,1)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "-subst(expand((2*x+y)-(5)),[x,y],[0,0])": {
+  "exact": "5",
+  "latex": "5",
+  "approche": "5.0"
+ },
+ "degree(expand((x-y)-(1)),x)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "degree(expand((x-y)-(1)),y)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(coeff(expand((x-y)-(1)),x,1),y,1)": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "coeff(expand((x-y)-(1)),x,1)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(expand((x-y)-(1)),y,1)": {
+  "exact": "-1",
+  "latex": "\\mathrm{-1}",
+  "approche": "-1.0"
+ },
+ "-subst(expand((x-y)-(1)),[x,y],[0,0])": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "(2)*(-1)-(1)*(1)": {
+  "exact": "-3",
+  "latex": "\\mathrm{-3}",
+  "approche": "-3.0"
+ },
+ "expand(((5)-(2)*x)/(1))": {
+  "exact": "-2*x+5",
+  "latex": "-2\\cdot x+5",
+  "approche": ""
+ },
+ "expand((-1)*(-2*x+5)+(1)*x)": {
+  "exact": "3*x-5",
+  "latex": "3\\cdot x-5",
+  "approche": ""
+ },
+ "normal(solve((-1)*(-2*x+5)+(1)*x=1,x)[0])": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "normal(subst(-2*x+5,x=2))": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "degree(expand((3*x+2*y)-(12)),x)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "degree(expand((3*x+2*y)-(12)),y)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(coeff(expand((3*x+2*y)-(12)),x,1),y,1)": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "coeff(expand((3*x+2*y)-(12)),x,1)": {
+  "exact": "3",
+  "latex": "3",
+  "approche": "3.0"
+ },
+ "coeff(expand((3*x+2*y)-(12)),y,1)": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "-subst(expand((3*x+2*y)-(12)),[x,y],[0,0])": {
+  "exact": "12",
+  "latex": "12",
+  "approche": "12.0"
+ },
+ "degree(expand((5*x-3*y)-(1)),x)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "degree(expand((5*x-3*y)-(1)),y)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(coeff(expand((5*x-3*y)-(1)),x,1),y,1)": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "coeff(expand((5*x-3*y)-(1)),x,1)": {
+  "exact": "5",
+  "latex": "5",
+  "approche": "5.0"
+ },
+ "coeff(expand((5*x-3*y)-(1)),y,1)": {
+  "exact": "-3",
+  "latex": "\\mathrm{-3}",
+  "approche": "-3.0"
+ },
+ "-subst(expand((5*x-3*y)-(1)),[x,y],[0,0])": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "(3)*(-3)-(5)*(2)": {
+  "exact": "-19",
+  "latex": "\\mathrm{-19}",
+  "approche": "-19.0"
+ },
+ "gcd(3,5)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "(5)/(1)": {
+  "exact": "5",
+  "latex": "5",
+  "approche": "5.0"
+ },
+ "(3)/(1)": {
+  "exact": "3",
+  "latex": "3",
+  "approche": "3.0"
+ },
+ "(5)*(2)-(3)*(-3)": {
+  "exact": "19",
+  "latex": "19",
+  "approche": "19.0"
+ },
+ "(5)*(12)-(3)*(1)": {
+  "exact": "57",
+  "latex": "57",
+  "approche": "57.0"
+ },
+ "normal((57)/(19))": {
+  "exact": "3",
+  "latex": "3",
+  "approche": "3.0"
+ },
+ "-(3)": {
+  "exact": "-3",
+  "latex": "\\mathrm{-3}",
+  "approche": "-3.0"
+ },
+ "normal(((12)-(2)*(3))/(3))": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "degree(expand((2*x)-(6)),x)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "degree(expand((2*x)-(6)),y)": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "coeff(coeff(expand((2*x)-(6)),x,1),y,1)": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "coeff(expand((2*x)-(6)),x,1)": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "coeff(expand((2*x)-(6)),y,1)": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "-subst(expand((2*x)-(6)),[x,y],[0,0])": {
+  "exact": "6",
+  "latex": "6",
+  "approche": "6.0"
+ },
+ "degree(expand((x+3*y)-(9)),x)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "degree(expand((x+3*y)-(9)),y)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(coeff(expand((x+3*y)-(9)),x,1),y,1)": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "coeff(expand((x+3*y)-(9)),x,1)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(expand((x+3*y)-(9)),y,1)": {
+  "exact": "3",
+  "latex": "3",
+  "approche": "3.0"
+ },
+ "-subst(expand((x+3*y)-(9)),[x,y],[0,0])": {
+  "exact": "9",
+  "latex": "9",
+  "approche": "9.0"
+ },
+ "(2)*(3)-(1)*(0)": {
+  "exact": "6",
+  "latex": "6",
+  "approche": "6.0"
+ },
+ "normal((6)/(2))": {
+  "exact": "3",
+  "latex": "3",
+  "approche": "3.0"
+ },
+ "normal(((9)-(1)*(3))/(3))": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "degree(expand((4*x+6*y)-(10)),x)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "degree(expand((4*x+6*y)-(10)),y)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(coeff(expand((4*x+6*y)-(10)),x,1),y,1)": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "coeff(expand((4*x+6*y)-(10)),x,1)": {
+  "exact": "4",
+  "latex": "4",
+  "approche": "4.0"
+ },
+ "coeff(expand((4*x+6*y)-(10)),y,1)": {
+  "exact": "6",
+  "latex": "6",
+  "approche": "6.0"
+ },
+ "-subst(expand((4*x+6*y)-(10)),[x,y],[0,0])": {
+  "exact": "10",
+  "latex": "10",
+  "approche": "10.0"
+ },
+ "degree(expand((6*x-4*y)-(2)),x)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "degree(expand((6*x-4*y)-(2)),y)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(coeff(expand((6*x-4*y)-(2)),x,1),y,1)": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "coeff(expand((6*x-4*y)-(2)),x,1)": {
+  "exact": "6",
+  "latex": "6",
+  "approche": "6.0"
+ },
+ "coeff(expand((6*x-4*y)-(2)),y,1)": {
+  "exact": "-4",
+  "latex": "\\mathrm{-4}",
+  "approche": "-4.0"
+ },
+ "-subst(expand((6*x-4*y)-(2)),[x,y],[0,0])": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "(4)*(-4)-(6)*(6)": {
+  "exact": "-52",
+  "latex": "\\mathrm{-52}",
+  "approche": "-52.0"
+ },
+ "gcd(4,6)": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "(6)/(2)": {
+  "exact": "3",
+  "latex": "3",
+  "approche": "3.0"
+ },
+ "(4)/(2)": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "(3)*(6)-(2)*(-4)": {
+  "exact": "26",
+  "latex": "26",
+  "approche": "26.0"
+ },
+ "(3)*(10)-(2)*(2)": {
+  "exact": "26",
+  "latex": "26",
+  "approche": "26.0"
+ },
+ "normal((26)/(26))": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "-(2)": {
+  "exact": "-2",
+  "latex": "\\mathrm{-2}",
+  "approche": "-2.0"
+ },
+ "normal(((10)-(6)*(1))/(4))": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "degree(expand((2*x+3*y)-(7)),x)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "degree(expand((2*x+3*y)-(7)),y)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(coeff(expand((2*x+3*y)-(7)),x,1),y,1)": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "coeff(expand((2*x+3*y)-(7)),x,1)": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "coeff(expand((2*x+3*y)-(7)),y,1)": {
+  "exact": "3",
+  "latex": "3",
+  "approche": "3.0"
+ },
+ "-subst(expand((2*x+3*y)-(7)),[x,y],[0,0])": {
+  "exact": "7",
+  "latex": "7",
+  "approche": "7.0"
+ },
+ "degree(expand((2*x-y)-((-1))),x)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "degree(expand((2*x-y)-((-1))),y)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(coeff(expand((2*x-y)-((-1))),x,1),y,1)": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "coeff(expand((2*x-y)-((-1))),x,1)": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "coeff(expand((2*x-y)-((-1))),y,1)": {
+  "exact": "-1",
+  "latex": "\\mathrm{-1}",
+  "approche": "-1.0"
+ },
+ "-subst(expand((2*x-y)-((-1))),[x,y],[0,0])": {
+  "exact": "-1",
+  "latex": "\\mathrm{-1}",
+  "approche": "-1.0"
+ },
+ "(2)*(-1)-(2)*(3)": {
+  "exact": "-8",
+  "latex": "\\mathrm{-8}",
+  "approche": "-8.0"
+ },
+ "expand(((-1)-(2)*x)/(-1))": {
+  "exact": "2*x+1",
+  "latex": "2\\cdot x+1",
+  "approche": ""
+ },
+ "expand((3)*(2*x+1)+(2)*x)": {
+  "exact": "8*x+3",
+  "latex": "8\\cdot x+3",
+  "approche": ""
+ },
+ "normal(solve((3)*(2*x+1)+(2)*x=7,x)[0])": {
+  "exact": "1/2",
+  "latex": "\\frac{1}{2}",
+  "approche": "0.5"
+ },
+ "normal(subst(2*x+1,x=1/2))": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "degree(expand(((x)/(2)+y)-(3)),x)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "degree(expand(((x)/(2)+y)-(3)),y)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(coeff(expand(((x)/(2)+y)-(3)),x,1),y,1)": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "coeff(expand(((x)/(2)+y)-(3)),x,1)": {
+  "exact": "1/2",
+  "latex": "\\frac{1}{2}",
+  "approche": "0.5"
+ },
+ "coeff(expand(((x)/(2)+y)-(3)),y,1)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "-subst(expand(((x)/(2)+y)-(3)),[x,y],[0,0])": {
+  "exact": "3",
+  "latex": "3",
+  "approche": "3.0"
+ },
+ "degree(expand((x-y)-(0)),x)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "degree(expand((x-y)-(0)),y)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(coeff(expand((x-y)-(0)),x,1),y,1)": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "coeff(expand((x-y)-(0)),x,1)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(expand((x-y)-(0)),y,1)": {
+  "exact": "-1",
+  "latex": "\\mathrm{-1}",
+  "approche": "-1.0"
+ },
+ "-subst(expand((x-y)-(0)),[x,y],[0,0])": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "(1/2)*(-1)-(1)*(1)": {
+  "exact": "-3/2",
+  "latex": "\\frac{\\mathrm{-3}}{2}",
+  "approche": "-1.5"
+ },
+ "expand(((3)-(1/2)*x)/(1))": {
+  "exact": "-1/2*x+3",
+  "latex": "-\\frac{1}{2} \\cdot x+3",
+  "approche": ""
+ },
+ "expand((-1)*(-1/2*x+3)+(1)*x)": {
+  "exact": "3/2*x-3",
+  "latex": "\\frac{3}{2} \\cdot x-3",
+  "approche": ""
+ },
+ "normal(solve((-1)*(-1/2*x+3)+(1)*x=0,x)[0])": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "normal(subst(-1/2*x+3,x=2))": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "degree(expand((x+y)-(3)),x)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "degree(expand((x+y)-(3)),y)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(coeff(expand((x+y)-(3)),x,1),y,1)": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "coeff(expand((x+y)-(3)),x,1)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(expand((x+y)-(3)),y,1)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "-subst(expand((x+y)-(3)),[x,y],[0,0])": {
+  "exact": "3",
+  "latex": "3",
+  "approche": "3.0"
+ },
+ "degree(expand((2*x+2*y)-(6)),x)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "degree(expand((2*x+2*y)-(6)),y)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(coeff(expand((2*x+2*y)-(6)),x,1),y,1)": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "coeff(expand((2*x+2*y)-(6)),x,1)": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "coeff(expand((2*x+2*y)-(6)),y,1)": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "-subst(expand((2*x+2*y)-(6)),[x,y],[0,0])": {
+  "exact": "6",
+  "latex": "6",
+  "approche": "6.0"
+ },
+ "(1)*(2)-(2)*(1)": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "degree(expand(((x)^(2)+y)-(1)),x)": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "degree(expand(((x)^(2)+y)-(1)),y)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(coeff(expand(((x)^(2)+y)-(1)),x,1),y,1)": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "coeff(expand(((x)^(2)+y)-(1)),x,1)": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "coeff(expand(((x)^(2)+y)-(1)),y,1)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "-subst(expand(((x)^(2)+y)-(1)),[x,y],[0,0])": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
  }
 }
