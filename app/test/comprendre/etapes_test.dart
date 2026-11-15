@@ -5,6 +5,7 @@ import 'dart:ui';
 
 import 'package:fikajiana/comprendre/ecriture_resultat.dart';
 import 'package:fikajiana/comprendre/etapes.dart';
+import 'package:fikajiana/comprendre/etapes_derivee.dart';
 import 'package:fikajiana/moteur/giac.dart';
 import 'package:fikajiana/moteur/moteur.dart';
 import 'package:fikajiana_math/fikajiana_math.dart';
@@ -258,6 +259,111 @@ void main() {
       expect(lireInequation('solve(1<x<3,x)', 'x'), isNull);
       expect(lireInequation('solve(x^2=4,x)', 'x'), isNull);
       expect(lireInequation('solve(x<=2,x)', 'x')?.sens, Sens.inferieurOuEgal);
+    });
+  });
+
+  group('dérivées', () {
+    Future<List<String>?> derivee(String latex) async {
+      final a = analyserLatex('\\frac{d}{dx}\\left($latex\\right)=');
+      final d = lireDerivee(a.giac)!;
+      final etapes = await etapesDerivee(
+        _GiacEnregistre(),
+        corps: d.corps,
+        x: d.x,
+      );
+      return etapes?.map((e) => e.toString()).toList();
+    }
+
+    test("produit : u, v, u', v', la formule, puis on simplifie", () async {
+      expect(await derivee(r'x^{2}\sin(x)'), [
+        r'deriveeDepart : f(x)=x^{2} \sin\left(x\right)',
+        r'poser : u(x)=x^{2},\ v(x)=\sin\left(x\right)',
+        r"deriverMorceaux : u'(x)=2x,\ v'(x)=\cos\left(x\right)",
+        "formule : (uv)'=u'v+uv'",
+        r"remplacer : f'(x)=2x\cdot \sin\left(x\right)+x^{2}\cdot \cos\left(x\right)",
+        r"conclusion : f'(x)=x^{2} \cos\left(x\right)+2x \sin\left(x\right)",
+      ]);
+    });
+
+    test('quotient', () async {
+      expect(await derivee(r'\frac{x+1}{x-1}'), [
+        r'deriveeDepart : f(x)=\frac{x+1}{x-1}',
+        r'poser : u(x)=x+1,\ v(x)=x-1',
+        r"deriverMorceaux : u'(x)=1,\ v'(x)=1",
+        r"formule : \left(\frac{u}{v}\right)'=\frac{u'v-uv'}{v^{2}}",
+        r"remplacer : f'(x)=\frac{1\cdot \left(x-1\right)-\left(x+1\right)\cdot 1}{\left(x-1\right)^{2}}",
+        r"conclusion : f'(x)=-\frac{2}{\left(x-1\right)^{2}}",
+      ]);
+    });
+
+    // Valeurs de référence : dérivées calculées à la main avec les formules
+    // du cours (programme de première et de terminale).
+    test('chaque forme donne la dérivée du cours', () async {
+      final conclusions = {
+        'x^{3}': "usuelle : f'(x)=3x^{2}",
+        r'\sin(x)': r"usuelle : f'(x)=\cos\left(x\right)",
+        '3x^{2}-5x+2': "somme : f'(x)=6x-5",
+        r'5\sin(x)': r"conclusion : f'(x)=5 \cos\left(x\right)",
+        '-x^{2}': "remplacer : f'(x)=-2x",
+        'xe^{x}': "conclusion : f'(x)=(x+1) e^{x}",
+        r'\frac{e^{x}}{x}': r"conclusion : f'(x)=\frac{(x-1) e^{x}}{x^{2}}",
+        r'\frac{1}{x^{2}+1}':
+            r"remplacer : f'(x)=-\frac{2x}{\left(x^{2}+1\right)^{2}}",
+        '(x^{2}+1)^{3}': r"conclusion : f'(x)=6x \left(x^{2}+1\right)^{2}",
+        r'\sqrt{x^{2}+1}': r"conclusion : f'(x)=\frac{x}{\sqrt{x^{2}+1}}",
+        r'\sin(2x+1)': r"conclusion : f'(x)=2 \cos\left(2x+1\right)",
+        r'\cos(x^{2})': r"conclusion : f'(x)=-2x \sin\left(x^{2}\right)",
+        'e^{-x^{2}}': "conclusion : f'(x)=-2x e^{-x^{2}}",
+        r'\ln(x^{2}+1)': r"remplacer : f'(x)=\frac{2x}{x^{2}+1}",
+        r'\cos(x)^{2}':
+            r"conclusion : f'(x)=-2 \cos\left(x\right) \sin\left(x\right)",
+      };
+      for (final MapEntry(:key, :value) in conclusions.entries) {
+        expect((await derivee(key))!.last, value, reason: key);
+      }
+    });
+
+    test('composée : la formule nommée, u¹ écrit u', () async {
+      final e = (await derivee(r'\cos(x)^{2}'))!;
+      expect(e, contains(r"formule : \left(u^{2}\right)'=2u'u"));
+      expect(
+        await derivee(r'\sqrt{x^{2}+1}'),
+        contains(r"formule : \left(\sqrt{u}\right)'=\frac{u'}{2\sqrt{u}}"),
+      );
+    });
+
+    test('chaque ligne s’écrit à la main', () async {
+      for (final latex in [
+        r'x^{2}\sin(x)',
+        r'\frac{x+1}{x-1}',
+        r'\frac{1}{x^{2}+1}',
+        '(x^{2}+1)^{3}',
+        r'\sqrt{x^{2}+1}',
+        r'\cos(x^{2})',
+        'e^{-x^{2}}',
+        r'\ln(x^{2}+1)',
+        r'\cos(x)^{2}',
+        'xe^{x}',
+        r'\frac{e^{x}}{x}',
+      ]) {
+        for (final e in (await derivee(latex))!) {
+          expect(
+            ecrireResultat(
+              e.split(' : ').skip(1).join(' : '),
+              const Rect.fromLTWH(0, 0, 40, 40),
+            ),
+            isNotNull,
+            reason: e,
+          );
+        }
+      }
+    });
+
+    test('rien pour une forme non reconnue', () async {
+      expect(await derivee(r'\tan(x^{2})'), isNull);
+      expect(lireDerivee('normal(diff(x^2,x))'), (corps: 'x^2', x: 'x'));
+      expect(lireDerivee('subst(diff(x^2,x),x=2)'), isNull);
+      expect(lireDerivee('diff(x^2,x,2)'), isNull);
     });
   });
 }

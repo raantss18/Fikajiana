@@ -8,6 +8,7 @@ import 'dart:io';
 
 import 'package:fikajiana/comprendre/copie.dart';
 import 'package:fikajiana/comprendre/etapes.dart';
+import 'package:fikajiana/comprendre/etapes_derivee.dart';
 import 'package:fikajiana/moteur/giac.dart';
 import 'package:fikajiana/moteur/moteur.dart';
 import 'package:fikajiana_math/fikajiana_math.dart';
@@ -62,6 +63,28 @@ const inequations = [
   'x^{2}+x+1<0',
   r'x^{2}+x+1\geq 0',
   'x^{3}>8',
+];
+
+/// Des dérivées écrites `\frac{d}{dx}(…)` : une par forme.
+const derivees = [
+  'x^{3}',
+  r'\sin(x)',
+  '3x^{2}-5x+2',
+  r'5\sin(x)',
+  '-x^{2}',
+  r'x^{2}\sin(x)',
+  'xe^{x}',
+  r'\frac{x+1}{x-1}',
+  r'\frac{e^{x}}{x}',
+  r'\frac{1}{x^{2}+1}',
+  '(x^{2}+1)^{3}',
+  r'\sqrt{x^{2}+1}',
+  r'\sin(2x+1)',
+  r'\cos(x^{2})',
+  'e^{-x^{2}}',
+  r'\ln(x^{2}+1)',
+  r'\cos(x)^{2}',
+  r'\tan(x^{2})',
 ];
 
 /// Des démarches d'élève : justes, ou avec une faute à une ligne connue.
@@ -127,6 +150,17 @@ Future<void> main() async {
       droite: i.droite,
       x: i.x,
     );
+    for (final e in etapes ?? const <Etape>[]) {
+      print('   $e');
+    }
+    if (etapes == null) print('   (pas d’étapes)');
+  }
+  for (final latex in derivees) {
+    final a = analyserLatex('\\frac{d}{dx}\\left($latex\\right)=');
+    final d = lireDerivee(a.giac);
+    print('== $latex  (${a.giac})');
+    if (d == null) continue;
+    final etapes = await etapesDerivee(moteur, corps: d.corps, x: d.x);
     for (final e in etapes ?? const <Etape>[]) {
       print('   $e');
     }

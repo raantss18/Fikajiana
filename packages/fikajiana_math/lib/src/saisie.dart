@@ -58,6 +58,20 @@ Saisie lireSaisie(String texte) {
   if (lireObjet(propre) != null || lireCommande(propre) != null) {
     return Saisie(propre);
   }
+  // `f'(x)=`, `g''(2)` : la dérivée d'une fonction définie plus haut,
+  // écrite comme à la main (vue sur le Pad 7, 2026-11-15).
+  final derivee = RegExp(r"^([a-zA-Z])\s*('{1,2})\s*\((.+)\)\s*(=?)$")
+      .firstMatch(propre);
+  if (derivee != null) {
+    try {
+      final argument = _Traducteur(_decouper(derivee[3]!.trim())).traduire();
+      return Saisie(
+        '${derivee[1]}${derivee[2]}\\left($argument\\right)${derivee[4]}',
+      );
+    } on _Refus catch (refus) {
+      return Saisie.refusee(refus.probleme, detail: refus.detail);
+    }
+  }
   // `angle(A;B;C)=`, `aire(ABC)=` : une mesure, lue telle quelle.
   if (RegExp(
     r'^(angle|aire|p[ée]rim[eè]tre)\s*\(\s*[A-Z](\s*[;,]?\s*[A-Z])+\s*\)\s*=?$',

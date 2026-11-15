@@ -246,4 +246,15 @@ void main() {
       expect(lireSaisie('x=2').latex, 'x=2');
     });
   });
+
+  test("f'(x)= tapé au clavier : la dérivée, comme à la main", () {
+    expect(lireSaisie("f'(x)=").latex, r"f'\left(x\right)=");
+    expect(lireSaisie("g''(2)").latex, r"g''\left(2\right)");
+    final f = analyserLatex('f(x)=x^{2}');
+    final a = analyserLatex(
+      lireSaisie("f'(x)=").latex!,
+      definitions: {f.nomFonction!: f.definition!},
+    );
+    expect(a.giac, 'normal(diff((x)^(2),x))');
+  });
 }
