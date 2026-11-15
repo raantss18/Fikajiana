@@ -4,6 +4,18 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+## [1.1.7] — 2026-11-15
+
+### Message fr
+
+Les dérivées ont maintenant leurs étapes : u et v, leurs dérivées, la formule du produit, du quotient ou de la composée, puis le résultat simplifié. Au clavier, f'(x)= se tape comme à la main.
+
+### Message en
+
+Derivatives now have their steps: u and v, their derivatives, the product, quotient or chain rule, then the simplified result. With the keyboard, f'(x)= can be typed as by hand.
+
+### Changements
+
 - Au clavier, f'(x)= se tape comme à la main. / With the keyboard, f'(x)= can be typed as by hand.
 
 - Étapes des dérivées : la forme reconnue (somme, produit, quotient, puissance, sin, cos, exp, ln de u), u et v dérivés, la formule du cours, puis le résultat simplifié. / Steps for derivatives: the recognised form (sum, product, quotient, power, sin, cos, exp, ln of u), u and v differentiated, the formula, then the simplified result.
