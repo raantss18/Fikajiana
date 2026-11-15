@@ -4,6 +4,18 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+## [1.1.8] — 2026-11-15
+
+### Message fr
+
+Les systèmes de deux équations ont maintenant leurs étapes : par substitution ou par combinaison des lignes, comme au tableau. Au clavier, un système se tape entre accolades : {2x+y=5 ; x-y=1}.
+
+### Message en
+
+Systems of two equations now have their steps: by substitution or by combining the lines, as on a blackboard. With the keyboard, a system is typed between braces: {2x+y=5 ; x-y=1}.
+
+### Changements
+
 - Étapes des systèmes de deux équations à deux inconnues : par substitution ou par combinaison des lignes E₁ et E₂, puis S = {(x ; y)}. Au clavier, un système se tape {2x+y=5 ; x-y=1}. / Steps for systems of two equations in two unknowns: by substitution or by eliminating between lines E₁ and E₂, then S = {(x; y)}. With the keyboard, a system is typed {2x+y=5 ; x-y=1}.
 
 ## [1.1.7] — 2026-11-15
