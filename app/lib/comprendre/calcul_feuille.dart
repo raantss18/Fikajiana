@@ -2030,19 +2030,59 @@ class CalculFeuille extends ChangeNotifier {
     return (gauche: membres.$1, droite: membres.$2, x: x);
   }
 
+  /// L'inéquation de [bloc] dont on sait écrire les étapes : une seule
+  /// inconnue, un seul signe `<`, `>`, `≤` ou `≥` entre deux membres.
+  ({String gauche, Sens sens, String droite, String x})? inequationAEtapes(
+    BlocCalcul bloc,
+  ) {
+    final latex = bloc.latex;
+    if (latex == null || bloc.objet != null || bloc.commande != null) {
+      return null;
+    }
+    final Analyse analyse;
+    try {
+      analyse = analyserPour(bloc, latex);
+    } on Object {
+      return null; // Comme pour les équations : une ligne mal lue.
+    }
+    final x = analyse.inconnues.singleOrNull;
+    if (analyse.type != TypeExpression.equation ||
+        analyse.membres != null ||
+        x == null) {
+      return null;
+    }
+    return lireInequation(analyse.giac, x);
+  }
+
+  /// Vrai si [bloc] a des étapes à montrer : équation ou inéquation.
+  bool aDesEtapes(BlocCalcul bloc) =>
+      equationAEtapes(bloc) != null || inequationAEtapes(bloc) != null;
+
   /// Les étapes de la résolution de [bloc], ou `null` s'il n'y en a pas
   /// (degré 3 et plus, coefficients littéraux).
   /// [ou] : le mot entre deux solutions, dans la langue de l'app.
   Future<List<Etape>?> etapes(BlocCalcul bloc, {String ou = 'ou'}) {
+    final ecrit = bloc.latex?.replaceFirst(RegExp(r'\s*$'), '');
     final e = equationAEtapes(bloc);
-    if (e == null) return Future.value();
-    return etapesEquation(
+    if (e != null) {
+      return etapesEquation(
+        moteur,
+        ecrit: ecrit!,
+        gauche: e.gauche,
+        droite: e.droite,
+        x: e.x,
+        ou: ou,
+      );
+    }
+    final i = inequationAEtapes(bloc);
+    if (i == null) return Future.value();
+    return etapesInequation(
       moteur,
-      ecrit: bloc.latex!.replaceFirst(RegExp(r'\s*$'), ''),
-      gauche: e.gauche,
-      droite: e.droite,
-      x: e.x,
-      ou: ou,
+      ecrit: ecrit!,
+      gauche: i.gauche,
+      sens: i.sens,
+      droite: i.droite,
+      x: i.x,
     );
   }
 

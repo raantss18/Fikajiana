@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:fikajiana/comprendre/blocs.dart';
 import 'package:fikajiana/comprendre/calcul_feuille.dart';
 import 'package:fikajiana/comprendre/ecriture_resultat.dart';
+import 'package:fikajiana/comprendre/etapes.dart';
 import 'package:fikajiana/comprendre/stockage_feuille.dart';
 import 'package:fikajiana/encre/encre.dart';
 import 'package:fikajiana/moteur/giac.dart';
@@ -356,6 +357,18 @@ void main() {
       final derniere = calcul.blocs.last;
       expect(calcul.equationAEtapes(derniere), isNotNull);
       expect(calcul.copieDe(derniere)!.map((l) => l.latex), ['2x+3=7', '2x=4']);
+    });
+
+    test('une inéquation a ses étapes, pas un encadrement', () async {
+      await calcul.saisir(r'-3x+1\geq 4', Offset.zero);
+      await calcul.saisir('1<x<3', const Offset(0, 100));
+      await calcul.saisir('2+3=', const Offset(0, 200));
+      final [inequation, encadrement, somme] = calcul.blocs;
+      expect(calcul.inequationAEtapes(inequation)?.sens, Sens.superieurOuEgal);
+      expect(calcul.aDesEtapes(inequation), isTrue);
+      expect(calcul.aDesEtapes(encadrement), isFalse);
+      expect(calcul.aDesEtapes(somme), isFalse);
+      expect(calcul.equationAEtapes(inequation), isNull);
     });
 
     test('une ligne tapée se déplace, se duplique, se remet', () async {

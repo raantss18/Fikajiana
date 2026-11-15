@@ -108,7 +108,7 @@ class RepereBloc extends StatelessWidget {
         ),
       ...?_entreeFigure(context),
       // Les étapes de la résolution, comme au tableau (2026-11-14).
-      if (calcul.equationAEtapes(bloc) != null)
+      if (calcul.aDesEtapes(bloc))
         EntreeLigne(
           cle: 'etapes',
           mot: l10n.motEtapes,

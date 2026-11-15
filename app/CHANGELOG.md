@@ -4,6 +4,8 @@ Une ligne par changement, en français et en anglais.
 
 ## [Non publié]
 
+- Étapes des inéquations du premier et du second degré : le sens qui change quand on divise par un négatif, le signe du trinôme, l'intervalle des solutions. / Steps for first- and second-degree inequalities: the sign flipping when dividing by a negative, the sign of the quadratic, the solution interval.
+
 - E(X) écrit à la main sous une loi (X ∼ B(10 ; 0,3)) n'est plus lu 5(x) : l'espérance se calcule. / E(X) handwritten under a distribution (X ∼ B(10; 0.3)) is no longer read as 5(x): the expectation is computed.
 
 ## [1.1.5] — 2026-11-14

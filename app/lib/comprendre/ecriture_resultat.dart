@@ -288,6 +288,23 @@ final Map<String, _Glyphe> _glyphes = {
   '<': _Glyphe(0.6, [
     _l([0.52, 0.36, 0.08, 0.6, 0.52, 0.84]),
   ]),
+  // ∪ : la réunion de deux intervalles.
+  '∪': _Glyphe(0.6, [
+    _l([
+      0.08,
+      0.36,
+      0.08,
+      0.66,
+      0.18,
+      0.82,
+      0.42,
+      0.82,
+      0.52,
+      0.66,
+      0.52,
+      0.36,
+    ]),
+  ]),
   '>': _Glyphe(0.6, [
     _l([0.08, 0.36, 0.52, 0.6, 0.08, 0.84]),
   ]),
@@ -626,7 +643,7 @@ class _Compositeur {
     if (g == null) throw const _NonPrisEnCharge();
     return _Boite(
       g.largeur,
-      'acegmnopqrsuvwxyz∈<>≤≥∼σ'.contains(c) ? 0.58 : 1,
+      'acegmnopqrsuvwxyz∈<>≤≥∼σ∪'.contains(c) ? 0.58 : 1,
       'gjpqy,;'.contains(c) ? 0.24 : 0,
       [
         for (final t in g.traces) [for (final p in t) p - const Offset(0, 1)],
@@ -699,6 +716,7 @@ class _Compositeur {
       'sqrt' => _racine(),
       'pi' => _lettre('π'),
       'infty' => _lettre('∞'),
+      'cup' => _lettre('∪'),
       'cdot' => _lettre('·'),
       'times' => _lettre('×'),
       'prime' => _lettre("'"),

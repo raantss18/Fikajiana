@@ -378,5 +378,140 @@
   "exact": "0",
   "latex": "0",
   "approche": "0.0"
+ },
+ "degree(expand((((-3)*x+1)-(4))),x)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(expand((((-3)*x+1)-(4))),x,1)": {
+  "exact": "-3",
+  "latex": "\\mathrm{-3}",
+  "approche": "-3.0"
+ },
+ "coeff(expand((((-3)*x+1)-(4))),x,0)": {
+  "exact": "-3",
+  "latex": "\\mathrm{-3}",
+  "approche": "-3.0"
+ },
+ "expand((((-3)*x+1)-(4)))": {
+  "exact": "-3*x-3",
+  "latex": "-3\\cdot x-3",
+  "approche": ""
+ },
+ "(-3)*x": {
+  "exact": "-3*x",
+  "latex": "-3\\cdot x",
+  "approche": ""
+ },
+ "-(-3)/(-3)": {
+  "exact": "-1",
+  "latex": "\\mathrm{-1}",
+  "approche": "-1.0"
+ },
+ "degree(expand(((5-2*x)-(x+11))),x)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(expand(((5-2*x)-(x+11))),x,1)": {
+  "exact": "-3",
+  "latex": "\\mathrm{-3}",
+  "approche": "-3.0"
+ },
+ "coeff(expand(((5-2*x)-(x+11))),x,0)": {
+  "exact": "-6",
+  "latex": "\\mathrm{-6}",
+  "approche": "-6.0"
+ },
+ "expand(((5-2*x)-(x+11)))": {
+  "exact": "-3*x-6",
+  "latex": "-3\\cdot x-6",
+  "approche": ""
+ },
+ "-(-6)/(-3)": {
+  "exact": "-2",
+  "latex": "\\mathrm{-2}",
+  "approche": "-2.0"
+ },
+ "degree(expand((((x)^(2))-(4))),x)": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "coeff(expand((((x)^(2))-(4))),x,2)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(expand((((x)^(2))-(4))),x,1)": {
+  "exact": "0",
+  "latex": "0",
+  "approche": "0.0"
+ },
+ "coeff(expand((((x)^(2))-(4))),x,0)": {
+  "exact": "-4",
+  "latex": "\\mathrm{-4}",
+  "approche": "-4.0"
+ },
+ "expand((((x)^(2))-(4)))": {
+  "exact": "x^2-4",
+  "latex": "x^{2}-4",
+  "approche": ""
+ },
+ "(0)^2-4*(1)*(-4)": {
+  "exact": "16",
+  "latex": "16",
+  "approche": "16.0"
+ },
+ "simplify((-(0)-sqrt(16))/(2*(1)))": {
+  "exact": "-2",
+  "latex": "\\mathrm{-2}",
+  "approche": "-2.0"
+ },
+ "simplify((-(0)+sqrt(16))/(2*(1)))": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "degree(expand((((-(x)^(2))+x+2)-(0))),x)": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "coeff(expand((((-(x)^(2))+x+2)-(0))),x,2)": {
+  "exact": "-1",
+  "latex": "\\mathrm{-1}",
+  "approche": "-1.0"
+ },
+ "coeff(expand((((-(x)^(2))+x+2)-(0))),x,1)": {
+  "exact": "1",
+  "latex": "1",
+  "approche": "1.0"
+ },
+ "coeff(expand((((-(x)^(2))+x+2)-(0))),x,0)": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "expand((((-(x)^(2))+x+2)-(0)))": {
+  "exact": "-x^2+x+2",
+  "latex": "-x^{2}+x+2",
+  "approche": ""
+ },
+ "(1)^2-4*(-1)*(2)": {
+  "exact": "9",
+  "latex": "9",
+  "approche": "9.0"
+ },
+ "simplify((-(1)-sqrt(9))/(2*(-1)))": {
+  "exact": "2",
+  "latex": "2",
+  "approche": "2.0"
+ },
+ "simplify((-(1)+sqrt(9))/(2*(-1)))": {
+  "exact": "-1",
+  "latex": "\\mathrm{-1}",
+  "approche": "-1.0"
  }
 }
