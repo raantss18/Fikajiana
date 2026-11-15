@@ -3,7 +3,12 @@
 /// n'aurait aucun sens en maths ; le résultat reste visible et corrigeable.
 ///
 /// [fonctions] : les fonctions déjà définies au-dessus sur la feuille.
-String redresserLecture(String latex, {Set<String> fonctions = const {}}) {
+/// [aleatoires] : les variables aléatoires déclarées au-dessus (`X \sim …`).
+String redresserLecture(
+  String latex, {
+  Set<String> fonctions = const {},
+  Set<String> aleatoires = const {},
+}) {
   var s = sansLeftRight(latex.replaceAll(RegExp(r'\\right\s*\.'), '')).trim();
   // `… = .` : un point après le `=` final, lu par le modèle sur le produit
   // de matrices d'Antsa (Pad 7) ; il empêchait tout calcul.
@@ -19,7 +24,27 @@ String redresserLecture(String latex, {Set<String> fonctions = const {}}) {
   s = _teteDeDeterminant(s);
   s = _pointEnFraction(s);
   s = _teteDePoint(s);
+  s = _esperance(s, aleatoires);
   return s;
+}
+
+/// `5(x)=` sous `X \sim B(10;0,3)` : le `E` d'Antsa écrit au doigt, lu `5`
+/// (ou `ε`), et son `X` lu `x`. Devant une variable aléatoire déclarée, seul
+/// E a un sens : une ligne qui n'est que `5(X)` ne se calcule pas autrement.
+String _esperance(String s, Set<String> aleatoires) {
+  if (aleatoires.isEmpty) return s;
+  final m = RegExp(
+    r'^\s*(?:5|\\(?:var)?epsilon|ε|\\math(?:cal|bb|rm)\s*\{\s*E\s*\})\s*'
+    r'\(\s*([A-Za-z])\s*\)\s*(=?)\s*$',
+  ).firstMatch(s);
+  if (m == null) return s;
+  final lettre = m[1]!;
+  final variable = aleatoires.contains(lettre)
+      ? lettre
+      : aleatoires.contains(lettre.toUpperCase())
+      ? lettre.toUpperCase()
+      : null;
+  return variable == null ? s : 'E($variable)${m[2]}';
 }
 
 /// Sans `\left` ni `\right`, mais `\rightarrow` reste : la limite mise au

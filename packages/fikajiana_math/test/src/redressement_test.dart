@@ -160,4 +160,22 @@ void main() {
       expect(redresserLecture(r'\Lambda 0 \times 3'), r'10 \times 3');
     });
   });
+
+  // Vu au doigt (Pad 7, 2026-11-08) : `E(X)` lu `5(x)` sous une loi.
+  group('E(X) lu 5(x), sous une variable aléatoire déclarée', () {
+    test('devient E(X)', () {
+      expect(redresserLecture('5(x)=', aleatoires: {'X'}), 'E(X)=');
+      expect(redresserLecture('5(X)', aleatoires: {'X'}), 'E(X)');
+      expect(redresserLecture(r'\varepsilon(X)=', aleatoires: {'X'}), 'E(X)=');
+      expect(redresserLecture(r'\mathcal{E}(Y)=', aleatoires: {'Y'}), 'E(Y)=');
+    });
+
+    test('sans variable aléatoire, ou autre chose : rien ne change', () {
+      expect(redresserLecture('5(x)='), '5(x)=');
+      expect(redresserLecture('5(x)=', aleatoires: {'Y'}), '5(x)=');
+      expect(redresserLecture('5(x+1)=', aleatoires: {'X'}), '5(x+1)=');
+      expect(redresserLecture('25(X)=', aleatoires: {'X'}), '25(X)=');
+      expect(redresserLecture('5(X)+1=', aleatoires: {'X'}), '5(X)+1=');
+    });
+  });
 }

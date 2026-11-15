@@ -93,6 +93,8 @@ Déjà livré ce jour : rature et stylet (0.6.1), lueur et trait ondulé (0.7.1)
 
 ## 0. Erreurs signalées
 
+- ✅ 2026-11-15 : `E(X)` écrit au doigt lu `5(x)`, sans résultat (Pad 7, 2026-11-08). Cause : le `E` d'Antsa ressemble à un `5` pour le modèle, et `X` est lu `x`. Corrigé d'après le contexte : sous une variable aléatoire déclarée (`X \sim …`), une ligne qui n'est que `5(x)`, `ε(x)` ou `\mathcal{E}(x)` devient `E(X)` (`redresserLecture`, paramètre `aleatoires`). Même classe : `V(X)` et `σ(X)` acceptent déjà une minuscule ; `V` lu autrement n'a pas été vu. Tests : `redressement_test`, `calcul_feuille_test`.
+
 - ✅ 2026-11-14 : la Feuille entière devenait grise après une ligne mal lue (émulateur léger, écriture rejouée avec le modèle). Cause : le bouton de ligne appelait l'analyse pendant la construction (étapes, copie), qui lance autre chose qu'une `FormatException` sur une lecture absurde. Corrigé : `on Object` dans `equationAEtapes` et `_ligneCopie`. Même classe cherchée : les autres appels d'`analyserPour` pendant un `build` passent par `comprise`/`propositions`, déjà protégés. Test : `calcul_feuille_test` (« une ligne mal lue ne casse rien »).
 
 - ✅ 2026-11-09 : trouvé au banc et à l'essai clavier sur le Pad 7 (vagues 3 à 5) : `division(17;5) ⇔ q=3 et r=2`, `ajustement(…) ⇔ a=…` disaient une équivalence fausse, et `ln(x)>1` donnait `x>(e)`. Cause : toute réponse de type système recevait `⇔`, et la borne seule gardait les parenthèses de Giac. Corrigé : `⇔` seulement si la ligne pose une relation ou `résoudre` (`poseUneRelation`) ; parenthèses ôtées autour d'une borne seule. Même classe : quartiles, Bézout. Le comparateur du banc lit aussi fractions, e et π. Tests : `solutions_test`.
