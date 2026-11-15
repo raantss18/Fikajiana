@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:fikajiana/comprendre/blocs.dart';
 import 'package:fikajiana/comprendre/structure.dart';
@@ -23,7 +24,123 @@ class _Bruit extends Lecteur {
       traits.length == 1 ? '2' : r'\varLambda';
 }
 
+/// Un trait dessiné point par point, de (x0, y0) à (x1, y1).
+Trait _segment(double x0, double y0, double x1, double y1) {
+  final n = math.max(2, ((x1 - x0).abs() + (y1 - y0).abs()).round());
+  return Trait.depuisDocument({
+    'auStylet': true,
+    'points': [
+      for (var k = 0; k <= n; k++)
+        [x0 + (x1 - x0) * k / n, y0 + (y1 - y0) * k / n, 0.3],
+    ],
+  });
+}
+
+/// Un toucher du stylet : un seul point.
+Trait _toucher(double x, double y) => Trait.depuisDocument({
+  'auStylet': true,
+  'points': [
+    [x, y, 0.3],
+  ],
+});
+
+/// `=` à droite de `30×8` (chiffres de y = 270 à 319 sur le Pad 7).
+List<Trait> _egal() => [
+  _segment(500, 288, 526, 288),
+  _segment(500, 301, 526, 301),
+];
+
 void main() {
+  group('factorielle écrite à la main (ADR 0071)', () {
+    // Comme sur le Pad 7 d'Antsa (`53!=` lu `53.1`) : une hampe qui s'arrête
+    // au-dessus de la ligne, et son point dessous, un peu à gauche.
+    test('hampe et petit trait dessous : `!`, pas un point décimal', () {
+      expect(
+        lireAuTrace([
+          ..._traits('pad7', 'trente_fois_8'),
+          _segment(481, 272, 480, 305),
+          _segment(477, 316, 479, 323),
+          ..._egal(),
+        ]),
+        r'30\times8!=',
+      );
+    });
+
+    test(
+      'hampe et toucher du stylet dessous : `!`, le point n’est pas oublié',
+      () {
+        expect(
+          lireAuTrace([
+            ..._traits('pad7', 'trente_fois_8'),
+            _segment(481, 272, 480, 305),
+            _toucher(479, 318),
+            ..._egal(),
+          ]),
+          r'30\times8!=',
+        );
+      },
+    );
+
+    test('le point tracé avant la hampe (plus à gauche) : toujours `!`', () {
+      expect(
+        lireAuTrace([
+          ..._traits('pad7', 'trente_fois_8'),
+          _segment(476, 316, 478, 324),
+          _segment(481, 272, 481, 305),
+          ..._egal(),
+        ]),
+        r'30\times8!=',
+      );
+    });
+  });
+
+  group('autres signes faits de points (ADR 0071)', () {
+    // `3`, `0` et `8` de `30×8` (Pad 7), sans le `×`.
+    List<Trait> avec(List<Trait> milieu) {
+      final t = _traits('pad7', 'trente_fois_8');
+      return [t[0], t[1], ...milieu, t[4]];
+    }
+
+    test('÷ aux points tapés : une division, pas un moins', () {
+      expect(
+        lireAuTrace(
+          avec([
+            _segment(385, 296, 420, 296),
+            _toucher(402, 285),
+            _toucher(402, 308),
+          ]),
+        ),
+        r'30\div8',
+      );
+    });
+
+    test('sans ses points, le plat reste un moins', () {
+      expect(lireAuTrace(avec([_segment(385, 296, 420, 296)])), '30-8');
+    });
+
+    test('deux points tapés l’un sur l’autre : la division du collège', () {
+      expect(
+        lireAuTrace(avec([_toucher(400, 288), _toucher(400, 306)])),
+        r'30\div8',
+      );
+    });
+
+    test('point-virgule : jamais une virgule décimale', () {
+      // `30;8` ne se calcule pas : la ligne va au modèle, au lieu de `30,8`.
+      expect(
+        lireAuTrace(avec([_segment(379, 316, 377, 325), _toucher(381, 306)])),
+        isNull,
+      );
+    });
+
+    test('virgule seule : toujours décimale', () {
+      expect(
+        lireAuTrace(avec([_segment(379, 316, 377, 325)])),
+        anyOf('30.8', '30{,}8'),
+      );
+    });
+  });
+
   group('une ligne lue sur son tracé, sans le modèle (ADR 0035)', () {
     test('1+1 du téléphone d’Antsa, dans ses deux formes', () {
       expect(lireAuTrace(_traits('telephone', 'un_plus_un')), '1+1');
