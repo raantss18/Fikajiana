@@ -1260,6 +1260,7 @@ class CalculFeuille extends ChangeNotifier {
         return;
       }
       final fonctions = _definitionsPour(bloc).keys.toSet();
+      final aleatoires = _aleatoiresPour(bloc);
       bloc
         ..autresLectures = const []
         ..signesLus = tracee == null ? const [] : lecture!.signes
@@ -1280,14 +1281,24 @@ class CalculFeuille extends ChangeNotifier {
           latex,
           ...lectures,
         ], fonctions: fonctions);
-        final garde = redresserLecture(choix, fonctions: fonctions);
+        final garde = redresserLecture(
+          choix,
+          fonctions: fonctions,
+          aleatoires: aleatoires,
+        );
         final vues = <String>{normaliserLatex(garde)};
         bloc.autresLectures = [
           for (final l in lectures)
             if (vues.add(
-              normaliserLatex(redresserLecture(l, fonctions: fonctions)),
+              normaliserLatex(
+                redresserLecture(
+                  l,
+                  fonctions: fonctions,
+                  aleatoires: aleatoires,
+                ),
+              ),
             ))
-              redresserLecture(l, fonctions: fonctions),
+              redresserLecture(l, fonctions: fonctions, aleatoires: aleatoires),
         ];
         latex = choix;
       }
@@ -1325,7 +1336,7 @@ class CalculFeuille extends ChangeNotifier {
       bloc
         ..latex = _redresser(
           bloc,
-          redresserLecture(latex, fonctions: fonctions),
+          redresserLecture(latex, fonctions: fonctions, aleatoires: aleatoires),
         )
         // Un nom se vérifie à l'œil ; les chiffres d'une matrice, moins.
         ..lueParMorceaux = structuree?.contains('matrix') ?? false;
@@ -1443,7 +1454,12 @@ class CalculFeuille extends ChangeNotifier {
     );
     if (perimee() || encreBougee()) return;
     final fonctions = _definitionsPour(bloc).keys.toSet();
-    final propose = redresserLecture(redresse, fonctions: fonctions);
+    final aleatoires = _aleatoiresPour(bloc);
+    final propose = redresserLecture(
+      redresse,
+      fonctions: fonctions,
+      aleatoires: aleatoires,
+    );
     String issue;
     if (normaliserLatex(propose) == normaliserLatex(avant)) {
       issue = 'confirmée';
@@ -2131,6 +2147,12 @@ class CalculFeuille extends ChangeNotifier {
 
   Map<String, DefinitionFonction> _definitionsPour(BlocCalcul bloc) =>
       _contextePour(bloc).definitions;
+
+  /// Les variables aléatoires déclarées au-dessus de [bloc] (`X \sim …`).
+  Set<String> _aleatoiresPour(BlocCalcul bloc) => {
+    for (final MapEntry(:key, :value) in _contextePour(bloc).valeurs.entries)
+      if (Loi.lire(value) != null) key,
+  };
 
   /// [bloc] (re)définit une fonction : les lignes en dessous qui s'en servent
   /// se recalculent.

@@ -319,6 +319,24 @@ void main() {
     // Vu sur l'émulateur (2026-11-14) : une ligne mal lue faisait lancer
     // l'analyse pendant la construction du bouton, et la Feuille devenait
     // grise. Ni étapes ni copie pour elle, et jamais d'exception.
+    // Vu au doigt (Pad 7, 2026-11-08) : `E(X)` lu `5(x)`, sans résultat.
+    test('E(X) lu 5(x) sous une loi : redevient E(X), et se calcule', () async {
+      await calcul.saisir(r'X\sim B(10;0{,}3)', Offset.zero);
+      lecteur.reponse = '5(x)=';
+      _trait(encre, 0, 400);
+      encre.terminer();
+      calcul.encreChangee();
+      await _attendre();
+      final lue = calcul.blocs.firstWhere((b) => !b.estSaisie);
+      expect(lue.latex, 'E(X)=');
+      expect(moteur.entrees.last, isNot(contains('5*')));
+      // Sans loi au-dessus, 5(x) reste ce qui est écrit.
+      calcul.retirer(calcul.blocs.firstWhere((b) => b.estSaisie));
+      calcul.relire(lue);
+      await _attendre();
+      expect(calcul.blocs.single.latex, '5(x)=');
+    });
+
     test('étapes et copie : une ligne mal lue ne casse rien', () async {
       for (final mal in [
         r'\circ m ^ { 2 x } - 1 -=',
