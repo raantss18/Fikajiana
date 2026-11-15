@@ -20,6 +20,12 @@ String phraseEtape(AppLocalizations l10n, RaisonEtape raison) =>
       RaisonEtape.premiere => l10n.etapePremiere,
       RaisonEtape.seconde => l10n.etapeSeconde,
       RaisonEtape.conclusion => l10n.etapeConclusion,
+      RaisonEtape.departInequation => l10n.etapeDepartInequation,
+      RaisonEtape.diviserNegatif => l10n.etapeDiviserNegatif,
+      RaisonEtape.racines => l10n.etapeRacines,
+      RaisonEtape.racineDouble => l10n.etapeRacineDouble,
+      RaisonEtape.pasDeRacine => l10n.etapePasDeRacine,
+      RaisonEtape.signeTrinome => l10n.etapeSigneTrinome,
     };
 
 /// Ouvre les étapes de la résolution de [bloc], écrites l'une après l'autre

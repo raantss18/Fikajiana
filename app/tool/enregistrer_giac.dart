@@ -48,6 +48,22 @@ const equations = [
   r'\sin(x)=0',
 ];
 
+const inequations = [
+  '2x+3<7',
+  r'-3x+1\geq 4',
+  r'x+4\leq 0',
+  '5-2x>x+11',
+  'x^{2}-5x+6>0',
+  r'x^{2}-5x+6\leq 0',
+  r'x^{2}\geq 4',
+  '-x^{2}+x+2>0',
+  'x^{2}-2x+1>0',
+  r'x^{2}-2x+1\leq 0',
+  'x^{2}+x+1<0',
+  r'x^{2}+x+1\geq 0',
+  'x^{3}>8',
+];
+
 /// Des démarches d'élève : justes, ou avec une faute à une ligne connue.
 const copies = [
   ['2x+3=7', '2x=4', 'x=2'],
@@ -92,6 +108,24 @@ Future<void> main() async {
       gauche: a.membres!.$1,
       droite: a.membres!.$2,
       x: x,
+    );
+    for (final e in etapes ?? const <Etape>[]) {
+      print('   $e');
+    }
+    if (etapes == null) print('   (pas d’étapes)');
+  }
+  for (final latex in inequations) {
+    final a = analyserLatex(latex);
+    final i = lireInequation(a.giac, a.inconnues.single);
+    print('== $latex  ($i)');
+    if (i == null) continue;
+    final etapes = await etapesInequation(
+      moteur,
+      ecrit: latex,
+      gauche: i.gauche,
+      sens: i.sens,
+      droite: i.droite,
+      x: i.x,
     );
     for (final e in etapes ?? const <Etape>[]) {
       print('   $e');
